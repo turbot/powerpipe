@@ -7,8 +7,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/internal/dashboard/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -88,11 +90,15 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 		panic(err)
 	}
 
-	// setup a new websocket service
-	websocket := melody.New()
+	// setup a new webSocket service
+	webSocket := melody.New()
+
+	// create the server
+	server, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
+	error_helpers.FailOnError(err)
 
 	// send it over to the API Server
-	server, err := api.NewAPIService(ctx, api.WithWebSocket(websocket))
+	server, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket))
 	if err != nil {
 		panic(err)
 	}
