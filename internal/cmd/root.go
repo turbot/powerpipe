@@ -2,11 +2,13 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	log "github.com/turbot/powerpipe/internal/logging"
+	"github.com/turbot/powerpipe/internal/version"
 	"github.com/turbot/powerpipe/pkg/utils"
 	"github.com/turbot/steampipe/pkg/statushooks"
 )
@@ -23,6 +25,8 @@ var exitCode int
 func InitCmd() {
 	utils.LogTime("cmd.root.InitCmd start")
 	defer utils.LogTime("cmd.root.InitCmd end")
+
+	rootCmd.SetVersionTemplate(fmt.Sprintf("Powerpipe v%s\n", version.PowerpipeVersion.String()))
 
 	AddCommands()
 	// disable auto completion generation, since we don't want to support
