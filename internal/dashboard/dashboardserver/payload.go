@@ -3,17 +3,18 @@ package dashboardserver
 import (
 	"encoding/json"
 	"fmt"
+
 	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
+	"github.com/turbot/powerpipe/pkg/entities"
 	"github.com/turbot/steampipe/pkg/constants"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardevents"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardexecute"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
 	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
 	"github.com/turbot/steampipe/pkg/version"
 )
 
-func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *steampipeconfig.CloudMetadata) ([]byte, error) {
+func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *entities.CloudMetadata) ([]byte, error) {
 	installedMods := make(map[string]ModDashboardMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod

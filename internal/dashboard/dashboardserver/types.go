@@ -2,11 +2,12 @@ package dashboardserver
 
 import (
 	"fmt"
+	"time"
+
+	"github.com/turbot/powerpipe/pkg/entities"
 	"github.com/turbot/steampipe/pkg/control/controlstatus"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
 	"gopkg.in/olahol/melody.v1"
-	"time"
 )
 
 type ListenType string
@@ -163,7 +164,7 @@ type DashboardMetadata struct {
 	Mod           *ModDashboardMetadata           `json:"mod,omitempty"`
 	InstalledMods map[string]ModDashboardMetadata `json:"installed_mods,omitempty"`
 	CLI           DashboardCLIMetadata            `json:"cli"`
-	Cloud         *steampipeconfig.CloudMetadata  `json:"cloud,omitempty"`
+	Cloud         *entities.CloudMetadata         `json:"cloud,omitempty"`
 	Telemetry     string                          `json:"telemetry"`
 }
 
