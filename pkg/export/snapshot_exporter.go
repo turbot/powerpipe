@@ -3,10 +3,10 @@ package export
 import (
 	"context"
 	"fmt"
-	constants2 "github.com/turbot/powerpipe/pkg/constants"
 	"strings"
 
-	"github.com/turbot/powerpipe/pkg/constants"
+	constants2 "github.com/turbot/powerpipe/pkg/constants"
+
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
 )
 
@@ -34,7 +34,7 @@ func (e *SnapshotExporter) FileExtension() string {
 }
 
 func (e *SnapshotExporter) Name() string {
-	return constants.OutputFormatSnapshot
+	return "snapshot"
 }
 
 func (*SnapshotExporter) Alias() string {

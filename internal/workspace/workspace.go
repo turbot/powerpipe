@@ -14,6 +14,7 @@ import (
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/filewatcher"
+	"github.com/turbot/powerpipe/pkg/entities"
 	"github.com/turbot/steampipe/pkg/constants"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardevents"
 	"github.com/turbot/steampipe/pkg/db/db_common"
@@ -35,7 +36,7 @@ type Workspace struct {
 	Mods map[string]*modconfig.Mod
 	// the input variables used in the parse
 	VariableValues map[string]string
-	CloudMetadata  *steampipeconfig.CloudMetadata
+	CloudMetadata  *entities.CloudMetadata
 
 	// source snapshot paths
 	// if this is set, no other mod resources are loaded and

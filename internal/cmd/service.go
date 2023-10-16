@@ -28,22 +28,6 @@ connection from any compatible database client.`,
 	return cmd
 }
 
-func ServiceStartCmd() *cobra.Command {
-	var cmd = &cobra.Command{
-		Use:   "service [command]",
-		Args:  cobra.NoArgs,
-		Short: "Powerpipe service management",
-		Long: `Powerpipe service management.
-
-Run Powerpipe as a local service, exposing it as a database endpoint for
-connection from any compatible database client.`,
-	}
-
-	cmd.AddCommand(serviceStartCmd())
-	cmd.Flags().BoolP(spK.ArgHelp, "h", false, "Help for service")
-	return cmd
-}
-
 func serviceStartCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "start",
