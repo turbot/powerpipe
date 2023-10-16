@@ -3,12 +3,11 @@ package dashboard
 import (
 	"context"
 	"fmt"
-
 	"github.com/turbot/powerpipe/internal/initialisation"
-	"github.com/turbot/steampipe/constants"
-	"github.com/turbot/steampipe/dashboard/dashboardserver"
+	"github.com/turbot/steampipe/pkg/constants"
+	"github.com/turbot/steampipe/pkg/dashboard/dashboardserver"
 	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/workspace"
+	"github.com/turbot/steampipe/pkg/workspace"
 )
 
 func initDashboard(ctx context.Context) *initialisation.InitData {
