@@ -5,9 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/pkg/error_helpers"
+	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 // Constants for Config
@@ -19,8 +17,8 @@ const (
 
 var PowerpipeDir string
 
-func ensureSteampipeSubDir(dirName string) string {
-	subDir := steampipeSubDir(dirName)
+func ensurePowerpipeSubDir(dirName string) string {
+	subDir := powerpipeSubDir(dirName)
 
 	if _, err := os.Stat(subDir); os.IsNotExist(err) {
 		err = os.MkdirAll(subDir, 0755)
@@ -30,39 +28,25 @@ func ensureSteampipeSubDir(dirName string) string {
 	return subDir
 }
 
-func steampipeSubDir(dirName string) string {
+func powerpipeSubDir(dirName string) string {
 	if PowerpipeDir == "" {
-		panic(fmt.Errorf("cannot call any Steampipe directory functions before SteampipeDir is set"))
+		panic(fmt.Errorf("cannot call any Powerpipt directory functions before PowerpipeDir is set"))
 	}
 	return filepath.Join(PowerpipeDir, dirName)
 }
 
 // EnsureTemplateDir returns the path to the templates directory (creates if missing)
 func EnsureTemplateDir() string {
-	return ensureSteampipeSubDir(filepath.Join("check", "templates"))
-}
-
-// WorkspaceProfileDir returns the path to the workspace profiles directory
-// if  STEAMPIPE_WORKSPACE_PROFILES_LOCATION is set use that
-// otherwise look in the config folder
-// NOTE: unlike other path functions this accepts the install-dir as arg
-// this is because of the slightly complex bootstrapping process required because the
-// install-dir may be set in the workspace profile
-func WorkspaceProfileDir(installDir string) (string, error) {
-	if workspaceProfileLocation, ok := os.LookupEnv(constants.EnvWorkspaceProfileLocation); ok {
-		return filehelpers.Tildefy(workspaceProfileLocation)
-	}
-	return filepath.Join(installDir, "config"), nil
-
+	return ensurePowerpipeSubDir(filepath.Join("check", "templates"))
 }
 
 func ensureDashboardAssetsDir() string {
-	return ensureSteampipeSubDir(filepath.Join("dashboard", "assets"))
+	return ensurePowerpipeSubDir(filepath.Join("dashboard", "assets"))
 }
 
 // LegacyDashboardAssetsDir returns the path to the legacy report assets folder
 func LegacyDashboardAssetsDir() string {
-	return steampipeSubDir("report")
+	return powerpipeSubDir("report")
 }
 
 // ReportAssetsVersionFilePath returns the report assets version file path
