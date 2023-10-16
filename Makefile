@@ -1,6 +1,6 @@
 OUTPUT_DIR?=/usr/local/bin
 
-steampipe:
+powerpipe:
 	go build -o ${OUTPUT_DIR}/powerpipe
 
 dashboard_assets:
@@ -8,4 +8,4 @@ dashboard_assets:
 
 all:
 	$(MAKE) -C ui/dashboard
-	go build -o ${OUTPUT_DIR}/steampipe
+	go build -o ${OUTPUT_DIR}/powerpipe
