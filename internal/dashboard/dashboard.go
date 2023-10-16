@@ -3,16 +3,14 @@ package dashboard
 import (
 	"context"
 	"fmt"
+
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/dashboard/dashboardserver"
 	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/workspace"
 )
 
-func initDashboard(ctx context.Context) *initialisation.InitData {
-	dashboardserver.OutputWait(ctx, "Loading Workspace")
-
+func InitDashboard(ctx context.Context) *initialisation.InitData {
 	// initialise
 	initData := getInitData(ctx)
 	if initData.Result.Error != nil {

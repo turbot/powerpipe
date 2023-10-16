@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"context"
 	"os"
 	"os/signal"
 
@@ -26,6 +25,22 @@ connection from any compatible database client.`,
 
 	cmd.AddCommand(serviceStartCmd())
 	cmd.Flags().BoolP(constants.ArgHelp, "h", false, "Help for service")
+	return cmd
+}
+
+func ServiceStartCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "service [command]",
+		Args:  cobra.NoArgs,
+		Short: "Powerpipe service management",
+		Long: `Powerpipe service management.
+
+Run Powerpipe as a local service, exposing it as a database endpoint for
+connection from any compatible database client.`,
+	}
+
+	cmd.AddCommand(serviceStartCmd())
+	cmd.Flags().BoolP(spK.ArgHelp, "h", false, "Help for service")
 	return cmd
 }
 
@@ -75,9 +90,14 @@ connection from any compatible database client.`,
 func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	dashboard.PowerpipeDir = "~/.powerpipe"
 
-	ctx := context.Background()
+	ctx := cmd.Context()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
+
+	modInitData := dashboard.InitDashboard(ctx)
+	if modInitData.Result.Error != nil {
+		panic(modInitData.Result.Error)
+	}
 
 	err := dashboard.Ensure(ctx)
 	if err != nil {
@@ -98,4 +118,6 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	}
 	println("server started")
 	<-ctx.Done()
+
+	// dashboard.InitDashboard(ctx)
 }

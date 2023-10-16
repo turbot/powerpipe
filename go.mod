@@ -6,8 +6,7 @@ require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/didip/tollbooth/v7 v7.0.1
-	github.com/fatih/color v1.15.0
-	github.com/gertd/go-pluralize v0.2.1
+	github.com/fsnotify/fsnotify v1.6.0
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
 	github.com/gin-contrib/static v0.0.1
@@ -27,7 +26,7 @@ require (
 	github.com/turbot/go-kit v0.9.0-rc.1
 	github.com/turbot/steampipe v1.7.0-rc.0.0.20231016084711-babfa4ab6180
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
-	github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7
+	github.com/turbot/terraform-components v0.0.0-20231016103157-e123aaea45c8
 	go.uber.org/zap v1.26.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
@@ -76,7 +75,7 @@ require (
 	github.com/dustin/go-humanize v1.0.0 // indirect
 	github.com/eko/gocache/v3 v3.1.2 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
-	github.com/fsnotify/fsnotify v1.6.0 // indirect
+	github.com/fatih/color v1.15.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
@@ -172,7 +171,6 @@ require (
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
-	github.com/turbot/terraform-components v0.0.0-20231016103157-e123aaea45c8 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
