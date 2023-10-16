@@ -171,6 +171,7 @@ require (
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
+	github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect

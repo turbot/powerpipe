@@ -1079,6 +1079,8 @@ github.com/turbot/steampipe-cloud-sdk-go v0.6.0 h1:ufAxOpKS1uq7eejuE5sfEu1+d7QAd
 github.com/turbot/steampipe-cloud-sdk-go v0.6.0/go.mod h1:M42TMBdMim4bV1YTMxhKyzfSGSMo4CXUkm3wt9w7t1Y=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2 h1:B2gkMJK1m5GYQfmxjO9VREAwdUsGxf48vOzKouoyFIM=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2/go.mod h1:u2ubq9W5/5y6wG481LyulS7vuMOTRPmXAUfGLoVmwnA=
+github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7 h1:YyVvKBa/EuwpRnSsIBct89Dv1AEU6/gBCPC1KZkwI80=
+github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7/go.mod h1:6OGkN9/uwQF/yoH3LMmn9IDfqUFf+q95OTdpRtcmxuI=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=
