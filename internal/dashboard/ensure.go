@@ -7,7 +7,7 @@ import (
 	"os"
 
 	"github.com/turbot/go-kit/files"
-	"github.com/turbot/powerpipe/pkg/version"
+	"github.com/turbot/powerpipe/internal/version"
 	"github.com/turbot/steampipe/pkg/ociinstaller"
 	"github.com/turbot/steampipe/pkg/statushooks"
 )
