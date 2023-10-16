@@ -2,10 +2,9 @@ package export
 
 import (
 	"context"
-	constants2 "github.com/turbot/powerpipe/pkg/constants"
 	"testing"
 
-	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
 )
 
 type testExporter struct {
@@ -25,7 +24,7 @@ var dummyCSVExporter = testExporter{alias: "", extension: ".csv", name: "csv"}
 var dummyJSONExporter = testExporter{alias: "", extension: ".json", name: "json"}
 var dummyASFFExporter = testExporter{alias: "asff.json", extension: ".json", name: "asff"}
 var dummyNUNITExporter = testExporter{alias: "nunit3.xml", extension: ".xml", name: "nunit3"}
-var dummySPSExporter = testExporter{alias: "sps", extension: constants2.SnapshotExtension, name: constants.OutputFormatSnapshot}
+var dummySPSExporter = testExporter{alias: "sps", extension: constants.SnapshotExtension, name: constants.OutputFormatSnapshot}
 
 type exporterTestCase struct {
 	name   string

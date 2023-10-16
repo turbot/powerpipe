@@ -6,10 +6,11 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
-	"github.com/turbot/powerpipe/pkg/constants"
+	exported_commandconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 )
 
 func serviceCmd() *cobra.Command {
@@ -43,7 +44,7 @@ connection from any compatible database client.`,
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
-		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for service start", exported_commandconfig.FlagOptions.WithShortHand("h")).
 		AddStringFlag(constants.ArgInstallDir, dashboard.DefaultInstallDir, "The default install directory")
 	// AddStringFlag(constants.ArgConnectionString, "postgres://steampipe@localhost:9193/steampipe", "Database service port").
 	// AddIntFlag(constants.ArgDatabasePort, constants.DatabaseDefaultPort, "Database service port").

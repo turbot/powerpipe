@@ -3,13 +3,13 @@ package cloud
 import (
 	"context"
 	"fmt"
-	
+
 	"log"
 	"path"
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/pkg/entities"
 	"github.com/turbot/powerpipe/pkg/export"
 	steampipecloud "github.com/turbot/steampipe-cloud-sdk-go"

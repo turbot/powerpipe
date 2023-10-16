@@ -10,7 +10,7 @@ import (
 
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/pkg/utils"
 	steampipecloud "github.com/turbot/steampipe-cloud-sdk-go"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"

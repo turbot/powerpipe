@@ -6,20 +6,20 @@ import (
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/steampipe/pkg/error_helpers"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 )
 
 var requiredColor = color.New(color.Bold).SprintfFunc()
 
-type flagOpt func(c *cobra.Command, name string, key string)
+type FlagOpt func(c *cobra.Command, name string, key string)
 
 // FlagOptions :: shortcut for common flag options
 var FlagOptions = struct {
-	Required      func() flagOpt
-	Hidden        func() flagOpt
-	Deprecated    func(string) flagOpt
-	NoOptDefVal   func(string) flagOpt
-	WithShortHand func(string) flagOpt
+	Required      func() FlagOpt
+	Hidden        func() FlagOpt
+	Deprecated    func(string) FlagOpt
+	NoOptDefVal   func(string) FlagOpt
+	WithShortHand func(string) FlagOpt
 }{
 	Required:      requiredOpt,
 	Hidden:        hiddenOpt,
@@ -29,7 +29,7 @@ var FlagOptions = struct {
 }
 
 // Helper function to mark a flag as required
-func requiredOpt() flagOpt {
+func requiredOpt() FlagOpt {
 	return func(c *cobra.Command, name, key string) {
 		err := c.MarkFlagRequired(key)
 		error_helpers.FailOnErrorWithMessage(err, "could not mark flag as required")
@@ -40,25 +40,25 @@ func requiredOpt() flagOpt {
 	}
 }
 
-func hiddenOpt() flagOpt {
+func hiddenOpt() FlagOpt {
 	return func(c *cobra.Command, name, _ string) {
 		c.Flag(name).Hidden = true
 	}
 }
 
-func deprecatedOpt(replacement string) flagOpt {
+func deprecatedOpt(replacement string) FlagOpt {
 	return func(c *cobra.Command, name, _ string) {
 		c.Flag(name).Deprecated = fmt.Sprintf("please use %s", replacement)
 	}
 }
 
-func noOptDefValOpt(noOptDefVal string) flagOpt {
+func noOptDefValOpt(noOptDefVal string) FlagOpt {
 	return func(c *cobra.Command, name, _ string) {
 		c.Flag(name).NoOptDefVal = noOptDefVal
 	}
 }
 
-func withShortHand(shorthand string) flagOpt {
+func withShortHand(shorthand string) FlagOpt {
 	return func(c *cobra.Command, name, _ string) {
 		c.Flag(name).Shorthand = shorthand
 	}

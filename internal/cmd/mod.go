@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/turbot/powerpipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/cmdconfig"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
+	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 )
 
 func modCmd() *cobra.Command {
@@ -77,7 +78,7 @@ Examples:
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
-		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for install", exported_cmdconfig.FlagOptions.WithShortHand("h")).
 		AddModLocationFlag()
 
 	return cmd
@@ -101,7 +102,7 @@ Example:
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after uninstallation is complete").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be uninstalled without modifying them").
-		AddBoolFlag(constants.ArgHelp, false, "Help for uninstall", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for uninstall", exported_cmdconfig.FlagOptions.WithShortHand("h")).
 		AddModLocationFlag()
 
 	return cmd
@@ -129,7 +130,7 @@ Example:
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after update is complete").
 		AddBoolFlag(constants.ArgForce, false, "Update mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be updated without modifying them").
-		AddBoolFlag(constants.ArgHelp, false, "Help for update", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for update", exported_cmdconfig.FlagOptions.WithShortHand("h")).
 		AddModLocationFlag()
 
 	return cmd
@@ -151,7 +152,7 @@ Example:
 	}
 
 	cmdconfig.OnCmd(cmd).
-		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for list", exported_cmdconfig.FlagOptions.WithShortHand("h")).
 		AddModLocationFlag()
 	return cmd
 }
@@ -172,7 +173,7 @@ Example:
 	}
 
 	cmdconfig.OnCmd(cmd).
-		AddBoolFlag(constants.ArgHelp, false, "Help for init", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for init", exported_cmdconfig.FlagOptions.WithShortHand("h")).
 		AddModLocationFlag()
 	return cmd
 }

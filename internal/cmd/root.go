@@ -7,9 +7,8 @@ import (
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
-	log "github.com/turbot/powerpipe/internal/logging"
-	"github.com/turbot/powerpipe/pkg/statushooks"
 	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/powerpipe/pkg/statushooks"
 	"github.com/turbot/powerpipe/pkg/utils"
 )
 
@@ -60,6 +59,5 @@ func createRootContext() context.Context {
 	}
 
 	ctx := statushooks.AddStatusHooksToContext(context.Background(), statusRenderer)
-	ctx = log.ContextWithLogger(ctx)
 	return ctx
 }

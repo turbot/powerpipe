@@ -3,10 +3,9 @@ package export
 import (
 	"context"
 	"fmt"
-	constants2 "github.com/turbot/powerpipe/pkg/constants"
 	"strings"
 
-	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
 )
 
@@ -30,7 +29,7 @@ func (e *SnapshotExporter) Export(_ context.Context, input ExportSourceData, fil
 }
 
 func (e *SnapshotExporter) FileExtension() string {
-	return constants2.SnapshotExtension
+	return constants.SnapshotExtension
 }
 
 func (e *SnapshotExporter) Name() string {

@@ -3,7 +3,7 @@ package statushooks
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/steampipe/pkg/utils"
+	"github.com/turbot/powerpipe/pkg/utils"
 	"strings"
 	"sync"
 )

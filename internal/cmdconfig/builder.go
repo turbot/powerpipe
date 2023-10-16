@@ -7,9 +7,10 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/utils"
+	shared_constants "github.com/turbot/pipe-fittings/constants"
+	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
+	"github.com/turbot/powerpipe/pkg/utils"
 )
 
 type CmdBuilder struct {
@@ -78,7 +79,7 @@ func OnCmd(cmd *cobra.Command) *CmdBuilder {
 }
 
 // AddStringFlag is a helper function to add a string flag to a command
-func (c *CmdBuilder) AddStringFlag(name string, defaultValue string, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddStringFlag(name string, defaultValue string, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().String(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {
@@ -89,7 +90,7 @@ func (c *CmdBuilder) AddStringFlag(name string, defaultValue string, desc string
 }
 
 // AddIntFlag is a helper function to add an integer flag to a command
-func (c *CmdBuilder) AddIntFlag(name string, defaultValue int, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddIntFlag(name string, defaultValue int, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().Int(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {
@@ -99,7 +100,7 @@ func (c *CmdBuilder) AddIntFlag(name string, defaultValue int, desc string, opts
 }
 
 // AddBoolFlag ia s helper function to add a boolean flag to a command
-func (c *CmdBuilder) AddBoolFlag(name string, defaultValue bool, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddBoolFlag(name string, defaultValue bool, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().Bool(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {
@@ -111,14 +112,14 @@ func (c *CmdBuilder) AddBoolFlag(name string, defaultValue bool, desc string, op
 // AddCloudFlags is helper function to add the cloud flags to a command
 func (c *CmdBuilder) AddCloudFlags() *CmdBuilder {
 	return c.
-		AddStringFlag(constants.ArgCloudHost, constants.DefaultCloudHost, "Turbot Pipes host").
-		AddStringFlag(constants.ArgCloudToken, "", "Turbot Pipes authentication token")
+		AddStringFlag(shared_constants.ArgCloudHost, shared_constants.DefaultCloudHost, "Turbot Pipes host").
+		AddStringFlag(shared_constants.ArgCloudToken, "", "Turbot Pipes authentication token")
 }
 
 // AddWorkspaceDatabaseFlag is helper function to add the workspace-databse flag to a command
 func (c *CmdBuilder) AddWorkspaceDatabaseFlag() *CmdBuilder {
 	return c.
-		AddStringFlag(constants.ArgWorkspaceDatabase, constants.DefaultWorkspaceDatabase, "Turbot Pipes workspace database")
+		AddStringFlag(shared_constants.ArgWorkspaceDatabase, shared_constants.DefaultWorkspaceDatabase, "Turbot Pipes workspace database")
 }
 
 // AddModLocationFlag is helper function to add the mod-location flag to a command
@@ -126,11 +127,11 @@ func (c *CmdBuilder) AddModLocationFlag() *CmdBuilder {
 	cwd, err := os.Getwd()
 	error_helpers.FailOnError(err)
 	return c.
-		AddStringFlag(constants.ArgModLocation, cwd, "Path to the workspace working directory")
+		AddStringFlag(shared_constants.ArgModLocation, cwd, "Path to the workspace working directory")
 }
 
 // AddStringSliceFlag is a helper function to add a flag that accepts an array of strings
-func (c *CmdBuilder) AddStringSliceFlag(name string, defaultValue []string, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddStringSliceFlag(name string, defaultValue []string, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().StringSlice(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {
@@ -140,7 +141,7 @@ func (c *CmdBuilder) AddStringSliceFlag(name string, defaultValue []string, desc
 }
 
 // AddStringArrayFlag is a helper function to add a flag that accepts an array of strings
-func (c *CmdBuilder) AddStringArrayFlag(name string, defaultValue []string, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddStringArrayFlag(name string, defaultValue []string, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().StringArray(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {
@@ -150,7 +151,7 @@ func (c *CmdBuilder) AddStringArrayFlag(name string, defaultValue []string, desc
 }
 
 // AddStringMapStringFlag is a helper function to add a flag that accepts a map of strings
-func (c *CmdBuilder) AddStringMapStringFlag(name string, defaultValue map[string]string, desc string, opts ...flagOpt) *CmdBuilder {
+func (c *CmdBuilder) AddStringMapStringFlag(name string, defaultValue map[string]string, desc string, opts ...exported_cmdconfig.FlagOpt) *CmdBuilder {
 	c.cmd.Flags().StringToString(name, defaultValue, desc)
 	c.bindings[name] = c.cmd.Flags().Lookup(name)
 	for _, o := range opts {

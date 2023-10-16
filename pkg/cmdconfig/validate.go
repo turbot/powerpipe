@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
-	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/steampipe/pkg/cloud"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
 	"strings"
+
+	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/pkg/cloud"
+	"github.com/turbot/powerpipe/pkg/entities"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 )
 
 func ValidateSnapshotArgs(ctx context.Context) error {
@@ -34,8 +35,8 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 	}
 
 	// if workspace-database or snapshot-location are a cloud workspace handle, cloud token must be set
-	requireCloudToken := steampipeconfig.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgWorkspaceDatabase)) ||
-		steampipeconfig.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgSnapshotLocation))
+	requireCloudToken := entities.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgWorkspaceDatabase)) ||
+		entities.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgSnapshotLocation))
 
 	// verify cloud token and workspace has been set
 	if requireCloudToken && token == "" {
@@ -63,7 +64,7 @@ func validateSnapshotLocation(ctx context.Context, cloudToken string) error {
 
 	// if it is NOT a workspace handle, assume it is a local file location:
 	// tildefy it and ensure it exists
-	if !steampipeconfig.IsCloudWorkspaceIdentifier(snapshotLocation) {
+	if !entities.IsCloudWorkspaceIdentifier(snapshotLocation) {
 		var err error
 		snapshotLocation, err = filehelpers.Tildefy(snapshotLocation)
 		if err != nil {

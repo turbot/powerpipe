@@ -5,17 +5,16 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/jackc/pgx/v5"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
+	internal_constants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/statushooks"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"github.com/turbot/steampipe/pkg/db/db_client"
 	"github.com/turbot/steampipe/pkg/db/db_common"
-	"github.com/turbot/steampipe/pkg/db/db_local"
 	"github.com/turbot/steampipe/pkg/export"
 	"github.com/turbot/steampipe/pkg/modinstaller"
 	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
@@ -54,7 +53,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) *InitData {
 	return i
 }
 
-func (i *InitData) Init(ctx context.Context, invoker constants.Invoker, opts ...db_client.ClientOption) {
+func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -76,7 +75,7 @@ func (i *InitData) Init(ctx context.Context, invoker constants.Invoker, opts ...
 	statushooks.SetStatus(ctx, "Initializing")
 
 	// initialise telemetry
-	shutdownTelemetry, err := telemetry.Init(constants.AppName)
+	shutdownTelemetry, err := telemetry.Init(internal_constants.AppName)
 	if err != nil {
 		i.Result.AddWarnings(err.Error())
 	} else {
@@ -99,23 +98,16 @@ func (i *InitData) Init(ctx context.Context, invoker constants.Invoker, opts ...
 		}
 	}
 
+	// TODO KAI FIX ME
 	// retrieve cloud metadata
-	cloudMetadata, err := getCloudMetadata(ctx)
-	if err != nil {
-		i.Result.Error = err
-		return
-	}
+	//cloudMetadata, err := getCloudMetadata(ctx)
+	//if err != nil {
+	//	i.Result.Error = err
+	//	return
+	//}
 
 	// set cloud metadata (may be nil)
-	i.Workspace.CloudMetadata = cloudMetadata
-
-	// if introspection tables are enabled, setup the session data callback
-	var ensureSessionData db_client.DbConnectionCallback
-	if viper.GetString(constants.ArgIntrospection) != constants.IntrospectionNone {
-		ensureSessionData = func(ctx context.Context, conn *pgx.Conn) error {
-			return workspace.EnsureSessionData(ctx, i.Workspace.GetResourceMaps(), conn)
-		}
-	}
+	//i.Workspace.CloudMetadata = cloudMetadata
 
 	// get a client
 	// add a message rendering function to the context - this is used for the fdw update message and
@@ -126,7 +118,7 @@ func (i *InitData) Init(ctx context.Context, invoker constants.Invoker, opts ...
 
 	statushooks.SetStatus(ctx, "Connecting to steampipe database")
 	log.Printf("[INFO] Connecting to steampipe database")
-	client, errorsAndWarnings := GetDbClient(getClientCtx, invoker, ensureSessionData, opts...)
+	client, errorsAndWarnings := GetDbClient(getClientCtx, nil, opts...)
 	if errorsAndWarnings.Error != nil {
 		i.Result.Error = errorsAndWarnings.Error
 		return
@@ -170,17 +162,15 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map
 }
 
 // GetDbClient either creates a DB client using the configured connection string (if present) or creates a LocalDbClient
-func GetDbClient(ctx context.Context, invoker constants.Invoker, onConnectionCallback db_client.DbConnectionCallback, opts ...db_client.ClientOption) (db_common.Client, *error_helpers.ErrorAndWarnings) {
-	if connectionString := viper.GetString(constants.ArgConnectionString); connectionString != "" {
-		statushooks.SetStatus(ctx, "Connecting to remote Steampipe database")
-		client, err := db_client.NewDbClient(ctx, connectionString, onConnectionCallback, opts...)
-		return client, error_helpers.NewErrorsAndWarning(err)
+func GetDbClient(ctx context.Context, onConnectionCallback db_client.DbConnectionCallback, opts ...db_client.ClientOption) (db_common.Client, *error_helpers.ErrorAndWarnings) {
+	connectionString := viper.GetString(constants.ArgConnectionString)
+	if connectionString == "" {
+		return nil, error_helpers.NewErrorsAndWarning(sperr.New("no connection string is set"))
 	}
 
-	statushooks.SetStatus(ctx, "Starting local Steampipe database")
-	log.Printf("[INFO] Starting local Steampipe database")
-
-	return db_local.GetLocalClient(ctx, invoker, onConnectionCallback, opts...)
+	statushooks.SetStatus(ctx, "Connecting to remote Steampipe database")
+	client, err := db_client.NewDbClient(ctx, connectionString, onConnectionCallback, opts...)
+	return client, error_helpers.NewErrorsAndWarning(err)
 }
 
 func (i *InitData) Cleanup(ctx context.Context) {

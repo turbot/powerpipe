@@ -3,13 +3,13 @@ package dashboard
 import (
 	"context"
 	"encoding/json"
+	"github.com/turbot/powerpipe/internal/ociinstaller"
 	"log"
 	"os"
 
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/powerpipe/internal/version"
 	"github.com/turbot/powerpipe/pkg/statushooks"
-	"github.com/turbot/steampipe/pkg/ociinstaller"
 )
 
 func Ensure(ctx context.Context) error {

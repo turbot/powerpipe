@@ -5,7 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/turbot/steampipe/pkg/error_helpers"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 )
 
 // Constants for Config

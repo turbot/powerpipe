@@ -18,19 +18,20 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/logging"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/powerpipe/pkg/cloud"
+	shared_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
+	"github.com/turbot/powerpipe/pkg/utils"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"github.com/turbot/steampipe/pkg/cloud"
-	"github.com/turbot/steampipe/pkg/constants"
 	"github.com/turbot/steampipe/pkg/constants/runtime"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/filepaths"
 	"github.com/turbot/steampipe/pkg/steampipeconfig"
 	"github.com/turbot/steampipe/pkg/task"
-	"github.com/turbot/steampipe/pkg/utils"
-	"github.com/turbot/steampipe/pkg/version"
 )
 
 var waitForTasksChannel chan struct{}
@@ -187,14 +188,19 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	// set global containing the configured install dir (create directory if needed)
 	ensureInstallDir(viper.GetString(constants.ArgInstallDir))
 
-	// load the connection config and HCL options
-	config, loadConfigErrorsAndWarnings := steampipeconfig.LoadSteampipeConfig(viper.GetString(constants.ArgModLocation), cmd.Name())
-	if loadConfigErrorsAndWarnings.Error != nil {
-		return loadConfigErrorsAndWarnings
-	}
+	// TO DO FIX THIS
+	//
+	//// load the connection config and HCL options
+	//config, loadConfigErrorsAndWarnings := steampipeconfig.LoadSteampipeConfig(viper.GetString(constants.ArgModLocation), cmd.Name())
+	//if loadConfigErrorsAndWarnings.Error != nil {
+	//	return loadConfigErrorsAndWarnings
+	//}
 
-	// store global config
-	steampipeconfig.GlobalConfig = config
+	// TODO HACK
+	var loadConfigErrorsAndWarnings = error_helpers.EmptyErrorsAndWarning()
+
+	//// store global config
+	//steampipeconfig.GlobalConfig = config
 
 	// set viper defaults from the loaded config
 	SetDefaultsFromConfig(steampipeconfig.GlobalConfig.ConfigMap())
@@ -238,7 +244,7 @@ func setCloudTokenDefault() error {
 		viper.SetDefault(constants.ArgCloudToken, savedToken)
 	}
 	// 3) env var (STEAMIPE_CLOUD_TOKEN )
-	SetDefaultFromEnv(constants.EnvCloudToken, constants.ArgCloudToken, String)
+	SetDefaultFromEnv(constants.EnvCloudToken, constants.ArgCloudToken, shared_cmdconfig.String)
 
 	return nil
 }
