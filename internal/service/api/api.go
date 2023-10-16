@@ -72,6 +72,13 @@ type APIService struct {
 // APIServiceOption defines a type of function to configures the APIService.
 type APIServiceOption func(*APIService) error
 
+func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
+	return func(api *APIService) error {
+		api.webSocket = webSocket
+		return nil
+	}
+}
+
 // NewAPIService creates a new APIService.
 func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, error) {
 	// Defaults
@@ -93,11 +100,6 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 
 // Start starts services managed by the Manager.
 func (api *APIService) Start() error {
-
-	// setup a websocket server
-	webSocket := melody.New()
-	api.webSocket = webSocket
-
 	// Set the gin mode based on our environment, to configure logging etc as appropriate
 	gin.SetMode(viper.GetString("environment"))
 	binding.EnableDecoderDisallowUnknownFields = true
@@ -140,11 +142,13 @@ func (api *APIService) Start() error {
 	assetsDirectory := dashboard.GetStaticAssetsDir()
 	// respond with the static dashboard assets for / (root)
 	router.Use(static.Serve("/", static.LocalFile(assetsDirectory, true)))
-	router.GET("/ws", func(c *gin.Context) {
-		if err := api.webSocket.HandleRequest(c.Writer, c.Request); err != nil {
-			c.AbortWithError(http.StatusInternalServerError, err)
-		}
-	})
+	if api.webSocket != nil {
+		router.GET("/ws", func(c *gin.Context) {
+			if err := api.webSocket.HandleRequest(c.Writer, c.Request); err != nil {
+				c.AbortWithError(http.StatusInternalServerError, err)
+			}
+		})
+	}
 
 	// fall through
 	router.NoRoute(func(c *gin.Context) {

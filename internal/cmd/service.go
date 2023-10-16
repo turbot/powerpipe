@@ -10,6 +10,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/powerpipe/pkg/constants"
+	"gopkg.in/olahol/melody.v1"
 )
 
 func serviceCmd() *cobra.Command {
@@ -83,7 +84,11 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 		panic(err)
 	}
 
-	server, err := api.NewAPIService(ctx)
+	// setup a new websocket service
+	websocket := melody.New()
+
+	// send it over to the API Server
+	server, err := api.NewAPIService(ctx, api.WithWebSocket(websocket))
 	if err != nil {
 		panic(err)
 	}
