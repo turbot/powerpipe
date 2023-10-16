@@ -27,12 +27,12 @@ func ContextWithLogger(ctx context.Context) context.Context {
 	return context.WithValue(ctx, loggerContextKey{}, lgr)
 }
 
-func Logger(ctx context.Context) *FlowpipeLogger {
+func Logger(ctx context.Context) *PowerpipeLogger {
 
 	// is it a gin context?
 	ginContext, ok := ctx.(*gin.Context)
 	if !ok {
-		return ctx.Value(loggerContextKey{}).(*FlowpipeLogger)
+		return ctx.Value(loggerContextKey{}).(*PowerpipeLogger)
 	}
 
 	// if it's a gin context we store the logger in the "fplogger" key
@@ -40,5 +40,5 @@ func Logger(ctx context.Context) *FlowpipeLogger {
 	if !exists {
 		return nil
 	}
-	return logger.(*FlowpipeLogger)
+	return logger.(*PowerpipeLogger)
 }

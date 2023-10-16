@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gin-gonic/gin"
-	"github.com/turbot/powerpipe/pkg/types"
+	"github.com/turbot/powerpipe/internal/types"
 )
 
 const (

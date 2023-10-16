@@ -14,11 +14,11 @@ import (
 	"go.uber.org/zap/zapcore"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/powerpipe/internal/sanitize"
 	"github.com/turbot/powerpipe/pkg/constants"
-	"github.com/turbot/powerpipe/pkg/sanitize"
 )
 
-type FlowpipeLogger struct {
+type PowerpipeLogger struct {
 
 	// Level is the logging level to use for output
 	Level zapcore.Level
@@ -38,12 +38,12 @@ type FlowpipeLogger struct {
 }
 
 // LoggerOption defines a type of function to configures the Logger.
-type LoggerOption func(*FlowpipeLogger) error
+type LoggerOption func(*PowerpipeLogger) error
 
 // NewLogger creates a new Logger.
-func NewLogger(ctx context.Context, opts ...LoggerOption) (*FlowpipeLogger, error) {
+func NewLogger(ctx context.Context, opts ...LoggerOption) (*PowerpipeLogger, error) {
 	// Defaults
-	c := &FlowpipeLogger{
+	c := &PowerpipeLogger{
 		Level:  zapcore.InfoLevel,
 		Format: "console",
 	}
@@ -63,15 +63,15 @@ func NewLogger(ctx context.Context, opts ...LoggerOption) (*FlowpipeLogger, erro
 }
 
 func WithColor(enabled bool) LoggerOption {
-	return func(c *FlowpipeLogger) error {
+	return func(c *PowerpipeLogger) error {
 		c.Color = enabled
 		return nil
 	}
 }
 
 func WithLevelFromEnvironment() LoggerOption {
-	return func(c *FlowpipeLogger) error {
-		traceLevelStr := strings.ToLower(os.Getenv("FLOWPIPE_TRACE_LEVEL"))
+	return func(c *PowerpipeLogger) error {
+		traceLevelStr := strings.ToLower(os.Getenv("POWERPIPE_TRACE_LEVEL"))
 		if traceLevelStr != "" {
 			var err error
 			logLevel, err := zapcore.ParseLevel(traceLevelStr)
@@ -80,9 +80,9 @@ func WithLevelFromEnvironment() LoggerOption {
 				c.TraceLevel = traceLevelStr
 			}
 		} else {
-			// Get the desired logging level from the FLOWPIPE_LOG_LEVEL environment variable
-			logLevelStr := strings.ToLower(os.Getenv("FLOWPIPE_LOG_LEVEL"))
-			// If the FLOWPIPE_LOG_LEVEL environment variable is set, parse its value to determine the logging level
+			// Get the desired logging level from the POWERPIPE_LOG_LEVEL environment variable
+			logLevelStr := strings.ToLower(os.Getenv("POWERPIPE_LOG_LEVEL"))
+			// If the POWERPIPE_LOG_LEVEL environment variable is set, parse its value to determine the logging level
 			if logLevelStr != "" {
 				var err error
 				logLevel, err := zapcore.ParseLevel(logLevelStr)
@@ -96,9 +96,9 @@ func WithLevelFromEnvironment() LoggerOption {
 }
 
 func WithFormatFromEnvironment() LoggerOption {
-	return func(c *FlowpipeLogger) error {
-		// Get the desired logging format from the FLOWPIPE_LOG_FORMAT environment variable
-		logFormat := strings.ToLower(os.Getenv("FLOWPIPE_LOG_FORMAT"))
+	return func(c *PowerpipeLogger) error {
+		// Get the desired logging format from the POWERPIPE_LOG_FORMAT environment variable
+		logFormat := strings.ToLower(os.Getenv("POWERPIPE_LOG_FORMAT"))
 		switch logFormat {
 		case "json", "console":
 			c.Format = logFormat
@@ -107,7 +107,7 @@ func WithFormatFromEnvironment() LoggerOption {
 	}
 }
 
-func (c *FlowpipeLogger) Initialize() error {
+func (c *PowerpipeLogger) Initialize() error {
 
 	// Configure the logging output
 	var encoder zapcore.Encoder
@@ -123,7 +123,7 @@ func (c *FlowpipeLogger) Initialize() error {
 	consoleDebugging := zapcore.Lock(os.Stdout)
 	//consoleErrors := zapcore.Lock(os.Stderr)
 
-	// Configure the logging level based on the FLOWPIPE_LOG_LEVEL environment variable
+	// Configure the logging level based on the POWERPIPE_LOG_LEVEL environment variable
 	atomicLevel := zap.NewAtomicLevelAt(c.Level)
 
 	// Create the Zap logger instance
@@ -145,31 +145,31 @@ func (c *FlowpipeLogger) Initialize() error {
 	return nil
 }
 
-func (c *FlowpipeLogger) Sync() error {
+func (c *PowerpipeLogger) Sync() error {
 	return c.Zap.Sync()
 }
 
-func (c *FlowpipeLogger) Error(msg string, keysAndValues ...interface{}) {
+func (c *PowerpipeLogger) Error(msg string, keysAndValues ...interface{}) {
 	sanitizedKeysAndValues := sanitize.SanitizeLogEntries(keysAndValues)
 	c.Sugar.Errorw(msg, sanitizedKeysAndValues...)
 }
 
-func (c *FlowpipeLogger) Warn(msg string, keysAndValues ...interface{}) {
+func (c *PowerpipeLogger) Warn(msg string, keysAndValues ...interface{}) {
 	sanitizedKeysAndValues := sanitize.SanitizeLogEntries(keysAndValues)
 	c.Sugar.Warnw(msg, sanitizedKeysAndValues...)
 }
 
-func (c *FlowpipeLogger) Info(msg string, keysAndValues ...interface{}) {
+func (c *PowerpipeLogger) Info(msg string, keysAndValues ...interface{}) {
 	sanitizedKeysAndValues := sanitize.SanitizeLogEntries(keysAndValues)
 	c.Sugar.Infow(msg, sanitizedKeysAndValues...)
 }
 
-func (c *FlowpipeLogger) Debug(msg string, keysAndValues ...interface{}) {
+func (c *PowerpipeLogger) Debug(msg string, keysAndValues ...interface{}) {
 	sanitizedKeysAndValues := sanitize.SanitizeLogEntries(keysAndValues)
 	c.Sugar.Debugw(msg, sanitizedKeysAndValues...)
 }
 
-func (c *FlowpipeLogger) Trace(msg string, keysAndValues ...interface{}) {
+func (c *PowerpipeLogger) Trace(msg string, keysAndValues ...interface{}) {
 	if c.TraceLevel != "" {
 		sanitizedKeysAndValues := sanitize.SanitizeLogEntries(keysAndValues)
 		msg = "**** " + msg

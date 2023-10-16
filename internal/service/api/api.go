@@ -19,9 +19,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/pkg/api/common"
-	"github.com/turbot/powerpipe/pkg/dashboard"
-	"github.com/turbot/powerpipe/pkg/utils"
+	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/internal/service/api/common"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -215,7 +214,7 @@ func (api *APIService) Start() error {
 		}
 	}()
 
-	api.StartedAt = utils.TimeNow()
+	// api.StartedAt = utils.TimeNow()
 	api.Status = "running"
 
 	return nil
