@@ -58,7 +58,7 @@ func NewServer(ctx context.Context, dbClient db_common.Client, w *workspace.Work
 // Start starts the API server
 // it returns a channel which is signalled when the API server terminates
 func (s *Server) Start(ctx context.Context) chan struct{} {
-	s.initAsync(ctx)
+	s.InitAsync(ctx)
 	return startAPIAsync(ctx, s.webSocket)
 }
 
@@ -306,7 +306,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 	}
 }
 
-func (s *Server) initAsync(ctx context.Context) {
+func (s *Server) InitAsync(ctx context.Context) {
 	go func() {
 		// Return list of dashboards on connect
 		s.webSocket.HandleConnect(func(session *melody.Session) {
