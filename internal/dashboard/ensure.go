@@ -8,8 +8,8 @@ import (
 
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/powerpipe/pkg/statushooks"
 	"github.com/turbot/steampipe/pkg/ociinstaller"
-	"github.com/turbot/steampipe/pkg/statushooks"
 )
 
 func Ensure(ctx context.Context) error {

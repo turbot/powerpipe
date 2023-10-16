@@ -2,16 +2,16 @@ package initialisation
 
 import (
 	"context"
+	"github.com/turbot/powerpipe/pkg/entities"
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/powerpipe/pkg/cloud"
+	"github.com/turbot/powerpipe/pkg/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/cloud"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
 )
 
-func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
+func getCloudMetadata(ctx context.Context) (*entities.CloudMetadata, error) {
 	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
@@ -19,7 +19,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	}
 	connectionString := workspaceDatabase
 
-	var cloudMetadata *steampipeconfig.CloudMetadata
+	var cloudMetadata *entities.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
 	workspaceDatabaseIsConnectionString := strings.HasPrefix(workspaceDatabase, "postgresql://") || strings.HasPrefix(workspaceDatabase, "postgres://")

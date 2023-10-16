@@ -8,7 +8,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
-	spK "github.com/turbot/steampipe/pkg/constants"
+	"github.com/turbot/powerpipe/pkg/constants"
 )
 
 func serviceCmd() *cobra.Command {
@@ -23,7 +23,7 @@ connection from any compatible database client.`,
 	}
 
 	cmd.AddCommand(serviceStartCmd())
-	cmd.Flags().BoolP(spK.ArgHelp, "h", false, "Help for service")
+	cmd.Flags().BoolP(constants.ArgHelp, "h", false, "Help for service")
 	return cmd
 }
 

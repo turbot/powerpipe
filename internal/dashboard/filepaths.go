@@ -6,12 +6,13 @@ import (
 	"path/filepath"
 
 	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/constants"
 )
 
 // Constants for Config
 const (
+	// TODO KAI MOVE THIS
 	DefaultInstallDir = "~/.powerpipe"
 	versionFileName   = "versions.json"
 )

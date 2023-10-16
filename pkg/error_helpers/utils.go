@@ -11,8 +11,8 @@ import (
 	"github.com/fatih/color"
 	"github.com/shiena/ansicolor"
 	"github.com/spf13/viper"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/statushooks"
+	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/powerpipe/pkg/statushooks"
 )
 
 func init() {

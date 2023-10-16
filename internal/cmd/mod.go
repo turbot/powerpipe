@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"github.com/spf13/cobra"
+	"github.com/turbot/powerpipe/pkg/constants"
 	"github.com/turbot/steampipe/pkg/cmdconfig"
-	"github.com/turbot/steampipe/pkg/constants"
 )
 
 func modCmd() *cobra.Command {
