@@ -13,7 +13,7 @@ import (
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:     "powerpipe [--version] [--help] COMMAND [args]",
-	Version: "0.1.0",
+	Version: "0.0.1",
 	Short:   "Powerpipe",
 }
 
@@ -24,11 +24,15 @@ func InitCmd() {
 	defer utils.LogTime("cmd.root.InitCmd end")
 
 	AddCommands()
+	// disable auto completion generation, since we don't want to support
+	// powershell yet - and there's no way to disable powershell in the default generator
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
 }
 
 func AddCommands() {
 	rootCmd.AddCommand(
 		modCmd(),
+		serviceCmd(),
 	)
 }
 

@@ -40,7 +40,6 @@ Examples:
 	cmd.AddCommand(modUpdateCmd())
 	cmd.AddCommand(modListCmd())
 	cmd.AddCommand(modInitCmd())
-	cmd.Flags().BoolP(constants.ArgHelp, "h", false, "Help for mod")
 	cmd.Flags().BoolP("help", "h", false, "Help for mod")
 
 	return cmd
