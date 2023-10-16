@@ -2,8 +2,6 @@ module github.com/turbot/powerpipe
 
 go 1.21
 
-replace github.com/turbot/steampipe => /Users/binaek/work/sources/steampipe
-
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/didip/tollbooth/v7 v7.0.1
@@ -22,7 +20,7 @@ require (
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/flowpipe v0.1.0-beta.202310160732
 	github.com/turbot/go-kit v0.9.0-rc.1
-	github.com/turbot/steampipe v0.21.1
+	github.com/turbot/steampipe v1.7.0-rc.0.0.20231016082356-bd4bfa6c57c2
 	go.uber.org/zap v1.26.0
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376

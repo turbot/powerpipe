@@ -1,7 +1,13 @@
 package cmd
 
 import (
+	"context"
+	"os"
+	"os/signal"
+
 	"github.com/spf13/cobra"
+	"github.com/turbot/powerpipe/pkg/api"
+	"github.com/turbot/powerpipe/pkg/dashboard"
 	"github.com/turbot/steampipe/pkg/constants"
 )
 
@@ -62,4 +68,67 @@ connection from any compatible database client.`,
 	return cmd
 }
 
-func runServiceStartCmd(cmd *cobra.Command, _ []string) {}
+func runServiceStartCmd(cmd *cobra.Command, _ []string) {
+	dashboard.PowerpipeDir = "~/.Powerpipe"
+
+	ctx := context.Background()
+	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
+	defer stopFn()
+
+	err := dashboard.Ensure(ctx)
+	if err != nil {
+		panic(err)
+	}
+
+	server, err := api.NewAPIService(ctx)
+	if err != nil {
+		panic(err)
+	}
+	err = server.Start()
+	if err != nil {
+		panic(err)
+	}
+	println("server started")
+	<-ctx.Done()
+}
+
+// func StartDashboardServer(ctx context.Context, serverPort dashboardserver.ListenPort, serverListen dashboardserver.ListenType) {
+// 	// create context for the dashboard execution
+// 	dashboardCtx, cancel := context.WithCancel(ctx)
+// 	contexthelpers.StartCancelHandler(cancel)
+
+// 	// ensure dashboard assets are present and extract if not
+// 	err := dashboard.Ensure(dashboardCtx)
+// 	error_helpers.FailOnError(err)
+
+// 	// load the workspace
+// 	initData := initDashboard(dashboardCtx)
+// 	defer initData.Cleanup(dashboardCtx)
+// 	if initData.Result.Error != nil {
+// 		exitCode = constants.ExitCodeInitializationFailed
+// 		error_helpers.FailOnError(initData.Result.Error)
+// 	}
+
+// 	// if there is a usage warning we display it
+// 	initData.Result.DisplayMessage = dashboardserver.OutputMessage
+// 	initData.Result.DisplayWarning = dashboardserver.OutputWarning
+// 	initData.Result.DisplayMessages()
+
+// 	// create the server
+// 	server, err := dashboardserver.NewServer(dashboardCtx, initData.Client, initData.Workspace)
+// 	error_helpers.FailOnError(err)
+
+// 	// start the server asynchronously - this returns a chan which is signalled when the internal API server terminates
+// 	doneChan := server.Start(dashboardCtx)
+
+// 	// cleanup
+// 	defer server.Shutdown(dashboardCtx)
+
+// 	// server has started - update state file/start browser, as required
+// 	onServerStarted(dashboardCtx, serverPort, serverListen, initData.Workspace)
+
+// 	// wait for API server to terminate
+// 	<-doneChan
+
+// log.Println("[TRACE] runDashboardCmd exiting")
+// }
