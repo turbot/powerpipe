@@ -33,6 +33,7 @@ var exitCode int
 
 func main() {
 	dashboard.PowerpipeDir = "~/.Powerpipe"
+
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()

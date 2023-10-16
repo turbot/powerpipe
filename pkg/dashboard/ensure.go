@@ -8,15 +8,13 @@ import (
 
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/powerpipe/pkg/version"
-	"github.com/turbot/steampipe-plugin-sdk/logging"
-	"github.com/turbot/steampipe/pkg/filepaths"
 	"github.com/turbot/steampipe/pkg/ociinstaller"
 	"github.com/turbot/steampipe/pkg/statushooks"
 )
 
 func Ensure(ctx context.Context) error {
-	logging.LogTime("dashboardassets.Ensure start")
-	defer logging.LogTime("dashboardassets.Ensure end")
+	println("dashboardassets.Ensure start")
+	defer println("dashboardassets.Ensure end")
 
 	// load report assets versions.json
 	versionFile, err := loadReportAssetVersionFile()
@@ -30,11 +28,11 @@ func Ensure(ctx context.Context) error {
 
 	statushooks.SetStatus(ctx, "Installing dashboard server…")
 
-	reportAssetsPath := filepaths.EnsureDashboardAssetsDir()
+	reportAssetsPath := ensureDashboardAssetsDir()
 
 	// remove the legacy report folder, if it exists
-	if _, err := os.Stat(filepaths.LegacyDashboardAssetsDir()); !os.IsNotExist(err) {
-		os.RemoveAll(filepaths.LegacyDashboardAssetsDir())
+	if _, err := os.Stat(LegacyDashboardAssetsDir()); !os.IsNotExist(err) {
+		os.RemoveAll(LegacyDashboardAssetsDir())
 	}
 
 	return ociinstaller.InstallAssets(ctx, reportAssetsPath)
@@ -45,7 +43,7 @@ type ReportAssetsVersionFile struct {
 }
 
 func loadReportAssetVersionFile() (*ReportAssetsVersionFile, error) {
-	versionFilePath := filepaths.ReportAssetsVersionFilePath()
+	versionFilePath := ReportAssetsVersionFilePath()
 	if !files.FileExists(versionFilePath) {
 		return &ReportAssetsVersionFile{}, nil
 	}
