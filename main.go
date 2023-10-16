@@ -6,8 +6,8 @@ import (
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/powerpipe/internal/cmd"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/utils"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 var exitCode int

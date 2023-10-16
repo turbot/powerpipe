@@ -5,9 +5,9 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/cloud"
 	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/steampipeconfig"
 )
 
