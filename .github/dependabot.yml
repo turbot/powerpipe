@@ -1,0 +1,50 @@
+# See https://docs.github.com/en/github/administering-a-repository/configuration-options-for-dependency-updates#package-ecosystem
+version: 2
+updates:
+  # Maintain dependencies for GitHub Actions
+  - package-ecosystem: "github-actions"
+    directory: "/"
+    schedule:
+      interval: "daily"
+    commit-message:
+      prefix: "[dep][actions]"
+      include: "scope"
+
+  - package-ecosystem: "gomod"
+    directory: "/"
+    schedule:
+      interval: "daily"
+      # at 2:01 am
+      time: "02:01"
+    commit-message:
+      prefix: "[dep][go]"
+      include: "scope"
+    pull-request-branch-name:
+      separator: "-"
+    assignees:
+      - "binaek"
+      - "kaidaguerre"
+    labels:
+      - "dependencies"
+      - "house-keeping"
+
+# Commenting out since we don't want dependabot PRs for the ui package right now.
+# We can add back when we need them.
+
+  # - package-ecosystem: "npm"
+  #   directory: "/ui/dashboard"
+  #   schedule:
+  #     interval: "daily"
+  #   commit-message:
+  #     prefix: "[dep][dash]"
+  #     include: "scope"
+  #   pull-request-branch-name:
+  #     separator: "-"
+  #   assignees:
+  #     - "MichaelBurgess"
+  #     - "binaek"
+  #     - "kaidaguerre"
+  #   labels:
+  #     - "dependencies"
+  #     - "dashboards"
+  #     - "house-keeping"
