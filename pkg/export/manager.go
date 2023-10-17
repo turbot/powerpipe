@@ -6,9 +6,9 @@ import (
 	"path"
 	"strings"
 
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/statushooks"
-	"github.com/turbot/powerpipe/pkg/utils"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"golang.org/x/exp/maps"
 	"golang.org/x/exp/slices"

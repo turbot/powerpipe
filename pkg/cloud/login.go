@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	utils2 "github.com/turbot/pipe-fittings/utils"
 	"log"
 	"os"
 	"path"
@@ -12,7 +13,7 @@ import (
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/powerpipe/pkg/utils"
+	"github.com/turbot/pipe-fittings/utils"
 	steampipecloud "github.com/turbot/steampipe-cloud-sdk-go"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -35,7 +36,7 @@ func WebLogin(ctx context.Context) (string, error) {
 	fmt.Println()
 	fmt.Printf("Verify login at %s\n", browserUrl)
 
-	if err = utils.OpenBrowser(browserUrl); err != nil {
+	if err = utils2.OpenBrowser(browserUrl); err != nil {
 		log.Println("[INFO] failed to open login web page")
 	}
 
