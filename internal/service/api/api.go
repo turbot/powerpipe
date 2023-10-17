@@ -19,8 +19,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api/common"
+	"github.com/turbot/powerpipe/pkg/dashboard"
 	"gopkg.in/olahol/melody.v1"
 )
 

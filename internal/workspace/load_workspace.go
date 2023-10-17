@@ -17,7 +17,8 @@ import (
 )
 
 func LoadWorkspacePromptingForVariables(ctx context.Context) (*Workspace, *error_helpers.ErrorAndWarnings) {
-	workspacePath := ""
+	// TODO PSKR remove hardcoding
+	workspacePath := "/Users/pskrbasu/turbot-delivery/Steampipe/steampipe/tests/acceptance/test_data/mods/functionality_test_mod"
 	t := time.Now()
 	defer func() {
 		log.Printf("[TRACE] Workspace load took %dms\n", time.Since(t).Milliseconds())

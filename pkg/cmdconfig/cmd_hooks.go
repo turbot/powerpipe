@@ -18,7 +18,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/logging"
-	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/pkg/dashboard"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"

@@ -12,8 +12,8 @@ import (
 
 	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/powerpipe/internal/dashboard/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/workspace"
+	"github.com/turbot/powerpipe/pkg/dashboard/dashboardexecute"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardevents"
 	"github.com/turbot/steampipe/pkg/db/db_common"
 	"github.com/turbot/steampipe/pkg/error_helpers"

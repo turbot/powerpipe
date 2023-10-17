@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 
-	"github.com/turbot/powerpipe/internal/control/controlexecute"
+	"github.com/turbot/powerpipe/pkg/control/controlexecute"
 	"github.com/turbot/steampipe/pkg/control/controlstatus"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
 	"github.com/turbot/steampipe/pkg/statushooks"

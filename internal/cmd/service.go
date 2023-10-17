@@ -5,11 +5,11 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
-	"github.com/turbot/powerpipe/internal/dashboard"
-	"github.com/turbot/powerpipe/internal/dashboard/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api"
+	"github.com/turbot/powerpipe/pkg/cmdconfig"
 	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/powerpipe/pkg/dashboard"
+	"github.com/turbot/powerpipe/pkg/dashboard/dashboardserver"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"gopkg.in/olahol/melody.v1"
 )

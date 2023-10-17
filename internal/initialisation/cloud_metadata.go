@@ -13,7 +13,8 @@ import (
 )
 
 func getCloudMetadata(ctx context.Context) (*entities.CloudMetadata, error) {
-	workspaceDatabase := ""
+	// TODO PSKR remove hardcoding
+	workspaceDatabase := "postgresql://pskrbasu:ee7d-47fc-9672@spipetools-toolstest.usea1.db.pipes.turbot.com:9193/wffk04"
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
 		return nil, nil
