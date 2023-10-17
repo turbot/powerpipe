@@ -85,7 +85,7 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 	api := &APIService{
 		ctx:      ctx,
 		Status:   "initialized",
-		HTTPPort: fmt.Sprintf("%d", 9876),
+		HTTPPort: fmt.Sprintf("%d", 9194),
 	}
 
 	// Set options
