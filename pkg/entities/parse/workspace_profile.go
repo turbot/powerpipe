@@ -3,18 +3,19 @@ package parse
 import (
 	"fmt"
 	"github.com/turbot/go-kit/hcl_helpers"
+	"github.com/turbot/pipe-fittings/options"
 	"log"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/options"
 )
 
-func LoadWorkspaceProfiles(workspaceProfilePath string) (profileMap map[string]*entities.WorkspaceProfile, err error) {
+func LoadWorkspaceProfiles(workspaceProfilePath string) (profileMap map[string]*modconfig.WorkspaceProfile, err error) {
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -22,12 +23,12 @@ func LoadWorkspaceProfiles(workspaceProfilePath string) (profileMap map[string]*
 		}
 		// be sure to return the default
 		if profileMap != nil && profileMap["default"] == nil {
-			profileMap["default"] = &entities.WorkspaceProfile{ProfileName: "default"}
+			profileMap["default"] = &modconfig.WorkspaceProfile{ProfileName: "default"}
 		}
 	}()
 
 	// create profile map to populate
-	profileMap = map[string]*entities.WorkspaceProfile{}
+	profileMap = map[string]*modconfig.WorkspaceProfile{}
 
 	configPaths, err := filehelpers.ListFiles(workspaceProfilePath, &filehelpers.ListOptions{
 		Flags:   filehelpers.FilesFlat,
@@ -63,7 +64,7 @@ func LoadWorkspaceProfiles(workspaceProfilePath string) (profileMap map[string]*
 	return parseWorkspaceProfiles(parseCtx)
 
 }
-func parseWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string]*entities.WorkspaceProfile, error) {
+func parseWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string]*modconfig.WorkspaceProfile, error) {
 	// we may need to decode more than once as we gather dependencies as we go
 	// continue decoding as long as the number of unresolved blocks decreases
 	prevUnresolvedBlocks := 0
@@ -92,8 +93,8 @@ func parseWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string]
 
 }
 
-func decodeWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string]*entities.WorkspaceProfile, hcl.Diagnostics) {
-	profileMap := map[string]*entities.WorkspaceProfile{}
+func decodeWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string]*modconfig.WorkspaceProfile, hcl.Diagnostics) {
+	profileMap := map[string]*modconfig.WorkspaceProfile{}
 
 	var diags hcl.Diagnostics
 	blocksToDecode, err := parseCtx.BlocksToDecode()
@@ -110,7 +111,7 @@ func decodeWorkspaceProfiles(parseCtx *WorkspaceProfileParseContext) (map[string
 	parseCtx.ClearDependencies()
 
 	for _, block := range blocksToDecode {
-		if block.Type == entities.BlockTypeWorkspaceProfile {
+		if block.Type == modconfig.BlockTypeWorkspaceProfile {
 			workspaceProfile, res := decodeWorkspaceProfile(block, parseCtx)
 
 			if res.Success() {
@@ -130,10 +131,10 @@ func decodeWorkspaceProfileOption(block *hcl.Block) (options.Options, hcl.Diagno
 	return DecodeOptions(block, WithOverride(constants.CmdNameDashboard, &options.WorkspaceProfileDashboard{}))
 }
 
-func decodeWorkspaceProfile(block *hcl.Block, parseCtx *WorkspaceProfileParseContext) (*entities.WorkspaceProfile, *DecodeResult) {
+func decodeWorkspaceProfile(block *hcl.Block, parseCtx *WorkspaceProfileParseContext) (*modconfig.WorkspaceProfile, *DecodeResult) {
 	res := newDecodeResult()
 	// get shell resource
-	resource := entities.NewWorkspaceProfile(block)
+	resource := modconfig.NewWorkspaceProfile(block)
 
 	// do a partial decode to get options blocks into workspaceProfileOptions, with all other attributes in rest
 	workspaceProfileOptions, rest, diags := block.Body.PartialContent(WorkspaceProfileBlockSchema)
@@ -186,7 +187,7 @@ func decodeWorkspaceProfile(block *hcl.Block, parseCtx *WorkspaceProfileParseCon
 	return resource, res
 }
 
-func handleWorkspaceProfileDecodeResult(resource *entities.WorkspaceProfile, res *DecodeResult, block *hcl.Block, parseCtx *WorkspaceProfileParseContext) {
+func handleWorkspaceProfileDecodeResult(resource *modconfig.WorkspaceProfile, res *DecodeResult, block *hcl.Block, parseCtx *WorkspaceProfileParseContext) {
 	if res.Success() {
 		// call post decode hook
 		// NOTE: must do this BEFORE adding resource to run context to ensure we respect the base property

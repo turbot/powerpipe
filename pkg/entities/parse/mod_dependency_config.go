@@ -2,7 +2,8 @@ package parse
 
 import (
 	"fmt"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/versionmap"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/versionmap"
 )
 
 type ModDependencyConfig struct {
@@ -10,7 +11,7 @@ type ModDependencyConfig struct {
 	DependencyPath *string
 }
 
-func (c ModDependencyConfig) SetModProperties(mod *entities.Mod) {
+func (c ModDependencyConfig) SetModProperties(mod *modconfig.Mod) {
 	mod.Version = c.ModDependency.Version
 	mod.DependencyPath = c.DependencyPath
 	mod.DependencyName = c.ModDependency.Name

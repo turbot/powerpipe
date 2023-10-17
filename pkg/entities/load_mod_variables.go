@@ -2,6 +2,7 @@ package entities
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/misc"
 	"github.com/turbot/terraform-components/terraform"
 	"sort"
 
@@ -9,28 +10,29 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/inputvars"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/versionmap"
 	"github.com/turbot/powerpipe/pkg/entities/parse"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/versionmap"
 	"github.com/turbot/terraform-components/tfdiags"
 	"golang.org/x/exp/maps"
 )
 
-func LoadVariableDefinitions(ctx context.Context, variablePath string, parseCtx *parse.ModParseContext) (*ModVariableMap, error) {
+func LoadVariableDefinitions(ctx context.Context, variablePath string, parseCtx *parse.ModParseContext) (*modconfig.ModVariableMap, error) {
 	// only load mod and variables blocks
-	parseCtx.BlockTypes = []string{BlockTypeVariable}
+	parseCtx.BlockTypes = []string{modconfig.BlockTypeVariable}
 	mod, errAndWarnings := LoadMod(ctx, variablePath, parseCtx)
 	if errAndWarnings.GetError() != nil {
 		return nil, errAndWarnings.GetError()
 	}
 
-	variableMap := NewModVariableMap(mod)
+	variableMap := modconfig.NewModVariableMap(mod)
 
 	return variableMap, nil
 }
 
-func GetVariableValues(ctx context.Context, parseCtx *parse.ModParseContext, variableMap *ModVariableMap, validate bool) (*ModVariableMap, *error_helpers.ErrorAndWarnings) {
+func GetVariableValues(ctx context.Context, parseCtx *parse.ModParseContext, variableMap *modconfig.ModVariableMap, validate bool) (*modconfig.ModVariableMap, *error_helpers.ErrorAndWarnings) {
 	// now resolve all input variables
 	inputValues, errorsAndWarnings := getInputVariables(ctx, parseCtx, variableMap, validate)
 	if errorsAndWarnings.Error == nil {
@@ -41,7 +43,7 @@ func GetVariableValues(ctx context.Context, parseCtx *parse.ModParseContext, var
 	return variableMap, errorsAndWarnings
 }
 
-func getInputVariables(ctx context.Context, parseCtx *parse.ModParseContext, variableMap *ModVariableMap, validate bool) (terraform.InputValues, *error_helpers.ErrorAndWarnings) {
+func getInputVariables(ctx context.Context, parseCtx *parse.ModParseContext, variableMap *modconfig.ModVariableMap, validate bool) (terraform.InputValues, *error_helpers.ErrorAndWarnings) {
 	variableFileArgs := viper.GetStringSlice(constants.ArgVarFile)
 	variableArgs := viper.GetStringSlice(constants.ArgVariable)
 
@@ -74,12 +76,12 @@ func newVariableValidationResult(diags tfdiags.Diagnostics) *error_helpers.Error
 	warnings := plugin.DiagsToWarnings(diags.ToHCL())
 	var err error
 	if diags.HasErrors() {
-		err = newVariableValidationFailedError(diags)
+		err = misc.NewVariableValidationFailedError(diags)
 	}
 	return error_helpers.NewErrorsAndWarning(err, warnings...)
 }
 
-func identifyAllMissingVariables(parseCtx *parse.ModParseContext, variableMap *ModVariableMap, variableValues map[string]inputvars.UnparsedVariableValue) error {
+func identifyAllMissingVariables(parseCtx *parse.ModParseContext, variableMap *modconfig.ModVariableMap, variableValues map[string]inputvars.UnparsedVariableValue) error {
 	// convert variableValues into a lookup
 	var variableValueLookup = utils.SliceToLookup(maps.Keys(variableValues))
 	missingVarsMap, err := identifyMissingVariablesForDependencies(parseCtx.WorkspaceLock, variableMap, variableValueLookup, nil)
@@ -93,13 +95,13 @@ func identifyAllMissingVariables(parseCtx *parse.ModParseContext, variableMap *M
 	}
 
 	// build a MissingVariableError
-	missingVarErr := NewMissingVarsError(parseCtx.CurrentMod)
+	missingVarErr := misc.NewMissingVarsError(parseCtx.CurrentMod)
 
 	// build a lookup with the dependency path of the root mod and all top level dependencies
 	rootName := variableMap.Mod.ShortName
-	topLevelModLookup := map[DependencyPathKey]struct{}{DependencyPathKey(rootName): {}}
+	topLevelModLookup := map[modconfig.DependencyPathKey]struct{}{modconfig.DependencyPathKey(rootName): {}}
 	for dep := range parseCtx.WorkspaceLock.InstallCache {
-		depPathKey := newDependencyPathKey(rootName, dep)
+		depPathKey := modconfig.NewDependencyPathKey(rootName, dep)
 		topLevelModLookup[depPathKey] = struct{}{}
 	}
 	for depPath, missingVars := range missingVarsMap {
@@ -113,9 +115,9 @@ func identifyAllMissingVariables(parseCtx *parse.ModParseContext, variableMap *M
 	return missingVarErr
 }
 
-func identifyMissingVariablesForDependencies(workspaceLock *versionmap.WorkspaceLock, variableMap *ModVariableMap, parentVariableValuesLookup map[string]struct{}, dependencyPath []string) (map[DependencyPathKey][]*Variable, error) {
+func identifyMissingVariablesForDependencies(workspaceLock *versionmap.WorkspaceLock, variableMap *modconfig.ModVariableMap, parentVariableValuesLookup map[string]struct{}, dependencyPath []string) (map[modconfig.DependencyPathKey][]*modconfig.Variable, error) {
 	// return a map of missing variables, keyed by dependency path
-	res := make(map[DependencyPathKey][]*Variable)
+	res := make(map[modconfig.DependencyPathKey][]*modconfig.Variable)
 
 	// update the path to this dependency
 	dependencyPath = append(dependencyPath, variableMap.Mod.GetInstallCacheKey())
@@ -139,7 +141,7 @@ func identifyMissingVariablesForDependencies(workspaceLock *versionmap.Workspace
 	//  handle root variables
 	missingVariables := identifyMissingVariables(variableMap.RootVariables, variableValueLookup)
 	if len(missingVariables) > 0 {
-		res[newDependencyPathKey(dependencyPath...)] = missingVariables
+		res[modconfig.NewDependencyPathKey(dependencyPath...)] = missingVariables
 	}
 
 	// now iterate through all the dependency variable maps
@@ -156,9 +158,9 @@ func identifyMissingVariablesForDependencies(workspaceLock *versionmap.Workspace
 	return res, nil
 }
 
-func identifyMissingVariables(variableMap map[string]*Variable, variableValuesLookup map[string]struct{}) []*Variable {
+func identifyMissingVariables(variableMap map[string]*modconfig.Variable, variableValuesLookup map[string]struct{}) []*modconfig.Variable {
 
-	var needed []*Variable
+	var needed []*modconfig.Variable
 
 	for name, v := range variableMap {
 		if !v.Required() {

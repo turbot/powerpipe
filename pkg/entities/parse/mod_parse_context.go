@@ -3,7 +3,6 @@ package parse
 import (
 	"fmt"
 	"github.com/turbot/go-kit/hcl_helpers"
-	"github.com/turbot/powerpipe/pkg/entities"
 	"github.com/turbot/terraform-components/terraform"
 	"strings"
 
@@ -12,8 +11,9 @@ import (
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/inputvars"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/versionmap"
-	"github.com/turbot/steampipe/pkg/utils"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/versionmap"
 	"github.com/zclconf/go-cty/cty"
 )
 
@@ -41,7 +41,7 @@ type ReferenceTypeValueMap map[string]map[string]cty.Value
 type ModParseContext struct {
 	ParseContext
 	// the mod which is currently being parsed
-	CurrentMod *entities.Mod
+	CurrentMod *modconfig.Mod
 	// the workspace lock data
 	WorkspaceLock *versionmap.WorkspaceLock
 
@@ -52,7 +52,7 @@ type ModParseContext struct {
 	// so we can set them on the mod when we do the main parse
 
 	// Variables is a tree of maps of the variables in the current mod and child dependency mods
-	Variables *entities.ModVariableMap
+	Variables *modconfig.ModVariableMap
 
 	ParentParseCtx *ModParseContext
 
@@ -72,7 +72,7 @@ type ModParseContext struct {
 	referenceValues map[string]ReferenceTypeValueMap
 
 	// a map of just the top level dependencies of the CurrentMod, keyed my full mod DependencyName (with no version)
-	topLevelDependencyMods entities.ModMap
+	topLevelDependencyMods modconfig.ModMap
 	// if we are loading dependency mod, this contains the details
 	DependencyConfig *ModDependencyConfig
 }
@@ -85,7 +85,7 @@ func NewModParseContext(workspaceLock *versionmap.WorkspaceLock, rootEvalPath st
 		WorkspaceLock: workspaceLock,
 		ListOptions:   listOptions,
 
-		topLevelDependencyMods: make(entities.ModMap),
+		topLevelDependencyMods: make(modconfig.ModMap),
 		blockChildMap:          make(map[string][]string),
 		blockNameMap:           make(map[string]string),
 		// initialise reference maps - even though we later overwrite them
@@ -126,7 +126,7 @@ func NewChildModParseContext(parent *ModParseContext, modVersion *versionmap.Res
 	return child
 }
 
-func (m *ModParseContext) EnsureWorkspaceLock(mod *entities.Mod) error {
+func (m *ModParseContext) EnsureWorkspaceLock(mod *modconfig.Mod) error {
 	// if the mod has dependencies, there must a workspace lock object in the run context
 	// (mod MUST be the workspace mod, not a dependency, as we would hit this error as soon as we parse it)
 	if mod.HasDependentMods() && (m.WorkspaceLock.Empty() || m.WorkspaceLock.Incomplete()) {
@@ -136,7 +136,7 @@ func (m *ModParseContext) EnsureWorkspaceLock(mod *entities.Mod) error {
 	return nil
 }
 
-func (m *ModParseContext) PushParent(parent entities.ModTreeItem) {
+func (m *ModParseContext) PushParent(parent modconfig.ModTreeItem) {
 	m.parents = append(m.parents, parent.GetUnqualifiedName())
 }
 
@@ -155,7 +155,7 @@ func (m *ModParseContext) PeekParent() string {
 }
 
 // VariableValueCtyMap converts a map of variables to a map of the underlying cty value
-func VariableValueCtyMap(variables map[string]*entities.Variable) map[string]cty.Value {
+func VariableValueCtyMap(variables map[string]*modconfig.Variable) map[string]cty.Value {
 	ret := make(map[string]cty.Value, len(variables))
 	for k, v := range variables {
 		ret[k] = v.Value
@@ -165,7 +165,7 @@ func VariableValueCtyMap(variables map[string]*entities.Variable) map[string]cty
 
 // AddInputVariableValues adds evaluated variables to the run context.
 // This function is called for the root run context after loading all input variables
-func (m *ModParseContext) AddInputVariableValues(inputVariables *entities.ModVariableMap) {
+func (m *ModParseContext) AddInputVariableValues(inputVariables *modconfig.ModVariableMap) {
 	// store the variables
 	m.Variables = inputVariables
 
@@ -205,7 +205,7 @@ func (m *ModParseContext) addDependencyVariablesToReferenceMap() {
 }
 
 // AddModResources is used to add mod resources to the eval context
-func (m *ModParseContext) AddModResources(mod *entities.Mod) hcl.Diagnostics {
+func (m *ModParseContext) AddModResources(mod *modconfig.Mod) hcl.Diagnostics {
 	if len(m.UnresolvedBlocks) > 0 {
 		// should never happen
 		panic("calling AddModResources on ModParseContext but there are unresolved blocks from a previous parse")
@@ -218,15 +218,15 @@ func (m *ModParseContext) AddModResources(mod *entities.Mod) hcl.Diagnostics {
 
 	// do not add variables (as they have already been added)
 	// if the resource is for a dependency mod, do not add locals
-	shouldAdd := func(item entities.HclResource) bool {
-		if item.BlockType() == entities.BlockTypeVariable ||
-			item.BlockType() == entities.BlockTypeLocals && item.(entities.ModTreeItem).GetMod().ShortName != m.CurrentMod.ShortName {
+	shouldAdd := func(item modconfig.HclResource) bool {
+		if item.BlockType() == modconfig.BlockTypeVariable ||
+			item.BlockType() == modconfig.BlockTypeLocals && item.(modconfig.ModTreeItem).GetMod().ShortName != m.CurrentMod.ShortName {
 			return false
 		}
 		return true
 	}
 
-	resourceFunc := func(item entities.HclResource) (bool, error) {
+	resourceFunc := func(item modconfig.HclResource) (bool, error) {
 		// add all mod resources (except those excluded) into cty map
 		if shouldAdd(item) {
 			moreDiags := m.storeResourceInReferenceValueMap(item)
@@ -254,7 +254,7 @@ func (m *ModParseContext) SetDecodeContent(content *hcl.BodyContent, fileData ma
 // AddDependencies :: the block could not be resolved as it has dependencies
 // 1) store block as unresolved
 // 2) add dependencies to our tree of dependencies
-func (m *ModParseContext) AddDependencies(block *hcl.Block, name string, dependencies map[string]*entities.ResourceDependency) hcl.Diagnostics {
+func (m *ModParseContext) AddDependencies(block *hcl.Block, name string, dependencies map[string]*modconfig.ResourceDependency) hcl.Diagnostics {
 	// TACTICAL if this is NOT a top level block, add a suffix to the block name
 	// this is needed to avoid circular dependency errors if a nested block references
 	// a top level block with the same name
@@ -275,7 +275,7 @@ func (m *ModParseContext) CreatePseudoResources() bool {
 }
 
 // AddResource stores this resource as a variable to be added to the eval context.
-func (m *ModParseContext) AddResource(resource entities.HclResource) hcl.Diagnostics {
+func (m *ModParseContext) AddResource(resource modconfig.HclResource) hcl.Diagnostics {
 	diagnostics := m.storeResourceInReferenceValueMap(resource)
 	if diagnostics.HasErrors() {
 		return diagnostics
@@ -290,7 +290,7 @@ func (m *ModParseContext) AddResource(resource entities.HclResource) hcl.Diagnos
 // GetMod finds the mod with given short name, looking only in first level dependencies
 // this is used to resolve resource references
 // specifically when the 'children' property of dashboards and benchmarks refers to resource in a dependency mod
-func (m *ModParseContext) GetMod(modShortName string) *entities.Mod {
+func (m *ModParseContext) GetMod(modShortName string) *modconfig.Mod {
 	if modShortName == m.CurrentMod.ShortName {
 		return m.CurrentMod
 	}
@@ -306,13 +306,13 @@ func (m *ModParseContext) GetMod(modShortName string) *entities.Mod {
 	return nil
 }
 
-func (m *ModParseContext) GetResourceMaps() *entities.ResourceMaps {
+func (m *ModParseContext) GetResourceMaps() *modconfig.ResourceMaps {
 	// use the current mod as the base resource map
 	resourceMap := m.CurrentMod.GetResourceMaps()
 	// get a map of top level loaded dep mods
 	deps := m.GetTopLevelDependencyMods()
 
-	dependencyResourceMaps := make([]*entities.ResourceMaps, 0, len(deps))
+	dependencyResourceMaps := make([]*modconfig.ResourceMaps, 0, len(deps))
 
 	// merge in the top level resources of the dependency mods
 	for _, dep := range deps {
@@ -323,7 +323,7 @@ func (m *ModParseContext) GetResourceMaps() *entities.ResourceMaps {
 	return resourceMap
 }
 
-func (m *ModParseContext) GetResource(parsedName *entities.ParsedResourceName) (resource entities.HclResource, found bool) {
+func (m *ModParseContext) GetResource(parsedName *modconfig.ParsedResourceName) (resource modconfig.HclResource, found bool) {
 	return m.GetResourceMaps().GetResource(parsedName)
 }
 
@@ -362,7 +362,7 @@ func (m *ModParseContext) buildEvalContext() {
 }
 
 // store the resource as a cty value in the reference valuemap
-func (m *ModParseContext) storeResourceInReferenceValueMap(resource entities.HclResource) hcl.Diagnostics {
+func (m *ModParseContext) storeResourceInReferenceValueMap(resource modconfig.HclResource) hcl.Diagnostics {
 	// add resource to variable map
 	ctyValue, diags := m.getResourceCtyValue(resource)
 	if diags.HasErrors() {
@@ -381,8 +381,8 @@ func (m *ModParseContext) storeResourceInReferenceValueMap(resource entities.Hcl
 }
 
 // convert a HclResource into a cty value, taking into account nested structs
-func (m *ModParseContext) getResourceCtyValue(resource entities.HclResource) (cty.Value, hcl.Diagnostics) {
-	ctyValue, err := resource.(entities.CtyValueProvider).CtyValue()
+func (m *ModParseContext) getResourceCtyValue(resource modconfig.HclResource) (cty.Value, hcl.Diagnostics) {
+	ctyValue, err := resource.(modconfig.CtyValueProvider).CtyValue()
 	if err != nil {
 		return cty.Zero, m.errToCtyValueDiags(resource, err)
 	}
@@ -401,14 +401,14 @@ func (m *ModParseContext) getResourceCtyValue(resource entities.HclResource) (ct
 		return cty.Zero, m.errToCtyValueDiags(resource, err)
 	}
 
-	if qp, ok := resource.(entities.QueryProvider); ok {
+	if qp, ok := resource.(modconfig.QueryProvider); ok {
 		base := qp.GetQueryProviderImpl()
 		if err := m.mergeResourceCtyValue(base, valueMap); err != nil {
 			return cty.Zero, m.errToCtyValueDiags(resource, err)
 		}
 	}
 
-	if treeItem, ok := resource.(entities.ModTreeItem); ok {
+	if treeItem, ok := resource.(modconfig.ModTreeItem); ok {
 		base := treeItem.GetModTreeItemImpl()
 		if err := m.mergeResourceCtyValue(base, valueMap); err != nil {
 			return cty.Zero, m.errToCtyValueDiags(resource, err)
@@ -419,7 +419,7 @@ func (m *ModParseContext) getResourceCtyValue(resource entities.HclResource) (ct
 
 // merge the cty value of the given interface into valueMap
 // (note: this mutates valueMap)
-func (m *ModParseContext) mergeResourceCtyValue(resource entities.CtyValueProvider, valueMap map[string]cty.Value) (err error) {
+func (m *ModParseContext) mergeResourceCtyValue(resource modconfig.CtyValueProvider, valueMap map[string]cty.Value) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("panic in mergeResourceCtyValue: %s", helpers.ToError(r).Error())
@@ -439,7 +439,7 @@ func (m *ModParseContext) mergeResourceCtyValue(resource entities.CtyValueProvid
 	return nil
 }
 
-func (m *ModParseContext) errToCtyValueDiags(resource entities.HclResource, err error) hcl.Diagnostics {
+func (m *ModParseContext) errToCtyValueDiags(resource modconfig.HclResource, err error) hcl.Diagnostics {
 	return hcl.Diagnostics{&hcl.Diagnostic{
 		Severity: hcl.DiagError,
 		Summary:  fmt.Sprintf("failed to convert resource '%s' to its cty value", resource.Name()),
@@ -448,8 +448,8 @@ func (m *ModParseContext) errToCtyValueDiags(resource entities.HclResource, err 
 	}}
 }
 
-func (m *ModParseContext) addReferenceValue(resource entities.HclResource, value cty.Value) hcl.Diagnostics {
-	parsedName, err := entities.ParseResourceName(resource.Name())
+func (m *ModParseContext) addReferenceValue(resource modconfig.HclResource, value cty.Value) hcl.Diagnostics {
+	parsedName, err := modconfig.ParseResourceName(resource.Name())
 	if err != nil {
 		return hcl.Diagnostics{&hcl.Diagnostic{
 			Severity: hcl.DiagError,
@@ -467,8 +467,8 @@ func (m *ModParseContext) addReferenceValue(resource entities.HclResource, value
 	typeString := parsedName.ItemType
 
 	// most resources will have a mod property - use this if available
-	var mod *entities.Mod
-	if modTreeItem, ok := resource.(entities.ModTreeItem); ok {
+	var mod *modconfig.Mod
+	if modTreeItem, ok := resource.(modconfig.ModTreeItem); ok {
 		mod = modTreeItem.GetMod()
 	}
 	// fall back to current mod
@@ -511,16 +511,16 @@ func (m *ModParseContext) IsTopLevelBlock(block *hcl.Block) bool {
 	return isTopLevel
 }
 
-func (m *ModParseContext) AddLoadedDependencyMod(mod *entities.Mod) {
+func (m *ModParseContext) AddLoadedDependencyMod(mod *modconfig.Mod) {
 	m.topLevelDependencyMods[mod.DependencyName] = mod
 }
 
 // GetTopLevelDependencyMods build a mod map of top level loaded dependencies, keyed by mod name
-func (m *ModParseContext) GetTopLevelDependencyMods() entities.ModMap {
+func (m *ModParseContext) GetTopLevelDependencyMods() modconfig.ModMap {
 	return m.topLevelDependencyMods
 }
 
-func (m *ModParseContext) SetCurrentMod(mod *entities.Mod) error {
+func (m *ModParseContext) SetCurrentMod(mod *modconfig.Mod) error {
 	m.CurrentMod = mod
 	// now we have the mod, load any arg values from the mod require - these will be passed to dependency mods
 	return m.loadModRequireArgs()
@@ -546,7 +546,7 @@ func (m *ModParseContext) loadModRequireArgs() error {
 		return err
 	}
 	// now update the variables map with the input values
-	SetVariableValues(depModVarValues, m.Variables)
+	inputvars.SetVariableValues(depModVarValues, m.Variables)
 
 	// now add  overridden variables into eval context - in case the root mod references any dependency variable values
 	m.AddVariablesToEvalContext()
@@ -569,7 +569,7 @@ func (m *ModParseContext) validateModRequireValues(depModVarValues terraform.Inp
 		if v.Value.IsKnown() {
 			continue
 		}
-		parsedVarName, err := entities.ParseResourceName(k)
+		parsedVarName, err := modconfig.ParseResourceName(k)
 		if err != nil {
 			return err
 		}
@@ -595,7 +595,7 @@ func (m *ModParseContext) validateModRequireValues(depModVarValues terraform.Inp
 	return nil
 }
 
-func (m *ModParseContext) getErrorStringForUnresolvedArg(parsedVarName *entities.ParsedResourceName, requireBlock *hclsyntax.Block) (_ string, err error) {
+func (m *ModParseContext) getErrorStringForUnresolvedArg(parsedVarName *modconfig.ParsedResourceName, requireBlock *hclsyntax.Block) (_ string, err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = helpers.ToError(r)
@@ -663,7 +663,7 @@ func (m *ModParseContext) getErrorStringForUnresolvedArg(parsedVarName *entities
 
 func (m *ModParseContext) getModRequireBlock() *hclsyntax.Block {
 	for _, b := range m.CurrentMod.ResourceWithMetadataBaseRemain.(*hclsyntax.Body).Blocks {
-		if b.Type == entities.BlockTypeRequire {
+		if b.Type == modconfig.BlockTypeRequire {
 			return b
 		}
 	}

@@ -13,8 +13,9 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/ociinstaller"
-	"github.com/turbot/powerpipe/pkg/options"
+	"github.com/turbot/pipe-fittings/options"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -22,11 +23,11 @@ import (
 type SteampipeConfig struct {
 	// map of plugin configs, keyed by plugin image ref
 	// (for each image ref we store an array of configs)
-	Plugins map[string][]*Plugin
+	Plugins map[string][]*modconfig.Plugin
 	// map of plugin configs, keyed by plugin instance
-	PluginsInstances map[string]*Plugin
+	PluginsInstances map[string]*modconfig.Plugin
 	// map of connection name to partially parsed connection config
-	Connections map[string]*Connection
+	Connections map[string]*modconfig.Connection
 
 	// Steampipe options
 	DefaultConnectionOptions *options.Connection
@@ -43,9 +44,9 @@ type SteampipeConfig struct {
 
 func NewSteampipeConfig(commandName string) *SteampipeConfig {
 	return &SteampipeConfig{
-		Connections:      make(map[string]*Connection),
-		Plugins:          make(map[string][]*Plugin),
-		PluginsInstances: make(map[string]*Plugin),
+		Connections:      make(map[string]*modconfig.Connection),
+		Plugins:          make(map[string][]*modconfig.Plugin),
+		PluginsInstances: make(map[string]*modconfig.Plugin),
 		commandName:      commandName,
 	}
 }
@@ -56,7 +57,7 @@ func (c *SteampipeConfig) Validate() (validationWarnings, validationErrors []str
 	for connectionName, connection := range c.Connections {
 		// if the connection is an aggregator, populate the child connections
 		// this resolves any wildcards in the connection list
-		if connection.Type == ConnectionTypeAggregator {
+		if connection.Type == modconfig.ConnectionTypeAggregator {
 			aggregatorFailures := connection.PopulateChildren(c.Connections)
 			validationWarnings = append(validationWarnings, aggregatorFailures...)
 		}
@@ -74,7 +75,7 @@ func (c *SteampipeConfig) Validate() (validationWarnings, validationErrors []str
 
 // ConfigMap creates a config map to pass to viper
 func (c *SteampipeConfig) ConfigMap() map[string]interface{} {
-	res := ConfigMap{}
+	res := modconfig.ConfigMap{}
 
 	// build flat config map with order or precedence (low to high): general, database, terminal
 	// this means if (for example) 'search-path' is set in both database and terminal options,
@@ -293,8 +294,8 @@ PluginOptions:
 	return str
 }
 
-func (c *SteampipeConfig) ConnectionsForPlugin(pluginLongName string, pluginVersion *version.Version) []*Connection {
-	var res []*Connection
+func (c *SteampipeConfig) ConnectionsForPlugin(pluginLongName string, pluginVersion *version.Version) []*modconfig.Connection {
+	var res []*modconfig.Connection
 	for _, con := range c.Connections {
 		// extract stream from plugin
 		ref := ociinstaller.NewSteampipeImageRef(con.Plugin)
@@ -325,8 +326,8 @@ func (c *SteampipeConfig) ConnectionNames() []string {
 	return res
 }
 
-func (c *SteampipeConfig) ConnectionList() []*Connection {
-	res := make([]*Connection, len(c.Connections))
+func (c *SteampipeConfig) ConnectionList() []*modconfig.Connection {
+	res := make([]*modconfig.Connection, len(c.Connections))
 	idx := 0
 	for _, c := range c.Connections {
 		res[idx] = c
@@ -337,7 +338,7 @@ func (c *SteampipeConfig) ConnectionList() []*Connection {
 
 // add a plugin config to PluginsInstances and Plugins
 // NOTE: this returns an error if we alreayd have a config with the same label
-func (c *SteampipeConfig) addPlugin(plugin *Plugin, block *hcl.Block) error {
+func (c *SteampipeConfig) addPlugin(plugin *modconfig.Plugin, block *hcl.Block) error {
 	if existingPlugin, exists := c.PluginsInstances[plugin.Instance]; exists {
 		return duplicatePluginError(existingPlugin, plugin)
 	}
@@ -349,7 +350,7 @@ func (c *SteampipeConfig) addPlugin(plugin *Plugin, block *hcl.Block) error {
 	return nil
 }
 
-func duplicatePluginError(existingPlugin, newPlugin *Plugin) error {
+func duplicatePluginError(existingPlugin, newPlugin *modconfig.Plugin) error {
 	return sperr.New("duplicate plugin instance: '%s'\n\t(%s:%d)\n\t(%s:%d)",
 		existingPlugin.Instance, *existingPlugin.FileName, *existingPlugin.StartLineNumber,
 		*newPlugin.FileName, *newPlugin.StartLineNumber)
@@ -407,7 +408,7 @@ func (c *SteampipeConfig) initializePlugins() {
 	       NOTE: if there is more than one config for the plugin this is an error
 		5) create a default config for the plugin (with the label set to the image ref)
 */
-func (c *SteampipeConfig) resolvePluginInstanceForConnection(connection *Connection) (*Plugin, error) {
+func (c *SteampipeConfig) resolvePluginInstanceForConnection(connection *modconfig.Connection) (*modconfig.Plugin, error) {
 	// NOTE: at this point, c.Plugin is NOT populated, only either c.PluginAlias or c.PluginInstance
 	// we populate c.Plugin AFTER resolving the plugin
 
@@ -428,14 +429,14 @@ func (c *SteampipeConfig) resolvePluginInstanceForConnection(connection *Connect
 	}
 
 	// resolve the image ref (this handles the special case of locally developed plugins in the plugins/local folder)
-	imageRef := ResolvePluginImageRef(connection.PluginAlias)
+	imageRef := modconfig.ResolvePluginImageRef(connection.PluginAlias)
 	pluginsForImageRef := c.Plugins[imageRef]
 
 	// how many plugin instances are there?
 	switch len(pluginsForImageRef) {
 	case 0:
 		// there is no plugin instance for this connection - add an implicit plugin instance
-		p := NewImplicitPlugin(connection, imageRef)
+		p := modconfig.NewImplicitPlugin(connection, imageRef)
 
 		// now add to our map
 		// (NOTE: its ok to pass an empty HCL block - it is only used for the duplicate config error and we know we will not get that)

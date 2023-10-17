@@ -1,3 +1,3 @@
 package versionmap
 
-type VersionConstraintMap map[string]*entities.ModVersionConstraint
+type VersionConstraintMap map[string]*modconfig.ModVersionConstraint

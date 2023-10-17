@@ -153,7 +153,7 @@ func (l *WorkspaceLock) setMissing() {
 		// flatten and iterate
 
 		for name, resolvedConstraint := range deps {
-			fullName := entities.BuildModDependencyPath(name, resolvedConstraint.Version)
+			fullName := modconfig.BuildModDependencyPath(name, resolvedConstraint.Version)
 
 			if !flatInstalled[fullName] {
 				// get the mod name from the constraint (fullName includes the version)
@@ -172,7 +172,7 @@ func (l *WorkspaceLock) parseModPath(modfilePath string) (modDependencyName stri
 	if err != nil {
 		return
 	}
-	return entities.ParseModDependencyPath(modFullName)
+	return modconfig.ParseModDependencyPath(modFullName)
 }
 
 func (l *WorkspaceLock) Save() error {
@@ -197,7 +197,7 @@ func (l *WorkspaceLock) Delete() error {
 }
 
 // DeleteMods removes mods from the lock file then, if it is empty, deletes the file
-func (l *WorkspaceLock) DeleteMods(mods VersionConstraintMap, parent *entities.Mod) {
+func (l *WorkspaceLock) DeleteMods(mods VersionConstraintMap, parent *modconfig.Mod) {
 	for modName := range mods {
 		if parentDependencies := l.InstallCache[parent.GetInstallCacheKey()]; parentDependencies != nil {
 			parentDependencies.Remove(modName)
@@ -207,7 +207,7 @@ func (l *WorkspaceLock) DeleteMods(mods VersionConstraintMap, parent *entities.M
 
 // GetMod looks for a lock file entry matching the given mod dependency name
 // (e.g.github.com/turbot/steampipe-mod-azure-thrifty
-func (l *WorkspaceLock) GetMod(modDependencyName string, parent *entities.Mod) *ResolvedVersionConstraint {
+func (l *WorkspaceLock) GetMod(modDependencyName string, parent *modconfig.Mod) *ResolvedVersionConstraint {
 	parentKey := parent.GetInstallCacheKey()
 
 	if parentDependencies := l.InstallCache[parentKey]; parentDependencies != nil {
@@ -219,7 +219,7 @@ func (l *WorkspaceLock) GetMod(modDependencyName string, parent *entities.Mod) *
 
 // GetLockedModVersions builds a ResolvedVersionListMap with the resolved versions
 // for each item of the given VersionConstraintMap found in the lock file
-func (l *WorkspaceLock) GetLockedModVersions(mods VersionConstraintMap, parent *entities.Mod) (ResolvedVersionListMap, error) {
+func (l *WorkspaceLock) GetLockedModVersions(mods VersionConstraintMap, parent *modconfig.Mod) (ResolvedVersionListMap, error) {
 	var res = make(ResolvedVersionListMap)
 	for name, constraint := range mods {
 		resolvedConstraint, err := l.GetLockedModVersion(constraint, parent)
@@ -234,7 +234,7 @@ func (l *WorkspaceLock) GetLockedModVersions(mods VersionConstraintMap, parent *
 }
 
 // GetLockedModVersion looks for a lock file entry matching the required constraint and returns nil if not found
-func (l *WorkspaceLock) GetLockedModVersion(requiredModVersion *entities.ModVersionConstraint, parent *entities.Mod) (*ResolvedVersionConstraint, error) {
+func (l *WorkspaceLock) GetLockedModVersion(requiredModVersion *modconfig.ModVersionConstraint, parent *modconfig.Mod) (*ResolvedVersionConstraint, error) {
 	lockedVersion := l.GetMod(requiredModVersion.Name, parent)
 	if lockedVersion == nil {
 		return nil, nil
@@ -249,7 +249,7 @@ func (l *WorkspaceLock) GetLockedModVersion(requiredModVersion *entities.ModVers
 }
 
 // EnsureLockedModVersion looks for a lock file entry matching the required mod name
-func (l *WorkspaceLock) EnsureLockedModVersion(requiredModVersion *entities.ModVersionConstraint, parent *entities.Mod) (*ResolvedVersionConstraint, error) {
+func (l *WorkspaceLock) EnsureLockedModVersion(requiredModVersion *modconfig.ModVersionConstraint, parent *modconfig.Mod) (*ResolvedVersionConstraint, error) {
 	lockedVersion := l.GetMod(requiredModVersion.Name, parent)
 	if lockedVersion == nil {
 		return nil, nil
@@ -257,7 +257,7 @@ func (l *WorkspaceLock) EnsureLockedModVersion(requiredModVersion *entities.ModV
 
 	// verify the locked version satisfies the version constraint
 	if !requiredModVersion.Constraint.Check(lockedVersion.Version) {
-		return nil, fmt.Errorf("failed to resolve dependencies for %s - locked version %s does not meet the constraint %s", parent.GetInstallCacheKey(), entities.BuildModDependencyPath(requiredModVersion.Name, lockedVersion.Version), requiredModVersion.Constraint.Original)
+		return nil, fmt.Errorf("failed to resolve dependencies for %s - locked version %s does not meet the constraint %s", parent.GetInstallCacheKey(), modconfig.BuildModDependencyPath(requiredModVersion.Name, lockedVersion.Version), requiredModVersion.Constraint.Original)
 	}
 
 	return lockedVersion, nil
@@ -265,7 +265,7 @@ func (l *WorkspaceLock) EnsureLockedModVersion(requiredModVersion *entities.ModV
 
 // GetLockedModVersionConstraint looks for a lock file entry matching the required mod version and if found,
 // returns it in the form of a ModVersionConstraint
-func (l *WorkspaceLock) GetLockedModVersionConstraint(requiredModVersion *entities.ModVersionConstraint, parent *entities.Mod) (*entities.ModVersionConstraint, error) {
+func (l *WorkspaceLock) GetLockedModVersionConstraint(requiredModVersion *modconfig.ModVersionConstraint, parent *modconfig.Mod) (*modconfig.ModVersionConstraint, error) {
 	lockedVersion, err := l.EnsureLockedModVersion(requiredModVersion, parent)
 	if err != nil {
 		// EnsureLockedModVersion returns an error if the locked version does not satisfy the requirement
@@ -276,8 +276,8 @@ func (l *WorkspaceLock) GetLockedModVersionConstraint(requiredModVersion *entiti
 		return nil, nil
 	}
 	// create a new ModVersionConstraint using the locked version
-	lockedVersionFullName := entities.BuildModDependencyPath(requiredModVersion.Name, lockedVersion.Version)
-	return entities.NewModVersionConstraint(lockedVersionFullName)
+	lockedVersionFullName := modconfig.BuildModDependencyPath(requiredModVersion.Name, lockedVersion.Version)
+	return modconfig.NewModVersionConstraint(lockedVersionFullName)
 }
 
 // ContainsModVersion returns whether the lockfile contains the given mod version

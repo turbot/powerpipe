@@ -26,7 +26,7 @@ func (m ResolvedVersionListMap) FlatMap() map[string]*ResolvedVersionConstraint 
 	var res = make(map[string]*ResolvedVersionConstraint)
 	for name, versions := range m {
 		for _, version := range versions {
-			key := entities.BuildModDependencyPath(name, version.Version)
+			key := modconfig.BuildModDependencyPath(name, version.Version)
 			res[key] = version
 		}
 	}
@@ -38,7 +38,7 @@ func (m ResolvedVersionListMap) FlatNames() []string {
 	var res []string
 	for name, versions := range m {
 		for _, version := range versions {
-			res = append(res, entities.BuildModDependencyPath(name, version.Version))
+			res = append(res, modconfig.BuildModDependencyPath(name, version.Version))
 		}
 	}
 	return res

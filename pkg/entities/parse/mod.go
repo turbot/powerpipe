@@ -9,13 +9,14 @@ import (
 	"path"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/filepaths"
 	"github.com/zclconf/go-cty/cty"
 )
 
-func LoadModfile(modPath string) (*entities.Mod, error) {
+func LoadModfile(modPath string) (*modconfig.Mod, error) {
 	if !ModfileExists(modPath) {
 		return nil, nil
 	}
@@ -37,7 +38,7 @@ func LoadModfile(modPath string) (*entities.Mod, error) {
 // ParseModDefinition parses the modfile only
 // it is expected the calling code will have verified the existence of the modfile by calling ModfileExists
 // this is called before parsing the workspace to, for example, identify dependency mods
-func ParseModDefinition(modPath string, evalCtx *hcl.EvalContext) (*entities.Mod, *DecodeResult) {
+func ParseModDefinition(modPath string, evalCtx *hcl.EvalContext) (*modconfig.Mod, *DecodeResult) {
 	res := newDecodeResult()
 
 	// if there is no mod at this location, return error
@@ -68,7 +69,7 @@ func ParseModDefinition(modPath string, evalCtx *hcl.EvalContext) (*entities.Mod
 		return nil, res
 	}
 
-	block := hcl_helpers.GetFirstBlockOfType(workspaceContent.Blocks, entities.BlockTypeMod)
+	block := hcl_helpers.GetFirstBlockOfType(workspaceContent.Blocks, modconfig.BlockTypeMod)
 	if block == nil {
 		res.Diags = append(res.Diags, &hcl.Diagnostic{
 			Severity: hcl.DiagError,
@@ -77,7 +78,7 @@ func ParseModDefinition(modPath string, evalCtx *hcl.EvalContext) (*entities.Mod
 		return nil, res
 	}
 	var defRange = hcl_helpers.BlockRange(block)
-	mod := entities.NewMod(block.Labels[0], path.Dir(modFilePath), defRange)
+	mod := modconfig.NewMod(block.Labels[0], path.Dir(modFilePath), defRange)
 	// set modFilePath
 	mod.SetFilePath(modFilePath)
 
@@ -97,7 +98,7 @@ func ParseModDefinition(modPath string, evalCtx *hcl.EvalContext) (*entities.Mod
 
 // ParseMod parses all source hcl files for the mod path and associated resources, and returns the mod object
 // NOTE: the mod definition has already been parsed (or a default created) and is in opts.RunCtx.RootMod
-func ParseMod(ctx context.Context, fileData map[string][]byte, pseudoResources []entities.MappableResource, parseCtx *ModParseContext) (*entities.Mod, *error_helpers.ErrorAndWarnings) {
+func ParseMod(ctx context.Context, fileData map[string][]byte, pseudoResources []modconfig.MappableResource, parseCtx *ModParseContext) (*modconfig.Mod, *error_helpers.ErrorAndWarnings) {
 	body, diags := ParseHclFiles(fileData)
 	if diags.HasErrors() {
 		return nil, error_helpers.NewErrorsAndWarning(plugin.DiagsToError("Failed to load all mod source files", diags))

@@ -3,22 +3,23 @@ package parse
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/zclconf/go-cty/cty"
 )
 
 type WorkspaceProfileParseContext struct {
 	ParseContext
-	workspaceProfiles map[string]*entities.WorkspaceProfile
+	workspaceProfiles map[string]*modconfig.WorkspaceProfile
 	valueMap          map[string]cty.Value
 }
 
 func NewWorkspaceProfileParseContext(rootEvalPath string) *WorkspaceProfileParseContext {
 	parseContext := NewParseContext(rootEvalPath)
 	// TODO uncomment once https://github.com/turbot/steampipe/issues/2640 is done
-	//parseContext.BlockTypes = []string{entities.BlockTypeWorkspaceProfile}
+	//parseContext.BlockTypes = []string{modconfig.BlockTypeWorkspaceProfile}
 	c := &WorkspaceProfileParseContext{
 		ParseContext:      parseContext,
-		workspaceProfiles: make(map[string]*entities.WorkspaceProfile),
+		workspaceProfiles: make(map[string]*modconfig.WorkspaceProfile),
 		valueMap:          make(map[string]cty.Value),
 	}
 
@@ -28,7 +29,7 @@ func NewWorkspaceProfileParseContext(rootEvalPath string) *WorkspaceProfileParse
 }
 
 // AddResource stores this resource as a variable to be added to the eval context. It alse
-func (c *WorkspaceProfileParseContext) AddResource(workspaceProfile *entities.WorkspaceProfile) hcl.Diagnostics {
+func (c *WorkspaceProfileParseContext) AddResource(workspaceProfile *modconfig.WorkspaceProfile) hcl.Diagnostics {
 	ctyVal, err := workspaceProfile.CtyValue()
 	if err != nil {
 		return hcl.Diagnostics{&hcl.Diagnostic{

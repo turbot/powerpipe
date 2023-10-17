@@ -5,9 +5,10 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/go-kit/hcl_helpers"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-func resolveChildrenFromNames(childNames []string, block *hcl.Block, supportedChildren []string, parseCtx *ModParseContext) ([]entities.ModTreeItem, hcl.Diagnostics) {
+func resolveChildrenFromNames(childNames []string, block *hcl.Block, supportedChildren []string, parseCtx *ModParseContext) ([]modconfig.ModTreeItem, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
 	diags = checkForDuplicateChildren(childNames, block)
 	if diags.HasErrors() {
@@ -15,10 +16,10 @@ func resolveChildrenFromNames(childNames []string, block *hcl.Block, supportedCh
 	}
 
 	// find the children in the eval context and populate control children
-	children := make([]entities.ModTreeItem, len(childNames))
+	children := make([]modconfig.ModTreeItem, len(childNames))
 
 	for i, childName := range childNames {
-		parsedName, err := entities.ParseResourceName(childName)
+		parsedName, err := modconfig.ParseResourceName(childName)
 		if err != nil || !helpers.StringSliceContains(supportedChildren, parsedName.ItemType) {
 			diags = append(diags, childErrorDiagnostic(childName, block))
 			continue
@@ -38,7 +39,7 @@ func resolveChildrenFromNames(childNames []string, block *hcl.Block, supportedCh
 
 		resource, found := mod.GetResource(parsedName)
 		// ensure this item is a mod tree item
-		child, ok := resource.(entities.ModTreeItem)
+		child, ok := resource.(modconfig.ModTreeItem)
 		if !found || !ok {
 			diags = append(diags, &hcl.Diagnostic{
 				Severity: hcl.DiagError,
@@ -84,7 +85,7 @@ func childErrorDiagnostic(childName string, block *hcl.Block) *hcl.Diagnostic {
 	}
 }
 
-func getChildNameStringsFromModTreeItem(children []entities.ModTreeItem) []string {
+func getChildNameStringsFromModTreeItem(children []modconfig.ModTreeItem) []string {
 	res := make([]string, len(children))
 	for i, n := range children {
 		res[i] = n.Name()

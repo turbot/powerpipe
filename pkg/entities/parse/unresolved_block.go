@@ -3,20 +3,20 @@ package parse
 import (
 	"fmt"
 	"github.com/turbot/go-kit/hcl_helpers"
-	"github.com/turbot/powerpipe/pkg/entities"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 type unresolvedBlock struct {
 	Name         string
 	Block        *hcl.Block
 	DeclRange    hcl.Range
-	Dependencies map[string]*entities.ResourceDependency
+	Dependencies map[string]*modconfig.ResourceDependency
 }
 
-func newUnresolvedBlock(block *hcl.Block, name string, dependencies map[string]*entities.ResourceDependency) *unresolvedBlock {
+func newUnresolvedBlock(block *hcl.Block, name string, dependencies map[string]*modconfig.ResourceDependency) *unresolvedBlock {
 	return &unresolvedBlock{
 		Name:         name,
 		Block:        block,

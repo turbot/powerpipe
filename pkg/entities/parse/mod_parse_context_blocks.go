@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 func (m *ModParseContext) DetermineBlockName(block *hcl.Block) string {
@@ -42,7 +43,7 @@ func (m *ModParseContext) GetCachedBlockName(block *hcl.Block) (string, bool) {
 func (m *ModParseContext) GetCachedBlockShortName(block *hcl.Block) (string, bool) {
 	unqualifiedName, ok := m.blockNameMap[m.blockHash(block)]
 	if ok {
-		parsedName, err := entities.ParseResourceName(unqualifiedName)
+		parsedName, err := modconfig.ParseResourceName(unqualifiedName)
 		if err != nil {
 			return "", false
 		}
@@ -51,10 +52,10 @@ func (m *ModParseContext) GetCachedBlockShortName(block *hcl.Block) (string, boo
 	return "", false
 }
 
-func (m *ModParseContext) GetDecodedResourceForBlock(block *hcl.Block) (entities.HclResource, bool) {
+func (m *ModParseContext) GetDecodedResourceForBlock(block *hcl.Block) (modconfig.HclResource, bool) {
 	if name, ok := m.GetCachedBlockName(block); ok {
 		// see whether the mod contains this resource already
-		parsedName, err := entities.ParseResourceName(name)
+		parsedName, err := modconfig.ParseResourceName(name)
 		if err == nil {
 			return m.CurrentMod.GetResource(parsedName)
 		}
@@ -76,7 +77,7 @@ func (m *ModParseContext) getUniqueName(blockType string, parent string) string 
 	childCount := 0
 
 	for _, childName := range m.blockChildMap[parent] {
-		parsedName, err := entities.ParseResourceName(childName)
+		parsedName, err := modconfig.ParseResourceName(childName)
 		if err != nil {
 			// we do not expect this
 			continue

@@ -4,9 +4,11 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-func DecodePlugin(block *hcl.Block) (*entities.Plugin, hcl.Diagnostics) {
+func DecodePlugin(block *hcl.Block) (*modconfig.Plugin, hcl.Diagnostics) {
 	// manually decode child limiter blocks
 	content, rest, diags := block.Body.PartialContent(PluginBlockSchema)
 	if diags.HasErrors() {
@@ -15,7 +17,7 @@ func DecodePlugin(block *hcl.Block) (*entities.Plugin, hcl.Diagnostics) {
 	body := rest.(*hclsyntax.Body)
 
 	// decode attributes using 'rest' (these are automativally parsed so are not in schema)
-	var plugin = &entities.Plugin{
+	var plugin = &modconfig.Plugin{
 		// default source and name to label
 		Instance: block.Labels[0],
 		Alias:    block.Labels[0],
@@ -30,7 +32,7 @@ func DecodePlugin(block *hcl.Block) (*entities.Plugin, hcl.Diagnostics) {
 	for _, block := range content.Blocks {
 		switch block.Type {
 		// only block defined in schema
-		case entities.BlockTypeRateLimiter:
+		case modconfig.BlockTypeRateLimiter:
 			limiter, moreDiags := DecodeLimiter(block)
 			diags = append(diags, moreDiags...)
 			if moreDiags.HasErrors() {

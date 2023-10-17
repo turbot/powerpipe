@@ -6,6 +6,7 @@ import (
 	"github.com/stevenle/topsort"
 	"github.com/turbot/go-kit/hcl_helpers"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/zclconf/go-cty/cty"
 	"strings"
 )
@@ -51,7 +52,7 @@ func (r *ParseContext) ClearDependencies() {
 // AddDependencies is called when a block could not be resolved as it has dependencies
 // 1) store block as unresolved
 // 2) add dependencies to our tree of dependencies
-func (r *ParseContext) AddDependencies(block *hcl.Block, name string, dependencies map[string]*entities.ResourceDependency) hcl.Diagnostics {
+func (r *ParseContext) AddDependencies(block *hcl.Block, name string, dependencies map[string]*modconfig.ResourceDependency) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	// store unresolved block
 	r.UnresolvedBlocks[name] = newUnresolvedBlock(block, name, dependencies)
@@ -71,7 +72,7 @@ func (r *ParseContext) AddDependencies(block *hcl.Block, name string, dependenci
 	for _, dep := range dependencies {
 		// each dependency object may have multiple traversals
 		for _, t := range dep.Traversals {
-			parsedPropertyPath, err := entities.ParseResourcePropertyPath(hcl_helpers.TraversalAsString(t))
+			parsedPropertyPath, err := modconfig.ParseResourcePropertyPath(hcl_helpers.TraversalAsString(t))
 
 			if err != nil {
 				diags = append(diags, &hcl.Diagnostic{
@@ -190,11 +191,11 @@ func (r *ParseContext) getDependencyOrder() ([]string, error) {
 			continue
 		}
 
-		propertyPath, err := entities.ParseResourcePropertyPath(d)
+		propertyPath, err := modconfig.ParseResourcePropertyPath(d)
 		if err != nil {
 			return nil, err
 		}
-		dep := entities.BuildModResourceName(propertyPath.ItemType, propertyPath.Name)
+		dep := modconfig.BuildModResourceName(propertyPath.ItemType, propertyPath.Name)
 		if !helpers.StringSliceContains(deps, dep) {
 			deps = append(deps, dep)
 		}

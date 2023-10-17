@@ -3,17 +3,17 @@ package parse
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/pkg/entities"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 // struct to hold the result of a decoding operation
 type DecodeResult struct {
 	Diags   hcl.Diagnostics
-	Depends map[string]*entities.ResourceDependency
+	Depends map[string]*modconfig.ResourceDependency
 }
 
 func newDecodeResult() *DecodeResult {
-	return &DecodeResult{Depends: make(map[string]*entities.ResourceDependency)}
+	return &DecodeResult{Depends: make(map[string]*modconfig.ResourceDependency)}
 }
 
 // Merge merges this decode result with another
@@ -46,9 +46,9 @@ func (p *DecodeResult) handleDecodeDiags(diags hcl.Diagnostics) {
 }
 
 // determine whether the diag is a dependency error, and if so, return a dependency object
-func diagsToDependency(diag *hcl.Diagnostic) *entities.ResourceDependency {
+func diagsToDependency(diag *hcl.Diagnostic) *modconfig.ResourceDependency {
 	if helpers.StringSliceContains(missingVariableErrors, diag.Summary) {
-		return &entities.ResourceDependency{Range: diag.Expression.Range(), Traversals: diag.Expression.Variables()}
+		return &modconfig.ResourceDependency{Range: diag.Expression.Range(), Traversals: diag.Expression.Variables()}
 	}
 	return nil
 }

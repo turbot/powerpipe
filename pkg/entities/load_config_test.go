@@ -10,7 +10,7 @@ import (
 	"testing"
 
 	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/powerpipe/pkg/options"
+	"github.com/turbot/pipe-fittings/options"
 )
 
 // TODO KAI add plugin block tests

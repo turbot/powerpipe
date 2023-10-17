@@ -20,7 +20,7 @@ package entities
 //	"github.com/turbot/pipe-fittings/error_helpers"
 //	"github.com/turbot/pipe-fittings/filepaths"
 //	"github.com/turbot/pipe-fittings/utils"
-//	"github.com/turbot/powerpipe/pkg/options"
+//	"github.com/turbot/pipe-fittings/options"
 //	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 //	"github.com/turbot/steampipe/pkg/db/db_common"
 //	"github.com/turbot/powerpipe/pkg/entities/parse"

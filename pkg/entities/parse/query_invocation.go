@@ -7,6 +7,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 )
 
@@ -18,9 +19,9 @@ import (
 //
 // 2) named args
 // query.my_prepared_statement(my_arg1 => 'test', my_arg2 => 'test2')
-func ParseQueryInvocation(arg string) (string, *entities.QueryArgs, error) {
+func ParseQueryInvocation(arg string) (string, *modconfig.QueryArgs, error) {
 	// TODO strip non printing chars
-	args := &entities.QueryArgs{}
+	args := &modconfig.QueryArgs{}
 
 	arg = strings.TrimSpace(arg)
 	query := arg
@@ -43,8 +44,8 @@ func ParseQueryInvocation(arg string) (string, *entities.QueryArgs, error) {
 //
 // 2) named args
 // my_arg1 => 'val1', my_arg2 => 'val2'
-func parseArgs(argsString string) (*entities.QueryArgs, error) {
-	res := entities.NewQueryArgs()
+func parseArgs(argsString string) (*modconfig.QueryArgs, error) {
+	res := modconfig.NewQueryArgs()
 	if len(argsString) == 0 {
 		return res, nil
 	}

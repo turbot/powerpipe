@@ -3,13 +3,14 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/pkg/entities"
 	"log"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/workspace"
 	internal_constants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/export"
@@ -18,7 +19,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"github.com/turbot/steampipe/pkg/db/db_client"
 	"github.com/turbot/steampipe/pkg/db/db_common"
-	"github.com/turbot/steampipe/pkg/workspace"
 )
 
 type InitData struct {
@@ -137,7 +137,7 @@ func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
 	i.Client = client
 }
 
-func validateModRequirementsRecursively(mod *entities.Mod, pluginVersionMap map[string]*entities.PluginVersionString) []string {
+func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map[string]*modconfig.PluginVersionString) []string {
 	var validationErrors []string
 
 	// validate this mod

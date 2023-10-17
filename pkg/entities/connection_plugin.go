@@ -12,7 +12,7 @@ package entities
 //	"github.com/turbot/pipe-fittings/constants"
 //	"github.com/turbot/pipe-fittings/error_helpers"
 //	"github.com/turbot/pipe-fittings/utils"
-//	"github.com/turbot/powerpipe/pkg/options"
+//	"github.com/turbot/pipe-fittings/options"
 //	sdkgrpc "github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 //	sdkproto "github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 //	sdkplugin "github.com/turbot/steampipe-plugin-sdk/v5/plugin"

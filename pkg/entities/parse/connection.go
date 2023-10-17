@@ -3,25 +3,25 @@ package parse
 import (
 	"fmt"
 	"github.com/turbot/go-kit/hcl_helpers"
-	"github.com/turbot/powerpipe/pkg/entities"
 	"log"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/steampipe/pkg/constants"
 	"github.com/zclconf/go-cty/cty"
 	"golang.org/x/exp/maps"
 )
 
-func DecodeConnection(block *hcl.Block) (*entities.Connection, hcl.Diagnostics) {
+func DecodeConnection(block *hcl.Block) (*modconfig.Connection, hcl.Diagnostics) {
 	connectionContent, rest, diags := block.Body.PartialContent(ConnectionBlockSchema)
 	if diags.HasErrors() {
 		return nil, diags
 	}
 
-	connection := entities.NewConnection(block)
+	connection := modconfig.NewConnection(block)
 
 	// decode the plugin property
 	// NOTE: this mutates connection to set PluginAlias and possible PluginInstance
@@ -116,7 +116,7 @@ func DecodeConnection(block *hcl.Block) (*entities.Connection, hcl.Diagnostics) 
 	return connection, diags
 }
 
-func decodeConnectionPluginProperty(connectionContent *hcl.BodyContent, connection *entities.Connection) hcl.Diagnostics {
+func decodeConnectionPluginProperty(connectionContent *hcl.BodyContent, connection *modconfig.Connection) hcl.Diagnostics {
 	var pluginName string
 	evalCtx := &hcl.EvalContext{Variables: make(map[string]cty.Value)}
 
@@ -150,7 +150,7 @@ func decodeConnectionPluginProperty(connectionContent *hcl.BodyContent, connecti
 	return nil
 }
 
-func getPluginInstanceFromDependency(dependencies []*entities.ResourceDependency) (string, bool) {
+func getPluginInstanceFromDependency(dependencies []*modconfig.ResourceDependency) (string, bool) {
 	if len(dependencies) != 1 {
 		return "", false
 	}

@@ -2,10 +2,10 @@ package parse
 
 import (
 	"github.com/Masterminds/semver/v3"
-	"github.com/turbot/powerpipe/pkg/entities"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 type InstalledMod struct {
-	Mod     *entities.Mod
+	Mod     *modconfig.Mod
 	Version *semver.Version
 }

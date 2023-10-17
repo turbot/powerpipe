@@ -85,7 +85,7 @@ func setBaseDefaults() {
 		constants.ArgCacheMaxTtl:          300,
 
 		// dashboard
-		constants.ArgDashboardStartTimeout: internal_constants.DashboardStartTimeout.Seconds(),
+		constants.ArgDashboardStartTimeout: constants.DashboardServiceStartTimeout.Seconds(),
 
 		// memory
 		constants.ArgMemoryMaxMbPlugin: 1024,

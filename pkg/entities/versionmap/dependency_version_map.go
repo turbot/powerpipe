@@ -29,7 +29,7 @@ func (m DependencyVersionMap) FlatMap() ResolvedVersionMap {
 	res := make(ResolvedVersionMap)
 	for _, deps := range m {
 		for _, dep := range deps {
-			res[entities.BuildModDependencyPath(dep.Name, dep.Version)] = dep
+			res[modconfig.BuildModDependencyPath(dep.Name, dep.Version)] = dep
 		}
 	}
 	return res
@@ -47,7 +47,7 @@ func (m DependencyVersionMap) buildTree(name string, tree treeprint.Tree) {
 	sort.Strings(depNames)
 	for _, name := range depNames {
 		version := deps[name]
-		fullName := entities.BuildModDependencyPath(name, version.Version)
+		fullName := modconfig.BuildModDependencyPath(name, version.Version)
 		child := tree.AddBranch(fullName)
 		// if there are children add them
 		m.buildTree(fullName, child)

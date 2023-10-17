@@ -4,15 +4,16 @@ import (
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-func GetMetadataForParsedResource(resourceName string, srcRange hcl.Range, fileData map[string][]byte, mod *entities.Mod) (*entities.ResourceMetadata, error) {
+func GetMetadataForParsedResource(resourceName string, srcRange hcl.Range, fileData map[string][]byte, mod *modconfig.Mod) (*modconfig.ResourceMetadata, error) {
 	// convert the name into a short name
-	parsedName, err := entities.ParseResourceName(resourceName)
+	parsedName, err := modconfig.ParseResourceName(resourceName)
 	if err != nil {
 		return nil, err
 	}
-	m := &entities.ResourceMetadata{
+	m := &modconfig.ResourceMetadata{
 		ResourceName:     parsedName.Name,
 		FileName:         srcRange.Filename,
 		StartLineNumber:  srcRange.Start.Line,

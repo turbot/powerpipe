@@ -8,13 +8,14 @@ import (
 	"github.com/turbot/go-kit/hcl_helpers"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/type_conversion"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/zclconf/go-cty/cty"
 	"github.com/zclconf/go-cty/cty/gocty"
 )
 
-func decodeArgs(attr *hcl.Attribute, evalCtx *hcl.EvalContext, resource entities.QueryProvider) (*entities.QueryArgs, []*entities.RuntimeDependency, hcl.Diagnostics) {
-	var runtimeDependencies []*entities.RuntimeDependency
-	var args = entities.NewQueryArgs()
+func decodeArgs(attr *hcl.Attribute, evalCtx *hcl.EvalContext, resource modconfig.QueryProvider) (*modconfig.QueryArgs, []*modconfig.RuntimeDependency, hcl.Diagnostics) {
+	var runtimeDependencies []*modconfig.RuntimeDependency
+	var args = modconfig.NewQueryArgs()
 	var diags hcl.Diagnostics
 
 	v, valDiags := attr.Expr.Value(evalCtx)
@@ -63,18 +64,18 @@ func decodeArgs(attr *hcl.Attribute, evalCtx *hcl.EvalContext, resource entities
 	return args, runtimeDependencies, diags
 }
 
-func ctyTupleToArgArray(attr *hcl.Attribute, val cty.Value) ([]any, []*entities.RuntimeDependency, error) {
+func ctyTupleToArgArray(attr *hcl.Attribute, val cty.Value) ([]any, []*modconfig.RuntimeDependency, error) {
 	// convert the attribute to a slice
 	values := val.AsValueSlice()
 
 	// build output array
 	res := make([]any, len(values))
-	var runtimeDependencies []*entities.RuntimeDependency
+	var runtimeDependencies []*modconfig.RuntimeDependency
 
 	for idx, v := range values {
 		// if the value is unknown, this is a runtime dependency
 		if !v.IsKnown() {
-			runtimeDependency, err := identifyRuntimeDependenciesFromArray(attr, idx, entities.AttributeArgs)
+			runtimeDependency, err := identifyRuntimeDependenciesFromArray(attr, idx, modconfig.AttributeArgs)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -94,9 +95,9 @@ func ctyTupleToArgArray(attr *hcl.Attribute, val cty.Value) ([]any, []*entities.
 	return res, runtimeDependencies, nil
 }
 
-func ctyObjectToArgMap(attr *hcl.Attribute, val cty.Value, evalCtx *hcl.EvalContext) (map[string]any, []*entities.RuntimeDependency, error) {
+func ctyObjectToArgMap(attr *hcl.Attribute, val cty.Value, evalCtx *hcl.EvalContext) (map[string]any, []*modconfig.RuntimeDependency, error) {
 	res := make(map[string]any)
-	var runtimeDependencies []*entities.RuntimeDependency
+	var runtimeDependencies []*modconfig.RuntimeDependency
 	it := val.ElementIterator()
 	for it.Next() {
 		k, v := it.Element()
@@ -109,13 +110,13 @@ func ctyObjectToArgMap(attr *hcl.Attribute, val cty.Value, evalCtx *hcl.EvalCont
 
 		// if the value is unknown, this is a runtime dependency
 		if !v.IsKnown() {
-			runtimeDependency, err := identifyRuntimeDependenciesFromObject(attr, key, entities.AttributeArgs, evalCtx)
+			runtimeDependency, err := identifyRuntimeDependenciesFromObject(attr, key, modconfig.AttributeArgs, evalCtx)
 			if err != nil {
 				return nil, nil, err
 			}
 			runtimeDependencies = append(runtimeDependencies, runtimeDependency)
 		} else if getWrappedUnknownVal(v) {
-			runtimeDependency, err := identifyRuntimeDependenciesFromObject(attr, key, entities.AttributeArgs, evalCtx)
+			runtimeDependency, err := identifyRuntimeDependenciesFromObject(attr, key, modconfig.AttributeArgs, evalCtx)
 			if err != nil {
 				return nil, nil, err
 			}
@@ -149,7 +150,7 @@ func getWrappedUnknownVal(v cty.Value) bool {
 	return false
 }
 
-func identifyRuntimeDependenciesFromObject(attr *hcl.Attribute, targetProperty, parentProperty string, evalCtx *hcl.EvalContext) (*entities.RuntimeDependency, error) {
+func identifyRuntimeDependenciesFromObject(attr *hcl.Attribute, targetProperty, parentProperty string, evalCtx *hcl.EvalContext) (*modconfig.RuntimeDependency, error) {
 	// find the expression for this key
 	argsExpr, ok := attr.Expr.(*hclsyntax.ObjectConsExpr)
 	if !ok {
@@ -176,19 +177,19 @@ func identifyRuntimeDependenciesFromObject(attr *hcl.Attribute, targetProperty, 
 	return nil, fmt.Errorf("could not extract runtime dependency for arg %s - not found in attribute map", targetProperty)
 }
 
-func getRuntimeDepFromExpression(expr hcl.Expression, targetProperty, parentProperty string) (*entities.RuntimeDependency, error) {
+func getRuntimeDepFromExpression(expr hcl.Expression, targetProperty, parentProperty string) (*modconfig.RuntimeDependency, error) {
 	isArray, propertyPath, err := propertyPathFromExpression(expr)
 	if err != nil {
 		return nil, err
 	}
 
-	if propertyPath.ItemType == entities.BlockTypeInput {
+	if propertyPath.ItemType == modconfig.BlockTypeInput {
 		// tactical: validate input dependency
 		if err := validateInputRuntimeDependency(propertyPath); err != nil {
 			return nil, err
 		}
 	}
-	ret := &entities.RuntimeDependency{
+	ret := &modconfig.RuntimeDependency{
 		PropertyPath:       propertyPath,
 		ParentPropertyName: parentProperty,
 		TargetPropertyName: &targetProperty,
@@ -197,7 +198,7 @@ func getRuntimeDepFromExpression(expr hcl.Expression, targetProperty, parentProp
 	return ret, nil
 }
 
-func propertyPathFromExpression(expr hcl.Expression) (bool, *entities.ParsedPropertyPath, error) {
+func propertyPathFromExpression(expr hcl.Expression) (bool, *modconfig.ParsedPropertyPath, error) {
 	var propertyPathStr string
 	var isArray bool
 
@@ -234,14 +235,14 @@ dep_loop:
 		}
 	}
 
-	propertyPath, err := entities.ParseResourcePropertyPath(propertyPathStr)
+	propertyPath, err := modconfig.ParseResourcePropertyPath(propertyPathStr)
 	if err != nil {
 		return false, nil, err
 	}
 	return isArray, propertyPath, nil
 }
 
-func identifyRuntimeDependenciesFromArray(attr *hcl.Attribute, idx int, parentProperty string) (*entities.RuntimeDependency, error) {
+func identifyRuntimeDependenciesFromArray(attr *hcl.Attribute, idx int, parentProperty string) (*modconfig.RuntimeDependency, error) {
 	// find the expression for this key
 	argsExpr, ok := attr.Expr.(*hclsyntax.TupleConsExpr)
 	if !ok {
@@ -254,12 +255,12 @@ func identifyRuntimeDependenciesFromArray(attr *hcl.Attribute, idx int, parentPr
 				return nil, err
 			}
 			// tactical: validate input dependency
-			if propertyPath.ItemType == entities.BlockTypeInput {
+			if propertyPath.ItemType == modconfig.BlockTypeInput {
 				if err := validateInputRuntimeDependency(propertyPath); err != nil {
 					return nil, err
 				}
 			}
-			ret := &entities.RuntimeDependency{
+			ret := &modconfig.RuntimeDependency{
 				PropertyPath:        propertyPath,
 				ParentPropertyName:  parentProperty,
 				TargetPropertyIndex: &idx,
@@ -274,17 +275,17 @@ func identifyRuntimeDependenciesFromArray(attr *hcl.Attribute, idx int, parentPr
 
 // tactical - if runtime dependency is an input, validate it is of correct format
 // TODO - include this with the main runtime dependency validation, when it is rewritten https://github.com/turbot/steampipe/issues/2925
-func validateInputRuntimeDependency(propertyPath *entities.ParsedPropertyPath) error {
+func validateInputRuntimeDependency(propertyPath *modconfig.ParsedPropertyPath) error {
 	// input references must be of form self.input.<input_name>.value
-	if propertyPath.Scope != entities.RuntimeDependencyDashboardScope {
+	if propertyPath.Scope != modconfig.RuntimeDependencyDashboardScope {
 		return fmt.Errorf("could not resolve runtime dependency resource %s", propertyPath.Original)
 	}
 	return nil
 }
 
-func decodeParam(block *hcl.Block, parseCtx *ModParseContext) (*entities.ParamDef, []*entities.RuntimeDependency, hcl.Diagnostics) {
-	def := entities.NewParamDef(block)
-	var runtimeDependencies []*entities.RuntimeDependency
+func decodeParam(block *hcl.Block, parseCtx *ModParseContext) (*modconfig.ParamDef, []*modconfig.RuntimeDependency, hcl.Diagnostics) {
+	def := modconfig.NewParamDef(block)
+	var runtimeDependencies []*modconfig.RuntimeDependency
 	content, diags := block.Body.Content(ParamDefBlockSchema)
 
 	if attr, exists := content.Attributes["description"]; exists {
@@ -302,7 +303,7 @@ func decodeParam(block *hcl.Block, parseCtx *ModParseContext) (*entities.ParamDe
 	return def, runtimeDependencies, diags
 }
 
-func decodeParamDefault(attr *hcl.Attribute, parseCtx *ModParseContext, paramName string) (any, []*entities.RuntimeDependency, hcl.Diagnostics) {
+func decodeParamDefault(attr *hcl.Attribute, parseCtx *ModParseContext, paramName string) (any, []*modconfig.RuntimeDependency, hcl.Diagnostics) {
 	v, diags := attr.Expr.Value(parseCtx.EvalCtx)
 
 	if v.IsKnown() {
@@ -339,5 +340,5 @@ func decodeParamDefault(attr *hcl.Attribute, parseCtx *ModParseContext, paramNam
 	}
 
 	// so we have a runtime dependency
-	return nil, []*entities.RuntimeDependency{runtimeDependency}, nil
+	return nil, []*modconfig.RuntimeDependency{runtimeDependency}, nil
 }

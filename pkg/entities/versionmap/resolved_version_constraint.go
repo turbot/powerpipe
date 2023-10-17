@@ -33,5 +33,5 @@ func (c ResolvedVersionConstraint) IsPrerelease() bool {
 }
 
 func (c ResolvedVersionConstraint) DependencyPath() string {
-	return entities.BuildModDependencyPath(c.Name, c.Version)
+	return modconfig.BuildModDependencyPath(c.Name, c.Version)
 }

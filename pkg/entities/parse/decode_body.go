@@ -6,11 +6,12 @@ import (
 	"github.com/hashicorp/hcl/v2/hclsyntax"
 	"github.com/turbot/go-kit/hcl_helpers"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"reflect"
 	"strings"
 )
 
-func decodeHclBody(body hcl.Body, evalCtx *hcl.EvalContext, resourceProvider entities.ResourceMapsProvider, resource entities.HclResource) (diags hcl.Diagnostics) {
+func decodeHclBody(body hcl.Body, evalCtx *hcl.EvalContext, resourceProvider modconfig.ResourceMapsProvider, resource modconfig.HclResource) (diags hcl.Diagnostics) {
 	defer func() {
 		if r := recover(); r != nil {
 			diags = append(diags, &hcl.Diagnostic{
@@ -39,7 +40,7 @@ func decodeHclBody(body hcl.Body, evalCtx *hcl.EvalContext, resourceProvider ent
 	return diags
 }
 
-func decodeHclBodyIntoStruct(body hcl.Body, evalCtx *hcl.EvalContext, resourceProvider entities.ResourceMapsProvider, resource any) hcl.Diagnostics {
+func decodeHclBodyIntoStruct(body hcl.Body, evalCtx *hcl.EvalContext, resourceProvider modconfig.ResourceMapsProvider, resource any) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	// call decodeHclBodyIntoStruct to do actual decode
 	moreDiags := gohcl.DecodeBody(body, evalCtx, resource)
@@ -53,7 +54,7 @@ func decodeHclBodyIntoStruct(body hcl.Body, evalCtx *hcl.EvalContext, resourcePr
 }
 
 // build the hcl schema for this resource
-func getResourceSchema(resource entities.HclResource, nestedStructs []any) *hcl.BodySchema {
+func getResourceSchema(resource modconfig.HclResource, nestedStructs []any) *hcl.BodySchema {
 	t := reflect.TypeOf(helpers.DereferencePointer(resource))
 	typeName := t.Name()
 
@@ -97,50 +98,50 @@ func getResourceSchema(resource entities.HclResource, nestedStructs []any) *hcl.
 
 	// special cases for manually parsed attributes and blocks
 	switch resource.BlockType() {
-	case entities.BlockTypeMod:
-		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: entities.BlockTypeRequire})
-	case entities.BlockTypeDashboard, entities.BlockTypeContainer:
+	case modconfig.BlockTypeMod:
+		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: modconfig.BlockTypeRequire})
+	case modconfig.BlockTypeDashboard, modconfig.BlockTypeContainer:
 		res.Blocks = append(res.Blocks,
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeControl},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeBenchmark},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeCard},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeChart},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeContainer},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeFlow},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeGraph},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeHierarchy},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeImage},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeInput},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeTable},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeText},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeWith},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeControl},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeBenchmark},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeCard},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeChart},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeContainer},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeFlow},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeGraph},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeHierarchy},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeImage},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeInput},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeTable},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeText},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeWith},
 		)
-	case entities.BlockTypeQuery:
+	case modconfig.BlockTypeQuery:
 		// remove `Query` from attributes
 		var querySchema = &hcl.BodySchema{}
 		for _, a := range res.Attributes {
-			if a.Name != entities.AttributeQuery {
+			if a.Name != modconfig.AttributeQuery {
 				querySchema.Attributes = append(querySchema.Attributes, a)
 			}
 		}
 		res = querySchema
 	}
 
-	if _, ok := resource.(entities.QueryProvider); ok {
-		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: entities.BlockTypeParam})
+	if _, ok := resource.(modconfig.QueryProvider); ok {
+		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: modconfig.BlockTypeParam})
 		// if this is NOT query, add args
-		if resource.BlockType() != entities.BlockTypeQuery {
-			res.Attributes = append(res.Attributes, hcl.AttributeSchema{Name: entities.AttributeArgs})
+		if resource.BlockType() != modconfig.BlockTypeQuery {
+			res.Attributes = append(res.Attributes, hcl.AttributeSchema{Name: modconfig.AttributeArgs})
 		}
 	}
-	if _, ok := resource.(entities.NodeAndEdgeProvider); ok {
+	if _, ok := resource.(modconfig.NodeAndEdgeProvider); ok {
 		res.Blocks = append(res.Blocks,
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeCategory},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeNode},
-			hcl.BlockHeaderSchema{Type: entities.BlockTypeEdge})
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeCategory},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeNode},
+			hcl.BlockHeaderSchema{Type: modconfig.BlockTypeEdge})
 	}
-	if _, ok := resource.(entities.WithProvider); ok {
-		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: entities.BlockTypeWith})
+	if _, ok := resource.(modconfig.WithProvider); ok {
+		res.Blocks = append(res.Blocks, hcl.BlockHeaderSchema{Type: modconfig.BlockTypeWith})
 	}
 	return res
 }
@@ -170,7 +171,7 @@ func getSchemaForStruct(t reflect.Type) *hcl.BodySchema {
 // (which has the issue that when deserializing from cty we do not receive all base struct values)
 // instead resolve the reference by parsing the resource name and finding the resource in the ResourceMap
 // and use this resource to set the target property
-func resolveReferences(body hcl.Body, resourceMapsProvider entities.ResourceMapsProvider, val any) (diags hcl.Diagnostics) {
+func resolveReferences(body hcl.Body, resourceMapsProvider modconfig.ResourceMapsProvider, val any) (diags hcl.Diagnostics) {
 	defer func() {
 		if r := recover(); r != nil {
 			if r := recover(); r != nil {
@@ -205,11 +206,11 @@ func resolveReferences(body hcl.Body, resourceMapsProvider entities.ResourceMaps
 		}
 		if fieldVal.Kind() == reflect.Struct {
 			v := fieldVal.Addr().Interface()
-			if _, ok := v.(entities.HclResource); ok {
+			if _, ok := v.(modconfig.HclResource); ok {
 				if hclVal, ok := attributes[hclAttribute]; ok {
 					if scopeTraversal, ok := hclVal.Expr.(*hclsyntax.ScopeTraversalExpr); ok {
 						path := hcl_helpers.TraversalAsString(scopeTraversal.Traversal)
-						if parsedName, err := entities.ParseResourceName(path); err == nil {
+						if parsedName, err := modconfig.ParseResourceName(path); err == nil {
 							if r, ok := resourceMapsProvider.GetResource(parsedName); ok {
 								f := rv.FieldByName(field.Name)
 								if f.IsValid() && f.CanSet() {

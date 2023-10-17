@@ -3,10 +3,11 @@ package parse
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/gohcl"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-func DecodeLimiter(block *hcl.Block) (*entities.RateLimiter, hcl.Diagnostics) {
-	var limiter = &entities.RateLimiter{
+func DecodeLimiter(block *hcl.Block) (*modconfig.RateLimiter, hcl.Diagnostics) {
+	var limiter = &modconfig.RateLimiter{
 		// populate name from label
 		Name: block.Labels[0],
 	}
