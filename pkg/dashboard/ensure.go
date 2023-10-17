@@ -3,13 +3,13 @@ package dashboard
 import (
 	"context"
 	"encoding/json"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/powerpipe/internal/ociinstaller"
 	"log"
 	"os"
 
 	"github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/steampipe/pkg/ociinstaller"
 )
 
 func Ensure(ctx context.Context) error {
@@ -30,7 +30,7 @@ func Ensure(ctx context.Context) error {
 
 	reportAssetsPath := ensureDashboardAssetsDir()
 
-	// remove the legacy report folder, if it \exists
+	// remove the legacy report folder, if it exists
 	if _, err := os.Stat(LegacyDashboardAssetsDir()); !os.IsNotExist(err) {
 		os.RemoveAll(LegacyDashboardAssetsDir())
 	}

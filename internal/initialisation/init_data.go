@@ -3,6 +3,8 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/steampipe/pkg/error_helpers"
+	"github.com/turbot/steampipe/pkg/statushooks"
 	"log"
 
 	"github.com/spf13/viper"
@@ -12,9 +14,7 @@ import (
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/workspace"
 	internal_constants "github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/export"
-	"github.com/turbot/powerpipe/pkg/statushooks"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"github.com/turbot/steampipe/pkg/db/db_client"
@@ -53,7 +53,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) *InitData {
 	return i
 }
 
-func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
+func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_client.ClientOption) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)

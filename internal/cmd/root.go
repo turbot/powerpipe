@@ -7,9 +7,9 @@ import (
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
+	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/version"
-	"github.com/turbot/powerpipe/pkg/statushooks"
 )
 
 // rootCmd represents the base command when called without any subcommands

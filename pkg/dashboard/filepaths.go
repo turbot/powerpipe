@@ -2,9 +2,10 @@ package dashboard
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/error_helpers"
 	"os"
 	"path/filepath"
+
+	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 // Constants for Config

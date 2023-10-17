@@ -2,17 +2,16 @@ package initialisation
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/cloud"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"strings"
-
-	"github.com/turbot/powerpipe/pkg/entities"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/powerpipe/pkg/cloud"
-	"github.com/turbot/powerpipe/pkg/error_helpers"
+	"github.com/turbot/pipe-fittings/error_helpers"
 )
 
-func getCloudMetadata(ctx context.Context) (*entities.CloudMetadata, error) {
+func getCloudMetadata(ctx context.Context) (*modconfig.CloudMetadata, error) {
 	// TODO PSKR remove hardcoding
 	workspaceDatabase := ""
 	if workspaceDatabase == "local" {
@@ -21,7 +20,7 @@ func getCloudMetadata(ctx context.Context) (*entities.CloudMetadata, error) {
 	}
 	connectionString := workspaceDatabase
 
-	var cloudMetadata *entities.CloudMetadata
+	var cloudMetadata *modconfig.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
 	workspaceDatabaseIsConnectionString := strings.HasPrefix(workspaceDatabase, "postgresql://") || strings.HasPrefix(workspaceDatabase, "postgres://")

@@ -3,31 +3,32 @@ package workspace
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/load_mod"
 	"log"
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/statushooks"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/inputvars"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/inputvars"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/statushooks"
+	shared_workspace "github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/terraform-components/terraform"
 )
 
-func LoadWorkspacePromptingForVariables(ctx context.Context) (*Workspace, *error_helpers.ErrorAndWarnings) {
+func LoadWorkspacePromptingForVariables(ctx context.Context) (*shared_workspace.Workspace, *error_helpers.ErrorAndWarnings) {
 	// TODO PSKR remove hardcoding
 	workspacePath := ""
 	t := time.Now()
 	defer func() {
 		log.Printf("[TRACE] Workspace load took %dms\n", time.Since(t).Milliseconds())
 	}()
-	w, errAndWarnings := Load(ctx, workspacePath)
+	w, errAndWarnings := shared_workspace.Load(ctx, workspacePath)
 	if errAndWarnings.GetError() == nil {
 		return w, errAndWarnings
 	}
-	missingVariablesError, ok := errAndWarnings.GetError().(*steampipeconfig.MissingVariableError)
+	missingVariablesError, ok := errAndWarnings.GetError().(*load_mod.MissingVariableError)
 	// if there was an error which is NOT a MissingVariableError, return it
 	if !ok {
 		return nil, errAndWarnings
@@ -48,7 +49,7 @@ func LoadWorkspacePromptingForVariables(ctx context.Context) (*Workspace, *error
 		return nil, error_helpers.NewErrorsAndWarning(err)
 	}
 	// ok we should have all variables now - reload workspace
-	return Load(ctx, workspacePath)
+	return shared_workspace.Load(ctx, workspacePath)
 }
 
 func promptForMissingVariables(ctx context.Context, missingVariables []*modconfig.Variable, workspacePath string) error {

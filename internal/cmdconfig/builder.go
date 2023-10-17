@@ -8,9 +8,9 @@ import (
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
 	shared_constants "github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
-	"github.com/turbot/powerpipe/pkg/error_helpers"
 )
 
 type CmdBuilder struct {
