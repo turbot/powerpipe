@@ -1080,12 +1080,16 @@ github.com/tmc/grpc-websocket-proxy v0.0.0-20171017195756-830351dc03c6/go.mod h1
 github.com/tombuildsstuff/giovanni v0.15.1/go.mod h1:0TZugJPEtqzPlMpuJHYfXY6Dq2uLPrXf98D2XQSxNbA=
 github.com/turbot/go-kit v0.9.0-rc.1 h1:6j1IidB4LpTw0TDXY0DSY6UxtrjMr0KIOBk3glO3Xfk=
 github.com/turbot/go-kit v0.9.0-rc.1/go.mod h1:BrOy6Xeizj+eBzXOOWuBMSzQosirN+IGw9MksKULvd4=
+github.com/turbot/pipe-fittings v0.0.0-20231017101332-6b8ba9eb9c0d h1:zYWepTqL8s2zkGxOfTTVYXs22V0aQ00C9f+o7b0b1Ds=
+github.com/turbot/pipe-fittings v0.0.0-20231017101332-6b8ba9eb9c0d/go.mod h1:2EbZg7haAu8a9Ph9f1/X8dN8KkjAD6E2kVe4M34Zu/M=
 github.com/turbot/steampipe v1.7.0-rc.0.0.20231016082356-bd4bfa6c57c2 h1:g58cSDLKVlTeNgSy8Bw0mLr53wTa5myJhX1pU8R5KPo=
 github.com/turbot/steampipe v1.7.0-rc.0.0.20231016082356-bd4bfa6c57c2/go.mod h1:xxvs1CV18WFTE5jITQPO6dvHKPRzwzpE+HmwcljOzjE=
 github.com/turbot/steampipe-cloud-sdk-go v0.6.0 h1:ufAxOpKS1uq7eejuE5sfEu1+d7QAd0RBjl8Bn6+mIs8=
 github.com/turbot/steampipe-cloud-sdk-go v0.6.0/go.mod h1:M42TMBdMim4bV1YTMxhKyzfSGSMo4CXUkm3wt9w7t1Y=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2 h1:B2gkMJK1m5GYQfmxjO9VREAwdUsGxf48vOzKouoyFIM=
 github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2/go.mod h1:u2ubq9W5/5y6wG481LyulS7vuMOTRPmXAUfGLoVmwnA=
+github.com/turbot/terraform-components v0.0.0-20231017100940-c8df9a3a9aab h1:Mi4peOdF4BWAE9CByll4t0L4cejrHrKaIQYWKqRJWzQ=
+github.com/turbot/terraform-components v0.0.0-20231017100940-c8df9a3a9aab/go.mod h1:hEEpm8dz7a3EtrhBopdRqwLawmPhbAunH862Z2xQxs4=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=
 github.com/twitchyliquid64/golang-asm v0.15.1/go.mod h1:a1lVb/DtPvCB8fslRZhAngC2+aY1QWCk3Cedj/Gdt08=
 github.com/ugorji/go v0.0.0-20180813092308-00b869d2f4a5/go.mod h1:hnLbHMwcvSihnDhEfx2/BzKp2xb0Y+ErdfYcrs9tkJQ=

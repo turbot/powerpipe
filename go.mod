@@ -4,14 +4,13 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
-
-replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
+//replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
+//replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
 
 require (
-	github.com/Machiel/slugify v1.0.1
+	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
-	github.com/briandowns/spinner v1.23.0
+	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/fatih/color v1.15.0
 	github.com/gin-contrib/gzip v0.0.6
@@ -22,27 +21,35 @@ require (
 	github.com/hashicorp/go-hclog v1.5.0
 	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/hcl/v2 v2.18.1
-	github.com/jackc/pgconn v1.14.1
-	github.com/karrick/gows v0.3.0
+	github.com/jackc/pgconn v1.14.1 // indirect
+	github.com/karrick/gows v0.3.0 // indirect
 	github.com/mattn/go-isatty v0.0.19
-	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02
+	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
-	github.com/turbot/pipe-fittings v0.0.0-20231016133425-ffde2b823be2
+	// pp
+	github.com/turbot/pipe-fittings v0.0.0-20231017101332-6b8ba9eb9c0d
 	github.com/turbot/steampipe v1.7.0-rc.0.0.20231016082356-bd4bfa6c57c2
-	github.com/turbot/steampipe-cloud-sdk-go v0.6.0
+	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
-	github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7
+	github.com/turbot/terraform-components v0.0.0-20231017100940-c8df9a3a9aab
 	github.com/xlab/treeprint v1.2.0
 	github.com/zclconf/go-cty v1.14.1
 	github.com/zclconf/go-cty-yaml v1.0.3
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	sigs.k8s.io/yaml v1.3.0
+)
+
+require (
+	github.com/jackc/pgx/v5 v5.4.3
+	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/shirou/gopsutil v3.21.11+incompatible
+	golang.org/x/sync v0.4.0
 )
 
 require (
@@ -131,7 +138,6 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
-	github.com/jackc/pgx/v5 v5.4.3 // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
@@ -140,7 +146,6 @@ require (
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
-	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
@@ -175,7 +180,6 @@ require (
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
 	github.com/sethvargo/go-retry v0.2.4 // indirect
-	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
@@ -210,7 +214,6 @@ require (
 	golang.org/x/mod v0.13.0 // indirect
 	golang.org/x/net v0.17.0 // indirect
 	golang.org/x/oauth2 v0.12.0 // indirect
-	golang.org/x/sync v0.4.0 // indirect
 	golang.org/x/sys v0.13.0 // indirect
 	golang.org/x/term v0.13.0 // indirect
 	golang.org/x/text v0.13.0 // indirect
