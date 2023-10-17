@@ -7,7 +7,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
-	"github.com/turbot/powerpipe/internal/perr"
+	"github.com/turbot/pipe-fittings/perr"
 )
 
 func AbortWithError(c *gin.Context, err error) {

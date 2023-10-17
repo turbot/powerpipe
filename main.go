@@ -5,9 +5,9 @@ import (
 	"os"
 
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
-	"github.com/turbot/powerpipe/pkg/utils"
 )
 
 var exitCode int
