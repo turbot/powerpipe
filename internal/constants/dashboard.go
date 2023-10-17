@@ -3,7 +3,7 @@ package constants
 import (
 	"fmt"
 
-	"github.com/turbot/steampipe/pkg/version"
+	"github.com/turbot/powerpipe/internal/version"
 )
 
 // DashboardListenAddresses is an arrays is listen addresses which Steampipe accepts
@@ -14,6 +14,7 @@ const (
 	DashboardAssetsImageRefFormat = "us-docker.pkg.dev/steampipe/steampipe/assets:%s"
 )
 
+// TODO explicitly define dashboard asset version
 var (
 	DashboardAssetsImageRef = fmt.Sprintf(DashboardAssetsImageRefFormat, version.VersionString)
 )

@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/modinstaller"
 	internal_constants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/powerpipe/pkg/export"
@@ -16,7 +17,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"github.com/turbot/steampipe/pkg/db/db_client"
 	"github.com/turbot/steampipe/pkg/db/db_common"
-	"github.com/turbot/steampipe/pkg/modinstaller"
 	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
 	"github.com/turbot/steampipe/pkg/workspace"
 )

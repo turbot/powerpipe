@@ -2,7 +2,6 @@ package cmdconfig
 
 import (
 	"bytes"
-	"context"
 	"fmt"
 	"io"
 	"log"
@@ -19,6 +18,7 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/logging"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/internal/constants/runtime"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/version"
 	"github.com/turbot/powerpipe/pkg/cloud"
@@ -28,30 +28,28 @@ import (
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"github.com/turbot/steampipe/pkg/constants/runtime"
 	"github.com/turbot/steampipe/pkg/filepaths"
-	"github.com/turbot/steampipe/pkg/steampipeconfig"
-	"github.com/turbot/steampipe/pkg/task"
 )
 
-var waitForTasksChannel chan struct{}
-var tasksCancelFn context.CancelFunc
+//var waitForTasksChannel chan struct{}
+//var tasksCancelFn context.CancelFunc
 
 // postRunHook is a function that is executed after the PostRun of every command handler
 func postRunHook(cmd *cobra.Command, args []string) {
 	utils.LogTime("cmdhook.postRunHook start")
 	defer utils.LogTime("cmdhook.postRunHook end")
 
-	if waitForTasksChannel != nil {
-		// wait for the async tasks to finish
-		select {
-		case <-time.After(100 * time.Millisecond):
-			tasksCancelFn()
-			return
-		case <-waitForTasksChannel:
-			return
-		}
-	}
+	// TODO re-add tasks
+	//if waitForTasksChannel != nil {
+	//	// wait for the async tasks to finish
+	//	select {
+	//	case <-time.After(100 * time.Millisecond):
+	//		tasksCancelFn()
+	//		return
+	//	case <-waitForTasksChannel:
+	//		return
+	//	}
+	//}
 }
 
 // postRunHook is a function that is executed before the PreRun of every command handler
@@ -84,25 +82,13 @@ func preRunHook(cmd *cobra.Command, args []string) {
 	// check for error
 	error_helpers.FailOnError(ew.Error)
 
-	// if the log level was set in the general config
-	if logLevelNeedsReset() {
-		logLevel := viper.GetString(constants.ArgLogLevel)
-		// set my environment to the desired log level
-		// so that this gets inherited by any other process
-		// started by this process (postgres/plugin-manager)
-		error_helpers.FailOnErrorWithMessage(
-			os.Setenv(sdklogging.EnvLogLevel, logLevel),
-			"Failed to setup logging",
-		)
-	}
-
 	// recreate the logger
 	// this will put the new log level (if any) to effect as well as start streaming to the
 	// log file.
 	createLogger(logBuffer, cmd)
 
 	// runScheduledTasks skips running tasks if this instance is the plugin manager
-	waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args, ew)
+	//waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args, ew)
 
 	// set the max memory if specified
 	setMemoryLimit()
@@ -116,46 +102,36 @@ func setMemoryLimit() {
 	}
 }
 
+// TODO re-add tasks
 // runScheduledTasks runs the task runner and returns a channel which is closed when
 // task run is complete
 //
 // runScheduledTasks skips running tasks if this instance is the plugin manager
-func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string, ew *error_helpers.ErrorAndWarnings) chan struct{} {
-	// skip running the task runner if this is the plugin manager
-	// since it's supposed to be a daemon
-	if task.IsPluginManagerCmd(cmd) {
-		return nil
-	}
-
-	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
-	tasksCancelFn = cancelFn
-
-	return task.RunTasks(
-		taskUpdateCtx,
-		cmd,
-		args,
-		// pass the config value in rather than runRasks querying viper directly - to avoid concurrent map access issues
-		// (we can use the update-check viper config here, since initGlobalConfig has already set it up
-		// with values from the config files and ENV settings - update-check cannot be set from the command line)
-		task.WithUpdateCheck(viper.GetBool(constants.ArgUpdateCheck)),
-		// show deprecation warnings
-		task.WithPreHook(func(_ context.Context) {
-			displayDeprecationWarnings(ew)
-		}),
-	)
-
-}
-
-// the log level will need resetting if
+//func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string, ew *error_helpers.ErrorAndWarnings) chan struct{} {
+//	// skip running the task runner if this is the plugin manager
+//	// since it's supposed to be a daemon
+//	if task.IsPluginManagerCmd(cmd) {
+//		return nil
+//	}
 //
-//	this process does not have a log level set in it's environment
-//	the GlobalConfig has a loglevel set
-func logLevelNeedsReset() bool {
-	envLogLevelIsSet := envLogLevelSet()
-	generalOptionsSet := (steampipeconfig.GlobalConfig.GeneralOptions != nil && steampipeconfig.GlobalConfig.GeneralOptions.LogLevel != nil)
-
-	return !envLogLevelIsSet && generalOptionsSet
-}
+//	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
+//	tasksCancelFn = cancelFn
+//
+//	return task.RunTasks(
+//		taskUpdateCtx,
+//		cmd,
+//		args,
+//		// pass the config value in rather than runRasks querying viper directly - to avoid concurrent map access issues
+//		// (we can use the update-check viper config here, since initGlobalConfig has already set it up
+//		// with values from the config files and ENV settings - update-check cannot be set from the command line)
+//		task.WithUpdateCheck(viper.GetBool(constants.ArgUpdateCheck)),
+//		// show deprecation warnings
+//		task.WithPreHook(func(_ context.Context) {
+//			displayDeprecationWarnings(ew)
+//		}),
+//	)
+//
+//}
 
 // envLogLevelSet checks whether any of the current or legacy log level env vars are set
 func envLogLevelSet() bool {
@@ -203,7 +179,7 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	//steampipeconfig.GlobalConfig = config
 
 	// set viper defaults from the loaded config
-	SetDefaultsFromConfig(steampipeconfig.GlobalConfig.ConfigMap())
+	//SetDefaultsFromConfig(steampipeconfig.GlobalConfig.ConfigMap())
 
 	// set the rest of the defaults from ENV
 	// ENV takes precedence over any default configuration
@@ -268,12 +244,6 @@ func validateConfig() *error_helpers.ErrorAndWarnings {
 
 // create a hclog logger with the level specified by the SP_LOG env var
 func createLogger(logBuffer *bytes.Buffer, cmd *cobra.Command) {
-	if task.IsPluginManagerCmd(cmd) {
-		// nothing to do here - plugin manager sets up it's own logger
-		// refer https://github.com/turbot/steampipe/blob/710a96d45fd77294de8d63d77bf78db65133e5ca/cmd/plugin_manager.go#L102
-		return
-	}
-
 	level := sdklogging.LogLevel()
 	var logDestination io.Writer
 	if len(filepaths.SteampipeDir) == 0 {

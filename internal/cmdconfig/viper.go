@@ -9,8 +9,9 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/types"
+	"github.com/turbot/pipe-fittings/constants"
+	internal_constants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/pkg/cmdconfig"
-	"github.com/turbot/steampipe/pkg/constants"
 )
 
 // bootstrapViper sets up viper with the essential path config (workspace-chdir and install-dir)
@@ -84,7 +85,7 @@ func setBaseDefaults() {
 		constants.ArgCacheMaxTtl:          300,
 
 		// dashboard
-		constants.ArgDashboardStartTimeout: constants.DashboardStartTimeout.Seconds(),
+		constants.ArgDashboardStartTimeout: internal_constants.DashboardStartTimeout.Seconds(),
 
 		// memory
 		constants.ArgMemoryMaxMbPlugin: 1024,
@@ -104,9 +105,9 @@ type envMapping struct {
 // set default values of INSTALL_DIR and ModLocation from env vars
 func setDirectoryDefaultsFromEnv() {
 	envMappings := map[string]envMapping{
-		constants.EnvInstallDir:     {[]string{constants.ArgInstallDir}, cmdconfig.String},
-		constants.EnvWorkspaceChDir: {[]string{constants.ArgModLocation}, cmdconfig.String},
-		constants.EnvModLocation:    {[]string{constants.ArgModLocation}, cmdconfig.String},
+		internal_constants.EnvInstallDir:     {[]string{constants.ArgInstallDir}, cmdconfig.String},
+		internal_constants.EnvWorkspaceChDir: {[]string{constants.ArgModLocation}, cmdconfig.String},
+		internal_constants.EnvModLocation:    {[]string{constants.ArgModLocation}, cmdconfig.String},
 	}
 
 	for envVar, mapping := range envMappings {
@@ -121,32 +122,32 @@ func setDefaultsFromEnv() {
 
 	// a map of known environment variables to map to viper keys
 	envMappings := map[string]envMapping{
-		constants.EnvInstallDir:    {[]string{constants.ArgInstallDir}, cmdconfig.String},
-		constants.EnvModLocation:   {[]string{constants.ArgModLocation}, cmdconfig.String},
-		constants.EnvIntrospection: {[]string{constants.ArgIntrospection}, cmdconfig.String},
-		constants.EnvTelemetry:     {[]string{constants.ArgTelemetry}, cmdconfig.String},
-		constants.EnvUpdateCheck:   {[]string{constants.ArgUpdateCheck}, cmdconfig.Bool},
+		internal_constants.EnvInstallDir:    {[]string{constants.ArgInstallDir}, cmdconfig.String},
+		internal_constants.EnvModLocation:   {[]string{constants.ArgModLocation}, cmdconfig.String},
+		internal_constants.EnvIntrospection: {[]string{constants.ArgIntrospection}, cmdconfig.String},
+		internal_constants.EnvTelemetry:     {[]string{constants.ArgTelemetry}, cmdconfig.String},
+		internal_constants.EnvUpdateCheck:   {[]string{constants.ArgUpdateCheck}, cmdconfig.Bool},
 		// PIPES_HOST needs to be defined before STEAMPIPE_CLOUD_HOST,
 		// so that if STEAMPIPE_CLOUD_HOST is defined, it can override PIPES_HOST
-		constants.EnvPipesHost: {[]string{constants.ArgCloudHost}, cmdconfig.String},
-		constants.EnvCloudHost: {[]string{constants.ArgCloudHost}, cmdconfig.String},
+		internal_constants.EnvPipesHost: {[]string{constants.ArgCloudHost}, cmdconfig.String},
+		internal_constants.EnvCloudHost: {[]string{constants.ArgCloudHost}, cmdconfig.String},
 		// PIPES_TOKEN needs to be defined before STEAMPIPE_CLOUD_TOKEN,
 		// so that if STEAMPIPE_CLOUD_TOKEN is defined, it can override PIPES_TOKEN
-		constants.EnvPipesToken: {[]string{constants.ArgCloudToken}, cmdconfig.String},
-		constants.EnvCloudToken: {[]string{constants.ArgCloudToken}, cmdconfig.String},
+		internal_constants.EnvPipesToken: {[]string{constants.ArgCloudToken}, cmdconfig.String},
+		internal_constants.EnvCloudToken: {[]string{constants.ArgCloudToken}, cmdconfig.String},
 		//
-		constants.EnvSnapshotLocation:  {[]string{constants.ArgSnapshotLocation}, cmdconfig.String},
-		constants.EnvWorkspaceDatabase: {[]string{constants.ArgWorkspaceDatabase}, cmdconfig.String},
-		constants.EnvDisplayWidth:      {[]string{constants.ArgDisplayWidth}, cmdconfig.Int},
-		constants.EnvMaxParallel:       {[]string{constants.ArgMaxParallel}, cmdconfig.Int},
-		constants.EnvQueryTimeout:      {[]string{constants.ArgDatabaseQueryTimeout}, cmdconfig.Int},
-		constants.EnvCacheTTL:          {[]string{constants.ArgCacheTtl}, cmdconfig.Int},
-		constants.EnvCacheMaxTTL:       {[]string{constants.ArgCacheMaxTtl}, cmdconfig.Int},
-		constants.EnvMemoryMaxMb:       {[]string{constants.ArgMemoryMaxMb}, cmdconfig.Int},
-		constants.EnvMemoryMaxMbPlugin: {[]string{constants.ArgMemoryMaxMbPlugin}, cmdconfig.Int},
+		internal_constants.EnvSnapshotLocation:  {[]string{constants.ArgSnapshotLocation}, cmdconfig.String},
+		internal_constants.EnvWorkspaceDatabase: {[]string{constants.ArgWorkspaceDatabase}, cmdconfig.String},
+		internal_constants.EnvDisplayWidth:      {[]string{constants.ArgDisplayWidth}, cmdconfig.Int},
+		internal_constants.EnvMaxParallel:       {[]string{constants.ArgMaxParallel}, cmdconfig.Int},
+		internal_constants.EnvQueryTimeout:      {[]string{constants.ArgDatabaseQueryTimeout}, cmdconfig.Int},
+		internal_constants.EnvCacheTTL:          {[]string{constants.ArgCacheTtl}, cmdconfig.Int},
+		internal_constants.EnvCacheMaxTTL:       {[]string{constants.ArgCacheMaxTtl}, cmdconfig.Int},
+		internal_constants.EnvMemoryMaxMb:       {[]string{constants.ArgMemoryMaxMb}, cmdconfig.Int},
+		internal_constants.EnvMemoryMaxMbPlugin: {[]string{constants.ArgMemoryMaxMbPlugin}, cmdconfig.Int},
 
 		// we need this value to go into different locations
-		constants.EnvCacheEnabled: {[]string{
+		internal_constants.EnvCacheEnabled: {[]string{
 			constants.ArgClientCacheEnabled,
 			constants.ArgServiceCacheEnabled,
 		}, cmdconfig.Bool},
