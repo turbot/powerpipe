@@ -18,6 +18,7 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/go-kit/logging"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/powerpipe/internal/constants/runtime"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/version"
@@ -28,7 +29,6 @@ import (
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"github.com/turbot/steampipe/pkg/filepaths"
 )
 
 //var waitForTasksChannel chan struct{}

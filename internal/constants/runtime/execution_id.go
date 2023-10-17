@@ -5,7 +5,7 @@ import (
 	"time"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/steampipe/pkg/constants"
+	"github.com/turbot/powerpipe/internal/constants"
 )
 
 var (
