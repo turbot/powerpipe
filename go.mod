@@ -118,6 +118,7 @@ require (
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
 	github.com/hashicorp/go-getter v1.7.2 // indirect
+	github.com/hashicorp/go-hclog v1.5.0 // indirect
 	github.com/hashicorp/go-multierror v1.1.1 // indirect
 	github.com/hashicorp/go-plugin v1.5.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
@@ -231,3 +232,6 @@ require (
 	k8s.io/apimachinery v0.26.2 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
 )
+
+// github.com/turbot/pipe-fittings => /Users/pskrbasu/turbot-delivery/Steampipe/pipe-fittings
+replace github.com/turbot/steampipe => /Users/pskrbasu/turbot-delivery/Steampipe/steampipe

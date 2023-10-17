@@ -1,30 +1,24 @@
 package cmdconfig
 
 import (
-	"bytes"
 	"fmt"
-	"github.com/turbot/pipe-fittings/cloud"
-	"io"
 	"log"
 	"os"
 	"runtime/debug"
 	"strings"
-	"time"
+
+	"github.com/turbot/pipe-fittings/cloud"
 
 	"github.com/fatih/color"
-	"github.com/hashicorp/go-hclog"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/go-kit/logging"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/constants/runtime"
 	"github.com/turbot/powerpipe/internal/dashboard"
-	"github.com/turbot/powerpipe/internal/version"
 
 	shared_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
@@ -69,11 +63,11 @@ func preRunHook(cmd *cobra.Command, args []string) {
 
 	// create a buffer which can be used as a sink for log writes
 	// till INSTALL_DIR is setup in initGlobalConfig
-	logBuffer := bytes.NewBuffer([]byte{})
+	// logBuffer := bytes.NewBuffer([]byte{})
 
 	// create a logger before initGlobalConfig - we may need to reinitialize the logger
 	// depending on the value of the log_level value in global general options
-	createLogger(logBuffer, cmd)
+	// createLogger(logBuffer, cmd)
 
 	// set up the global viper config with default values from
 	// config files and ENV variables
@@ -86,7 +80,7 @@ func preRunHook(cmd *cobra.Command, args []string) {
 	// recreate the logger
 	// this will put the new log level (if any) to effect as well as start streaming to the
 	// log file.
-	createLogger(logBuffer, cmd)
+	// createLogger(logBuffer, cmd)
 
 	// runScheduledTasks skips running tasks if this instance is the plugin manager
 	//waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args, ew)
@@ -189,19 +183,19 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
 	// and we cannot get this until the other config has been resolved
-	err = setCloudTokenDefault()
-	if err != nil {
-		loadConfigErrorsAndWarnings.Error = err
-		return loadConfigErrorsAndWarnings
-	}
+	// err = setCloudTokenDefault()
+	// if err != nil {
+	// 	loadConfigErrorsAndWarnings.Error = err
+	// 	return loadConfigErrorsAndWarnings
+	// }
 
 	// now validate all config values have appropriate values
 	ew := validateConfig()
 	error_helpers.FailOnErrorWithMessage(ew.Error, "failed to validate config")
 
-	loadConfigErrorsAndWarnings.Merge(ew)
+	// loadConfigErrorsAndWarnings.Merge(ew)
 
-	return loadConfigErrorsAndWarnings
+	return error_helpers.NewErrorsAndWarning(nil)
 }
 
 func setCloudTokenDefault() error {
@@ -244,56 +238,63 @@ func validateConfig() *error_helpers.ErrorAndWarnings {
 }
 
 // create a hclog logger with the level specified by the SP_LOG env var
-func createLogger(logBuffer *bytes.Buffer, cmd *cobra.Command) {
-	level := sdklogging.LogLevel()
-	var logDestination io.Writer
-	if len(filepaths.SteampipeDir) == 0 {
-		// write to the buffer - this is to make sure that we don't lose logs
-		// till the time we get the log directory
-		logDestination = logBuffer
-	} else {
-		logDestination = logging.NewRotatingLogWriter(filepaths.EnsureLogDir(), "steampipe")
+// func createLogger(logBuffer *bytes.Buffer, cmd *cobra.Command) {
+// 	if task.IsPluginManagerCmd(cmd) {
+// 		// nothing to do here - plugin manager sets up it's own logger
+// 		// refer https://github.com/turbot/steampipe/blob/710a96d45fd77294de8d63d77bf78db65133e5ca/cmd/plugin_manager.go#L102
+// 		return
+// 	}
 
-		// write out the buffered contents
-		_, _ = logDestination.Write(logBuffer.Bytes())
-	}
+// 	level := sdklogging.LogLevel()
+// 	var logDestination io.Writer
+// 	if len(filepaths.SteampipeDir) == 0 {
+// 		// write to the buffer - this is to make sure that we don't lose logs
+// 		// till the time we get the log directory
+// 		logDestination = logBuffer
+// 	} else {
+// 		logDestination = logging.NewRotatingLogWriter(filepaths.EnsureLogDir(), "steampipe")
 
-	hcLevel := hclog.LevelFromString(level)
+// 		// write out the buffered contents
+// 		_, _ = logDestination.Write(logBuffer.Bytes())
+// 	}
 
-	options := &hclog.LoggerOptions{
-		// make the name unique so that logs from this instance can be filtered
-		Name:       fmt.Sprintf("steampipe [%s]", runtime.ExecutionID),
-		Level:      hcLevel,
-		Output:     logDestination,
-		TimeFn:     func() time.Time { return time.Now().UTC() },
-		TimeFormat: "2006-01-02 15:04:05.000 UTC",
-	}
-	logger := sdklogging.NewLogger(options)
-	log.SetOutput(logger.StandardWriter(&hclog.StandardLoggerOptions{InferLevels: true}))
-	log.SetPrefix("")
-	log.SetFlags(0)
+// 	hcLevel := hclog.LevelFromString(level)
 
-	// if the buffer is empty then this is the first time the logger is getting setup
-	// write out a banner
-	if logBuffer.Len() == 0 {
-		// pump in the initial set of logs
-		// this will also write out the Execution ID - enabling easy filtering of logs for a single execution
-		// we need to do this since all instances will log to a single file and logs will be interleaved
-		log.Printf("[INFO] ********************************************************\n")
-		log.Printf("[INFO] **%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
-		log.Printf("[INFO] ********************************************************\n")
-		log.Printf("[INFO] Version:   v%s\n", version.VersionString)
-		log.Printf("[INFO] Log level: %s\n", sdklogging.LogLevel())
-		log.Printf("[INFO] Log date: %s\n", time.Now().Format("2006-01-02"))
-		//
-	}
-}
+// 	options := &hclog.LoggerOptions{
+// 		// make the name unique so that logs from this instance can be filtered
+// 		Name:       fmt.Sprintf("steampipe [%s]", runtime.ExecutionID),
+// 		Level:      hcLevel,
+// 		Output:     logDestination,
+// 		TimeFn:     func() time.Time { return time.Now().UTC() },
+// 		TimeFormat: "2006-01-02 15:04:05.000 UTC",
+// 	}
+// 	logger := sdklogging.NewLogger(options)
+// 	log.SetOutput(logger.StandardWriter(&hclog.StandardLoggerOptions{InferLevels: true}))
+// 	log.SetPrefix("")
+// 	log.SetFlags(0)
+
+// 	// if the buffer is empty then this is the first time the logger is getting setup
+// 	// write out a banner
+// 	if logBuffer.Len() == 0 {
+// 		// pump in the initial set of logs
+// 		// this will also write out the Execution ID - enabling easy filtering of logs for a single execution
+// 		// we need to do this since all instances will log to a single file and logs will be interleaved
+// 		log.Printf("[INFO] ********************************************************\n")
+// 		log.Printf("[INFO] **%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
+// 		log.Printf("[INFO] ********************************************************\n")
+// 		log.Printf("[INFO] Version:   v%s\n", version.VersionString)
+// 		log.Printf("[INFO] Log level: %s\n", sdklogging.LogLevel())
+// 		log.Printf("[INFO] Log date: %s\n", time.Now().Format("2006-01-02"))
+// 		//
+// 	}
+// }
 
 func ensureInstallDir(installDir string) {
 	log.Printf("[TRACE] ensureInstallDir %s", installDir)
 	if _, err := os.Stat(installDir); os.IsNotExist(err) {
 		log.Printf("[TRACE] creating install dir")
 		err = os.MkdirAll(installDir, 0755)
+		fmt.Printf("installDir: %s", installDir)
 		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create installation directory: %s", installDir))
 	}
 
@@ -303,7 +304,7 @@ func ensureInstallDir(installDir string) {
 	// also set the global containing the configured install dir
 	// this is a hack since we are using LoadConfig from the steampipe repository
 	// and it needs access to this value
-	filepaths.SteampipeDir = installDir
+	filepaths.PowerpipeDir = installDir
 }
 
 // displayDeprecationWarnings shows the deprecated warnings in a formatted way

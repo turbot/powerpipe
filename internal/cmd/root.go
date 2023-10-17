@@ -7,9 +7,13 @@ import (
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/powerpipe/pkg/filepaths"
+	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -26,6 +30,9 @@ func InitCmd() {
 	defer utils.LogTime("cmd.root.InitCmd end")
 
 	rootCmd.SetVersionTemplate(fmt.Sprintf("Powerpipe v%s\n", version.PowerpipeVersion.String()))
+
+	rootCmd.PersistentFlags().String("install-dir", filepaths.DefaultInstallDir, "Path to the installation directory")
+	error_helpers.FailOnError(viper.BindPFlag("install-dir", rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
 
 	AddCommands()
 	// disable auto completion generation, since we don't want to support

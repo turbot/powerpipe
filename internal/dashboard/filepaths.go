@@ -29,7 +29,7 @@ func ensurePowerpipeSubDir(dirName string) string {
 
 func powerpipeSubDir(dirName string) string {
 	if PowerpipeDir == "" {
-		panic(fmt.Errorf("cannot call any Powerpipt directory functions before PowerpipeDir is set"))
+		panic(fmt.Errorf("cannot call any Powerpipe directory functions before PowerpipeDir is set"))
 	}
 	return filepath.Join(PowerpipeDir, dirName)
 }
