@@ -1,8 +1,17 @@
 package cmd
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/spf13/cobra"
+	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/pkg/constants"
+	"github.com/turbot/powerpipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/cmdconfig"
 )
 
@@ -83,7 +92,48 @@ Examples:
 	return cmd
 }
 
-func runModInstallCmd(cmd *cobra.Command, args []string) {}
+func runModInstallCmd(cmd *cobra.Command, args []string) {
+	ctx := cmd.Context()
+	utils.LogTime("cmd.runModInstallCmd")
+	defer func() {
+		utils.LogTime("cmd.runModInstallCmd end")
+		if r := recover(); r != nil {
+			error_helpers.ShowError(ctx, helpers.ToError(r))
+			// exitCode = constants.ExitCodeUnknownErrorPanic
+		}
+	}()
+
+	// try to load the workspace mod definition
+	// - if it does not exist, this will return a nil mod and a nil error
+	// TODO PSKR hard-code workspacepath
+	workspacePath := "/Users/pskrbasu/turbot-delivery/Steampipe/steampipe/tests/acceptance/test_data/mods/functionality_test_mod"
+	workspaceMod, err := parse.LoadModfile(workspacePath)
+	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
+
+	// if no mod was loaded, create a default
+	if workspaceMod == nil {
+		workspaceMod, err = createWorkspaceMod(ctx, cmd, workspacePath)
+		if err != nil {
+			error_helpers.FailOnError(err)
+		}
+	}
+
+	// TODO PSKR remove hardcoding
+	gitUrlMode := "https"
+
+	// if any mod names were passed as args, convert into formed mod names
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	opts.ModArgs = utils.TrimGitUrls(opts.ModArgs)
+	opts.GitUrlMode = modinstaller.GitUrlMode(gitUrlMode)
+
+	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+	if err != nil {
+		// exitCode = constants.ExitCodeModInstallFailed
+		error_helpers.FailOnError(err)
+	}
+
+	fmt.Println(modinstaller.BuildInstallSummary(installData))
+}
 
 func modUninstallCmd() *cobra.Command {
 	var cmd = &cobra.Command{
@@ -178,3 +228,20 @@ Example:
 }
 
 func runModInitCmd(cmd *cobra.Command, args []string) {}
+
+func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (*modconfig.Mod, error) {
+	if !modinstaller.ValidateModLocation(ctx, workspacePath) {
+		return nil, fmt.Errorf("mod %s cancelled", cmd.Name())
+	}
+
+	if parse.ModfileExists(workspacePath) {
+		fmt.Println("Working folder already contains a mod definition file")
+		return nil, nil
+	}
+	mod := modconfig.CreateDefaultMod(workspacePath)
+	if err := mod.Save(); err != nil {
+		return nil, err
+	}
+
+	return mod, nil
+}
