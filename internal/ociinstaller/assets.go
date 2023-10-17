@@ -7,7 +7,7 @@ import (
 	"path/filepath"
 
 	shared_ociinstaller "github.com/turbot/pipe-fittings/ociinstaller"
-	"github.com/turbot/steampipe/pkg/constants"
+	"github.com/turbot/powerpipe/internal/constants"
 )
 
 // InstallAssets installs the Steampipe report server assets
