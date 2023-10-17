@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/pkg/entities"
 	"log"
 
 	"github.com/spf13/viper"
@@ -17,7 +18,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"github.com/turbot/steampipe/pkg/db/db_client"
 	"github.com/turbot/steampipe/pkg/db/db_common"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
 	"github.com/turbot/steampipe/pkg/workspace"
 )
 
@@ -137,7 +137,7 @@ func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
 	i.Client = client
 }
 
-func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map[string]*modconfig.PluginVersionString) []string {
+func validateModRequirementsRecursively(mod *entities.Mod, pluginVersionMap map[string]*entities.PluginVersionString) []string {
 	var validationErrors []string
 
 	// validate this mod

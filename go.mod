@@ -6,28 +6,30 @@ toolchain go1.21.3
 
 replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
 
+replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
+
 require (
+	github.com/Machiel/slugify v1.0.1
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/fatih/color v1.15.0
-	github.com/gertd/go-pluralize v0.2.1
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
 	github.com/gin-contrib/static v0.0.1
 	github.com/gin-gonic/gin v1.9.1
 	github.com/go-playground/validator/v10 v10.15.5
 	github.com/hashicorp/go-hclog v1.5.0
+	github.com/hashicorp/go-version v1.6.0
 	github.com/hashicorp/hcl/v2 v2.18.1
 	github.com/jackc/pgconn v1.14.1
 	github.com/karrick/gows v0.3.0
-	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-isatty v0.0.19
-	github.com/olekukonko/tablewriter v0.0.5
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5
 	github.com/spf13/viper v1.17.0
+	github.com/stevenle/topsort v0.2.0
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
 	github.com/turbot/pipe-fittings v0.0.0-20231016133425-ffde2b823be2
@@ -35,9 +37,12 @@ require (
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	github.com/turbot/terraform-components v0.0.0-20230904000149-70ed428b19d7
-	go.uber.org/zap v1.26.0
+	github.com/xlab/treeprint v1.2.0
+	github.com/zclconf/go-cty v1.14.1
+	github.com/zclconf/go-cty-yaml v1.0.3
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
+	sigs.k8s.io/yaml v1.3.0
 )
 
 require (
@@ -48,7 +53,6 @@ require (
 	cloud.google.com/go/storage v1.30.1 // indirect
 	dario.cat/mergo v1.0.0 // indirect
 	github.com/AdaLogics/go-fuzz-headers v0.0.0-20230811130428-ced1acdcaa24 // indirect
-	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Microsoft/go-winio v0.6.1 // indirect
 	github.com/Microsoft/hcsshim v0.11.1 // indirect
 	github.com/ProtonMail/go-crypto v0.0.0-20230828082145-3c4c8a2d2371 // indirect
@@ -83,6 +87,7 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.2 // indirect
+	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
 	github.com/go-git/gcfg v1.5.1-0.20230307220236-3a3c6141e376 // indirect
@@ -114,9 +119,9 @@ require (
 	github.com/hashicorp/go-retryablehttp v0.5.2 // indirect
 	github.com/hashicorp/go-safetemp v1.0.0 // indirect
 	github.com/hashicorp/go-uuid v1.0.3 // indirect
-	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl v1.0.0 // indirect
 	github.com/hashicorp/terraform v0.15.1 // indirect
+	github.com/hashicorp/terraform-registry-address v0.2.1 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
@@ -135,6 +140,7 @@ require (
 	github.com/klauspost/compress v1.17.0 // indirect
 	github.com/klauspost/cpuid/v2 v2.2.4 // indirect
 	github.com/leodido/go-urn v1.2.4 // indirect
+	github.com/logrusorgru/aurora v2.0.3+incompatible // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
@@ -149,6 +155,7 @@ require (
 	github.com/modern-go/concurrent v0.0.0-20180306012644-bacd9c7ef1dd // indirect
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
+	github.com/olekukonko/tablewriter v0.0.5 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/oras-project/oras-credentials-go v0.3.0 // indirect
@@ -162,6 +169,7 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
+	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/sagikazarmark/locafero v0.3.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
@@ -173,7 +181,6 @@ require (
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.10.0 // indirect
 	github.com/spf13/cast v1.5.1 // indirect
-	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
@@ -184,10 +191,7 @@ require (
 	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
 	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
-	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
-	github.com/zclconf/go-cty v1.14.1 // indirect
-	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	go.opencensus.io v0.24.0 // indirect
 	go.opentelemetry.io/otel v1.17.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/internal/retry v1.17.0 // indirect
@@ -228,5 +232,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	k8s.io/apimachinery v0.26.2 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
-	sigs.k8s.io/yaml v1.3.0 // indirect
 )

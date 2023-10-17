@@ -1,0 +1,58 @@
+package parse
+
+import (
+	"github.com/hashicorp/hcl/v2"
+	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/powerpipe/pkg/entities"
+)
+
+// struct to hold the result of a decoding operation
+type DecodeResult struct {
+	Diags   hcl.Diagnostics
+	Depends map[string]*entities.ResourceDependency
+}
+
+func newDecodeResult() *DecodeResult {
+	return &DecodeResult{Depends: make(map[string]*entities.ResourceDependency)}
+}
+
+// Merge merges this decode result with another
+func (p *DecodeResult) Merge(other *DecodeResult) *DecodeResult {
+	p.Diags = append(p.Diags, other.Diags...)
+	for k, v := range other.Depends {
+		p.Depends[k] = v
+	}
+
+	return p
+}
+
+// Success returns if the was parsing successful - true if there are no errors and no dependencies
+func (p *DecodeResult) Success() bool {
+	return !p.Diags.HasErrors() && len(p.Depends) == 0
+}
+
+// if the diags contains dependency errors, add dependencies to the result
+// otherwise add diags to the result
+func (p *DecodeResult) handleDecodeDiags(diags hcl.Diagnostics) {
+	for _, diag := range diags {
+		if dependency := diagsToDependency(diag); dependency != nil {
+			p.Depends[dependency.String()] = dependency
+		}
+	}
+	// only register errors if there are NOT any missing variables
+	if len(p.Depends) == 0 {
+		p.addDiags(diags)
+	}
+}
+
+// determine whether the diag is a dependency error, and if so, return a dependency object
+func diagsToDependency(diag *hcl.Diagnostic) *entities.ResourceDependency {
+	if helpers.StringSliceContains(missingVariableErrors, diag.Summary) {
+		return &entities.ResourceDependency{Range: diag.Expression.Range(), Traversals: diag.Expression.Variables()}
+	}
+	return nil
+}
+
+func (p *DecodeResult) addDiags(diags hcl.Diagnostics) {
+	p.Diags = append(p.Diags, diags...)
+}

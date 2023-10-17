@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/pkg/cloud"
-	"github.com/turbot/powerpipe/pkg/constants"
 	"github.com/turbot/powerpipe/pkg/error_helpers"
 )
 

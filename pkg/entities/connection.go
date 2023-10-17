@@ -12,7 +12,7 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/options"
+	"github.com/turbot/powerpipe/pkg/options"
 	"golang.org/x/exp/maps"
 )
 

@@ -9,7 +9,7 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/spf13/cobra"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/options"
+	"github.com/turbot/powerpipe/pkg/options"
 	"github.com/zclconf/go-cty/cty"
 )
 
