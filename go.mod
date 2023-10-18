@@ -30,7 +30,7 @@ require (
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
 	// pp
-	github.com/turbot/pipe-fittings v0.0.0-20231018112131-048d7819520b
+	github.com/turbot/pipe-fittings v0.0.0-20231018113136-54009a2ffc95
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	// pp
@@ -45,6 +45,7 @@ require (
 
 require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/sethvargo/go-retry v0.2.4
 	golang.org/x/sync v0.4.0
 )
 
@@ -142,6 +143,7 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
+	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect
@@ -171,7 +173,6 @@ require (
 	github.com/sagikazarmark/locafero v0.3.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
-	github.com/sethvargo/go-retry v0.2.4 // indirect
 	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.0 // indirect
