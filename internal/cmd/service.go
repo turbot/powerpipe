@@ -9,6 +9,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/dashboardassets"
 	"github.com/turbot/pipe-fittings/dashboardserver"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
@@ -66,7 +67,7 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	modInitData := dashboard.InitDashboard(ctx)
 
 	// ensure dashboard assets
-	err := dashboard.Ensure(ctx)
+	err := dashboardassets.Ensure(ctx)
 	if err != nil {
 		panic(err)
 	}

@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/parse"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -14,7 +15,6 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
-	"github.com/turbot/powerpipe/pkg/entities/parse"
 )
 
 func modCmd() *cobra.Command {

@@ -4,15 +4,14 @@ import (
 	"context"
 	"strings"
 
-	"github.com/turbot/pipe-fittings/cloud"
-	"github.com/turbot/pipe-fittings/modconfig"
-
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 )
 
-func getCloudMetadata(ctx context.Context) (*modconfig.CloudMetadata, error) {
+func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
 	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
@@ -20,7 +19,7 @@ func getCloudMetadata(ctx context.Context) (*modconfig.CloudMetadata, error) {
 	}
 	connectionString := workspaceDatabase
 
-	var cloudMetadata *modconfig.CloudMetadata
+	var cloudMetadata *steampipeconfig.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
 	workspaceDatabaseIsConnectionString := strings.HasPrefix(workspaceDatabase, "postgresql://") || strings.HasPrefix(workspaceDatabase, "postgres://")

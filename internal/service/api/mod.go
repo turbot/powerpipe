@@ -10,9 +10,9 @@ import (
 	"github.com/sethvargo/go-retry"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/versionmap"
 	"github.com/turbot/powerpipe/internal/workspace"
-	"github.com/turbot/powerpipe/pkg/entities/parse"
 )
 
 func (api *APIService) RegisterModApiEndpoints(router *gin.RouterGroup) {

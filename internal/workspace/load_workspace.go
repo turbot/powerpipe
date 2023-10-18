@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/load_mod"
-	"github.com/turbot/powerpipe/pkg/entities/parse"
+	"github.com/turbot/pipe-fittings/parse"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"

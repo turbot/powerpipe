@@ -13,6 +13,8 @@ import (
 	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 )
 
+// TODO KAI remove duplication with pipe fittings
+
 type CmdBuilder struct {
 	cmd      *cobra.Command
 	bindings map[string]*pflag.Flag
