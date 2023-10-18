@@ -3,7 +3,7 @@ package workspace
 import (
 	"fmt"
 
-	"github.com/turbot/steampipe/pkg/constants"
+	"github.com/turbot/pipe-fittings/constants"
 )
 
 var (

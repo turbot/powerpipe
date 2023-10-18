@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	export2 "github.com/turbot/pipe-fittings/export"
 	"log"
 
 	"github.com/spf13/viper"
@@ -13,12 +14,11 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	internal_constants "github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/pkg/export"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"github.com/turbot/steampipe/pkg/statushooks"
 )
 
 type InitData struct {
@@ -27,7 +27,7 @@ type InitData struct {
 	Result    *db_common.InitResult
 
 	ShutdownTelemetry func()
-	ExportManager     *export.Manager
+	ExportManager     *export2.Manager
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -39,13 +39,13 @@ func NewErrorInitData(err error) *InitData {
 func NewInitData() *InitData {
 	i := &InitData{
 		Result:        &db_common.InitResult{},
-		ExportManager: export.NewManager(),
+		ExportManager: export2.NewManager(),
 	}
 
 	return i
 }
 
-func (i *InitData) RegisterExporters(exporters ...export.Exporter) *InitData {
+func (i *InitData) RegisterExporters(exporters ...export2.Exporter) *InitData {
 	for _, e := range exporters {
 		i.ExportManager.Register(e)
 	}

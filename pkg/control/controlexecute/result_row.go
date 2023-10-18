@@ -5,11 +5,11 @@ import (
 
 	"github.com/turbot/go-kit/helpers"
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
-	"github.com/turbot/steampipe/pkg/query/queryresult"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
-	"github.com/turbot/steampipe/pkg/utils"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/dashboard/dashboardtypes"
+	"github.com/turbot/pipe-fittings/query/queryresult"
+	"github.com/turbot/pipe-fittings/steampipeconfig/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
 )
 
 type ResultRows []*ResultRow

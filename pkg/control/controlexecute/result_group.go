@@ -10,12 +10,12 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/control/controlstatus"
+	"github.com/turbot/pipe-fittings/dashboard/dashboardtypes"
 	"github.com/turbot/pipe-fittings/db/db_common"
-	"github.com/turbot/pipes-fittings/error_helpers"
-	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/control/controlstatus"
-	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/steampipeconfig/modconfig"
 	"golang.org/x/sync/semaphore"
 )
 

@@ -1,6 +1,6 @@
 package controlexecute
 
-import "github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
+import "github.com/turbot/pipe-fittings/dashboard/dashboardtypes"
 
 // ExecutionTreeNode is implemented by all control execution tree nodes
 type ExecutionTreeNode interface {

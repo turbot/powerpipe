@@ -11,9 +11,9 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/pipes-fittings/error_helpers"
-	"github.com/turbot/steampipe/pkg/filepaths"
-	"github.com/turbot/steampipe/pkg/versionhelpers"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/versionhelpers"
 )
 
 const WorkspaceLockStructVersion = 20220411
