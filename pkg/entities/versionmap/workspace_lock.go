@@ -11,7 +11,7 @@ import (
 
 	"github.com/Masterminds/semver/v3"
 	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/steampipe/pkg/error_helpers"
+	"github.com/turbot/pipes-fittings/error_helpers"
 	"github.com/turbot/steampipe/pkg/filepaths"
 	"github.com/turbot/steampipe/pkg/versionhelpers"
 )

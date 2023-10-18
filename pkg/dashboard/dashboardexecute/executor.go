@@ -10,10 +10,10 @@ import (
 	"time"
 
 	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/db/db_common"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardevents"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
-	"github.com/turbot/steampipe/pkg/db/db_common"
 	"github.com/turbot/steampipe/pkg/utils"
 )
 

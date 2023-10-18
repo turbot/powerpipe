@@ -11,8 +11,8 @@ import (
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipes-fittings/error_helpers"
 	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/filepaths"
 	"gopkg.in/olahol/melody.v1"
 )

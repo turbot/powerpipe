@@ -13,9 +13,9 @@ import (
 
 	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipes-fittings/error_helpers"
 	"github.com/turbot/steampipe/pkg/constants"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardassets"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/filepaths"
 	"github.com/turbot/steampipe/pkg/utils"
 )

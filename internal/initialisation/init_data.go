@@ -3,13 +3,14 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/statushooks"
 	"log"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/db/db_client"
+	"github.com/turbot/pipe-fittings/db/db_common"
+	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -17,8 +18,7 @@ import (
 	"github.com/turbot/powerpipe/pkg/export"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"github.com/turbot/steampipe/pkg/db/db_client"
-	"github.com/turbot/steampipe/pkg/db/db_common"
+	"github.com/turbot/steampipe/pkg/statushooks"
 )
 
 type InitData struct {

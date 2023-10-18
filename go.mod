@@ -4,8 +4,8 @@ go 1.21.0
 
 toolchain go1.21.3
 
-//replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
-//replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
+replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
+replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
 
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect

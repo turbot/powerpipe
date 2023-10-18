@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/turbot/pipes-fittings/error_helpers"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe/pkg/constants"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 func InitDashboard(ctx context.Context) *initialisation.InitData {

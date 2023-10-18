@@ -17,7 +17,7 @@ package entities
 //	"github.com/turbot/pipe-fittings/filepaths"
 //	"github.com/turbot/pipe-fittings/statushooks"
 //	"github.com/turbot/pipe-fittings/utils"
-//	"github.com/turbot/steampipe/pkg/db/db_common"
+//	"github.com/turbot/pipe-fittings/db/db_common"
 //)
 //
 //// LoadConnectionState populates a ConnectionStateMap from the connection_state table

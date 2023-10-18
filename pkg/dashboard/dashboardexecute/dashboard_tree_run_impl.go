@@ -2,9 +2,9 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/pipes-fittings/error_helpers"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardevents"
 	"github.com/turbot/steampipe/pkg/dashboard/dashboardtypes"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
 	"log"
 )
