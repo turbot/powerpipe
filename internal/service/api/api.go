@@ -69,7 +69,7 @@ type APIService struct {
 	router         *gin.Engine
 	webSocket      *melody.Melody
 
-	// the loaded mod
+	// the loaded workspace
 	workspace *workspace.Workspace
 }
 

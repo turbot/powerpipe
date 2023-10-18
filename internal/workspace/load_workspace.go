@@ -7,6 +7,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/load_mod"
+	"github.com/turbot/powerpipe/pkg/entities/parse"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -87,4 +88,24 @@ func addInteractiveVariableToViper(name string, rawValue string) {
 	varMap := viper.GetStringMap(constants.ConfigInteractiveVariables)
 	varMap[name] = rawValue
 	viper.Set(constants.ConfigInteractiveVariables, varMap)
+}
+
+func CreateWorkspaceMod(ctx context.Context, workspacePath string) (*modconfig.Mod, error) {
+	if parse.ModfileExists(workspacePath) {
+		fmt.Println("Working folder already contains a mod definition file")
+		return nil, nil
+	}
+	mod := modconfig.CreateDefaultMod(workspacePath)
+	if err := mod.Save(); err != nil {
+		return nil, err
+	}
+
+	// load up the written mod file so that we get the updated
+	// block ranges
+	mod, err := parse.LoadModfile(workspacePath)
+	if err != nil {
+		return nil, err
+	}
+
+	return mod, nil
 }
