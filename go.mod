@@ -4,8 +4,8 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
-replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
+//replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
+//replace github.com/turbot/terraform-components => /Users/kai/Dev/github/turbot/terraform-components
 
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
@@ -32,7 +32,7 @@ require (
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
 	// pp
-	github.com/turbot/pipe-fittings v0.0.0-20231018045640-4fcafd577f16
+	github.com/turbot/pipe-fittings v0.0.0-20231018065101-91af70398934
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	// pp
@@ -47,7 +47,6 @@ require (
 
 require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/turbot/steampipe v0.21.1
 	golang.org/x/sync v0.4.0
 )
 
@@ -186,6 +185,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
+	github.com/turbot/steampipe v0.21.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect

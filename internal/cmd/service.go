@@ -68,7 +68,8 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 
 	// setup a new webSocket service
 	webSocket := melody.New()
-
+	modInitData := dashboard.InitDashboard(ctx)
+	error_helpers.FailOnError(modInitData.Result.Error)
 	// create the dashboardServer
 	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)
