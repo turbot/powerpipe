@@ -3,13 +3,17 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/dashboardserver"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
@@ -49,7 +53,7 @@ connection from any compatible database client.`,
 		OnCmd(cmd).
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", exported_commandconfig.FlagOptions.WithShortHand("h")).
-		AddStringFlag(constants.ArgInstallDir, dashboard.DefaultInstallDir, "The default install directory")
+		AddBoolFlag(constants.ArgBrowser, true, "Specify whether to launch the browser after starting the powerpipe server")
 
 	return cmd
 }
@@ -73,19 +77,38 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	error_helpers.FailOnError(err)
 
 	// send it over to the API Server
-	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket))
+	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
 	if err != nil {
-		panic(err)
+		error_helpers.FailOnError(err)
 	}
 	dashboardServer.InitAsync(ctx)
 
 	// start the API server
 	err = powerpipeService.Start()
 	if err != nil {
-		panic(err)
+		error_helpers.FailOnError(err)
+	}
+	// start browser if required
+	if viper.GetBool(constants.ArgBrowser) {
+		url := buildDashboardURL(9194, modInitData.Workspace)
+		if err := utils.OpenBrowser(url); err != nil {
+			dashboardserver.OutputWarning(ctx, "Could not start web browser.")
+			log.Println("[TRACE] powerpipe server started but failed to start client", err)
+		}
 	}
 	fmt.Println("server started")
 	<-ctx.Done()
+}
+
+func buildDashboardURL(serverPort dashboardserver.ListenPort, w *workspace.Workspace) string {
+	url := fmt.Sprintf("http://localhost:%d", serverPort)
+	if len(w.SourceSnapshots) == 1 {
+		for snapshotName := range w.GetResourceMaps().Snapshots {
+			url += fmt.Sprintf("/%s", snapshotName)
+			break
+		}
+	}
+	return url
 }
 
 // func StartDashboardServer(ctx context.Context, serverPort dashboardserver.ListenPort, serverListen dashboardserver.ListenType) {

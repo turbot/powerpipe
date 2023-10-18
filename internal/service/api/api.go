@@ -19,7 +19,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	"gopkg.in/olahol/melody.v1"
@@ -70,7 +70,7 @@ type APIService struct {
 	webSocket      *melody.Melody
 
 	// the loaded mod
-	mod *modconfig.Mod
+	workspace *workspace.Workspace
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -83,9 +83,9 @@ func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	}
 }
 
-func WithMod(mod *modconfig.Mod) APIServiceOption {
+func WithWorkspace(workspace *workspace.Workspace) APIServiceOption {
 	return func(api *APIService) error {
-		api.mod = mod
+		api.workspace = workspace
 		return nil
 	}
 }
