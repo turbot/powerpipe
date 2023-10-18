@@ -16,9 +16,9 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/pkg/filepaths"
 
 	shared_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
@@ -168,7 +168,7 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	//}
 
 	// TODO HACK
-	var loadConfigErrorsAndWarnings = error_helpers.EmptyErrorsAndWarning()
+	// var loadConfigErrorsAndWarnings = error_helpers.EmptyErrorsAndWarning()
 
 	//// store global config
 	//steampipeconfig.GlobalConfig = config
