@@ -3,15 +3,15 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	db_client2 "github.com/turbot/pipe-fittings/db_client"
-	"github.com/turbot/pipe-fittings/db_common"
-	export2 "github.com/turbot/pipe-fittings/export"
 	"log"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/db_client"
+	"github.com/turbot/pipe-fittings/db_common"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -27,7 +27,7 @@ type InitData struct {
 	Result    *db_common.InitResult
 
 	ShutdownTelemetry func()
-	ExportManager     *export2.Manager
+	ExportManager     *export.Manager
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -39,13 +39,13 @@ func NewErrorInitData(err error) *InitData {
 func NewInitData() *InitData {
 	i := &InitData{
 		Result:        &db_common.InitResult{},
-		ExportManager: export2.NewManager(),
+		ExportManager: export.NewManager(),
 	}
 
 	return i
 }
 
-func (i *InitData) RegisterExporters(exporters ...export2.Exporter) *InitData {
+func (i *InitData) RegisterExporters(exporters ...export.Exporter) *InitData {
 	for _, e := range exporters {
 		i.ExportManager.Register(e)
 	}
@@ -53,7 +53,7 @@ func (i *InitData) RegisterExporters(exporters ...export2.Exporter) *InitData {
 	return i
 }
 
-func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_client2.ClientOption) {
+func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_client.ClientOption) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -162,14 +162,14 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map
 }
 
 // GetDbClient either creates a DB client using the configured connection string (if present) or creates a LocalDbClient
-func GetDbClient(ctx context.Context, onConnectionCallback db_client2.DbConnectionCallback, opts ...db_client2.ClientOption) (db_common.Client, *error_helpers.ErrorAndWarnings) {
-	connectionString := viper.GetString(constants.ArgConnectionString)
+func GetDbClient(ctx context.Context, onConnectionCallback db_client.DbConnectionCallback, opts ...db_client.ClientOption) (db_common.Client, *error_helpers.ErrorAndWarnings) {
+	connectionString := viper.GetString(constants.ArgWorkspaceDatabase)
 	if connectionString == "" {
 		return nil, error_helpers.NewErrorsAndWarning(sperr.New("no connection string is set"))
 	}
 
 	statushooks.SetStatus(ctx, "Connecting to remote Steampipe database")
-	client, err := db_client2.NewDbClient(ctx, connectionString, onConnectionCallback, opts...)
+	client, err := db_client.NewDbClient(ctx, connectionString, onConnectionCallback, opts...)
 	return client, error_helpers.NewErrorsAndWarning(err)
 }
 
