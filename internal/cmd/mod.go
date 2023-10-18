@@ -8,13 +8,13 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	exported_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 	"github.com/turbot/powerpipe/pkg/entities/parse"
-	"github.com/turbot/steampipe/pkg/error_helpers"
-	"github.com/turbot/steampipe/pkg/steampipeconfig/modconfig"
 )
 
 func modCmd() *cobra.Command {

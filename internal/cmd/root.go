@@ -9,11 +9,11 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/version"
 	"github.com/turbot/powerpipe/pkg/filepaths"
-	"github.com/turbot/steampipe/pkg/error_helpers"
 )
 
 // rootCmd represents the base command when called without any subcommands

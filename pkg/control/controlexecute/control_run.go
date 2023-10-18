@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/controlstatus"
 	"github.com/turbot/pipe-fittings/dashboardtypes"
-	"github.com/turbot/pipe-fittings/db/db_common"
+	"github.com/turbot/pipe-fittings/db_common"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"

@@ -16,7 +16,7 @@ package entities
 //	"github.com/turbot/pipe-fittings/utils"
 //	"github.com/turbot/steampipe-plugin-sdk/v5/grpc/proto"
 //	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-//	"github.com/turbot/pipe-fittings/db/db_common"
+//	"github.com/turbot/pipe-fittings/db_common"
 //	pluginshared "github.com/turbot/pipe-fittings/pluginmanager_service/grpc/shared"
 //	"golang.org/x/exp/maps"
 //)
