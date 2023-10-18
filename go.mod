@@ -29,7 +29,7 @@ require (
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
 	// pp
-	github.com/turbot/pipe-fittings v0.0.0-20231018075702-1d1276c1c70d
+	github.com/turbot/pipe-fittings v0.0.0-20231018080834-84897785597d
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	// pp
