@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modinstaller"
@@ -107,7 +108,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
 	// TODO PSKR hard-code workspacepath
-	workspacePath := "/Users/binaek/integrated_mod"
+	workspacePath := viper.GetString(constants.ArgModLocation)
 	workspaceMod, err := parse.LoadModfile(workspacePath)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 

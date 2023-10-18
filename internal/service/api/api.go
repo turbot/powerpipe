@@ -22,7 +22,7 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api/common"
-	"github.com/turbot/steampipe/sperr"
+	"github.com/turbot/powerpipe/pkg/dashboard"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -112,9 +112,9 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 
 // Start starts services managed by the Manager.
 func (api *APIService) Start() error {
-	if api.mod == nil {
-		return sperr.New("cannot start without a defined mode")
-	}
+	// if api.mod == nil {
+	// 	return sperr.New("cannot start without a defined mod")
+	// }
 	// Set the gin mode based on our environment, to configure logging etc as appropriate
 	gin.SetMode(viper.GetString("environment"))
 	binding.EnableDecoderDisallowUnknownFields = true

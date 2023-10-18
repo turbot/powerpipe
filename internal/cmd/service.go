@@ -2,15 +2,19 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
 	"github.com/spf13/cobra"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/dashboardserver"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
 	exported_commandconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
+	"github.com/turbot/steampipe/pkg/error_helpers"
+	"gopkg.in/olahol/melody.v1"
 )
 
 func serviceCmd() *cobra.Command {
@@ -46,28 +50,6 @@ connection from any compatible database client.`,
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", exported_commandconfig.FlagOptions.WithShortHand("h")).
 		AddStringFlag(constants.ArgInstallDir, dashboard.DefaultInstallDir, "The default install directory")
-	// AddStringFlag(constants.ArgConnectionString, "postgres://steampipe@localhost:9193/steampipe", "Database service port").
-	// AddIntFlag(constants.ArgDatabasePort, constants.DatabaseDefaultPort, "Database service port").
-	// AddStringFlag(constants.ArgDatabaseListenAddresses, string(db_local.ListenTypeNetwork), "Accept connections from: `local` (an alias for `localhost` only), `network` (an alias for `*`), or a comma separated list of hosts and/or IP addresses").
-	// AddStringFlag(constants.ArgServicePassword, "", "Set the database password for this session").
-	// // default is false and hides the database user password from service start prompt
-	// AddBoolFlag(constants.ArgServiceShowPassword, false, "View database password for connecting from another machine").
-	// // dashboard server
-	// AddBoolFlag(constants.ArgDashboard, false, "Run the dashboard webserver with the service").
-	// AddStringFlag(constants.ArgDashboardListen, string(dashboardserver.ListenTypeNetwork), "Accept connections from: local (localhost only) or network (open) (dashboard)").
-	// AddIntFlag(constants.ArgDashboardPort, constants.DashboardServerDefaultPort, "Report server port").
-	// // foreground enables the service to run in the foreground - till exit
-	// AddBoolFlag(constants.ArgForeground, false, "Run the service in the foreground").
-
-	// 	// flags relevant only if the --dashboard arg is used:
-	// 	AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .spvar file containing variable values (only applies if '--dashboard' flag is also set)").
-	// 	// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
-	// 	// Cobra will interpret values passed to a StringSliceFlag as CSV,
-	// 	// where args passed to StringArrayFlag are not parsed and used raw
-	// 	AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable (only applies if '--dashboard' flag is also set)").
-
-	// 	// hidden flags for internal use
-	// 	AddStringFlag(constants.ArgInvoker, string(constants.InvokerService), "Invoked by \"service\" or \"query\"", cmdconfig.FlagOptions.Hidden())
 
 	return cmd
 }
@@ -84,15 +66,26 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 		panic(err)
 	}
 
-	server, err := api.NewAPIService(ctx)
+	// setup a new webSocket service
+	webSocket := melody.New()
+
+	// create the dashboardServer
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
+	error_helpers.FailOnError(err)
+
+	// send it over to the API Server
+	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket))
 	if err != nil {
 		panic(err)
 	}
-	err = server.Start()
+	dashboardServer.InitAsync(ctx)
+
+	// start the API server
+	err = powerpipeService.Start()
 	if err != nil {
 		panic(err)
 	}
-	println("server started")
+	fmt.Println("server started")
 	<-ctx.Done()
 }
 

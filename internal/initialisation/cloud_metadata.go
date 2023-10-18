@@ -13,7 +13,7 @@ import (
 
 func getCloudMetadata(ctx context.Context) (*modconfig.CloudMetadata, error) {
 	// TODO PSKR remove hardcoding
-	workspaceDatabase := ""
+	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
 		return nil, nil

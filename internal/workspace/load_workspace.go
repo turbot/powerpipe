@@ -19,7 +19,7 @@ import (
 
 func LoadWorkspacePromptingForVariables(ctx context.Context) (*shared_workspace.Workspace, *error_helpers.ErrorAndWarnings) {
 	// TODO PSKR remove hardcoding
-	workspacePath := "/Users/binaek/integrated_mod"
+	workspacePath := viper.GetString(constants.ArgModLocation)
 	t := time.Now()
 	defer func() {
 		log.Printf("[TRACE] Workspace load took %dms\n", time.Since(t).Milliseconds())
