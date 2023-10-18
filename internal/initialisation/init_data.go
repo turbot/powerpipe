@@ -169,7 +169,7 @@ func GetDbClient(ctx context.Context, onConnectionCallback db_client.DbConnectio
 	}
 
 	statushooks.SetStatus(ctx, "Connecting to remote Steampipe database")
-	client, err := db_client.NewDbClient(ctx, connectionString, onConnectionCallback, opts...)
+	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
 	return client, error_helpers.NewErrorsAndWarning(err)
 }
 
