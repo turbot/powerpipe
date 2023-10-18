@@ -34,7 +34,7 @@ func InitCmd() {
 	rootCmd.PersistentFlags().String(constants.ArgInstallDir, filepaths.DefaultInstallDir, "Path to the installation directory")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgInstallDir, rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
 
-	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, filepaths.DefaultInstallDir, "Path to the workspace database")
+	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, constants.DefaultWorkspaceDatabase, "Path to the workspace database")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgWorkspaceDatabase, rootCmd.PersistentFlags().Lookup(constants.ArgWorkspaceDatabase)))
 
 	rootCmd.PersistentFlags().String(constants.ArgModLocation, filepaths.DefaultInstallDir, "Path to the mod")
