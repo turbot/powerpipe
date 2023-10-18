@@ -234,4 +234,4 @@ require (
 )
 
 // github.com/turbot/pipe-fittings => /Users/pskrbasu/turbot-delivery/Steampipe/pipe-fittings
-replace github.com/turbot/steampipe => /Users/pskrbasu/turbot-delivery/Steampipe/steampipe
+replace github.com/turbot/steampipe => github.com/turbot/steampipe v1.7.0-rc.0.0.20231017023741-09c1c8381853

@@ -19,8 +19,10 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api/common"
+	"github.com/turbot/steampipe/sperr"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -67,6 +69,9 @@ type APIService struct {
 	apiPrefixGroup *gin.RouterGroup
 	router         *gin.Engine
 	webSocket      *melody.Melody
+
+	// the loaded mod
+	mod *modconfig.Mod
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -75,6 +80,13 @@ type APIServiceOption func(*APIService) error
 func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	return func(api *APIService) error {
 		api.webSocket = webSocket
+		return nil
+	}
+}
+
+func WithMod(mod *modconfig.Mod) APIServiceOption {
+	return func(api *APIService) error {
+		api.mod = mod
 		return nil
 	}
 }
@@ -100,6 +112,9 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 
 // Start starts services managed by the Manager.
 func (api *APIService) Start() error {
+	if api.mod == nil {
+		return sperr.New("cannot start without a defined mode")
+	}
 	// Set the gin mode based on our environment, to configure logging etc as appropriate
 	gin.SetMode(viper.GetString("environment"))
 	binding.EnableDecoderDisallowUnknownFields = true

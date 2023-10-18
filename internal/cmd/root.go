@@ -31,8 +31,14 @@ func InitCmd() {
 
 	rootCmd.SetVersionTemplate(fmt.Sprintf("Powerpipe v%s\n", version.PowerpipeVersion.String()))
 
-	rootCmd.PersistentFlags().String("install-dir", filepaths.DefaultInstallDir, "Path to the installation directory")
-	error_helpers.FailOnError(viper.BindPFlag("install-dir", rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
+	rootCmd.PersistentFlags().String(constants.ArgInstallDir, filepaths.DefaultInstallDir, "Path to the installation directory")
+	error_helpers.FailOnError(viper.BindPFlag(constants.ArgInstallDir, rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
+
+	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, filepaths.DefaultInstallDir, "Path to the workspace database")
+	error_helpers.FailOnError(viper.BindPFlag(constants.ArgWorkspaceDatabase, rootCmd.PersistentFlags().Lookup(constants.ArgWorkspaceDatabase)))
+
+	rootCmd.PersistentFlags().String(constants.ArgModLocation, filepaths.DefaultInstallDir, "Path to the mod")
+	error_helpers.FailOnError(viper.BindPFlag(constants.ArgModLocation, rootCmd.PersistentFlags().Lookup(constants.ArgModLocation)))
 
 	AddCommands()
 	// disable auto completion generation, since we don't want to support

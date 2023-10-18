@@ -107,7 +107,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
 	// TODO PSKR hard-code workspacepath
-	workspacePath := "/Users/pskrbasu/integrated"
+	workspacePath := "/Users/binaek/integrated_mod"
 	workspaceMod, err := parse.LoadModfile(workspacePath)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 
