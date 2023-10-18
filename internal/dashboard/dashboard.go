@@ -6,8 +6,8 @@ import (
 
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/initialisation"
-	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 func InitDashboard(ctx context.Context) *initialisation.InitData {
