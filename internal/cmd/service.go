@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"log"
 	"os"
 	"os/signal"
 
@@ -63,6 +62,10 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
 
+	// initialise the workspace
+	modInitData := dashboard.InitDashboard(ctx)
+
+	// ensure dashboard assets
 	err := dashboard.Ensure(ctx)
 	if err != nil {
 		panic(err)
@@ -70,13 +73,12 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 
 	// setup a new webSocket service
 	webSocket := melody.New()
-	modInitData := dashboard.InitDashboard(ctx)
 	error_helpers.FailOnError(modInitData.Result.Error)
 	// create the dashboardServer
 	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)
 
-	// send it over to the API Server
+	// send it over to the powerpipe API Server
 	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
 	if err != nil {
 		error_helpers.FailOnError(err)
@@ -93,7 +95,6 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 		url := buildDashboardURL(9194, modInitData.Workspace)
 		if err := utils.OpenBrowser(url); err != nil {
 			dashboardserver.OutputWarning(ctx, "Could not start web browser.")
-			log.Println("[TRACE] powerpipe server started but failed to start client", err)
 		}
 	}
 	fmt.Println("server started")

@@ -3,9 +3,10 @@ package workspace
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/load_mod"
 	"log"
 	"time"
+
+	"github.com/turbot/pipe-fittings/load_mod"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -18,7 +19,6 @@ import (
 )
 
 func LoadWorkspacePromptingForVariables(ctx context.Context) (*shared_workspace.Workspace, *error_helpers.ErrorAndWarnings) {
-	// TODO PSKR remove hardcoding
 	workspacePath := viper.GetString(constants.ArgModLocation)
 	t := time.Now()
 	defer func() {

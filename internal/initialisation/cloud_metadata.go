@@ -2,9 +2,10 @@ package initialisation
 
 import (
 	"context"
+	"strings"
+
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -12,7 +13,6 @@ import (
 )
 
 func getCloudMetadata(ctx context.Context) (*modconfig.CloudMetadata, error) {
-	// TODO PSKR remove hardcoding
 	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
