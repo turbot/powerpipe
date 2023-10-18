@@ -73,7 +73,7 @@ connection from any compatible database client.`,
 }
 
 func runServiceStartCmd(cmd *cobra.Command, _ []string) {
-	dashboard.PowerpipeDir = "~/.Powerpipe"
+	dashboard.PowerpipeDir = "~/.powerpipe"
 
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
