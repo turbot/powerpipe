@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"os"
 
 	"github.com/turbot/go-kit/helpers"
@@ -15,6 +16,10 @@ var exitCode int
 func main() {
 	ctx := context.Background()
 	utils.LogTime("main start")
+
+	// set default install dir
+	filepaths.DefaultInstallDir = ".powerpipe"
+
 	defer func() {
 		if r := recover(); r != nil {
 			error_helpers.ShowError(ctx, helpers.ToError(r))

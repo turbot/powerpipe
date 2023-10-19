@@ -19,8 +19,8 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	"gopkg.in/olahol/melody.v1"
 )
@@ -153,7 +153,7 @@ func (api *APIService) Start() error {
 	api.RegisterModApiEndpoints(apiPrefixGroup)
 
 	// put in handing for the dashboard for the mod
-	assetsDirectory := dashboard.GetStaticAssetsDir()
+	assetsDirectory := filepaths.EnsureDashboardAssetsDir()
 	// respond with the static dashboard assets for / (root)
 	router.Use(static.Serve("/", static.LocalFile(assetsDirectory, true)))
 	if api.webSocket != nil {

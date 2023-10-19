@@ -10,10 +10,10 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/version"
-	"github.com/turbot/powerpipe/pkg/filepaths"
 )
 
 // rootCmd represents the base command when called without any subcommands
@@ -26,6 +26,7 @@ var rootCmd = &cobra.Command{
 var exitCode int
 
 func InitCmd() {
+	filepaths.DefaultInstallDir = ".powerpipe"
 	utils.LogTime("cmd.root.InitCmd start")
 	defer utils.LogTime("cmd.root.InitCmd end")
 

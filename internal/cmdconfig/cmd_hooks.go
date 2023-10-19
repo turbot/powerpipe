@@ -7,19 +7,16 @@ import (
 	"runtime/debug"
 	"strings"
 
-	"github.com/turbot/pipe-fittings/cloud"
-
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/dashboard"
-	"github.com/turbot/powerpipe/pkg/filepaths"
-
 	shared_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -299,12 +296,7 @@ func ensureInstallDir(installDir string) {
 	}
 
 	// store as PowerpipeDir
-	dashboard.PowerpipeDir = installDir
-
-	// also set the global containing the configured install dir
-	// this is a hack since we are using LoadConfig from the steampipe repository
-	// and it needs access to this value
-	filepaths.PowerpipeDir = installDir
+	filepaths.InstallDir = installDir
 }
 
 // displayDeprecationWarnings shows the deprecated warnings in a formatted way
