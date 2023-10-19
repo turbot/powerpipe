@@ -4,8 +4,6 @@ go 1.21.0
 
 toolchain go1.21.3
 
-//replace github.com/turbot/pipe-fifittingsttings => /Users/kai/Dev/github/turbot/pipe-fittings
-
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -31,7 +29,7 @@ require (
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.1
 	// pp-rebuilt
-	github.com/turbot/pipe-fittings v0.0.0-20231019034148-169170d36037
+	github.com/turbot/pipe-fittings v0.0.0-20231019041718-d9f7003a2329
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	// pp
@@ -228,5 +226,3 @@ require (
 	k8s.io/apimachinery v0.26.2 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
 )
-
-replace github.com/turbot/pipe-fittings => /Users/binaek/work/sources/pipe-fittings
