@@ -7,7 +7,7 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
-	"github.com/turbot/pipe-fittings/versionmap"
+	"github.com/turbot/powerpipe/internal/service/api/dto"
 	"github.com/turbot/powerpipe/internal/workspace"
 )
 
@@ -47,22 +47,9 @@ func (api *APIService) getModHandler(c *gin.Context) {
 	return
 }
 
-type InstallModResponse struct {
-	Installed   *versionmap.DependencyVersionMap `json:"installed"`
-	Uninstalled *versionmap.DependencyVersionMap `json:"uninstalled"`
-	Downgraded  *versionmap.DependencyVersionMap `json:"downgraded"`
-	Upgraded    *versionmap.DependencyVersionMap `json:"upgraded"`
-}
-
-type InstallModRequest struct {
-	Names  []string `json:"names"`
-	DryRun *bool    `json:"dry_run"`
-	Force  *bool    `json:"force"`
-}
-
 // TODO all API endpoints which mutates needs locks
 func (api *APIService) installModHandler(c *gin.Context) {
-	input := InstallModRequest{}
+	input := dto.InstallModRequest{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
@@ -88,7 +75,7 @@ func (api *APIService) installModHandler(c *gin.Context) {
 		error_helpers.FailOnError(err)
 	}
 
-	response := InstallModResponse{
+	response := dto.InstallModResponse{
 		Installed:   &installData.Installed,
 		Uninstalled: &installData.Uninstalled,
 		Downgraded:  &installData.Downgraded,
