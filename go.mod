@@ -42,7 +42,7 @@ require (
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
-require github.com/sethvargo/go-retry v0.2.4
+require github.com/sethvargo/go-retry v0.2.4 // indirect
 
 require (
 	cloud.google.com/go v0.110.7 // indirect

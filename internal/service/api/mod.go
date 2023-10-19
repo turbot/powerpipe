@@ -1,13 +1,9 @@
 package api
 
 import (
-	"context"
-	"errors"
 	"net/http"
-	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/sethvargo/go-retry"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
@@ -64,32 +60,25 @@ type InstallModRequest struct {
 	Force  *bool    `json:"force"`
 }
 
+// TODO all API endpoints which mutates needs locks
 func (api *APIService) installModHandler(c *gin.Context) {
 	input := InstallModRequest{}
 	if err := c.ShouldBindJSON(&input); err != nil {
 		c.AbortWithError(http.StatusBadRequest, err)
 	}
 
+	mod := api.workspace.Mod
+
 	if !parse.ModfileExists(api.workspace.Path) {
-		_, err := workspace.CreateWorkspaceMod(c, api.workspace.Path)
+		m, err := workspace.CreateWorkspaceMod(c, api.workspace.Path)
 		if err != nil {
 			error_helpers.FailOnError(err)
 		}
-	}
-
-	backoff := retry.WithMaxDuration(5*time.Second, retry.NewConstant(50*time.Millisecond))
-	err := retry.Do(c.Request.Context(), backoff, func(ctx context.Context) error {
-		if api.workspace.Mod == nil {
-			return retry.RetryableError(errors.New("workspace mod not found"))
-		}
-		return nil
-	})
-	if err != nil {
-		c.AbortWithError(http.StatusRequestTimeout, err)
+		mod = m
 	}
 
 	installData, err := modinstaller.InstallWorkspaceDependencies(c.Request.Context(), &modinstaller.InstallOpts{
-		WorkspaceMod: api.workspace.Mod,
+		WorkspaceMod: mod,
 		ModArgs:      input.Names,
 		DryRun:       false,
 		Force:        false,
