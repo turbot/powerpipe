@@ -62,13 +62,6 @@ const CheckFilterTypeSelect = ({
   const [currentType, setCurrentType] = useState<CheckFilterType>(type);
 
   useDeepCompareEffect(() => {
-    console.log("Setting CheckFilterTypeSelect", {
-      currentType,
-      index,
-      item,
-      update,
-    });
-
     update(index, {
       ...item,
       type: currentType,
@@ -168,7 +161,7 @@ const CheckFilterKeySelect = ({
       onChange={(t) => setCurrentKey((t as SelectOption).value)}
       options={keys}
       inputId={`${type}.input`}
-      placeholder="Enter a filter…"
+      placeholder={`Choose a ${type}…`}
       styles={styles}
       value={keys.find((t) => t.value === filterKey)}
     />
@@ -186,12 +179,6 @@ const CheckFilterValueSelect = ({
   const { context: filterValues } = useDashboardControls();
 
   useDeepCompareEffect(() => {
-    console.log("Setting CheckFilterValueSelect", {
-      currentValue,
-      index,
-      item,
-      update,
-    });
     update(index, {
       ...item,
       value: currentValue,
@@ -240,7 +227,7 @@ const CheckFilterValueSelect = ({
       onChange={(t) => setCurrentValue((t as SelectOption).value)}
       options={values}
       inputId={`${type}.input`}
-      placeholder="Enter a filter…"
+      placeholder="Choose a value…"
       styles={styles}
       value={values.find((t) => t.value === value)}
     />
