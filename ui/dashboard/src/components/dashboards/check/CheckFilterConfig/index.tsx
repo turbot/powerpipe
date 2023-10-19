@@ -110,18 +110,14 @@ const CheckFilterConfig = () => {
       const filters = get(toSave, "and", []).filter((f) =>
         validateFilter(f as Filter),
       );
+      const newParams = new URLSearchParams(previous);
       if (filters.length === 0) {
-        const newConfig = {
-          ...previous,
-        };
-        delete newConfig["where"];
-        return newConfig;
+        newParams.delete("where");
+        return newParams;
       } else {
         const asJson = JSON.stringify(toSave);
-        return {
-          ...previous,
-          where: asJson,
-        };
+        newParams.set("where", asJson);
+        return newParams;
       }
     });
   };

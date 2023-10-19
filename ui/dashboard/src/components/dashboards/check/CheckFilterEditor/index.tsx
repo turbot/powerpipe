@@ -136,12 +136,6 @@ const CheckFilterKeySelect = ({
   const { context: filterValues } = useDashboardControls();
 
   useDeepCompareEffect(() => {
-    console.log("Setting CheckFilterKeySelect", {
-      currentKey,
-      index,
-      item,
-      update,
-    });
     update(index, {
       ...item,
       key: currentKey,
@@ -212,7 +206,7 @@ const CheckFilterValueSelect = ({
       return (
         Object.entries(filterValues[type] || {})
           // @ts-ignore
-          .filter(([k, v]) => v > 0)
+          .filter(([, v]) => v > 0)
           .map(([k]) => ({
             value: k,
             label: k,

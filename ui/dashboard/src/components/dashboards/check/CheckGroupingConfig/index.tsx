@@ -58,16 +58,20 @@ const CheckGroupingConfig = () => {
   }, [modifiedConfig, setIsValid]);
 
   const saveGroupingConfig = (toSave) => {
-    setSearchParams((previous) => ({
-      ...previous,
-      grouping: toSave
-        .map((c) =>
-          c.type === "dimension" || c.type === "tag"
-            ? `${c.type}|${c.value}`
-            : c.type,
-        )
-        .join(","),
-    }));
+    setSearchParams((previous) => {
+      const newParams = new URLSearchParams(previous);
+      newParams.set(
+        "grouping",
+        toSave
+          .map((c) =>
+            c.type === "dimension" || c.type === "tag"
+              ? `${c.type}|${c.value}`
+              : c.type,
+          )
+          .join(","),
+      );
+      return newParams;
+    });
   };
 
   return (

@@ -53,13 +53,6 @@ const CheckGroupingTypeSelect = ({
   const [currentType, setCurrentType] = useState<CheckDisplayGroupType>(type);
 
   useDeepCompareEffect(() => {
-    console.log("Setting CheckGroupingTypeSelect", {
-      currentType,
-      index,
-      item,
-      update,
-    });
-
     update(index, {
       ...item,
       id: currentType,
@@ -128,12 +121,6 @@ const CheckGroupingValueSelect = ({
   const { context: filterValues } = useDashboardControls();
 
   useDeepCompareEffect(() => {
-    console.log("Setting CheckGroupingValueSelect", {
-      currentValue,
-      index,
-      item,
-      update,
-    });
     update(index, {
       ...item,
       id: `${item.type}-${currentValue}`,
