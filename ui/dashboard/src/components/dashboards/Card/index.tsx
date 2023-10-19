@@ -265,7 +265,7 @@ const Card = (props: CardProps) => {
             </>
           )}
         </p>
-        <CardDiffDisplay diff={state.diff} type={state.type} />
+        <CardDiffDisplay diff={state.diff} />
       </dd>
     </div>
   );
