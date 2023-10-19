@@ -26,11 +26,14 @@ var rootCmd = &cobra.Command{
 var exitCode int
 
 func InitCmd() {
-	filepaths.DefaultInstallDir = ".powerpipe"
 	utils.LogTime("cmd.root.InitCmd start")
 	defer utils.LogTime("cmd.root.InitCmd end")
 
 	rootCmd.SetVersionTemplate(fmt.Sprintf("Powerpipe v%s\n", version.PowerpipeVersion.String()))
+
+	// set the current working directory
+	wd, err := os.Getwd()
+	error_helpers.FailOnError(err)
 
 	rootCmd.PersistentFlags().String(constants.ArgInstallDir, filepaths.DefaultInstallDir, "Path to the installation directory")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgInstallDir, rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
@@ -38,10 +41,11 @@ func InitCmd() {
 	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, constants.DefaultWorkspaceDatabase, "Path to the workspace database")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgWorkspaceDatabase, rootCmd.PersistentFlags().Lookup(constants.ArgWorkspaceDatabase)))
 
-	rootCmd.PersistentFlags().String(constants.ArgModLocation, filepaths.DefaultInstallDir, "Path to the mod")
+	rootCmd.PersistentFlags().String(constants.ArgModLocation, wd, "Path to the mod")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgModLocation, rootCmd.PersistentFlags().Lookup(constants.ArgModLocation)))
 
 	AddCommands()
+
 	// disable auto completion generation, since we don't want to support
 	// powershell yet - and there's no way to disable powershell in the default generator
 	rootCmd.CompletionOptions.DisableDefaultCmd = true

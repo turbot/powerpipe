@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/filepaths"
 	"os"
 
+	"github.com/turbot/pipe-fittings/filepaths"
+
+	"github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
@@ -18,7 +20,8 @@ func main() {
 	utils.LogTime("main start")
 
 	// set default install dir
-	filepaths.DefaultInstallDir = ".powerpipe"
+	// we don't care about the error here, since we know this will (probably) NEVER error
+	filepaths.DefaultInstallDir, _ = files.Tildefy("~/.powerpipe")
 
 	defer func() {
 		if r := recover(); r != nil {
