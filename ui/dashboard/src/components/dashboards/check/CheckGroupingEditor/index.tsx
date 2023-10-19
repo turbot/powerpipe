@@ -1,3 +1,4 @@
+import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import Icon from "../../../Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
@@ -269,14 +270,11 @@ const CheckGroupingEditor = ({
           />
         ))}
       </Reorder.Group>
-      <div
-        className="flex items-center text-link cursor-pointer space-x-3"
+      <CheckEditorAddItem
+        label="Add grouping"
         // @ts-ignore
         onClick={() => setConfig([...config, { id: "", type: "" }])}
-      >
-        <Icon className="inline-block h-4 w-4" icon="plus" />
-        <span className="inline-block">Add grouping</span>
-      </div>
+      />
     </div>
   );
 };

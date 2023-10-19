@@ -1,3 +1,4 @@
+import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
 import Icon from "../../../Icon";
 import Select from "react-select";
@@ -292,7 +293,7 @@ const CheckFilterEditorItem = ({
       <span
         className={classNames(
           // @ts-ignore
-          config.and.length > 1
+          config.and.length > 0
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
             : "text-foreground-lightest",
         )}
@@ -336,43 +337,44 @@ const CheckFilterEditor = ({ config, setConfig }: CheckFilterEditorProps) => {
     [config, setConfig],
   );
 
+  const filters = config?.and || [];
+
   return (
     <div className="flex flex-col space-y-4">
-      <Reorder.Group
-        axis="y"
-        values={config?.and || []}
-        onReorder={(a) => {
-          if (!!config) {
-            const newConfig = {
-              ...config,
-              and: a,
-            };
-            setConfig(newConfig);
-          }
-        }}
-        as="div"
-        className="flex flex-col space-y-4"
-      >
-        {/*@ts-ignore*/}
-        {(config?.and || []).map((c: Filter, idx: number) => (
-          <CheckFilterEditorItem
-            key={`${c.type}-${c.value}`}
-            config={config}
-            item={c}
-            index={idx}
-            remove={remove}
-            update={update}
-          />
-        ))}
-      </Reorder.Group>
-      <div
-        className="flex items-center text-link cursor-pointer space-x-3"
+      {filters.length > 0 && (
+        <Reorder.Group
+          axis="y"
+          values={config?.and || []}
+          onReorder={(a) => {
+            if (!!config) {
+              const newConfig = {
+                ...config,
+                and: a,
+              };
+              setConfig(newConfig);
+            }
+          }}
+          as="div"
+          className="flex flex-col space-y-4"
+        >
+          {/*@ts-ignore*/}
+          {filters.map((c: Filter, idx: number) => (
+            <CheckFilterEditorItem
+              key={`${c.type}-${c.value}`}
+              config={config}
+              item={c}
+              index={idx}
+              remove={remove}
+              update={update}
+            />
+          ))}
+        </Reorder.Group>
+      )}
+      <CheckEditorAddItem
+        label="Add grouping"
         // @ts-ignore
         onClick={() => setConfig({ and: [...config.and, { type: "" }] })}
-      >
-        <Icon className="inline-block h-4 w-4" icon="plus" />
-        <span className="inline-block">Add filter</span>
-      </div>
+      />
     </div>
   );
 };
