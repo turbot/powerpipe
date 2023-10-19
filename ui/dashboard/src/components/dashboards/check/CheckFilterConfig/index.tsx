@@ -3,7 +3,6 @@ import get from "lodash/get";
 import Icon from "../../../Icon";
 import useCheckFilterConfig from "../../../../hooks/useCheckFilterConfig";
 import { AndFilter, CheckFilter, Filter, OrFilter } from "../common";
-import { classNames } from "../../../../utils/styles";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -95,6 +94,14 @@ const CheckFilterConfig = () => {
       return;
     }
 
+    if (
+      // @ts-ignore
+      get(modifiedConfig, "and", []).every((f) => !f.type && !f.key && !f.value)
+    ) {
+      setIsValid(true);
+      return;
+    }
+
     if (!!modifiedConfig.and) {
       setIsValid(validateAndFilter(modifiedConfig));
       return;
@@ -126,11 +133,14 @@ const CheckFilterConfig = () => {
     <>
       <div className="flex items-center space-x-3 shrink-0">
         <Icon className="h-5 w-5" icon="filter_list" />
-        {get(filterConfig, "and", []).length > 0 && (
+        {get(filterConfig, "and", []).filter((f) => validateFilter(f as Filter))
+          .length > 0 && (
           <div className="space-x-2">{filtersToText(filterConfig)}</div>
         )}
-        {get(filterConfig, "and", []).length === 0 &&
-          get(filterConfig, "or", []).length === 0 && (
+        {get(filterConfig, "and", []).filter((f) => validateFilter(f as Filter))
+          .length === 0 &&
+          get(filterConfig, "or", []).filter((f) => validateFilter(f as Filter))
+            .length === 0 && (
             <span className="text-foreground-lighter">No filters</span>
           )}
         {!showEditor && (
@@ -141,36 +151,20 @@ const CheckFilterConfig = () => {
             title="Edit filter"
           />
         )}
-        {showEditor && (
-          <>
-            <Icon
-              className="h-5 w-5 font-medium cursor-pointer"
-              icon="close"
-              onClick={() => setShowEditor(false)}
-              title="Cancel changes"
-            />
-            <Icon
-              className={classNames(
-                "h-5 w-5 font-medium",
-                isValid
-                  ? "text-ok cursor-pointer"
-                  : "text-foreground-lighter cursor-not-allowed",
-              )}
-              icon="done"
-              onClick={() => {
-                setShowEditor(false);
-                saveFilterConfig(modifiedConfig);
-              }}
-              title={isValid ? "Save changes" : "Invalid filter config"}
-            />
-          </>
-        )}
       </div>
       {showEditor && (
-        <CheckFilterEditor
-          config={modifiedConfig}
-          setConfig={setModifiedConfig}
-        />
+        <>
+          <CheckFilterEditor
+            config={modifiedConfig}
+            setConfig={setModifiedConfig}
+            isValid={isValid}
+            onCancel={() => setShowEditor(false)}
+            onSave={() => {
+              setShowEditor(false);
+              saveFilterConfig(modifiedConfig);
+            }}
+          />
+        </>
       )}
     </>
   );

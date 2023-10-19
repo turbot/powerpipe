@@ -17,6 +17,9 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
+  isValid: boolean;
+  onCancel: () => void;
+  onSave: () => void;
   setConfig: (newValue: CheckDisplayGroup[]) => void;
 };
 
@@ -228,7 +231,10 @@ const CheckGroupingEditorItem = ({
 
 const CheckGroupingEditor = ({
   config,
+  isValid,
   setConfig,
+  onCancel,
+  onSave,
 }: CheckGroupingEditorProps) => {
   const remove = useCallback(
     (index: number) => {
@@ -272,8 +278,11 @@ const CheckGroupingEditor = ({
       </Reorder.Group>
       <CheckEditorAddItem
         label="Add grouping"
+        isValid={isValid}
         // @ts-ignore
         onClick={() => setConfig([...config, { id: "", type: "" }])}
+        onCancel={onCancel}
+        onSave={onSave}
       />
     </div>
   );

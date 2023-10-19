@@ -2,7 +2,6 @@ import CheckGroupingEditor from "../CheckGroupingEditor";
 import Icon from "../../../Icon";
 import useCheckGroupingConfig from "../../../../hooks/useCheckGroupingConfig";
 import { CheckDisplayGroup } from "../common";
-import { classNames } from "../../../../utils/styles";
 import { ReactNode, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -98,36 +97,20 @@ const CheckGroupingConfig = () => {
             title="Edit grouping"
           />
         )}
-        {showEditor && (
-          <>
-            <Icon
-              className="h-5 w-5 font-medium cursor-pointer"
-              icon="close"
-              onClick={() => setShowEditor(false)}
-              title="Cancel changes"
-            />
-            <Icon
-              className={classNames(
-                "h-5 w-5 font-medium",
-                isValid
-                  ? "text-ok cursor-pointer"
-                  : "text-foreground-lighter cursor-not-allowed",
-              )}
-              icon="done"
-              onClick={() => {
-                setShowEditor(false);
-                saveGroupingConfig(modifiedConfig);
-              }}
-              title={isValid ? "Save changes" : "Invalid grouping config"}
-            />
-          </>
-        )}
       </div>
       {showEditor && (
-        <CheckGroupingEditor
-          config={modifiedConfig}
-          setConfig={setModifiedConfig}
-        />
+        <>
+          <CheckGroupingEditor
+            config={modifiedConfig}
+            setConfig={setModifiedConfig}
+            isValid={isValid}
+            onCancel={() => setShowEditor(false)}
+            onSave={() => {
+              setShowEditor(false);
+              saveGroupingConfig(modifiedConfig);
+            }}
+          />
+        </>
       )}
     </>
   );

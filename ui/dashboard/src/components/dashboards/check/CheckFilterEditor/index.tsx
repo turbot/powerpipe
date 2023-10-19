@@ -18,6 +18,9 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 
 type CheckFilterEditorProps = {
   config: CheckFilter;
+  isValid: boolean;
+  onCancel: () => void;
+  onSave: () => void;
   setConfig: (newValue: CheckFilter) => void;
 };
 
@@ -307,7 +310,13 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const CheckFilterEditor = ({ config, setConfig }: CheckFilterEditorProps) => {
+const CheckFilterEditor = ({
+  config,
+  setConfig,
+  isValid,
+  onCancel,
+  onSave,
+}: CheckFilterEditorProps) => {
   const remove = useCallback(
     (index: number) => {
       const newConfig: CheckFilter = {
@@ -337,7 +346,8 @@ const CheckFilterEditor = ({ config, setConfig }: CheckFilterEditorProps) => {
     [config, setConfig],
   );
 
-  const filters = config?.and || [];
+  const filters =
+    config?.and && config.and.length > 0 ? config.and : [{ type: "" }];
 
   return (
     <div className="flex flex-col space-y-4">
@@ -372,8 +382,11 @@ const CheckFilterEditor = ({ config, setConfig }: CheckFilterEditorProps) => {
       )}
       <CheckEditorAddItem
         label="Add grouping"
+        isValid={isValid}
         // @ts-ignore
         onClick={() => setConfig({ and: [...config.and, { type: "" }] })}
+        onCancel={onCancel}
+        onSave={onSave}
       />
     </div>
   );
