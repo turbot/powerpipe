@@ -100,6 +100,7 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
+	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -227,3 +228,5 @@ require (
 	k8s.io/apimachinery v0.26.2 // indirect
 	oras.land/oras-go/v2 v2.3.0 // indirect
 )
+
+replace github.com/turbot/pipe-fittings => /Users/binaek/work/sources/pipe-fittings

@@ -2,8 +2,9 @@ package main
 
 import (
 	"encoding/json"
-	"github.com/turbot/steampipe/pkg/version"
 	"os"
+
+	"github.com/turbot/pipe-fittings/version"
 )
 
 type packageVersion struct {
