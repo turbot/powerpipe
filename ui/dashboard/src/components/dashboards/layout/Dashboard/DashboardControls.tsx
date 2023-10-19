@@ -15,10 +15,10 @@ const DashboardControls = () => {
       {dataMode === DashboardDataModeCLISnapshot && <SnapshotHeader />}
       {isBenchmark && (
         <div className="col-span-2 grid grid-cols-2 gap-6">
-          <div className="col-span-1 space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <CheckGroupingConfig />
           </div>
-          <div className="col-span-1 space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-4">
             <CheckFilterConfig />
           </div>
         </div>

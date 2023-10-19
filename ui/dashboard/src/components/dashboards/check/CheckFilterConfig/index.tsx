@@ -145,7 +145,7 @@ const CheckFilterConfig = () => {
           )}
         {!showEditor && (
           <Icon
-            className="h-5 w-5 cursor-pointer"
+            className="h-5 w-5 cursor-pointer shrink-0"
             icon="edit_square"
             onClick={() => setShowEditor(true)}
             title="Edit filter"
