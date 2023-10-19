@@ -4,11 +4,10 @@ import (
 	"context"
 	"os"
 
-	"github.com/turbot/pipe-fittings/filepaths"
-
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
 )
