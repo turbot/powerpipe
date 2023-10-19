@@ -107,7 +107,10 @@ const CheckFilterConfig = () => {
 
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {
-      if (toSave.and && toSave.and.length === 0) {
+      const filters = get(toSave, "and", []).filter((f) =>
+        validateFilter(f as Filter),
+      );
+      if (filters.length === 0) {
         const newConfig = {
           ...previous,
         };

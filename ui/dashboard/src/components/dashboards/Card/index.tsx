@@ -55,7 +55,6 @@ type CardState = {
 
 interface CardDiffDisplayProps {
   diff: CardDiffState | undefined;
-  type: CardType;
 }
 
 // TODO diffing
@@ -79,12 +78,19 @@ const useCardState = ({
     new CardDataProcessor().getDefaultState(status, properties, display_type),
   );
 
-  useEffect(() => {
+  useDeepCompareEffect(() => {
     const diff = new CardDataProcessor();
     setCalculatedProperties(
       diff.buildCardState(data, diff_panel, display_type, properties, status),
     );
-  }, [data, diff_panel, display_type, properties, setCalculatedProperties, status]);
+  }, [
+    data,
+    diff_panel,
+    display_type,
+    properties,
+    setCalculatedProperties,
+    status,
+  ]);
 
   return calculatedProperties;
 };
@@ -101,7 +107,7 @@ const Label = ({ value }) => {
   return value;
 };
 
-const CardDiffDisplay = ({ diff, type }: CardDiffDisplayProps) => {
+const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
   if (!diff || diff.direction === "none") {
     return null;
   }
