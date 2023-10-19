@@ -1,6 +1,5 @@
 import DashboardSearch from "../DashboardSearch";
 import DashboardTagGroupSelect from "../DashboardTagGroupSelect";
-import DiffSnapshotButton from "../DiffSnapshotButton";
 import OpenSnapshotButton from "../OpenSnapshotButton";
 import PowerpipeLogo from "./PowerpipeLogo";
 import SaveSnapshotButton from "../SaveSnapshotButton";
@@ -22,7 +21,6 @@ const DashboardHeader = () => {
         <DashboardTagGroupSelect />
         <SaveSnapshotButton />
         <OpenSnapshotButton />
-        <DiffSnapshotButton />
       </div>
       <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
         <ExternalLink

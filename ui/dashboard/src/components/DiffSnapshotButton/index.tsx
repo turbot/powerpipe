@@ -1,13 +1,11 @@
 import { DashboardActions, DashboardDataModeCLISnapshot } from "../../types";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "../../utils/schema";
 import { useDashboard } from "../../hooks/useDashboard";
-import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 
 const DiffSnapshotButton = () => {
   const { dataMode, dispatch } = useDashboard();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
-  const navigate = useNavigate();
 
   if (dataMode !== DashboardDataModeCLISnapshot) {
     return null;
@@ -15,14 +13,15 @@ const DiffSnapshotButton = () => {
 
   return (
     <>
-      <span
-        className="text-base text-foreground-lighter hover:text-foreground cursor-pointer"
+      <button
+        type="button"
+        className="rounded-md bg-info px-2.5 py-1.5 text-sm font-semibold text-white"
         onClick={() => {
           fileInputRef.current?.click();
         }}
       >
         Diff
-      </span>
+      </button>
       <input
         ref={fileInputRef}
         accept=".sps"
