@@ -1,6 +1,8 @@
 package dto
 
-import "github.com/turbot/pipe-fittings/versionmap"
+import (
+	"github.com/turbot/pipe-fittings/versionmap"
+)
 
 type Mod struct {
 	Id          *string `json:"id"`
@@ -13,10 +15,11 @@ type GetModResponse struct {
 }
 
 type InstallModResponse struct {
-	Installed   *versionmap.DependencyVersionMap `json:"installed"`
-	Uninstalled *versionmap.DependencyVersionMap `json:"uninstalled"`
-	Downgraded  *versionmap.DependencyVersionMap `json:"downgraded"`
-	Upgraded    *versionmap.DependencyVersionMap `json:"upgraded"`
+	ModDependencyPath string                           `json:"mod_dependency_path"`
+	Installed         *versionmap.DependencyVersionMap `json:"installed"`
+	Uninstalled       *versionmap.DependencyVersionMap `json:"uninstalled"`
+	Downgraded        *versionmap.DependencyVersionMap `json:"downgraded"`
+	Upgraded          *versionmap.DependencyVersionMap `json:"upgraded"`
 }
 
 type InstallModRequest struct {

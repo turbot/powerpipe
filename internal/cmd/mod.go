@@ -5,8 +5,10 @@ import (
 	"fmt"
 
 	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/versionmap"
 
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -116,6 +118,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 		DryRun: toPointer(false),
 		Force:  toPointer(false),
 	})
+
 	if err != nil {
 		error_helpers.FailOnError(err)
 	}
@@ -124,7 +127,50 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 }
 
 func buildInstallSummary(installData *dto.InstallModResponse) string {
-	return ""
+	var installString string
+	installCount, installedTreeString := getInstallationResultString(*installData.Installed, installData.ModDependencyPath)
+	if installCount > 0 {
+		verb := getVerb(VerbInstalled)
+		installString = fmt.Sprintf("\n%s %d %s:\n\n%s\n", verb, installCount, utils.Pluralize("mod", installCount), installedTreeString)
+	}
+
+	if installCount == 0 {
+		return "All mods are up to date"
+	}
+	return fmt.Sprintf("%s", installString)
+}
+
+const (
+	VerbInstalled   = "Installed"
+	VerbUninstalled = "Uninstalled"
+	VerbUpgraded    = "Upgraded"
+	VerbDowngraded  = "Downgraded"
+	VerbPruned      = "Pruned"
+)
+
+var dryRunVerbs = map[string]string{
+	VerbInstalled:   "Would install",
+	VerbUninstalled: "Would uninstall",
+	VerbUpgraded:    "Would upgrade",
+	VerbDowngraded:  "Would downgrade",
+	VerbPruned:      "Would prune",
+}
+
+func getVerb(verb string) string {
+	if viper.GetBool(constants.ArgDryRun) {
+		verb = dryRunVerbs[verb]
+	}
+	return verb
+}
+
+func getInstallationResultString(items versionmap.DependencyVersionMap, modDependencyPath string) (int, string) {
+	var res string
+	count := len(items.FlatMap())
+	if count > 0 {
+		tree := items.GetDependencyTree(modDependencyPath)
+		res = tree.String()
+	}
+	return count, res
 }
 
 func modUninstallCmd() *cobra.Command {

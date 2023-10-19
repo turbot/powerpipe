@@ -76,10 +76,11 @@ func (api *APIService) installModHandler(c *gin.Context) {
 	}
 
 	response := dto.InstallModResponse{
-		Installed:   &installData.Installed,
-		Uninstalled: &installData.Uninstalled,
-		Downgraded:  &installData.Downgraded,
-		Upgraded:    &installData.Upgraded,
+		ModDependencyPath: installData.WorkspaceMod.GetInstallCacheKey(),
+		Installed:         &installData.Installed,
+		Uninstalled:       &installData.Uninstalled,
+		Downgraded:        &installData.Downgraded,
+		Upgraded:          &installData.Upgraded,
 	}
 
 	c.JSON(http.StatusOK, response)
