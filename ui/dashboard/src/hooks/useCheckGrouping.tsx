@@ -204,7 +204,7 @@ const getCheckDimensionGroupingKey = (
   dimensions: CheckResultDimension[],
 ): string => {
   if (!dimensionKey) {
-    return "Dimension key not set";
+    return "<not set>";
   }
   const foundDimension = findDimension(dimensions, dimensionKey);
   return foundDimension ? foundDimension.value : `<not set>`;
@@ -218,11 +218,11 @@ function getCheckTagGroupingKey(tagKey: string | undefined, tags: CheckTags) {
 }
 
 const getCheckReasonGroupingKey = (reason: string | undefined): string => {
-  return reason || "No reason specified.";
+  return reason || "<not set>";
 };
 
 const getCheckResourceGroupingKey = (resource: string | undefined): string => {
-  return resource || "No resource";
+  return resource || "<not set>";
 };
 
 const getCheckGroupingKey = (
@@ -556,7 +556,7 @@ function recordFilterValues(
   for (const dimension of checkResult.dimensions) {
     filterValues.dimension.key[dimension.key] = filterValues.dimension.key[
       dimension.key
-      ] || { [dimension.value]: 0 };
+    ] || { [dimension.value]: 0 };
     filterValues.dimension.key[dimension.key][dimension.value] += 1;
 
     filterValues.dimension.value[dimension.value] = filterValues.dimension
@@ -634,7 +634,7 @@ const includeResult = (
         break;
       }
       case "status": {
-        matches.push(valueRegex.test(CheckResultStatus[checkResult.status]));
+        matches.push(valueRegex.test(checkResult.status.toString()));
         break;
       }
       case "dimension": {
@@ -707,9 +707,9 @@ const useGrouping = (
       definition.panel_type === "control"
         ? [definition]
         : // @ts-ignore
-        definition.children?.filter(
-          (child) => child.panel_type === "control",
-        );
+          definition.children?.filter(
+            (child) => child.panel_type === "control",
+          );
 
     const rootBenchmarkPanel = panelsMap[definition.name];
     const b = new BenchmarkType(
@@ -773,7 +773,7 @@ const useGrouping = (
 const CheckGroupingProvider = ({
   children,
   definition,
-                                 diff_panels,
+  diff_panels,
 }: CheckGroupingProviderProps) => {
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
@@ -787,7 +787,7 @@ const CheckGroupingProvider = ({
     grouping,
     firstChildSummaries,
     tempNodeStates,
-    filterValues
+    filterValues,
   ] = useGrouping(definition, panelsMap, groupingsConfig);
 
   const [, , diffGrouping, diffFirstChildSummaries] = useGrouping(

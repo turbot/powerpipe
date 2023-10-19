@@ -50,21 +50,20 @@ const DashboardTagGroupSelect = () => {
       }
       return options.find((o) => o.groupBy === "mod");
     },
-    [options]
+    [options],
   );
 
   const [value, setValue] = useState(() => findOption(search.groupBy));
 
   const updateState = useCallback(
     (option) => {
-      console.log("Updating state");
       dispatch({
         type: DashboardActions.SET_DASHBOARD_SEARCH_GROUP_BY,
         value: option.groupBy,
         tag: option.tag,
       });
     },
-    [dispatch]
+    [dispatch],
   );
 
   useDeepCompareEffect(() => {
@@ -115,7 +114,7 @@ const DashboardTagGroupSelect = () => {
                         active
                           ? "text-foreground bg-black-scale-1"
                           : "text-foreground",
-                        "cursor-default select-none relative py-2 pl-8 pr-4"
+                        "cursor-default select-none relative py-2 pl-8 pr-4",
                       )
                     }
                     value={option}

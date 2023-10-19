@@ -205,7 +205,6 @@ const CheckFilterValueSelect = ({
   }, [currentValue, index, item]);
 
   const values = useMemo(() => {
-    console.log(filterValues);
     if (!type) {
       return [];
     }
