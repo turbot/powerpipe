@@ -2,6 +2,8 @@ package main
 
 import (
 	"context"
+	"io"
+	"log"
 	"os"
 
 	"github.com/turbot/go-kit/files"
@@ -17,6 +19,9 @@ var exitCode int
 func main() {
 	ctx := context.Background()
 	utils.LogTime("main start")
+
+	// TODO add logger - discard logs for now
+	log.SetOutput(io.Discard)
 
 	// set default install dir
 	// we don't care about the error here, since we know this will (probably) NEVER error
