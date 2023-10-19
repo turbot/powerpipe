@@ -1,14 +1,14 @@
 import { getComponent } from "../dashboards";
 // @ts-ignore
-import { ReactComponent as Logo } from "./logos/steampipe-logo.svg";
+import { ReactComponent as Logo } from "./logos/powerpipe-logo.svg";
 // @ts-ignore
-import { ReactComponent as LogoWordmarkColor } from "./logos/steampipe-logo-wordmark-color.svg";
+import { ReactComponent as LogoWordmarkColor } from "./logos/powerpipe-logo-wordmark-color.svg";
 // @ts-ignore
-import { ReactComponent as LogoWordmarkDark } from "./logos/steampipe-logo-wordmark-darkmode.svg";
+import { ReactComponent as LogoWordmarkDark } from "./logos/powerpipe-logo-wordmark-darkmode.svg";
 import { ThemeNames } from "../../hooks/useTheme";
 import { useDashboard } from "../../hooks/useDashboard";
 
-const SteampipeLogo = () => {
+const PowerpipeLogo = () => {
   const {
     themeContext: { theme },
   } = useDashboard();
@@ -29,4 +29,4 @@ const SteampipeLogo = () => {
   );
 };
 
-export default SteampipeLogo;
+export default PowerpipeLogo;

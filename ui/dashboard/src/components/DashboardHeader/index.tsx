@@ -2,8 +2,8 @@ import DashboardSearch from "../DashboardSearch";
 import DashboardTagGroupSelect from "../DashboardTagGroupSelect";
 import DiffSnapshotButton from "../DiffSnapshotButton";
 import OpenSnapshotButton from "../OpenSnapshotButton";
+import PowerpipeLogo from "./PowerpipeLogo";
 import SaveSnapshotButton from "../SaveSnapshotButton";
-import SteampipeLogo from "./SteampipeLogo";
 import ThemeToggle from "../ThemeToggle";
 import { classNames } from "../../utils/styles";
 import { getComponent } from "../dashboards";
@@ -16,7 +16,7 @@ const DashboardHeader = () => {
         "flex w-screen px-4 py-3 items-center justify-between space-x-2 md:space-x-4 bg-dashboard-panel border-b border-divide print:hidden",
       )}
     >
-      <SteampipeLogo />
+      <PowerpipeLogo />
       <div className="flex flex-grow items-center space-x-2 md:space-x-4">
         <DashboardSearch />
         <DashboardTagGroupSelect />
