@@ -23,7 +23,7 @@ import (
 
 type InitData struct {
 	Workspace *workspace.Workspace
-	Client    db_common.Client
+	Client    *db_client.DbClient
 	Result    *db_common.InitResult
 
 	ShutdownTelemetry func()
@@ -118,7 +118,7 @@ func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_cli
 
 	statushooks.SetStatus(ctx, "Connecting to steampipe database")
 	log.Printf("[INFO] Connecting to steampipe database")
-	client, errorsAndWarnings := GetDbClient(getClientCtx, nil, opts...)
+	client, errorsAndWarnings := GetDbClient(getClientCtx, opts...)
 	if errorsAndWarnings.Error != nil {
 		i.Result.Error = errorsAndWarnings.Error
 		return
@@ -126,13 +126,15 @@ func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_cli
 
 	i.Result.AddWarnings(errorsAndWarnings.Warnings...)
 
-	log.Printf("[INFO] ValidateClientCacheSettings")
-	if errorsAndWarnings := db_common.ValidateClientCacheSettings(client); errorsAndWarnings != nil {
-		if errorsAndWarnings.GetError() != nil {
-			i.Result.Error = errorsAndWarnings.GetError()
-		}
-		i.Result.AddWarnings(errorsAndWarnings.Warnings...)
-	}
+	// TODO STEAMPIPE ONLY
+	//
+	//log.Printf("[INFO] ValidateClientCacheSettings")
+	//if errorsAndWarnings := db_common.ValidateClientCacheSettings(client); errorsAndWarnings != nil {
+	//	if errorsAndWarnings.GetError() != nil {
+	//		i.Result.Error = errorsAndWarnings.GetError()
+	//	}
+	//	i.Result.AddWarnings(errorsAndWarnings.Warnings...)
+	//}
 
 	i.Client = client
 }
@@ -162,7 +164,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map
 }
 
 // GetDbClient either creates a DB client using the configured connection string (if present) or creates a LocalDbClient
-func GetDbClient(ctx context.Context, onConnectionCallback db_client.DbConnectionCallback, opts ...db_client.ClientOption) (db_common.Client, *error_helpers.ErrorAndWarnings) {
+func GetDbClient(ctx context.Context, opts ...db_client.ClientOption) (*db_client.DbClient, *error_helpers.ErrorAndWarnings) {
 	connectionString := viper.GetString(constants.ArgWorkspaceDatabase)
 	if connectionString == "" {
 		return nil, error_helpers.NewErrorsAndWarning(sperr.New("no connection string is set"))
