@@ -8,16 +8,16 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/dashboardassets"
 	"github.com/turbot/pipe-fittings/dashboardserver"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/service/api"
-	exported_commandconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
+
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -52,7 +52,7 @@ connection from any compatible database client.`,
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
-		AddBoolFlag(constants.ArgHelp, false, "Help for service start", exported_commandconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgBrowser, true, "Specify whether to launch the browser after starting the powerpipe server")
 
 	return cmd
@@ -65,6 +65,7 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 
 	// initialise the workspace
 	modInitData := dashboard.InitDashboard(ctx)
+	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets
 	err := dashboardassets.Ensure(ctx)
@@ -74,7 +75,6 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 
 	// setup a new webSocket service
 	webSocket := melody.New()
-	error_helpers.FailOnError(modInitData.Result.Error)
 	// create the dashboardServer
 	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)

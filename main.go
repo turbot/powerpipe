@@ -2,14 +2,15 @@ package main
 
 import (
 	"context"
+	"github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/internal/version"
 	"io"
 	"log"
 	"os"
 
-	"github.com/turbot/go-kit/files"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
 )
@@ -23,9 +24,8 @@ func main() {
 	// TODO add logger - discard logs for now
 	log.SetOutput(io.Discard)
 
-	// set default install dir
-	// we don't care about the error here, since we know this will (probably) NEVER error
-	filepaths.DefaultInstallDir, _ = files.Tildefy("~/.powerpipe")
+	// set app specific constants defined in pipe-fittings
+	setAppConstants()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -44,26 +44,18 @@ func main() {
 	exitCode = cmd.Execute()
 }
 
-// func main() {
-// 	dashboard.PowerpipeDir = "~/.Powerpipe"
+// set app specific constants defined in pipe-fittings
+func setAppConstants() {
+	// set the default install dir
+	installDir, err := files.Tildefy("~/.powerpipe")
+	if err != nil {
+		panic(err)
+	}
+	constants.DefaultInstallDir = installDir
 
-// 	ctx := context.Background()
-// 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
-// 	defer stopFn()
-
-// 	err := dashboard.Ensure(ctx)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-
-// 	server, err := api.NewAPIService(ctx)
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	err = server.Start()
-// 	if err != nil {
-// 		panic(err)
-// 	}
-// 	println("server started")
-// 	<-ctx.Done()
-// }
+	constants.AppName = "powerpipe"
+	constants.ClientConnectionAppNamePrefix = "powerpipe_client"
+	constants.ServiceConnectionAppNamePrefix = "powerpipe_service"
+	constants.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
+	constants.AppVersion = version.PowerpipeVersion
+}

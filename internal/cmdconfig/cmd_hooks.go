@@ -2,6 +2,8 @@ package cmdconfig
 
 import (
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"log"
 	"os"
 	"runtime/debug"
@@ -13,11 +15,11 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/cloud"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
-	shared_cmdconfig "github.com/turbot/powerpipe/pkg/cmdconfig"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
@@ -147,8 +149,11 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
+
 	// set-up viper with defaults from the env and default workspace profile
-	err := bootstrapViper(cmd)
+	// TODO KAI for now use empty loader
+	loader := &steampipeconfig.WorkspaceProfileLoader{DefaultProfile: &modconfig.WorkspaceProfile{}}
+	err := cmdconfig.BootstrapViper(loader, cmd, configDefaults, dirEnvMappings)
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
@@ -156,26 +161,9 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	// set global containing the configured install dir (create directory if needed)
 	ensureInstallDir(viper.GetString(constants.ArgInstallDir))
 
-	// TO DO FIX THIS
-	//
-	//// load the connection config and HCL options
-	//config, loadConfigErrorsAndWarnings := steampipeconfig.LoadSteampipeConfig(viper.GetString(constants.ArgModLocation), cmd.Name())
-	//if loadConfigErrorsAndWarnings.Error != nil {
-	//	return loadConfigErrorsAndWarnings
-	//}
-
-	// TODO HACK
-	// var loadConfigErrorsAndWarnings = error_helpers.EmptyErrorsAndWarning()
-
-	//// store global config
-	//steampipeconfig.GlobalConfig = config
-
-	// set viper defaults from the loaded config
-	//SetDefaultsFromConfig(steampipeconfig.GlobalConfig.ConfigMap())
-
 	// set the rest of the defaults from ENV
 	// ENV takes precedence over any default configuration
-	setDefaultsFromEnv()
+	cmdconfig.SetDefaultsFromEnv(envMappings)
 
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
@@ -212,7 +200,7 @@ func setCloudTokenDefault() error {
 		viper.SetDefault(constants.ArgCloudToken, savedToken)
 	}
 	// 3) env var (STEAMIPE_CLOUD_TOKEN )
-	SetDefaultFromEnv(constants.EnvCloudToken, constants.ArgCloudToken, shared_cmdconfig.String)
+	cmdconfig.SetDefaultFromEnv(constants.EnvCloudToken, constants.ArgCloudToken, cmdconfig.EnvVarTypeString)
 
 	return nil
 }
@@ -279,7 +267,7 @@ func validateConfig() *error_helpers.ErrorAndWarnings {
 // 		log.Printf("[INFO] ********************************************************\n")
 // 		log.Printf("[INFO] **%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
 // 		log.Printf("[INFO] ********************************************************\n")
-// 		log.Printf("[INFO] Version:   v%s\n", version.VersionString)
+// 		log.Printf("[INFO] AppVersion:   v%s\n", version.VersionString)
 // 		log.Printf("[INFO] Log level: %s\n", sdklogging.LogLevel())
 // 		log.Printf("[INFO] Log date: %s\n", time.Now().Format("2006-01-02"))
 // 		//

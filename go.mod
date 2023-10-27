@@ -4,7 +4,10 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
+//replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
+//
+//replace github.com/turbot/go-kit => /Users/kai/Dev/github/turbot/go-kit
+
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -24,13 +27,13 @@ require (
 	github.com/mattn/go-isatty v0.0.19
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/spf13/cobra v1.7.0
-	github.com/spf13/pflag v1.0.5
+	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.17.0
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/thediveo/enumflag/v2 v2.0.4
-	github.com/turbot/go-kit v0.9.0-rc.1
+	github.com/turbot/go-kit v0.9.0-rc.2
 	// pp-rebuilt
-	github.com/turbot/pipe-fittings v0.0.0-20231019061347-178a2a9e4663
+	github.com/turbot/pipe-fittings v0.0.0-20231027162921-19aad2af5fe4
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	// pp
@@ -99,7 +102,6 @@ require (
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/go-redis/redis/v8 v8.11.5 // indirect
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
 	github.com/golang/glog v1.1.0 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -141,7 +143,6 @@ require (
 	github.com/magiconair/properties v1.8.7 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.13 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
 	github.com/mitchellh/colorstring v0.0.0-20190213212951-d06e56a500db // indirect
 	github.com/mitchellh/go-homedir v1.1.0 // indirect

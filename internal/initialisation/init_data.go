@@ -12,11 +12,9 @@ import (
 	"github.com/turbot/pipe-fittings/db_common"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
-	internal_constants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
@@ -32,7 +30,7 @@ type InitData struct {
 
 func NewErrorInitData(err error) *InitData {
 	return &InitData{
-		Result: &db_common.InitResult{Error: err},
+		Result: &db_common.InitResult{ErrorAndWarnings: *error_helpers.NewErrorsAndWarning(err)},
 	}
 }
 
@@ -75,7 +73,7 @@ func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_cli
 	statushooks.SetStatus(ctx, "Initializing")
 
 	// initialise telemetry
-	shutdownTelemetry, err := telemetry.Init(internal_constants.AppName)
+	shutdownTelemetry, err := telemetry.Init(constants.AppName)
 	if err != nil {
 		i.Result.AddWarnings(err.Error())
 	} else {
@@ -137,30 +135,6 @@ func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_cli
 	//}
 
 	i.Client = client
-}
-
-func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap map[string]*modconfig.PluginVersionString) []string {
-	var validationErrors []string
-
-	// validate this mod
-	for _, err := range mod.ValidateRequirements(pluginVersionMap) {
-		validationErrors = append(validationErrors, err.Error())
-	}
-
-	// validate dependent mods
-	for childDependencyName, childMod := range mod.ResourceMaps.Mods {
-		// TODO : The 'mod.DependencyName == childMod.DependencyName' check has to be done because
-		// of a bug in the resource loading code which also puts the mod itself into the resource map
-		// [https://github.com/turbot/steampipe/issues/3341]
-		if childDependencyName == "local" || mod.DependencyName == childMod.DependencyName {
-			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
-			continue
-		}
-		childValidationErrors := validateModRequirementsRecursively(childMod, pluginVersionMap)
-		validationErrors = append(validationErrors, childValidationErrors...)
-	}
-
-	return validationErrors
 }
 
 // GetDbClient either creates a DB client using the configured connection string (if present) or creates a LocalDbClient
