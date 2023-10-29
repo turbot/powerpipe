@@ -58,4 +58,7 @@ func setAppConstants() {
 	constants.ServiceConnectionAppNamePrefix = "powerpipe_service"
 	constants.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
 	constants.AppVersion = version.PowerpipeVersion
+	// default to local steampipe service
+	constants.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
+
 }
