@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"os"
 
 	"github.com/mattn/go-isatty"
@@ -34,10 +35,10 @@ func InitCmd() {
 	wd, err := os.Getwd()
 	error_helpers.FailOnError(err)
 
-	rootCmd.PersistentFlags().String(constants.ArgInstallDir, constants.DefaultInstallDir, "Path to the installation directory")
+	rootCmd.PersistentFlags().String(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgInstallDir, rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
 
-	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, constants.DefaultWorkspaceDatabase, "Path to the workspace database")
+	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, app_specific.DefaultWorkspaceDatabase, "Path to the workspace database")
 	error_helpers.FailOnError(viper.BindPFlag(constants.ArgWorkspaceDatabase, rootCmd.PersistentFlags().Lookup(constants.ArgWorkspaceDatabase)))
 
 	rootCmd.PersistentFlags().String(constants.ArgModLocation, wd, "Path to the mod")

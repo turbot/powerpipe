@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"log"
 
 	"github.com/spf13/viper"
@@ -73,7 +74,7 @@ func (i *InitData) Init(ctx context.Context, _ constants.Invoker, opts ...db_cli
 	statushooks.SetStatus(ctx, "Initializing")
 
 	// initialise telemetry
-	shutdownTelemetry, err := telemetry.Init(constants.AppName)
+	shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
 	if err != nil {
 		i.Result.AddWarnings(err.Error())
 	} else {

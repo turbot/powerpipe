@@ -2,9 +2,7 @@ package main
 
 import (
 	"context"
-	"github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/powerpipe/internal/version"
+	"github.com/turbot/powerpipe/internal/constants"
 	"io"
 	"log"
 	"os"
@@ -25,7 +23,7 @@ func main() {
 	log.SetOutput(io.Discard)
 
 	// set app specific constants defined in pipe-fittings
-	setAppConstants()
+	constants.SetAppSpecificConstants()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -42,23 +40,4 @@ func main() {
 
 	// execute the command
 	exitCode = cmd.Execute()
-}
-
-// set app specific constants defined in pipe-fittings
-func setAppConstants() {
-	// set the default install dir
-	installDir, err := files.Tildefy("~/.powerpipe")
-	if err != nil {
-		panic(err)
-	}
-	constants.DefaultInstallDir = installDir
-
-	constants.AppName = "powerpipe"
-	constants.ClientConnectionAppNamePrefix = "powerpipe_client"
-	constants.ServiceConnectionAppNamePrefix = "powerpipe_service"
-	constants.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
-	constants.AppVersion = version.PowerpipeVersion
-	// default to local steampipe service
-	constants.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
-
 }
