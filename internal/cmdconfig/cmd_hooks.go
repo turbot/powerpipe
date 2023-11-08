@@ -2,8 +2,6 @@ package cmdconfig
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"log"
 	"os"
 	"runtime/debug"
@@ -151,9 +149,8 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
 
 	// set-up viper with defaults from the env and default workspace profile
-	// TODO KAI for now use empty loader
-	loader := &steampipeconfig.WorkspaceProfileLoader{DefaultProfile: &modconfig.WorkspaceProfile{}}
-	err := cmdconfig.BootstrapViper(loader, cmd, configDefaults, dirEnvMappings)
+
+	err := cmdconfig.BootstrapViper(cmd, cmdconfig.WithConfigDefaults(configDefaults), cmdconfig.WithDirectoryEnvMappings(dirEnvMappings))
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
