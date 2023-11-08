@@ -4,10 +4,6 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => /Users/kai/Dev/github/turbot/pipe-fittings
-//
-//replace github.com/turbot/go-kit => /Users/kai/Dev/github/turbot/go-kit
-
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -32,12 +28,10 @@ require (
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.2
-	// pp-rebuilt
-	github.com/turbot/pipe-fittings v0.0.0-20231027162921-19aad2af5fe4
+	github.com/turbot/pipe-fittings v0.0.0-20231108032203-68c61a233e62
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
-	// pp
-	github.com/turbot/terraform-components v0.0.0-20231017100940-c8df9a3a9aab
+	github.com/turbot/terraform-components v0.0.0-20231108031935-358f803c1a8b
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.14.1 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
@@ -217,7 +211,7 @@ require (
 	google.golang.org/genproto v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20230913181813-007df8e322eb // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20230920204549-e6e6cdab5c13 // indirect
-	google.golang.org/grpc v1.58.2 // indirect
+	google.golang.org/grpc v1.58.3 // indirect
 	google.golang.org/protobuf v1.31.0 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/natefinch/lumberjack.v2 v2.0.0 // indirect
