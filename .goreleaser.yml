@@ -1,0 +1,75 @@
+before:
+  hooks:
+    - go mod tidy
+builds:
+  - env:
+      - CGO_ENABLED=0
+      - GO111MODULE=on
+    goos:
+      - linux
+      - darwin
+    goarch:
+      - amd64
+      - arm64
+
+    id: "powerpipe"
+    binary: "powerpipe"
+archives:
+  - files:
+      - none*
+    format: zip
+    id: homebrew
+    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    format_overrides:
+      - goos: linux
+        format: tar.gz
+
+nfpms:
+  - id: "powerpipe"
+    builds: ["powerpipe"]
+    formats:
+      - deb
+      - rpm
+    vendor: "powerpipe.io"
+    homepage: "https://powerpipe.io/"
+    maintainer: "Turbot Support <help@turbot.com>"
+    description: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
+    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    rpm:
+      summary: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
+
+# it is necessary to specify the name_template of the snapshot, or else the snapshot gets created with
+# two dash(-) which results in a 500 error while downloading
+snapshot:
+  name_template: "{{ .Version }}"
+
+# snapcrafts:
+#   - id: "powerpipe"
+#     builds: ['powerpipe']
+#     description: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
+#     summary: "Snap package"
+#     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+
+checksum:
+  name_template: "checksums.txt"
+release:
+  # Visit your project's GitHub Releases page to publish this release.
+  draft: true
+changelog:
+  skip: true
+
+brews:
+  - ids:
+      - homebrew
+    name: powerpipe@{{ .Major }}.{{ .Minor }}.{{ .Patch }}
+    tap:
+      owner: turbot
+      name: homebrew-tap
+      branch: bump-brew
+    folder: Formula
+    url_template: "https://github.com/turbot/powerpipe/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
+    homepage: "https://powerpipe.io/"
+    description: "powerpipe exposes APIs and services as a high-performance relational database, giving you the ability to write SQL-based queries to explore, assess and report on dynamic data."
+    skip_upload: auto
+    install: |-
+      bin.install "powerpipe"
