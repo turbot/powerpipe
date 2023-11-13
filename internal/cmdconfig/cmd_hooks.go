@@ -150,7 +150,7 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 
 	// set-up viper with defaults from the env and default workspace profile
 
-	err := cmdconfig.BootstrapViper(cmd, cmdconfig.WithConfigDefaults(configDefaults), cmdconfig.WithDirectoryEnvMappings(dirEnvMappings))
+	cmdconfig.BootstrapViper(cmd, cmdconfig.WithConfigDefaults(configDefaults), cmdconfig.WithDirectoryEnvMappings(dirEnvMappings))
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
