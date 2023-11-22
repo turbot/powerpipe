@@ -10,7 +10,7 @@ import (
 func SetAppSpecificConstants() {
 	// set the default install dir
 	app_specific.AppVersion = internalversion.PowerpipeVersion
-	app_specific.AutoVariablesExtension = ".auto.spvars"
+	app_specific.AutoVariablesExtension = ".auto.ppvars"
 	app_specific.ClientConnectionAppNamePrefix = "powerpipe_client"
 	app_specific.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
 	// set the default install dir
@@ -26,10 +26,11 @@ func SetAppSpecificConstants() {
 	app_specific.ModDataExtension = ".sp"
 	app_specific.ModFileName = "mod.sp"
 	app_specific.ServiceConnectionAppNamePrefix = "powerpipe_service"
+	app_specific.ConfigExtension = ".ppc"
 	app_specific.VariablesExtension = ".ppvars"
-	app_specific.WorkspaceIgnoreFile = ".steampipeignore"
-	app_specific.WorkspaceDataDir = ".steampipe"
-	app_specific.EnvAppPrefix = "STEAMPIPE_"
+	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
+	app_specific.WorkspaceDataDir = ".powerpipe"
+	app_specific.EnvAppPrefix = "POWERPIPE_"
 	// EnvInputVarPrefix is the prefix for environment variables that represent values for input variables.
 	app_specific.EnvInputVarPrefix = "PP_VAR_"
 
