@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-ex/dashboardinit"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/initialisation"
 	"github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
 func InitDashboard(ctx context.Context) *initialisation.InitData {
 	// initialise
 	initData := getInitData(ctx)
 	if initData.Result.Error != nil {
-		return initData
+		return dashboardinit.NewInitData(initData)
 	}
 
 	// there must be a mod-file
@@ -34,7 +36,7 @@ func getInitData(ctx context.Context) *initialisation.InitData {
 	i := initialisation.NewInitData()
 	i.Workspace = w
 	i.Result.Warnings = errAndWarnings.Warnings
-	i.Init(ctx, constants.InvokerDashboard)
+	i.Init(ctx)
 
 	return i
 }

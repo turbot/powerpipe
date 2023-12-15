@@ -16,7 +16,6 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
 	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
@@ -281,7 +280,7 @@ func ensureInstallDir(installDir string) {
 	}
 
 	// store as PowerpipeDir
-	filepaths.InstallDir = installDir
+	app_specific.InstallDir = installDir
 }
 
 // displayDeprecationWarnings shows the deprecated warnings in a formatted way

@@ -8,6 +8,8 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-ex/dashboardassets"
+	"github.com/turbot/pipe-ex/dashboardserver"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/dashboardassets"
