@@ -20,7 +20,7 @@ require (
 	github.com/hashicorp/hcl/v2 v2.18.1 // indirect
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/karrick/gows v0.3.0 // indirect
-	github.com/mattn/go-isatty v0.0.19
+	github.com/mattn/go-isatty v0.0.20
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/spf13/cobra v1.7.0
 	github.com/spf13/pflag v1.0.5 // indirect
