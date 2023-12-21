@@ -12,7 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/workspace"
 )
 
-func InitDashboard(ctx context.Context) *initialisation.InitData {
+func InitDashboard(ctx context.Context) *dashboardinit.InitData {
 	// initialise
 	initData := getInitData(ctx)
 	if initData.Result.Error != nil {
@@ -24,11 +24,13 @@ func InitDashboard(ctx context.Context) *initialisation.InitData {
 		error_helpers.ShowWarning("Could not find mod definition file in the current directory tree.")
 	}
 
-	return initData
+	return dashboardinit.NewInitData(initData)
 }
 
 func getInitData(ctx context.Context) *initialisation.InitData {
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx)
+	modLocation := viper.GetString(constants.ArgModLocation)
+
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
 	if errAndWarnings.GetError() != nil {
 		return initialisation.NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}

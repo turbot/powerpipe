@@ -113,9 +113,8 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	// if no mod was loaded, create a default
 	if workspaceMod == nil {
 		workspaceMod, err = createWorkspaceMod(ctx, cmd, workspacePath)
-		if err != nil {
-			error_helpers.FailOnError(err)
-		}
+		error_helpers.FailOnError(err)
+
 	}
 
 	// TODO PSKR remove hardcoding

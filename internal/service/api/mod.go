@@ -71,9 +71,8 @@ func (api *APIService) installModHandler(c *gin.Context) {
 
 	if !parse.ModfileExists(api.workspace.Path) {
 		m, err := workspace.CreateWorkspaceMod(c, api.workspace.Path)
-		if err != nil {
-			error_helpers.FailOnError(err)
-		}
+		error_helpers.FailOnError(err)
+
 		mod = m
 	}
 

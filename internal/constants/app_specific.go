@@ -30,7 +30,7 @@ func SetAppSpecificConstants() {
 	app_specific.VariablesExtension = ".ppvars"
 	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
 	app_specific.WorkspaceDataDir = ".powerpipe"
-	app_specific.EnvAppPrefix = "POWERPIPE_"
+	app_specific.SetAppSpecificEnvVarKeys("POWERPIPE_")
 	// EnvInputVarPrefix is the prefix for environment variables that represent values for input variables.
 	app_specific.EnvInputVarPrefix = "PP_VAR_"
 
