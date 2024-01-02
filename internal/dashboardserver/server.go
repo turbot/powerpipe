@@ -12,13 +12,13 @@ import (
 
 	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -27,13 +27,13 @@ type Server struct {
 	mutex            *sync.Mutex
 	dashboardClients map[string]*DashboardClientInfo
 	webSocket        *melody.Melody
-	workspace        *dashboardworkspace.Workspace
+	workspace        *dashboardworkspace.WorkspaceEvents
 }
 
-func NewServer(ctx context.Context, dbClient *db_client.DbClient, w *dashboardworkspace.Workspace, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, dbClient *db_client.DbClient, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
 	initLogSink()
 
-	OutputWait(ctx, "Starting Workspace Server")
+	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	// webSocket := melody.New()
 
@@ -52,7 +52,7 @@ func NewServer(ctx context.Context, dbClient *db_client.DbClient, w *dashboardwo
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 	// TODO KAI client <MISC>
 	err := w.SetupWatcher(ctx /*,dbClient*/, func(c context.Context, e error) {})
-	OutputMessage(ctx, "Workspace loaded")
+	OutputMessage(ctx, "WorkspaceEvents loaded")
 
 	return server, err
 }
@@ -110,7 +110,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			return
 		}
 		s.writePayloadToSession(e.Session, payload)
-		OutputWait(ctx, fmt.Sprintf("Workspace execution started: %s", e.Root.GetName()))
+		OutputWait(ctx, fmt.Sprintf("WorkspaceEvents execution started: %s", e.Root.GetName()))
 
 	case *dashboardevents.ExecutionError:
 		log.Println("[TRACE] execution error event")
@@ -200,7 +200,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		}
 
 		for k, v := range s.dashboardClients {
-			log.Printf("[TRACE] Workspace client: %v %v\n", k, typeHelpers.SafeString(v.Dashboard))
+			log.Printf("[TRACE] WorkspaceEvents client: %v %v\n", k, typeHelpers.SafeString(v.Dashboard))
 		}
 
 		// If) any deleted/new/changed dashboards, emit an available dashboards message to clients

@@ -6,7 +6,6 @@ import (
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
-	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -44,14 +43,14 @@ type ErrorPayload struct {
 var ExecutionStartedSchemaVersion int64 = 20221222
 
 type ExecutionStartedPayload struct {
-	SchemaVersion string                           `json:"schema_version"`
-	Action        string                           `json:"action"`
-	ExecutionId   string                           `json:"execution_id"`
-	Panels        map[string]any                   `json:"panels"`
-	Layout        *dashboardtypes.SnapshotTreeNode `json:"layout"`
-	Inputs        map[string]interface{}           `json:"inputs,omitempty"`
-	Variables     map[string]string                `json:"variables,omitempty"`
-	StartTime     time.Time                        `json:"start_time"`
+	SchemaVersion string                            `json:"schema_version"`
+	Action        string                            `json:"action"`
+	ExecutionId   string                            `json:"execution_id"`
+	Panels        map[string]any                    `json:"panels"`
+	Layout        *steampipeconfig.SnapshotTreeNode `json:"layout"`
+	Inputs        map[string]interface{}            `json:"inputs,omitempty"`
+	Variables     map[string]string                 `json:"variables,omitempty"`
+	StartTime     time.Time                         `json:"start_time"`
 }
 
 var LeafNodeUpdatedSchemaVersion int64 = 20221222
@@ -82,10 +81,10 @@ type ExecutionErrorPayload struct {
 var ExecutionCompletePayloadSchemaVersion int64 = 20221222
 
 type ExecutionCompletePayload struct {
-	Action        string                            `json:"action"`
-	SchemaVersion string                            `json:"schema_version"`
-	Snapshot      *dashboardtypes.SteampipeSnapshot `json:"snapshot"`
-	ExecutionId   string                            `json:"execution_id"`
+	Action        string                             `json:"action"`
+	SchemaVersion string                             `json:"schema_version"`
+	Snapshot      *steampipeconfig.SteampipeSnapshot `json:"snapshot"`
+	ExecutionId   string                             `json:"execution_id"`
 }
 
 type DisplaySnapshotPayload struct {

@@ -9,8 +9,8 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 )
 
-// Workspace is a wrapper around workspace.Workspace that adds dashboard specific event handling
-type Workspace struct {
+// WorkspaceEvents is a wrapper around workspace.WorkspaceEvents that adds dashboard specific event handling
+type WorkspaceEvents struct {
 	*workspace.Workspace
 	// event handlers
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
@@ -18,8 +18,8 @@ type Workspace struct {
 	dashboardEventChan chan dashboardevents.DashboardEvent
 }
 
-func NewWorkspace(workspace *workspace.Workspace) *Workspace {
-	w := &Workspace{
+func NewWorkspaceEvents(workspace *workspace.Workspace) *WorkspaceEvents {
+	w := &WorkspaceEvents{
 		Workspace: workspace,
 	}
 
@@ -31,7 +31,7 @@ func NewWorkspace(workspace *workspace.Workspace) *Workspace {
 	}
 	return w
 }
-func (w *Workspace) Close() {
+func (w *WorkspaceEvents) Close() {
 	w.Workspace.Close()
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first

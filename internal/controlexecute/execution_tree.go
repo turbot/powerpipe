@@ -10,12 +10,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"golang.org/x/sync/semaphore"
 )

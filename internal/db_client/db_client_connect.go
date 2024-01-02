@@ -7,9 +7,9 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client/backend"
-	"github.com/turbot/pipe-fittings/db_common"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/db_client/backend"
+	"github.com/turbot/powerpipe/internal/db_common"
 )
 
 const (

@@ -118,13 +118,9 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 		}
 	}
 
-	// TODO PSKR remove hardcoding
-	gitUrlMode := "https"
-
 	// if any mod names were passed as args, convert into formed mod names
 	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
 	opts.ModArgs = utils.TrimGitUrls(opts.ModArgs)
-	opts.GitUrlMode = modinstaller.GitUrlMode(gitUrlMode)
 
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
 	if err != nil {

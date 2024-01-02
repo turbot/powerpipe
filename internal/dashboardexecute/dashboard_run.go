@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"log"
 
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -18,11 +19,11 @@ type DashboardRun struct {
 	dashboard *modconfig.Dashboard
 }
 
-func (r *DashboardRun) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
-	res := &dashboardtypes.SnapshotTreeNode{
+func (r *DashboardRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Name,
 		NodeType: r.NodeType,
-		Children: make([]*dashboardtypes.SnapshotTreeNode, 0, len(r.children)),
+		Children: make([]*steampipeconfig.SnapshotTreeNode, 0, len(r.children)),
 	}
 
 	for _, c := range r.children {

@@ -14,7 +14,7 @@ import (
 // <mod>.<var-name>
 // the VariableValues map will contain these variables with the name format <mod>.var.<var-name>,
 // so we must convert the name
-func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.Workspace) map[string]string {
+func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.WorkspaceEvents) map[string]string {
 	var referencedVariables = make(map[string]string)
 
 	addReferencedVars := func(refs []*modconfig.ResourceReference) {

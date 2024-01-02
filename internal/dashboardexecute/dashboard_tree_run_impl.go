@@ -2,11 +2,13 @@ package dashboardexecute
 
 import (
 	"context"
+	"log"
+
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"log"
 )
 
 type DashboardTreeRunImpl struct {
@@ -119,7 +121,7 @@ func (r *DashboardTreeRunImpl) Execute(ctx context.Context) {
 }
 
 // AsTreeNode implements DashboardTreeRun
-func (r *DashboardTreeRunImpl) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
+func (r *DashboardTreeRunImpl) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("must be implemented by child struct")
 }
 

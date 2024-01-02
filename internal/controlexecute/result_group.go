@@ -2,8 +2,6 @@ package controlexecute
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/powerpipe/internal/controlstatus"
 	"log"
 	"sort"
 	"sync"
@@ -13,10 +11,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -211,10 +211,10 @@ func (r *ResultGroup) GetChildren() []ExecutionTreeNode { return r.Children }
 func (r *ResultGroup) GetName() string { return r.GroupId }
 
 // AsTreeNode implements ExecutionTreeNode
-func (r *ResultGroup) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
-	res := &dashboardtypes.SnapshotTreeNode{
+func (r *ResultGroup) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.GroupId,
-		Children: make([]*dashboardtypes.SnapshotTreeNode, len(r.Children)),
+		Children: make([]*steampipeconfig.SnapshotTreeNode, len(r.Children)),
 		NodeType: r.NodeType,
 	}
 	for i, c := range r.Children {

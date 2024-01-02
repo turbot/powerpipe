@@ -3,12 +3,11 @@ package db_client
 import (
 	"context"
 	"database/sql"
-	"github.com/jackc/pgx/v5/pgconn"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client/backend"
-	"github.com/turbot/pipe-fittings/utils"
-	"golang.org/x/sync/semaphore"
 	"log/slog"
+
+	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 // define func type for StartQuery
@@ -27,9 +26,6 @@ type DbClient struct {
 	// function to start the query - defaults to startquery
 	// steampipe overrides this with startQueryWithRetries
 	startQueryFunc startQueryFunc
-
-	// concurrency management for db session access
-	parallelSessionInitLock *semaphore.Weighted
 
 	// the backend type of the dbclient backend
 	backend backend.DBClientBackendType
@@ -57,12 +53,9 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...ClientOpt
 	}
 
 	client := &DbClient{
-		// a weighted semaphore to control the maximum number parallel
-		// initializations under way
-		parallelSessionInitLock: semaphore.NewWeighted(constants.MaxParallelClientInits),
-		connectionString:        connectionString,
-		backend:                 backendType,
-		rowReader:               backend.RowReaderFactory(backendType),
+		connectionString: connectionString,
+		backend:          backendType,
+		rowReader:        backend.RowReaderFactory(backendType),
 	}
 
 	// set the start query func
@@ -71,7 +64,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...ClientOpt
 	defer func() {
 		if err != nil {
 			// try closing the client
-			client.Close(ctx)
+			_ = client.Close(ctx)
 		}
 	}()
 

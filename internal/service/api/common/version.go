@@ -1,12 +1,6 @@
 package common
 
-import (
-	"fmt"
-
-	"github.com/gin-gonic/gin"
-	"github.com/turbot/powerpipe/internal/types"
-)
-
+/*
 const (
 	// APIVersion is the current version of the API
 	APIVersion0 = "v0"
@@ -42,3 +36,4 @@ func ValidateAPIVersion(c *gin.Context) {
 	}
 	c.Next()
 }
+*/

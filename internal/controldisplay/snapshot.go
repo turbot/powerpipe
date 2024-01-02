@@ -3,7 +3,7 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/snapshot"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/cloud"
@@ -15,9 +15,9 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 )
 
-func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*snapshot.SteampipeSnapshot, error) {
+func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
 	var dashboardNode modconfig.DashboardLeafNode
-	var panels map[string]snapshot.SnapshotPanel
+	var panels map[string]steampipeconfig.SnapshotPanel
 	var checkRun *dashboardexecute.CheckRun
 
 	// get root benchmark/control
@@ -37,15 +37,15 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*snapshot.Steampi
 	checkRun.DashboardTreeRunImpl = dashboardexecute.NewDashboardTreeRunImpl(dashboardNode, nil, checkRun, nil)
 
 	// populate the panels
-	panels = checkRun.BuildSnapshotPanels(make(map[string]snapshot.SnapshotPanel))
+	panels = checkRun.BuildSnapshotPanels(make(map[string]steampipeconfig.SnapshotPanel))
 
 	// create the snapshot
-	res := &snapshot.SteampipeSnapshot{
-		SchemaVersion: fmt.Sprintf("%d", snapshot.SteampipeSnapshotSchemaVersion),
+	res := &steampipeconfig.SteampipeSnapshot{
+		SchemaVersion: fmt.Sprintf("%d", steampipeconfig.SteampipeSnapshotSchemaVersion),
 		Panels:        panels,
 		Layout:        checkRun.Root.AsTreeNode(),
 		Inputs:        map[string]interface{}{},
-		Variables:     dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspace(e.Workspace)),
+		Variables:     dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspaceEvents(e.Workspace)),
 		SearchPath:    e.SearchPath,
 		StartTime:     e.StartTime,
 		EndTime:       e.EndTime,

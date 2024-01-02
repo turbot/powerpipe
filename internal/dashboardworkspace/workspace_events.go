@@ -13,7 +13,7 @@ import (
 
 var EventCount int64 = 0
 
-func (w *Workspace) PublishDashboardEvent(ctx context.Context, e dashboardevents.DashboardEvent) {
+func (w *WorkspaceEvents) PublishDashboardEvent(ctx context.Context, e dashboardevents.DashboardEvent) {
 	if w.dashboardEventChan != nil {
 		var doneChan = make(chan struct{})
 		go func() {
@@ -34,7 +34,7 @@ func (w *Workspace) PublishDashboardEvent(ctx context.Context, e dashboardevents
 
 // RegisterDashboardEventHandler starts the event handler goroutine if necessary and
 // adds the event handler to our list
-func (w *Workspace) RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler) {
+func (w *WorkspaceEvents) RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler) {
 	// if no event channel has been created we need to start the event handler goroutine
 	if w.dashboardEventChan == nil {
 		// create a fairly large channel buffer
@@ -47,12 +47,12 @@ func (w *Workspace) RegisterDashboardEventHandler(ctx context.Context, handler d
 
 // UnregisterDashboardEventHandlers clears all event handlers
 // used when generating multiple snapshots
-func (w *Workspace) UnregisterDashboardEventHandlers() {
+func (w *WorkspaceEvents) UnregisterDashboardEventHandlers() {
 	w.dashboardEventHandlers = nil
 }
 
 // this function is run as a goroutine to call registered event handlers for all received events
-func (w *Workspace) handleDashboardEvent(ctx context.Context) {
+func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
 	for {
 		e := <-w.dashboardEventChan
 		atomic.AddInt64(&EventCount, -1)
@@ -70,7 +70,7 @@ func (w *Workspace) handleDashboardEvent(ctx context.Context) {
 
 // TODO KAI STEAMPIPE workspaces should not know about introspection data - STEAMPIPE will need a hook here <INTROSPECTION>
 // maybe workspace could provide a file changed hook which Steampipe uses
-//func (w *Workspace) onNewIntrospectionData(ctx context.Context, client *db_client.DbClient) {
+//func (w *WorkspaceEvents) onNewIntrospectionData(ctx context.Context, client *db_client.DbClient) {
 //	if viper.GetString(constants.ArgIntrospection) == constants.IntrospectionNone {
 //		// nothing to do here
 //		return
@@ -87,7 +87,7 @@ func (w *Workspace) handleDashboardEvent(ctx context.Context) {
 //	}
 //}
 
-func (w *Workspace) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *modconfig.ResourceMaps) {
+func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *modconfig.ResourceMaps) {
 	event := &dashboardevents.DashboardChanged{}
 
 	// TODO reports can we use a ResourceMaps diff function to do all of this - we are duplicating logic

@@ -7,6 +7,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlstatus"
@@ -26,7 +27,7 @@ type CheckRun struct {
 	controlExecutionTree *controlexecute.ExecutionTree
 }
 
-func (r *CheckRun) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
+func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return r.Root.AsTreeNode()
 }
 
@@ -104,7 +105,7 @@ func (r *CheckRun) SetComplete(ctx context.Context) {
 }
 
 // BuildSnapshotPanels is a custom implementation of BuildSnapshotPanels - be nice to just use the DashboardExecutionTree but work is needed on common interface types/generics
-func (r *CheckRun) BuildSnapshotPanels(leafNodeMap map[string]dashboardtypes.SnapshotPanel) map[string]dashboardtypes.SnapshotPanel {
+func (r *CheckRun) BuildSnapshotPanels(leafNodeMap map[string]steampipeconfig.SnapshotPanel) map[string]steampipeconfig.SnapshotPanel {
 	// if this check run is for a control, just add the controlRUn
 	if controlRun, ok := r.Root.(*controlexecute.ControlRun); ok {
 		leafNodeMap[controlRun.Control.Name()] = controlRun
@@ -116,10 +117,10 @@ func (r *CheckRun) BuildSnapshotPanels(leafNodeMap map[string]dashboardtypes.Sna
 	return r.buildSnapshotPanelsUnder(r.Root, leafNodeMap)
 }
 
-func (r *CheckRun) buildSnapshotPanelsUnder(parent controlexecute.ExecutionTreeNode, res map[string]dashboardtypes.SnapshotPanel) map[string]dashboardtypes.SnapshotPanel {
+func (r *CheckRun) buildSnapshotPanelsUnder(parent controlexecute.ExecutionTreeNode, res map[string]steampipeconfig.SnapshotPanel) map[string]steampipeconfig.SnapshotPanel {
 	for _, c := range parent.GetChildren() {
 		// if this node is a snapshot node, add to map
-		if snapshotNode, ok := c.(dashboardtypes.SnapshotPanel); ok {
+		if snapshotNode, ok := c.(steampipeconfig.SnapshotPanel); ok {
 			res[c.GetName()] = snapshotNode
 		}
 		res = r.buildSnapshotPanelsUnder(c, res)

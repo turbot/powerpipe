@@ -16,7 +16,6 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
-	"github.com/turbot/powerpipe/internal/service/api"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -75,21 +74,21 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	// setup a new webSocket service
 	webSocket := melody.New()
 	// create the dashboardServer
-	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.Workspace, webSocket)
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.WorkspaceEvents, webSocket)
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server
-	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
-	if err != nil {
-		error_helpers.FailOnError(err)
-	}
+	//powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
+	//if err != nil {
+	//	error_helpers.FailOnError(err)
+	//}
 	dashboardServer.InitAsync(ctx)
 
 	// start the API server
-	err = powerpipeService.Start()
-	if err != nil {
-		error_helpers.FailOnError(err)
-	}
+	//err = powerpipeService.Start()
+	//if err != nil {
+	//	error_helpers.FailOnError(err)
+	//}
 	// start browser if required
 	if viper.GetBool(constants.ArgBrowser) {
 		url := buildDashboardURL(9194, modInitData.Workspace)

@@ -2,19 +2,21 @@ package initialisation
 
 import (
 	"context"
-	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
 	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
+		// (if steampipe is running locally, it will have ensured the service is running and set
+		// the connection string)
 		return nil, nil
 	}
 	connectionString := workspaceDatabase
@@ -22,7 +24,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	var cloudMetadata *steampipeconfig.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
-	workspaceDatabaseIsConnectionString := strings.HasPrefix(workspaceDatabase, "postgresql://") || strings.HasPrefix(workspaceDatabase, "postgres://")
+	workspaceDatabaseIsConnectionString := db_client.IsConnectionString(workspaceDatabase)
 	if !workspaceDatabaseIsConnectionString {
 		// it must be a database name - verify the cloud token was provided
 		cloudToken := viper.GetString(constants.ArgCloudToken)

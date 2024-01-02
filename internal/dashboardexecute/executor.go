@@ -10,11 +10,11 @@ import (
 	"time"
 
 	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 type DashboardExecutor struct {
@@ -37,7 +37,7 @@ func newDashboardExecutor() *DashboardExecutor {
 
 var Executor = newDashboardExecutor()
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId, dashboardName string, inputs map[string]any, workspace *dashboardworkspace.Workspace, clients map[string]*db_client.DbClient) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId, dashboardName string, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, clients map[string]*db_client.DbClient) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err != nil && ctx.Err() != nil {
@@ -102,7 +102,7 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 	return nil
 }
 
-func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *dashboardworkspace.Workspace) (map[string]any, error) {
+func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *dashboardworkspace.WorkspaceEvents) (map[string]any, error) {
 	// find snapshot path in workspace
 	snapshotPath, ok := w.GetResourceMaps().Snapshots[snapshotName]
 	if !ok {

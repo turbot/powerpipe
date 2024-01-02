@@ -7,6 +7,7 @@ import (
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"golang.org/x/exp/maps"
 	"log"
@@ -26,8 +27,8 @@ type LeafRun struct {
 	onComplete func()
 }
 
-func (r *LeafRun) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
-	return &dashboardtypes.SnapshotTreeNode{
+func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+	return &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Name,
 		NodeType: r.NodeType,
 	}

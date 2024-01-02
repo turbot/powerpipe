@@ -3,21 +3,22 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/powerpipe/internal/controlstatus"
 	"log"
 	"sync"
 	"time"
 
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
 
@@ -150,8 +151,8 @@ func (*ControlRun) GetChildren() []ExecutionTreeNode { return nil }
 func (r *ControlRun) GetName() string { return r.Control.Name() }
 
 // AsTreeNode implements ExecutionTreeNode
-func (r *ControlRun) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
-	res := &dashboardtypes.SnapshotTreeNode{
+func (r *ControlRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Control.Name(),
 		NodeType: r.NodeType,
 	}

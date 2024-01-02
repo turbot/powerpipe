@@ -5,15 +5,15 @@ import (
 	"fmt"
 	"log"
 
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
-	"github.com/turbot/powerpipe/internal/dashboardinit"
-	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
-func GenerateSnapshot(ctx context.Context, target string, initData *dashboardinit.InitData, inputs map[string]any) (snapshot *dashboardtypes.SteampipeSnapshot, err error) {
-	w := initData.DashboardWorkspace
+func GenerateSnapshot(ctx context.Context, target string, initData *initialisation.InitData, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+	w := initData.WorkspaceEvents
 
 	parsedName, err := modconfig.ParseResourceName(target)
 	if err != nil {
@@ -22,7 +22,7 @@ func GenerateSnapshot(ctx context.Context, target string, initData *dashboardini
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)
-	resultChannel := make(chan *dashboardtypes.SteampipeSnapshot)
+	resultChannel := make(chan *steampipeconfig.SteampipeSnapshot)
 	dashboardEventHandler := func(ctx context.Context, event dashboardevents.DashboardEvent) {
 		handleDashboardEvent(ctx, event, resultChannel, errorChannel)
 	}
@@ -50,7 +50,7 @@ func GenerateSnapshot(ctx context.Context, target string, initData *dashboardini
 	}
 }
 
-func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEvent, resultChannel chan *dashboardtypes.SteampipeSnapshot, errorChannel chan error) {
+func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEvent, resultChannel chan *steampipeconfig.SteampipeSnapshot, errorChannel chan error) {
 	switch e := event.(type) {
 	case *dashboardevents.ExecutionError:
 		errorChannel <- e.Error
@@ -62,9 +62,9 @@ func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEven
 }
 
 // ExecutionCompleteToSnapshot transforms the ExecutionComplete event into a SteampipeSnapshot
-func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *dashboardtypes.SteampipeSnapshot {
-	return &dashboardtypes.SteampipeSnapshot{
-		SchemaVersion: fmt.Sprintf("%d", dashboardtypes.SteampipeSnapshotSchemaVersion),
+func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *steampipeconfig.SteampipeSnapshot {
+	return &steampipeconfig.SteampipeSnapshot{
+		SchemaVersion: fmt.Sprintf("%d", steampipeconfig.SteampipeSnapshotSchemaVersion),
 		Panels:        event.Panels,
 		Layout:        event.Root.AsTreeNode(),
 		Inputs:        event.Inputs,

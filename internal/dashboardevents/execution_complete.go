@@ -3,6 +3,7 @@ package dashboardevents
 import (
 	"time"
 
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
@@ -10,7 +11,7 @@ type ExecutionComplete struct {
 	Root        dashboardtypes.DashboardTreeRun
 	Session     string
 	ExecutionId string
-	Panels      map[string]dashboardtypes.SnapshotPanel
+	Panels      map[string]steampipeconfig.SnapshotPanel
 	Inputs      map[string]interface{}
 	Variables   map[string]string
 	SearchPath  []string

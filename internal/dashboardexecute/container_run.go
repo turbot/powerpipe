@@ -3,9 +3,11 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"log"
+
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
 // DashboardContainerRun is a struct representing a container run
@@ -15,11 +17,11 @@ type DashboardContainerRun struct {
 	dashboardNode *modconfig.DashboardContainer
 }
 
-func (r *DashboardContainerRun) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
-	res := &dashboardtypes.SnapshotTreeNode{
+func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Name,
 		NodeType: r.NodeType,
-		Children: make([]*dashboardtypes.SnapshotTreeNode, len(r.children)),
+		Children: make([]*steampipeconfig.SnapshotTreeNode, len(r.children)),
 	}
 	for i, c := range r.children {
 		res.Children[i] = c.AsTreeNode()

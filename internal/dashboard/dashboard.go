@@ -7,17 +7,13 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/initialisation"
 	"github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/dashboardinit"
+	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
 func InitDashboard(ctx context.Context) *initialisation.InitData {
 	// initialise
 	initData := getInitData(ctx)
-	if initData.Result.Error != nil {
-		return dashboardinit.NewInitData(initData)
-	}
 
 	// there must be a mod-file
 	if !initData.Workspace.ModfileExists() {
@@ -28,7 +24,9 @@ func InitDashboard(ctx context.Context) *initialisation.InitData {
 }
 
 func getInitData(ctx context.Context) *initialisation.InitData {
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx)
+	modLocation := viper.GetString(constants.ArgModLocation)
+
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
 	if errAndWarnings.GetError() != nil {
 		return initialisation.NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}

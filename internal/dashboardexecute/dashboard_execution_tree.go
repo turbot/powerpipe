@@ -3,20 +3,21 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"golang.org/x/exp/maps"
 	"log"
 	"sync"
 	"time"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/db_client"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
-	"golang.org/x/exp/maps"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 // DashboardExecutionTree is a structure representing the control result hierarchy
@@ -31,7 +32,7 @@ type DashboardExecutionTree struct {
 	defaultConnectionString string
 	// map of executing runs, keyed by full name
 	runs        map[string]dashboardtypes.DashboardTreeRun
-	workspace   *dashboardworkspace.Workspace
+	workspace   *dashboardworkspace.WorkspaceEvents
 	runComplete chan dashboardtypes.DashboardTreeRun
 
 	// map of subscribers to notify when an input value changes
@@ -41,7 +42,7 @@ type DashboardExecutionTree struct {
 	id          string
 }
 
-func NewDashboardExecutionTree(rootName string, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.Workspace) (*DashboardExecutionTree, error) {
+func NewDashboardExecutionTree(rootName string, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName: rootName,
@@ -238,7 +239,7 @@ func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
 	runtimeDependencyPublisher, ok := e.Root.(RuntimeDependencyPublisher)
 	if !ok {
 		// should never happen
-		log.Printf("[WARN] SetInputValues called but root Workspace run is not a RuntimeDependencyPublisher: %s", e.Root.GetName())
+		log.Printf("[WARN] SetInputValues called but root WorkspaceEvents run is not a RuntimeDependencyPublisher: %s", e.Root.GetName())
 		return
 	}
 
@@ -276,12 +277,12 @@ func (e *DashboardExecutionTree) Cancel() {
 	log.Printf("[TRACE] DashboardExecutionTree Cancel - all children complete")
 }
 
-func (e *DashboardExecutionTree) BuildSnapshotPanels() map[string]dashboardtypes.SnapshotPanel {
+func (e *DashboardExecutionTree) BuildSnapshotPanels() map[string]steampipeconfig.SnapshotPanel {
 	// just build from e.runs
-	res := map[string]dashboardtypes.SnapshotPanel{}
+	res := map[string]steampipeconfig.SnapshotPanel{}
 
 	for name, run := range e.runs {
-		res[name] = run.(dashboardtypes.SnapshotPanel)
+		res[name] = run.(steampipeconfig.SnapshotPanel)
 		// special case handling for check runs
 		if checkRun, ok := run.(*CheckRun); ok {
 			checkRunChildren := checkRun.BuildSnapshotPanels(res)
@@ -345,7 +346,7 @@ func (e *DashboardExecutionTree) GetInputsDependingOn(s string) []string {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (*DashboardExecutionTree) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
+func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("should never call for DashboardExecutionTree")
 }
 

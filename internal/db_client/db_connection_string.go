@@ -3,7 +3,7 @@ package db_client
 import (
 	"strings"
 
-	"github.com/turbot/pipe-fittings/db_client/backend"
+	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 // getUseableConnectionString returns a connection string that can be used by the database driver

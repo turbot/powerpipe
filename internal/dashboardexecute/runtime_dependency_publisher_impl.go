@@ -10,6 +10,7 @@ import (
 
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
@@ -50,7 +51,7 @@ func (p *runtimeDependencyPublisherImpl) Execute(context.Context) {
 	panic("must be implemented by child struct")
 }
 
-func (p *runtimeDependencyPublisherImpl) AsTreeNode() *dashboardtypes.SnapshotTreeNode {
+func (p *runtimeDependencyPublisherImpl) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("must be implemented by child struct")
 }
 

@@ -55,7 +55,7 @@ func (r *InitResult) DisplayMessages() {
 }
 
 func (r *InitResult) Merge(other InitResult) {
-	r.ErrorAndWarnings.Merge(&other.ErrorAndWarnings)
+	r.ErrorAndWarnings.Merge(other.ErrorAndWarnings)
 
 	r.AddMessage(other.Messages...)
 }
