@@ -8,18 +8,15 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-ex/dashboardassets"
-	"github.com/turbot/pipe-ex/dashboardserver"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/dashboardassets"
-	"github.com/turbot/pipe-fittings/dashboardserver"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboard"
+	"github.com/turbot/powerpipe/internal/dashboardassets"
+	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api"
-
 	"gopkg.in/olahol/melody.v1"
 )
 

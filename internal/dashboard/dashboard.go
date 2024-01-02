@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-ex/dashboardinit"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/initialisation"
 	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/powerpipe/internal/dashboardinit"
 )
 
 func InitDashboard(ctx context.Context) *initialisation.InitData {
