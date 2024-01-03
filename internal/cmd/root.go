@@ -2,69 +2,73 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"os"
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/version"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 )
-
-// rootCmd represents the base command when called without any subcommands
-var rootCmd = &cobra.Command{
-	Use:     "powerpipe [--version] [--help] COMMAND [args]",
-	Version: "0.0.1",
-	Short:   "Powerpipe",
-}
 
 var exitCode int
 
-func InitCmd() {
+// Build the cobra command that handles our command line tool.
+func rootCommand() *cobra.Command {
+	// Define our command
+	rootCmd := &cobra.Command{
+		Use:     "powerpipe [--version] [--help] COMMAND [args]",
+		Short:   localconstants.PowerpipeShortDescription,
+		Long:    localconstants.PowerpipeLongDescription,
+		Version: viper.GetString("main.version"),
+		Run: func(cmd *cobra.Command, args []string) {
+			err := cmd.Help()
+			error_helpers.FailOnError(err)
+		},
+	}
+
 	utils.LogTime("cmd.root.InitCmd start")
 	defer utils.LogTime("cmd.root.InitCmd end")
 
-	rootCmd.SetVersionTemplate(fmt.Sprintf("Powerpipe v%s\n", version.PowerpipeVersion.String()))
+	rootCmd.SetVersionTemplate("Powerpipe v{{.Version}}\n")
 
 	// set the current working directory
 	wd, err := os.Getwd()
 	error_helpers.FailOnError(err)
 
-	rootCmd.PersistentFlags().String(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory")
-	error_helpers.FailOnError(viper.BindPFlag(constants.ArgInstallDir, rootCmd.PersistentFlags().Lookup(constants.ArgInstallDir)))
+	cmdconfig.
+		OnCmd(rootCmd).
+		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
+		AddPersistentStringFlag(constants.ArgWorkspaceDatabase, app_specific.DefaultWorkspaceDatabase, "Path to the workspace database").
+		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the mod")
 
-	rootCmd.PersistentFlags().String(constants.ArgWorkspaceDatabase, app_specific.DefaultWorkspaceDatabase, "Path to the workspace database")
-	error_helpers.FailOnError(viper.BindPFlag(constants.ArgWorkspaceDatabase, rootCmd.PersistentFlags().Lookup(constants.ArgWorkspaceDatabase)))
-
-	rootCmd.PersistentFlags().String(constants.ArgModLocation, wd, "Path to the mod")
-	error_helpers.FailOnError(viper.BindPFlag(constants.ArgModLocation, rootCmd.PersistentFlags().Lookup(constants.ArgModLocation)))
-
-	AddCommands()
-
-	// disable auto completion generation, since we don't want to support
-	// powershell yet - and there's no way to disable powershell in the default generator
-	rootCmd.CompletionOptions.DisableDefaultCmd = true
-}
-
-func AddCommands() {
 	rootCmd.AddCommand(
 		modCmd(),
 		dashboardCmd(),
 	)
+
+	// disable auto completion generation, since we don't want to support
+	// powershell yet - and there's no way to disable powershell in the default generator
+	rootCmd.CompletionOptions.DisableDefaultCmd = true
+
+	return rootCmd
 }
 
 func Execute() int {
+	rootCmd := rootCommand()
 	utils.LogTime("cmd.root.Execute start")
 	defer utils.LogTime("cmd.root.Execute end")
 
 	ctx := createRootContext()
 
-	rootCmd.ExecuteContext(ctx)
+	if err := rootCmd.ExecuteContext(ctx); err != nil {
+		exitCode = -1
+	}
 	return exitCode
 }
 

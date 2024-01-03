@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/spf13/viper"
 	"github.com/turbot/powerpipe/internal/constants"
 	"io"
 	"log"
@@ -15,6 +16,14 @@ import (
 
 var exitCode int
 
+var (
+	// These variables will be set by GoReleaser.
+	version = "0.0.1-dev.0"
+	commit  = "none"
+	date    = "unknown"
+	builtBy = "local"
+)
+
 func main() {
 	ctx := context.Background()
 	utils.LogTime("main start")
@@ -22,6 +31,8 @@ func main() {
 	// TODO add logger - discard logs for now
 	log.SetOutput(io.Discard)
 
+	// add the auto-populated version properties into viper
+	setVersionProperties()
 	// set app specific constants defined in pipe-fittings
 	constants.SetAppSpecificConstants()
 
@@ -36,8 +47,15 @@ func main() {
 		utils.DisplayProfileData()
 		os.Exit(exitCode)
 	}()
-	cmd.InitCmd()
 
-	// execute the command
+	// execute the root command
 	exitCode = cmd.Execute()
+}
+
+func setVersionProperties() {
+	viper.SetDefault("main.version", version)
+	viper.SetDefault("main.commit", commit)
+	viper.SetDefault("main.date", date)
+	viper.SetDefault("main.builtBy", builtBy)
+
 }

@@ -1,9 +1,10 @@
 package constants
 
 import (
+	"github.com/Masterminds/semver/v3"
+	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
-	internalversion "github.com/turbot/powerpipe/internal/version"
 	"os"
 	"path/filepath"
 	"strings"
@@ -11,17 +12,20 @@ import (
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
 func SetAppSpecificConstants() {
-	// set the default install dir
-	app_specific.AppVersion = internalversion.PowerpipeVersion
+	app_specific.AppName = "popwerpipe"
+
+	// version
+	versionString := viper.GetString("main.version")
+	app_specific.AppVersion = semver.MustParse(versionString)
 	app_specific.AutoVariablesExtension = ".auto.ppvars"
-	app_specific.ClientConnectionAppNamePrefix = "powerpipe_client"
-	app_specific.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
+
 	// set the default install dir
 	defaultInstallDir, err := files.Tildefy("~/.powerpipe")
 	if err != nil {
 		panic(err)
 	}
 	app_specific.DefaultInstallDir = defaultInstallDir
+
 	// TODO KAI CHECK THIS
 	// set the default config path
 	globalConfigPath := filepath.Join(defaultInstallDir, "config")
@@ -43,11 +47,13 @@ func SetAppSpecificConstants() {
 	app_specific.DefaultVarsFileName = "powerpipe.ppvars"
 	// default to local steampipe service
 	app_specific.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
+
+	// extensions
 	app_specific.ModDataExtension = ".sp"
 	app_specific.ModFileName = "mod.sp"
-	app_specific.ServiceConnectionAppNamePrefix = "powerpipe_service"
 	app_specific.ConfigExtension = ".ppc"
 	app_specific.VariablesExtension = ".ppvars"
+
 	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
 	app_specific.WorkspaceDataDir = ".powerpipe"
 	app_specific.EnvAppPrefix = "POWERPIPE_"
