@@ -5,8 +5,6 @@ import (
 	"database/sql"
 	"time"
 
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/db_client/backend"
 	"github.com/turbot/powerpipe/internal/db_common"
@@ -46,16 +44,6 @@ func (c *DbClient) establishConnectionPool(ctx context.Context, overrides client
 	// apply any overrides
 	// this is used to set the pool size and lifetimes of the connections from up top
 	overrides.userPoolSettings.apply(pool)
-
-	err = db_common.WaitForPool(
-		ctx,
-		pool,
-		db_common.WithRetryInterval(constants.DBConnectionRetryBackoff),
-		db_common.WithTimeout(time.Duration(viper.GetInt(constants.ArgDatabaseStartTimeout))*time.Second),
-	)
-	if err != nil {
-		return err
-	}
 	c.UserPool = pool
 
 	return c.establishManagementConnectionPool(ctx, overrides)
@@ -77,16 +65,6 @@ func (c *DbClient) establishManagementConnectionPool(ctx context.Context, overri
 	// apply any overrides
 	// this is used to set the pool size and lifetimes of the connections from up top
 	overrides.managementPoolSettings.apply(pool)
-
-	err = db_common.WaitForPool(
-		ctx,
-		pool,
-		db_common.WithRetryInterval(constants.DBConnectionRetryBackoff),
-		db_common.WithTimeout(time.Duration(viper.GetInt(constants.ArgDatabaseStartTimeout))*time.Second),
-	)
-	if err != nil {
-		return err
-	}
 	c.ManagementPool = pool
 
 	return nil
@@ -103,5 +81,20 @@ func establishConnectionPool(ctx context.Context, connectionString string) (*sql
 	pool.SetConnMaxIdleTime(MaxConnIdleTime)
 	pool.SetConnMaxLifetime(MaxConnLifeTime)
 	pool.SetMaxOpenConns(db_common.MaxDbConnections())
+
+	// open a connection and ping it
+	conn, err := pool.Conn(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer func() {
+		_ = conn.Close()
+	}()
+	err = conn.PingContext(ctx)
+
+	if err != nil {
+		return nil, err
+	}
+
 	return pool, nil
 }

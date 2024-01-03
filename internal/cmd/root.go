@@ -54,7 +54,7 @@ func InitCmd() {
 func AddCommands() {
 	rootCmd.AddCommand(
 		modCmd(),
-		serviceCmd(),
+		dashboardCmd(),
 	)
 }
 

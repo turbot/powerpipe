@@ -4,6 +4,9 @@ import (
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	internalversion "github.com/turbot/powerpipe/internal/version"
+	"os"
+	"path/filepath"
+	"strings"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
@@ -14,11 +17,28 @@ func SetAppSpecificConstants() {
 	app_specific.ClientConnectionAppNamePrefix = "powerpipe_client"
 	app_specific.ClientSystemConnectionAppNamePrefix = "powerpipe_client_system"
 	// set the default install dir
-	installDir, err := files.Tildefy("~/.powerpipe")
+	defaultInstallDir, err := files.Tildefy("~/.powerpipe")
 	if err != nil {
 		panic(err)
 	}
-	app_specific.DefaultInstallDir = installDir
+	app_specific.DefaultInstallDir = defaultInstallDir
+	// TODO KAI CHECK THIS
+	// set the default config path
+	globalConfigPath := filepath.Join(defaultInstallDir, "config")
+	// check whether install-dir env has been set - if so, respect it
+	if envInstallDir, ok := os.LookupEnv(app_specific.EnvInstallDir); ok {
+		globalConfigPath = filepath.Join(envInstallDir, "config")
+		app_specific.InstallDir = envInstallDir
+	} else {
+		/*
+			NOTE:
+			If InstallDir is settable outside of default & env var, need to add
+			the following code to end of initGlobalConfig in init.go
+			app_specific.InstallDir = viper.GetString(constants.ArgInstallDir) at end of
+		*/
+		app_specific.InstallDir = defaultInstallDir
+	}
+	app_specific.DefaultConfigPath = strings.Join([]string{".", globalConfigPath}, ":")
 
 	app_specific.DefaultVarsFileName = "powerpipe.ppvars"
 	// default to local steampipe service

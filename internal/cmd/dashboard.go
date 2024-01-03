@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/service/api"
 	"os"
 	"os/signal"
 
@@ -19,44 +20,25 @@ import (
 	"gopkg.in/olahol/melody.v1"
 )
 
-func serviceCmd() *cobra.Command {
+func dashboardCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "service [command]",
+		Use:   "dashboard",
 		Args:  cobra.NoArgs,
-		Short: "Powerpipe service management",
-		Long: `Powerpipe service management.
-
-Run Powerpipe as a local service, exposing it as a database endpoint for
-connection from any compatible database client.`,
-	}
-
-	cmd.AddCommand(serviceStartCmd())
-	cmd.Flags().BoolP(constants.ArgHelp, "h", false, "Help for service")
-	return cmd
-}
-
-func serviceStartCmd() *cobra.Command {
-	var cmd = &cobra.Command{
-		Use:   "start",
-		Args:  cobra.NoArgs,
-		Run:   runServiceStartCmd,
-		Short: "Start Powerpipe in service mode",
-		Long: `Start the Powerpipe service.
-
-Run Powerpipe as a local service, exposing it as a database endpoint for
-connection from any compatible database client.`,
+		Run:   runDashboardCmd,
+		Short: "Start Powerpipe dashboard server",
+		Long:  "Start Powerpipe dashboard server.",
 	}
 
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddBoolFlag(constants.ArgBrowser, true, "Specify whether to launch the browser after starting the powerpipe server")
+		AddBoolFlag(constants.ArgBrowser, true, "Specify whether to launch the browser after starting the dashboard server")
 
 	return cmd
 }
 
-func runServiceStartCmd(cmd *cobra.Command, _ []string) {
+func runDashboardCmd(cmd *cobra.Command, _ []string) {
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
@@ -78,17 +60,17 @@ func runServiceStartCmd(cmd *cobra.Command, _ []string) {
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server
-	//powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
-	//if err != nil {
-	//	error_helpers.FailOnError(err)
-	//}
+	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
+	if err != nil {
+		error_helpers.FailOnError(err)
+	}
 	dashboardServer.InitAsync(ctx)
 
-	// start the API server
-	//err = powerpipeService.Start()
-	//if err != nil {
-	//	error_helpers.FailOnError(err)
-	//}
+	//start the API server
+	err = powerpipeService.Start()
+	if err != nil {
+		error_helpers.FailOnError(err)
+	}
 	// start browser if required
 	if viper.GetBool(constants.ArgBrowser) {
 		url := buildDashboardURL(9194, modInitData.Workspace)

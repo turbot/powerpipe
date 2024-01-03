@@ -6,6 +6,7 @@ import (
 	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgconn"
+	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
@@ -80,13 +81,21 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...ClientOpt
 	return client, nil
 }
 
-func (c *DbClient) closePools() {
+func (c *DbClient) closePools() error {
+	var errors []error
 	if c.UserPool != nil {
-		c.UserPool.Close()
+		err := c.UserPool.Close()
+		if err != nil {
+			errors = append(errors, err)
+		}
 	}
 	if c.ManagementPool != nil {
-		c.ManagementPool.Close()
+		err := c.ManagementPool.Close()
+		if err != nil {
+			errors = append(errors, err)
+		}
 	}
+	return error_helpers.CombineErrors(errors...)
 }
 
 func (c *DbClient) GetConnectionString() string {
