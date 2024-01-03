@@ -4,7 +4,7 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
+//replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
@@ -27,7 +27,8 @@ require (
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.9.0-rc.3
-	github.com/turbot/pipe-fittings v0.1.0
+	// pp branch
+	github.com/turbot/pipe-fittings v0.2.0-beta.5.0.20240103132957-10776726162b
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.6.2
 	github.com/turbot/terraform-components v0.0.0-20231108031935-358f803c1a8b // indirect
@@ -50,7 +51,6 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/shirou/gopsutil v3.21.11+incompatible
-	github.com/turbot/flowpipe v0.1.0
 	golang.org/x/sync v0.4.0
 	golang.org/x/text v0.14.0
 )
@@ -144,7 +144,6 @@ require (
 	github.com/hashicorp/terraform-registry-address v0.2.1 // indirect
 	github.com/hashicorp/terraform-svchost v0.1.1 // indirect
 	github.com/hashicorp/yamux v0.0.0-20181012175058-2f1d1f20f75d // indirect
-	github.com/hokaccha/go-prettyjson v0.0.0-20211117102719-0474bc63780f // indirect
 	github.com/huandu/xstrings v1.3.3 // indirect
 	github.com/iancoleman/strcase v0.3.0 // indirect
 	github.com/imdario/mergo v0.3.13 // indirect
@@ -177,6 +176,7 @@ require (
 	github.com/modern-go/reflect2 v1.0.2 // indirect
 	github.com/oklog/run v1.0.0 // indirect
 	github.com/olekukonko/tablewriter v0.0.5 // indirect
+	github.com/onsi/ginkgo/v2 v2.11.0 // indirect
 	github.com/opencontainers/go-digest v1.0.0 // indirect
 	github.com/opencontainers/image-spec v1.1.0-rc5 // indirect
 	github.com/oras-project/oras-credentials-go v0.3.0 // indirect
@@ -205,8 +205,6 @@ require (
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
-	github.com/turbot/flowpipe-sdk-go v0.1.0 // indirect
-	github.com/turbot/steampipe-plugin-code v0.5.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.11 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
