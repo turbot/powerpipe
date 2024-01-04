@@ -1,0 +1,73 @@
+name: Powerpipe - Pre-Release
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre_release_identifier:
+        type: choice
+        description: 'Select Pre-Release Identifier'
+        options:
+          - alpha
+          - beta
+          - rc
+        required: true
+
+env:
+  GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
+jobs:
+
+  # TODO Acceptance test job before build_and_release
+
+  build_and_release:
+    name: Build and Release Powerpipe
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+          
+          if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
+            echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
+            echo "VERSION=${VERSION}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "rc" ]; then
+            echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          fi
+
+      - name: Tag Release
+        run: |
+          cd powerpipe
+          git config user.name "Powerpipe GitHub Actions Bot"
+          git config user.email noreply@github.com
+          git tag $VERSION
+          git push origin $VERSION
+
+      # this is required, check golangci-lint-action docs
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --clean
+          workdir: powerpipe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          VERSION: $VERSION
