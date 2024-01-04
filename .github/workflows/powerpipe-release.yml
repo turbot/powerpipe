@@ -3,27 +3,14 @@ name: Powerpipe - Release
 
 on:
   workflow_dispatch:
-    inputs:
-      environment:
-        type: choice
-        description: 'Select Release Type'
-        options:
-        - Development
-        - Final
-        required: true
-      version:
-        description: 'Version'
-        required: true
-        default: 0.1.0
-      confirmMain:
-        description: Confirm running on main branch
-        required: true
-        type: boolean
 
 env:
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
+
+  # TODO Acceptance test job before ensure_branch_in_homebrew
+
   ensure_branch_in_homebrew:
     name: Ensure branch exists in homebrew-tap
     runs-on: ubuntu-latest
@@ -31,13 +18,19 @@ jobs:
       - name: Calculate version
         id: calculate_version
         run: |
-          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV 
 
       - name: Parse semver string
         id: semver_parser
         uses: booxmedialtd/ws-action-parse-semver@v1
         with:
-          input_string: ${{ github.event.inputs.version }}
+          input_string: $VERSION
 
       - name: Checkout
         if: steps.semver_parser.outputs.prerelease == ''
@@ -66,17 +59,6 @@ jobs:
     needs: [ensure_branch_in_homebrew]
     runs-on: ubuntu-latest
     steps:
-      - name: validate
-        if: github.ref == 'refs/heads/main'
-        env:
-          CONFIRM_MAIN: ${{ github.event.inputs.confirmMain }}
-        run: |
-          if [ "$CONFIRM_MAIN" == 'false' ]; then
-            echo "It looks like you've accidentally tried to run this action in main branch. Either: "
-            echo " - Re-run the action and select the branch you wanted, or"
-            echo " - If you really do want to run this for main, then re-run and tick the box to confirm"
-            exit 1
-          fi
 
       - name: Checkout
         uses: actions/checkout@v3
@@ -84,21 +66,16 @@ jobs:
           path: powerpipe
           ref: ${{ github.event.ref }}
 
-      - name: Checkout Pipe Fittings Components repository
-        uses: actions/checkout@v3
-        with:
-          ssh-key: ${{ secrets.PIPE_FITTINGS_DEPLOY_PRIVATE_KEY }}
-          repository: turbot/pipe-fittings
-          path: pipe-fittings
-
       - name: Calculate version
         id: calculate_version
         run: |
-          if [ "${{ github.event.inputs.environment }}" = "Development" ]; then
-            echo "VERSION=v${{ github.event.inputs.version }}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          else
-            echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
-          fi
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV     
 
       - name: Tag Release
         run: |
@@ -126,14 +103,19 @@ jobs:
 
   create_pr_in_homebrew:
     name: Create PR in homebrew-tap
-    if: ${{ github.event.inputs.environment == 'Final' }}
     needs: [build_and_release]
     runs-on: ubuntu-latest
     steps:
       - name: Calculate version
         id: calculate_version
         run: |
-          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  
 
       - name: Parse semver string
         id: semver_parser
@@ -170,20 +152,25 @@ jobs:
 
   update_pr_for_versioning:
     name: Update PR
-    if: ${{ github.event.inputs.environment == 'Final' }}
     needs: [create_pr_in_homebrew]
     runs-on: ubuntu-latest
     steps:
       - name: Calculate version
         id: calculate_version
         run: |
-          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  
 
       - name: Parse semver string
         id: semver_parser
         uses: booxmedialtd/ws-action-parse-semver@v1
         with:
-          input_string: ${{ github.event.inputs.version }}
+          input_string: $VERSION
 
       - name: Checkout
         if: steps.semver_parser.outputs.prerelease == ''
@@ -191,7 +178,7 @@ jobs:
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          ref: v${{ github.event.inputs.version }}
+          ref: $VERSION
 
       - name: Update live version
         if: steps.semver_parser.outputs.prerelease == ''
