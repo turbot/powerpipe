@@ -51,7 +51,7 @@ require (
 	github.com/jackc/pgx/v5 v5.4.3
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/shirou/gopsutil v3.21.11+incompatible
-	golang.org/x/sync v0.4.0
+	golang.org/x/sync v0.5.0
 	golang.org/x/text v0.14.0
 )
 
