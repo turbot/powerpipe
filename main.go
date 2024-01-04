@@ -2,23 +2,22 @@ package main
 
 import (
 	"context"
-	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/internal/constants"
-	"io"
-	"log"
 	"os"
 
+	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
+	"github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/logger"
 )
 
 var exitCode int
 
 var (
 	// These variables will be set by GoReleaser.
-	version = "0.0.1-dev.0"
+	version = ""
 	commit  = "none"
 	date    = "unknown"
 	builtBy = "local"
@@ -28,13 +27,12 @@ func main() {
 	ctx := context.Background()
 	utils.LogTime("main start")
 
-	// TODO add logger - discard logs for now
-	log.SetOutput(io.Discard)
-
 	// add the auto-populated version properties into viper
 	setVersionProperties()
 	// set app specific constants defined in pipe-fittings
 	constants.SetAppSpecificConstants()
+
+	logger.SetDefaultLogger()
 
 	defer func() {
 		if r := recover(); r != nil {
@@ -57,5 +55,4 @@ func setVersionProperties() {
 	viper.SetDefault("main.commit", commit)
 	viper.SetDefault("main.date", date)
 	viper.SetDefault("main.builtBy", builtBy)
-
 }

@@ -12,7 +12,7 @@ import (
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
 func SetAppSpecificConstants() {
-	app_specific.AppName = "popwerpipe"
+	app_specific.AppName = "powerpipe"
 
 	// version
 	versionString := viper.GetString("main.version")
