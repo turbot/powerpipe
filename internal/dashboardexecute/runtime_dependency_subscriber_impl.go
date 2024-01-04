@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 
 	"github.com/turbot/go-kit/helpers"
@@ -156,8 +156,8 @@ func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyPublisher(runtime
 		}
 
 		// unexpected
-		log.Printf("[WARN] dependency %s has a dependency provider matching the base resource %s but the BaseDependencySubscriber does not provider the runtime dependency",
-			runtimeDependency.String(), baseSubscriber.GetName())
+		slog.Warn("dependency has a dependency provider matching the base resource but the BaseDependencySubscriber does not provider the runtime dependency",
+			"dependency", runtimeDependency.String(), "base resource", baseSubscriber.GetName())
 		return nil
 	}
 
@@ -178,7 +178,7 @@ func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyPublisher(runtime
 }
 
 func (s *RuntimeDependencySubscriberImpl) evaluateRuntimeDependencies(ctx context.Context) error {
-	log.Printf("[TRACE] %s: evaluateRuntimeDependencies", s.Name)
+	slog.Debug("evaluateRuntimeDependencies", "name", s.Name)
 	// now wait for any runtime dependencies then resolve args and params
 	// (it is possible to have params but no sql)
 	if s.hasRuntimeDependencies() {
@@ -186,7 +186,7 @@ func (s *RuntimeDependencySubscriberImpl) evaluateRuntimeDependencies(ctx contex
 		if err := s.waitForRuntimeDependencies(ctx); err != nil {
 			return err
 		}
-		log.Printf("[TRACE] %s: runtime dependencies availablem resolving sql and args", s.Name)
+		slog.Debug("runtime dependencies available resolving sql and args", "name", s.Name)
 
 		// ok now we have runtime dependencies, we can resolve the query
 		if err := s.resolveSQLAndArgs(); err != nil {
@@ -199,35 +199,35 @@ func (s *RuntimeDependencySubscriberImpl) evaluateRuntimeDependencies(ctx contex
 }
 
 func (s *RuntimeDependencySubscriberImpl) waitForRuntimeDependencies(ctx context.Context) error {
-	log.Printf("[TRACE] %s: waitForRuntimeDependencies", s.Name)
+	slog.Debug("waitForRuntimeDependencies", "name", s.Name)
 
 	if !s.hasRuntimeDependencies() {
-		log.Printf("[TRACE] %s: no runtime dependencies", s.Name)
+		slog.Debug("no runtime dependencies", "name", s.Name)
 		return nil
 	}
 
 	// wait for base dependencies if we have any
 	if s.baseDependencySubscriber != nil {
-		log.Printf("[TRACE] %s: calling baseDependencySubscriber.waitForRuntimeDependencies", s.Name)
+		slog.Debug("calling baseDependencySubscriber.waitForRuntimeDependencies", "name", s.Name)
 		if err := s.baseDependencySubscriber.waitForRuntimeDependencies(ctx); err != nil {
 			return err
 		}
 	}
 
-	log.Printf("[TRACE] %s: checking whether all depdencies are resolved", s.Name)
+	slog.Debug("checking whether all dependencies are resolved", "name", s.Name)
 
 	allRuntimeDepsResolved := true
 	for _, dep := range s.runtimeDependencies {
 		if !dep.IsResolved() {
 			allRuntimeDepsResolved = false
-			log.Printf("[TRACE] %s:  dependency %s is NOT resolved", s.Name, dep.Dependency.String())
+			slog.Debug("dependency is NOT resolved", "name", s.Name, "dependency", dep.Dependency.String())
 		}
 	}
 	if allRuntimeDepsResolved {
 		return nil
 	}
 
-	log.Printf("[TRACE] %s: BLOCKED", s.Name)
+	slog.Debug("BLOCKED", s.Name)
 	// set status to blocked
 	s.setStatus(ctx, dashboardtypes.RunBlocked)
 
@@ -238,22 +238,24 @@ func (s *RuntimeDependencySubscriberImpl) waitForRuntimeDependencies(ctx context
 		if !r.IsResolved() {
 			// make copy of loop var for goroutine
 			resolvedDependency := r
-			log.Printf("[TRACE] %s: wait for %s", s.Name, resolvedDependency.Dependency.String())
+			slog.Debug("wait for dependency", "name", s.Name, "dependency", resolvedDependency.Dependency.String())
 			wg.Add(1)
 			go func() {
 				defer wg.Done()
 				// block until the dependency is available
 				err := resolvedDependency.Resolve()
-				log.Printf("[TRACE] %s: Resolve returned for %s", s.Name, resolvedDependency.Dependency.String())
+				slog.Debug("Resolve returned",
+					"name", s.Name, "dependency", resolvedDependency.Dependency.String())
 				if err != nil {
-					log.Printf("[TRACE] %s: Resolve for %s returned error:L %s", s.Name, resolvedDependency.Dependency.String(), err.Error())
+					slog.Debug("Resolve returned error",
+						"name", s.Name, "dependency", resolvedDependency.Dependency.String(), "error", err.Error())
 					errChan <- err
 				}
 			}()
 		}
 	}
 	go func() {
-		log.Printf("[TRACE] %s: goroutine waiting for all runtime deps to be available", s.Name)
+		slog.Debug("goroutine waiting for all runtime deps to be available", "name", s.Name)
 		wg.Wait()
 		close(doneChan)
 	}()
@@ -273,7 +275,7 @@ wait_loop:
 		}
 	}
 
-	log.Printf("[TRACE] %s: all runtime dependencies ready", s.resource.Name())
+	slog.Debug("all runtime dependencies ready", s.resource.Name())
 	return error_helpers.CombineErrors(errors...)
 }
 
@@ -309,7 +311,7 @@ func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyForParentProperty
 
 // resolve the sql for this leaf run into the source sql and resolved args
 func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
-	log.Printf("[TRACE] %s: resolveSQLAndArgs", s.resource.Name())
+	slog.Debug("resolveSQLAndArgs", s.resource.Name())
 	queryProvider, ok := s.resource.(modconfig.QueryProvider)
 	if !ok {
 		// not a query provider - nothing to do
@@ -319,18 +321,18 @@ func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 	// convert arg runtime dependencies into arg map
 	runtimeArgs, err := s.buildRuntimeDependencyArgs()
 	if err != nil {
-		log.Printf("[TRACE] %s: buildRuntimeDependencyArgs failed: %s", s.resource.Name(), err.Error())
+		slog.Debug("buildRuntimeDependencyArgs failed: %s", s.resource.Name(), err.Error())
 		return err
 	}
 
 	// now if any param defaults had runtime dependencies, populate them
 	s.populateParamDefaults(queryProvider)
 
-	log.Printf("[TRACE] %s: built runtime args: %v", s.resource.Name(), runtimeArgs)
+	slog.Debug("built runtime args: %v", s.resource.Name(), runtimeArgs)
 
 	// does this leaf run have any SQL to execute?
 	if queryProvider.RequiresExecution(queryProvider) {
-		log.Printf("[TRACE] ResolveArgsFromQueryProvider for %s", queryProvider.Name())
+		slog.Debug("ResolveArgsFromQueryProvider", "name", queryProvider.Name())
 		resolvedQuery, err := s.executionTree.workspace.ResolveQueryFromQueryProvider(queryProvider, runtimeArgs)
 		if err != nil {
 			return err
@@ -372,7 +374,7 @@ func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider modconf
 func (s *RuntimeDependencySubscriberImpl) buildRuntimeDependencyArgs() (*modconfig.QueryArgs, error) {
 	res := modconfig.NewQueryArgs()
 
-	log.Printf("[TRACE] %s: buildRuntimeDependencyArgs - %d runtime dependencies", s.resource.Name(), len(s.runtimeDependencies))
+	slog.Debug("buildRuntimeDependencyArgs - %d runtime dependencies", s.resource.Name(), len(s.runtimeDependencies))
 
 	// if the runtime dependencies use position args, get the max index and ensure the args array is large enough
 	maxArgIndex := -1

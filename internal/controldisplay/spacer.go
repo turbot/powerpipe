@@ -2,7 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 )
 
@@ -19,7 +19,7 @@ func NewSpacerRenderer(width int) *SpacerRenderer {
 func (r SpacerRenderer) Render() string {
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		log.Printf("[WARN] spacer renderer has width of %d\n", r.width)
+		slog.Warn("spacer renderer has width of %d\n", r.width)
 		return ""
 	}
 	// we always have a trailing space

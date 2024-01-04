@@ -2,7 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -132,7 +132,7 @@ func (r *DashboardTreeRunImpl) GetResource() modconfig.DashboardLeafNode {
 
 // SetError implements DashboardTreeRun
 func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
-	log.Printf("[TRACE] %s SetError err %v", r.Name, err)
+	slog.Debug("SetError", "name", r.Name, "error", err)
 	r.err = err
 	// error type does not serialise to JSON so copy into a string
 	r.ErrorString = err.Error()

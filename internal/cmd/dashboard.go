@@ -129,5 +129,5 @@ func buildDashboardURL(serverPort dashboardserver.ListenPort, w *workspace.Works
 // 	// wait for API server to terminate
 // 	<-doneChan
 
-// log.Println("[TRACE] runDashboardCmd exiting")
+// slog.Debug("runDashboardCmd exiting")
 // }

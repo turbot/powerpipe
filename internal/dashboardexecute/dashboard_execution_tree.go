@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"golang.org/x/exp/maps"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -191,12 +191,12 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 		workspace.PublishDashboardEvent(ctx, e)
 	}()
 
-	log.Println("[TRACE]", "begin DashboardExecutionTree.Execute")
-	defer log.Println("[TRACE]", "end DashboardExecutionTree.Execute")
+	slog.Debug("begin DashboardExecutionTree.Execute")
+	defer slog.Debug("end DashboardExecutionTree.Execute")
 
 	if e.GetRunStatus().IsFinished() {
 		// there must be no nodes to execute
-		log.Println("[TRACE]", "execution tree already complete")
+		slog.Debug("execution tree already complete")
 		return
 	}
 
@@ -231,7 +231,7 @@ func (*DashboardExecutionTree) GetNodeType() string {
 }
 
 func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
-	log.Printf("[TRACE] SetInputValues")
+	slog.Debug("SetInputValues")
 	e.inputLock.Lock()
 	defer e.inputLock.Unlock()
 
@@ -239,12 +239,12 @@ func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
 	runtimeDependencyPublisher, ok := e.Root.(RuntimeDependencyPublisher)
 	if !ok {
 		// should never happen
-		log.Printf("[WARN] SetInputValues called but root WorkspaceEvents run is not a RuntimeDependencyPublisher: %s", e.Root.GetName())
+		slog.Warn("SetInputValues called but root WorkspaceEvents run is not a RuntimeDependencyPublisher", "root", e.Root.GetName())
 		return
 	}
 
 	for name, value := range inputValues {
-		log.Printf("[TRACE] DashboardExecutionTree SetInput %s = %v", name, value)
+		slog.Debug("DashboardExecutionTree SetInput", "name", name, "value", value)
 		e.inputValues[name] = value
 		// publish runtime dependency
 		runtimeDependencyPublisher.PublishRuntimeDependencyValue(name, &dashboardtypes.ResolvedRuntimeDependencyValue{Value: value})
@@ -262,11 +262,11 @@ func (*DashboardExecutionTree) ChildStatusChanged(context.Context) {}
 func (e *DashboardExecutionTree) Cancel() {
 	// if we have not completed, and already have a cancel function - cancel
 	if e.GetRunStatus().IsFinished() || e.cancel == nil {
-		log.Printf("[TRACE] DashboardExecutionTree Cancel NOT cancelling status %s cancel func %p", e.GetRunStatus(), e.cancel)
+		slog.Debug("DashboardExecutionTree Cancel NOT cancelling", "status", e.GetRunStatus(), "cancel func", e.cancel)
 		return
 	}
 
-	log.Printf("[TRACE] DashboardExecutionTree Cancel  - calling cancel")
+	slog.Debug("DashboardExecutionTree Cancel  - calling cancel")
 	e.cancel()
 
 	// if there are any children, wait for the execution to complete
@@ -274,7 +274,7 @@ func (e *DashboardExecutionTree) Cancel() {
 		<-e.runComplete
 	}
 
-	log.Printf("[TRACE] DashboardExecutionTree Cancel - all children complete")
+	slog.Debug("DashboardExecutionTree Cancel - all children complete")
 }
 
 func (e *DashboardExecutionTree) BuildSnapshotPanels() map[string]steampipeconfig.SnapshotPanel {

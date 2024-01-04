@@ -3,7 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"sync"
 	"time"
 
@@ -186,8 +186,8 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	utils.LogTime("ControlRun.execute start")
 	defer utils.LogTime("ControlRun.execute end")
 
-	log.Printf("[TRACE] begin ControlRun.Start: %s\n", r.Control.Name())
-	defer log.Printf("[TRACE] end ControlRun.Start: %s\n", r.Control.Name())
+	slog.Debug("begin ControlRun.Start", "name", r.Control.Name())
+	defer slog.Debug("end ControlRun.Start", "name", r.Control.Name())
 
 	control := r.Control
 
@@ -204,7 +204,6 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		if r.Group != nil {
 			r.Group.onChildDone()
 		}
-		log.Printf("[TRACE] finishing with concurrency, %s, , %d\n", r.Control.Name(), r.Tree.Progress.Executing)
 	}()
 
 	// get a db connection
@@ -212,7 +211,7 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	//sessionResult := r.acquireSession(ctx, client)
 	//if sessionResult.Error != nil {
 	//	if !error_helpers.IsCancelledError(sessionResult.Error) {
-	//		log.Printf("[TRACE] controlRun %s execute failed to acquire session: %s", r.ControlId, sessionResult.Error)
+	//		slog.Debug("controlRun %s execute failed to acquire session: %s", r.ControlId, sessionResult.Error)
 	//		sessionResult.Error = fmt.Errorf("error acquiring database connection, %s", sessionResult.Error.Error())
 	//		r.setError(ctx, sessionResult.Error)
 	//	}
@@ -250,9 +249,9 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 
 	// execute the control query
 	// NOTE no need to pass an OnComplete callback - we are already closing our session after waiting for results
-	log.Printf("[TRACE] execute start for, %s\n", control.Name())
+	slog.Debug("execute start", "name", r.Control.Name())
 	queryResult, err := client.Execute(controlExecutionCtx, resolvedQuery.ExecuteSQL, resolvedQuery.Args...)
-	log.Printf("[TRACE] execute finish for, %s\n", control.Name())
+	slog.Debug("execute finish", "name", r.Control.Name())
 
 	if err != nil {
 		r.attempts++
@@ -260,12 +259,12 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		// is this an rpc EOF error - meaning that the plugin somehow crashed
 		if grpc.IsGRPCConnectivityError(err) {
 			if r.attempts < constants.MaxControlRunAttempts {
-				log.Printf("[TRACE] control %s query failed with plugin connectivity error %s - retrying…", r.Control.Name(), err)
+				slog.Debug("control query failed with plugin connectivity error - retrying…", "name", r.Control.Name(), "error", err)
 				// recurse into this function to retry using the original context - which Execute will use to create it's own timeout context
 				r.execute(ctx, client)
 				return
 			} else {
-				log.Printf("[TRACE] control %s query failed again with plugin connectivity error %s - NOT retrying…", r.Control.Name(), err)
+				slog.Debug("control query failed with plugin connectivity error - NOT retrying…", "name", r.Control.Name(), "error", err)
 			}
 		}
 		r.setError(ctx, err)
@@ -275,9 +274,9 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	r.queryResult = queryResult
 
 	// now wait for control completion
-	log.Printf("[TRACE] wait result for, %s\n", control.Name())
+	slog.Debug("wait result", "name", r.Control.Name())
 	r.waitForResults(ctx)
-	log.Printf("[TRACE] finish result for, %s\n", control.Name())
+	slog.Debug("finish result", "name", r.Control.Name())
 }
 
 // todo kai why do we need to manually acquire a session??? <SESSION>
@@ -290,7 +289,7 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 //			break
 //		}
 //
-//		log.Printf("[TRACE] controlRun %s acquireSession failed with error: %s - retrying", r.ControlId, sessionResult.Error)
+//		slog.Debug("controlRun %s acquireSession failed with error: %s - retrying", r.ControlId, sessionResult.Error)
 //	}
 //
 //	return sessionResult

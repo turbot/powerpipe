@@ -3,7 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"sort"
 	"time"
 
@@ -113,8 +113,8 @@ func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Contr
 }
 
 func (e *ExecutionTree) Execute(ctx context.Context) error {
-	log.Println("[TRACE]", "begin ExecutionTree.Execute")
-	defer log.Println("[TRACE]", "end ExecutionTree.Execute")
+	slog.Debug("begin ExecutionTree.Execute")
+	defer slog.Debug("end ExecutionTree.Execute")
 	e.StartTime = time.Now()
 	e.Progress.Start(ctx)
 
@@ -144,7 +144,7 @@ func (e *ExecutionTree) Execute(ctx context.Context) error {
 	e.Root.execute(ctx, e.client, parallelismLock)
 
 	if err := e.waitForActiveRunsToComplete(ctx, parallelismLock, maxParallelGoRoutines); err != nil {
-		log.Printf("[WARN] timed out waiting for active runs to complete")
+		slog.Warn("timed out waiting for active runs to complete")
 	}
 
 	// now build map of dimension property name to property value to color map
@@ -171,7 +171,7 @@ func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, paralle
 func (e *ExecutionTree) populateControlFilterMap(ctx context.Context, controlFilterWhereClause string) error {
 	// if we derived or were passed a where clause, run the filter
 	if len(controlFilterWhereClause) > 0 {
-		log.Println("[TRACE]", "filtering controls with", controlFilterWhereClause)
+		slog.Debug("filtering controls with", "controlFilterWhereClause", controlFilterWhereClause)
 		var err error
 		e.controlNameFilterMap, err = e.getControlMapFromWhereClause(ctx, controlFilterWhereClause)
 		if err != nil {

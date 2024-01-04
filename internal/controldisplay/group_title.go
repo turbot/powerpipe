@@ -2,9 +2,8 @@ package controldisplay
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/turbot/go-kit/helpers"
+	"log/slog"
 )
 
 // There will always be a space after the title, even if the title is empty
@@ -27,7 +26,7 @@ func NewGroupTitleRenderer(title string, width int) *GroupTitleRenderer {
 func (r GroupTitleRenderer) Render() string {
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		log.Printf("[WARN] group renderer has width of %d\n", r.width)
+		slog.Warn("GroupTitleRenderer.Render unexpected negative width", "width", r.width)
 		return ""
 	}
 	// allow room for trailing space

@@ -2,6 +2,8 @@ package dashboardexecute
 
 import (
 	"context"
+	"log/slog"
+
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
@@ -10,7 +12,6 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"golang.org/x/exp/maps"
-	"log"
 )
 
 // LeafRun is a struct representing the execution of a leaf dashboard node
@@ -123,11 +124,11 @@ func (r *LeafRun) Execute(ctx context.Context) {
 		return
 	}
 
-	log.Printf("[TRACE] LeafRun '%s' Execute()", r.resource.Name())
+	slog.Debug("LeafRun Execute()", "name", r.resource.Name())
 
 	// to get here, we must be a query provider
 
-	// if we have children and with runs, start them asyncronously (they may block waiting for our runtime dependencies)
+	// if we have children and with runs, start them asynchronously (they may block waiting for our runtime dependencies)
 	r.executeChildrenAsync(ctx)
 
 	// start a goroutine to wait for children to complete
@@ -154,14 +155,14 @@ func (r *LeafRun) Execute(ctx context.Context) {
 	// wait for all children and withs
 	err := <-doneChan
 	if err == nil {
-		log.Printf("[TRACE] %s children complete", r.resource.Name())
+		slog.Debug("children complete", "name", r.resource.Name())
 
 		// aggregate our child data
 		r.combineChildData()
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
-		log.Printf("[TRACE] %s children complete with error: %s", r.resource.Name(), err.Error())
+		slog.Debug("children complete with error", "name", r.resource.Name(), "error", err.Error())
 		r.SetError(ctx, err)
 	}
 }
@@ -186,7 +187,7 @@ func (*LeafRun) IsSnapshotPanel() {}
 
 // if this leaf run has a query or sql, execute it now
 func (r *LeafRun) executeQuery(ctx context.Context) error {
-	log.Printf("[TRACE] LeafRun '%s' SQL resolved, executing", r.resource.Name())
+	slog.Debug("LeafRun SQL resolved, executing", "name", r.resource.Name())
 
 	// get the client for this connection string
 	client, err := r.executionTree.getClient(ctx, r.ConnectionString)
@@ -196,11 +197,10 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 
 	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
 	if err != nil {
-		log.Printf("[TRACE] LeafRun '%s' query failed: %s", r.resource.Name(), err.Error())
+		slog.Debug("LeafRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
-
 	}
-	log.Printf("[TRACE] LeafRun '%s' complete", r.resource.Name())
+	slog.Debug("LeafRun complete", "name", r.resource.Name())
 
 	r.Data = dashboardtypes.NewLeafData(queryResult)
 	r.TimingResult = queryResult.TimingResult

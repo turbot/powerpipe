@@ -2,12 +2,13 @@ package dashboardexecute
 
 import (
 	"context"
+	"log/slog"
+	"sync"
+
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"log"
-	"sync"
 )
 
 type DashboardParentImpl struct {
@@ -49,7 +50,7 @@ func (r *DashboardParentImpl) GetChildren() []dashboardtypes.DashboardTreeRun {
 func (r *DashboardParentImpl) ChildrenComplete() bool {
 	for _, child := range r.children {
 		if !child.RunComplete() {
-			log.Printf("[TRACE] %s ChildrenComplete child %s NOT complete state %s", r.Name, child.GetName(), child.GetRunStatus())
+			slog.Debug("ChildrenComplete but child NOT complete state ", "parent", r.Name, "child", child.GetName(), "state", child.GetRunStatus())
 			return false
 		}
 	}
@@ -84,10 +85,10 @@ func (r *DashboardParentImpl) executeWithsAsync(ctx context.Context) {
 }
 
 func (r *DashboardParentImpl) waitForChildrenAsync(ctx context.Context) chan error {
-	log.Printf("[TRACE] %s waitForChildrenAsync", r.Name)
+	slog.Debug("waitForChildrenAsync", "name", r.Name)
 	var doneChan = make(chan error)
 	if len(r.children) == 0 {
-		log.Printf("[TRACE] %s waitForChildrenAsync - no children so we're done", r.Name)
+		slog.Debug("waitForChildrenAsync - no children so we're done", "name", r.Name)
 		// if there are no children, return a closed channel so we do not wait
 		close(doneChan)
 		return doneChan
@@ -98,14 +99,14 @@ func (r *DashboardParentImpl) waitForChildrenAsync(ctx context.Context) chan err
 		var errors []error
 		for !(r.ChildrenComplete()) {
 			completeChild := <-r.childCompleteChan
-			log.Printf("[TRACE] %s waitForChildrenAsync got child complete for %s", r.Name, completeChild.GetName())
+			slog.Debug("waitForChildrenAsync got child complete", "parent", r.Name, "child", completeChild.GetName())
 			if completeChild.GetRunStatus().IsError() {
 				errors = append(errors, completeChild.GetError())
-				log.Printf("[TRACE] %s child %s has error %v", r.Name, completeChild.GetName(), completeChild.GetError())
+				slog.Debug("child  has error", "parent", r.Name, "child", completeChild.GetName(), "error", completeChild.GetError())
 			}
 		}
 
-		log.Printf("[TRACE] %s ALL children and withs complete, errors: %v", r.Name, errors)
+		slog.Debug("ALL children and withs complete", "name", r.Name, "errors", errors)
 
 		// so all children have completed - check for errors
 		// TODO [node_reuse] format better error https://github.com/turbot/steampipe/issues/2920
@@ -130,7 +131,7 @@ func (r *DashboardParentImpl) ChildStatusChanged(ctx context.Context) {
 	// if we are currently blocked by a child or we are currently in running state,
 	// call setRunning() to determine whether any of our children are now blocked
 	if r.blockedByChild || r.GetRunStatus() == dashboardtypes.RunRunning {
-		log.Printf("[TRACE] %s ChildStatusChanged - calling setRunning to see if we are still running, status %s blockedByChild %v", r.Name, r.GetRunStatus(), r.blockedByChild)
+		slog.Debug("ChildStatusChanged - calling setRunning to see if we are still running", "parent", r.Name, "status", r.GetRunStatus(), "child", r.blockedByChild)
 
 		// try setting our status to running again
 		r.setRunning(ctx)
@@ -141,7 +142,7 @@ func (r *DashboardParentImpl) ChildStatusChanged(ctx context.Context) {
 func (r *DashboardParentImpl) setRunning(ctx context.Context) {
 	// if the run is already complete (for example, canceled), do nothing
 	if r.GetRunStatus().IsFinished() {
-		log.Printf("[TRACE] %s setRunning - run already terminated - current state %s - NOT setting running", r.Name, r.GetRunStatus())
+		slog.Debug("setRunning - run already terminated - NOT setting running", "name", r.Name, "current state", r.GetRunStatus())
 		return
 	}
 
@@ -162,9 +163,9 @@ func (r *DashboardParentImpl) setRunning(ctx context.Context) {
 
 	// set status if it has changed
 	if status != r.GetRunStatus() {
-		log.Printf("[TRACE] %s setRunning - setting state %s, blockedByChild %v", r.Name, status, r.blockedByChild)
+		slog.Debug("setRunning - setting state, blockedByChild", "name", r.Name, "state", status, "child", r.blockedByChild)
 		r.DashboardTreeRunImpl.setStatus(ctx, status)
 	} else {
-		log.Printf("[TRACE] %s setRunning - state unchanged %s, blockedByChild %v", r.Name, status, r.blockedByChild)
+		slog.Debug("setRunning - state unchanged , blockedByChild", "name", r.Name, "state", status, "child", r.blockedByChild)
 	}
 }

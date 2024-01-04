@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"strconv"
 	"sync"
 
@@ -95,7 +95,7 @@ func (p *runtimeDependencyPublisherImpl) SubscribeToRuntimeDependency(name strin
 	for _, o := range opts {
 		o(target)
 	}
-	log.Printf("[TRACE] SubscribeToRuntimeDependency %s", name)
+	slog.Debug("SubscribeToRuntimeDependency", "name", name)
 
 	// subscribe, passing a function which invokes getWithValue to resolve the required with value
 	p.subscriptions[name] = append(p.subscriptions[name], target)
@@ -292,5 +292,5 @@ func (p *runtimeDependencyPublisherImpl) argsResolved(args []any) {
 			p.PublishRuntimeDependencyValue(param.UnqualifiedName, &dashboardtypes.ResolvedRuntimeDependencyValue{Value: args[i]})
 		}
 	}
-	log.Printf("[TRACE] %s: argsResolved", p.Name)
+	slog.Debug("argsResolved", "name", p.Name)
 }

@@ -3,8 +3,6 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"log"
-
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
@@ -55,7 +53,6 @@ func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEven
 	case *dashboardevents.ExecutionError:
 		errorChannel <- e.Error
 	case *dashboardevents.ExecutionComplete:
-		log.Println("[TRACE] execution complete event", *e)
 		snap := ExecutionCompleteToSnapshot(e)
 		resultChannel <- snap
 	}

@@ -3,17 +3,17 @@ package dashboardassets
 import (
 	"context"
 	"encoding/json"
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"log"
+	"log/slog"
 	"os"
 
+	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/ociinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 func Ensure(ctx context.Context) error {
@@ -57,7 +57,7 @@ func loadReportAssetVersionFile() (*ReportAssetsVersionFile, error) {
 	file, _ := os.ReadFile(versionFilePath)
 	var versionFile ReportAssetsVersionFile
 	if err := json.Unmarshal(file, &versionFile); err != nil {
-		log.Println("[ERROR]", "Error while reading dashboard assets version file", err)
+		slog.Error("Error while reading dashboard assets version file", "error", err)
 		return nil, err
 	}
 

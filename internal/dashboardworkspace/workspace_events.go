@@ -2,7 +2,7 @@ package dashboardworkspace
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"reflect"
 	"sync/atomic"
 	"time"
@@ -25,9 +25,9 @@ func (w *WorkspaceEvents) PublishDashboardEvent(ctx context.Context, e dashboard
 		select {
 		case <-doneChan:
 		case <-time.After(1 * time.Second):
-			log.Printf("[TRACE] timeout sending dashboard event %s, buffered events: %d", reflect.TypeOf(e).String(), EventCount)
+			slog.Debug("timeout sending dashboard event", "event", reflect.TypeOf(e).String(), "buffered events", EventCount)
 		case <-ctx.Done():
-			log.Printf("[TRACE] context cancelled sending dashboard event")
+			slog.Debug("context cancelled sending dashboard event")
 		}
 	}
 }
@@ -57,7 +57,7 @@ func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
 		e := <-w.dashboardEventChan
 		atomic.AddInt64(&EventCount, -1)
 		if e == nil {
-			log.Printf("[TRACE] handleDashboardEvent nil event received - exiting")
+			slog.Debug("handleDashboardEvent nil event received - exiting")
 			w.dashboardEventChan = nil
 			return
 		}

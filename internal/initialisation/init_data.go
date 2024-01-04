@@ -138,15 +138,6 @@ func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
 		return
 	}
 
-	// TODO KAI STEAMPIPE ONLY <CACHE>
-	slog.Info("ValidateClientCacheSettings")
-	//if errorsAndWarnings := db_common.ValidateClientCacheSettings(client); errorsAndWarnings != nil {
-	//	if errorsAndWarnings.GetError() != nil {
-	//		i.Result.Error = errorsAndWarnings.GetError()
-	//	}
-	//	i.Result.AddWarnings(errorsAndWarnings.Warnings...)
-	//}
-
 	i.Client = client
 }
 

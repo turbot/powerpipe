@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -114,11 +114,11 @@ func (r *DashboardContainerRun) Execute(ctx context.Context) {
 	// wait for children to complete
 	err := <-r.waitForChildrenAsync(ctx)
 	if err == nil {
-		log.Printf("[TRACE] %s Execute waitForChildrenAsync returned success", r.Name)
+		slog.Debug("Execute waitForChildrenAsync returned success", "name", r.Name)
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
-		log.Printf("[TRACE] %s Execute waitForChildrenAsync returned err %s", r.Name, err.Error())
+		slog.Debug("Execute waitForChildrenAsync failed", "name", r.Name, "error", err.Error())
 		r.SetError(ctx, err)
 	}
 }

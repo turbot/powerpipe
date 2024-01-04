@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"reflect"
 	"strings"
@@ -66,17 +66,17 @@ func (s *Server) Start(ctx context.Context) chan struct{} {
 
 // Shutdown stops the API server
 func (s *Server) Shutdown(ctx context.Context) {
-	log.Println("[TRACE] Server shutdown")
+	slog.Debug("Server shutdown")
 
 	if s.webSocket != nil {
-		log.Println("[TRACE] closing websocket")
+		slog.Debug("closing websocket")
 		if err := s.webSocket.Close(); err != nil {
 			error_helpers.ShowErrorWithMessage(ctx, err, "Websocket shutdown failed")
 		}
-		log.Println("[TRACE] closed websocket")
+		slog.Debug("closed websocket")
 	}
 
-	log.Println("[TRACE] Server shutdown complete")
+	slog.Debug("Server shutdown complete")
 
 }
 
@@ -95,7 +95,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 	switch e := event.(type) {
 
 	case *dashboardevents.WorkspaceError:
-		log.Printf("[TRACE] WorkspaceError event: %s", e.Error)
+		slog.Debug("WorkspaceError event", "error", e.Error)
 		payload, payloadError = buildWorkspaceErrorPayload(e)
 		if payloadError != nil {
 			return
@@ -104,7 +104,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		OutputError(ctx, e.Error)
 
 	case *dashboardevents.ExecutionStarted:
-		log.Printf("[TRACE] ExecutionStarted event session %s, dashboard %s", e.Session, e.Root.GetName())
+		slog.Debug("ExecutionStarted event", "session ", e.Session, "dashboard", e.Root.GetName())
 		payload, payloadError = buildExecutionStartedPayload(e)
 		if payloadError != nil {
 			return
@@ -113,7 +113,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		OutputWait(ctx, fmt.Sprintf("WorkspaceEvents execution started: %s", e.Root.GetName()))
 
 	case *dashboardevents.ExecutionError:
-		log.Println("[TRACE] execution error event")
+		slog.Debug("execution error event")
 		payload, payloadError = buildExecutionErrorPayload(e)
 		if payloadError != nil {
 			return
@@ -123,7 +123,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		OutputError(ctx, e.Error)
 
 	case *dashboardevents.ExecutionComplete:
-		log.Println("[TRACE] execution complete event")
+		slog.Debug("execution complete event")
 		payload, payloadError = buildExecutionCompletePayload(e)
 		if payloadError != nil {
 			return
@@ -133,7 +133,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		outputReady(ctx, fmt.Sprintf("Execution complete: %s", dashboardName))
 
 	case *dashboardevents.ControlComplete:
-		log.Printf("[TRACE] ControlComplete event session %s, control %s", e.Session, e.Control.GetControlId())
+		slog.Debug("ControlComplete event", "session", e.Session, "control", e.Control.GetControlId())
 		payload, payloadError = buildControlCompletePayload(e)
 		if payloadError != nil {
 			return
@@ -141,7 +141,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		s.writePayloadToSession(e.Session, payload)
 
 	case *dashboardevents.ControlError:
-		log.Printf("[TRACE] ControlError event session %s, control %s", e.Session, e.Control.GetControlId())
+		slog.Debug("ControlError event", "session", e.Session, "control", e.Control.GetControlId())
 		payload, payloadError = buildControlErrorPayload(e)
 		if payloadError != nil {
 			return
@@ -156,7 +156,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		s.writePayloadToSession(e.Session, payload)
 
 	case *dashboardevents.DashboardChanged:
-		log.Println("[TRACE] DashboardChanged event")
+		slog.Debug("DashboardChanged event")
 		deletedDashboards := e.DeletedDashboards
 		newDashboards := e.NewDashboards
 
@@ -200,7 +200,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		}
 
 		for k, v := range s.dashboardClients {
-			log.Printf("[TRACE] WorkspaceEvents client: %v %v\n", k, typeHelpers.SafeString(v.Dashboard))
+			slog.Debug("WorkspaceEvents", "client", k, "event", typeHelpers.SafeString(v.Dashboard))
 		}
 
 		// If) any deleted/new/changed dashboards, emit an available dashboards message to clients
@@ -293,8 +293,6 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		}
 
 	case *dashboardevents.InputValuesCleared:
-		log.Println("[TRACE] input values cleared event", *e)
-
 		payload, payloadError = buildInputValuesClearedPayload(e)
 		if payloadError != nil {
 			return
@@ -314,12 +312,12 @@ func (s *Server) InitAsync(ctx context.Context) {
 	go func() {
 		// Return list of dashboards on connect
 		s.webSocket.HandleConnect(func(session *melody.Session) {
-			log.Println("[TRACE] client connected")
+			slog.Debug("client connected")
 			s.addSession(session)
 		})
 
 		s.webSocket.HandleDisconnect(func(session *melody.Session) {
-			log.Println("[TRACE] client disconnected")
+			slog.Debug("client disconnected")
 			s.clearSession(ctx, session)
 		})
 
@@ -337,12 +335,12 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		// if we could not decode message - ignore
 		err := json.Unmarshal(msg, &request)
 		if err != nil {
-			log.Printf("[WARN] failed to marshal message: %s", err.Error())
+			slog.Warn("failed to marshal message", "error", err.Error())
 			return
 		}
 
 		if request.Action != "keep_alive" {
-			log.Println("[TRACE] message", string(msg))
+			slog.Debug("handleMessageFunc", "message", string(msg))
 		}
 
 		switch request.Action {

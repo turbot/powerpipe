@@ -2,11 +2,10 @@ package controldisplay
 
 import (
 	"fmt"
-	"log"
-
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
+	"log/slog"
 )
 
 type GroupHeadingRenderer struct {
@@ -38,7 +37,7 @@ func (r GroupHeadingRenderer) Render() string {
 
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		log.Printf("[WARN] group heading renderer has width of %d\n", r.width)
+		slog.Warn("GroupHeadingRenderer.Render unexpected negative width", "width", r.width)
 		return ""
 	}
 

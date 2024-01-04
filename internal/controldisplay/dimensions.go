@@ -2,7 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/logrusorgru/aurora"
@@ -28,7 +28,7 @@ func NewDimensionsRenderer(dimensions []controlexecute.Dimension, colorGenerator
 func (r DimensionsRenderer) Render() string {
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		log.Printf("[WARN] dimensions renderer has width of %d\n", r.width)
+		slog.Warn("DimensionsRenderer.Render unexpected negative width", "width", r.width)
 		return ""
 	}
 	if len(r.dimensions) == 0 {

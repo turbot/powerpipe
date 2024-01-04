@@ -2,7 +2,7 @@ package controlexecute
 
 import (
 	"context"
-	"log"
+	"log/slog"
 	"sort"
 	"sync"
 	"sync/atomic"
@@ -298,8 +298,8 @@ func (r *ResultGroup) updateSeverityCounts(severity string, summary *controlstat
 }
 
 func (r *ResultGroup) execute(ctx context.Context, client *db_client.DbClient, parallelismLock *semaphore.Weighted) {
-	log.Printf("[TRACE] begin ResultGroup.Execute: %s\n", r.GroupId)
-	defer log.Printf("[TRACE] end ResultGroup.Execute: %s\n", r.GroupId)
+	slog.Debug("begin ResultGroup.Execute", "group id", r.GroupId)
+	defer slog.Debug("end ResultGroup.Execute", "group id", r.GroupId)
 
 	r.executionStartTime = time.Now()
 

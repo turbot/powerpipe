@@ -5,9 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/powerpipe/internal/dashboardassets"
-	"log"
+	"log/slog"
 	"os"
 	"os/exec"
 	"syscall"
@@ -15,10 +13,12 @@ import (
 
 	"github.com/shirou/gopsutil/process"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/dashboardassets"
 )
 
 type ServiceState string
@@ -63,7 +63,7 @@ func (s *DashboardServiceState) Save() error {
 func (s *DashboardServiceState) write(path string) error {
 	versionFileJSON, err := json.MarshalIndent(s, "", "  ")
 	if err != nil {
-		log.Println("Error while writing version file", err)
+		slog.Error("Error while writing version file", "error", err)
 		return err
 	}
 	//nolint: gosec // this file is safe to be read by all users

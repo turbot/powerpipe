@@ -2,7 +2,7 @@ package dashboardworkspace
 
 import (
 	"context"
-	"log"
+	"log/slog"
 
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -36,7 +36,7 @@ func (w *WorkspaceEvents) Close() {
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first
 		w.dashboardEventChan = nil
-		log.Printf("[TRACE] closing dashboardEventChan")
+		slog.Debug("closing dashboardEventChan")
 		close(ch)
 	}
 }

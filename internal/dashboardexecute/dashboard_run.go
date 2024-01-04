@@ -3,11 +3,11 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"log"
+	"log/slog"
 
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
@@ -87,11 +87,11 @@ func (r *DashboardRun) Execute(ctx context.Context) {
 	// wait for children to complete
 	err := <-r.waitForChildrenAsync(ctx)
 	if err == nil {
-		log.Printf("[TRACE] Execute run %s all children complete, success", r.Name)
+		slog.Debug("DashboardRun all children complete, success", "name", r.Name)
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
-		log.Printf("[TRACE] Execute run %s all children complete, error: %s", r.Name, err.Error())
+		slog.Debug("DashboardRun all children complete, error", "name", r.Name, "error", err.Error())
 		r.SetError(ctx, err)
 	}
 }

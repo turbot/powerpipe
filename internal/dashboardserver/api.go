@@ -3,7 +3,7 @@ package dashboardserver
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"path"
 	"time"
@@ -57,7 +57,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 		go func() {
 			// service connections
 			if err := srv.ListenAndServe(); err != nil {
-				log.Printf("listen: %s\n", err)
+				slog.Warn("listen error", "error", err)
 			}
 		}()
 
@@ -65,7 +65,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 		OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", dashboardServerPort))
 		OutputMessage(ctx, "Press Ctrl+C to exit")
 		<-ctx.Done()
-		log.Println("Shutdown Server…")
+		slog.Debug("Shutdown Server…")
 
 		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
@@ -73,7 +73,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
 			error_helpers.ShowErrorWithMessage(ctx, err, "Server shutdown failed")
 		}
-		log.Println("[TRACE] Server exiting")
+		slog.Debug("Server exiting")
 
 		// indicate the API server is done
 		doneChan <- struct{}{}

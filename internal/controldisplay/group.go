@@ -2,7 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"strings"
 
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -109,7 +109,8 @@ func (r GroupRenderer) parentIndent() string {
 func (r GroupRenderer) Render() string {
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		log.Printf("[WARN] group renderer has width of %d\n", r.width)
+		slog.Warn("GroupRenderer.Render unexpected negative width", "width", r.width)
+
 		return ""
 	}
 

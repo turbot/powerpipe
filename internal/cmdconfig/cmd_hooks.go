@@ -2,7 +2,7 @@ package cmdconfig
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 	"runtime/debug"
 	"strings"
@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -260,22 +261,21 @@ func validateConfig() *error_helpers.ErrorAndWarnings {
 // 		// pump in the initial set of logs
 // 		// this will also write out the Execution ID - enabling easy filtering of logs for a single execution
 // 		// we need to do this since all instances will log to a single file and logs will be interleaved
-// 		log.Printf("[INFO] ********************************************************\n")
-// 		log.Printf("[INFO] **%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
-// 		log.Printf("[INFO] ********************************************************\n")
-// 		log.Printf("[INFO] AppVersion:   v%s\n", version.VersionString)
-// 		log.Printf("[INFO] Log level: %s\n", sdklogging.LogLevel())
-// 		log.Printf("[INFO] Log date: %s\n", time.Now().Format("2006-01-02"))
+// 		slog.Info("********************************************************\n")
+// 		slog.Info("**%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
+// 		slog.Info("********************************************************\n")
+// 		slog.Info("AppVersion:   v%s\n", version.VersionString)
+// 		slog.Info("Log level: %s\n", sdklogging.LogLevel())
+// 		slog.Info("Log date: %s\n", time.Now().Format("2006-01-02"))
 // 		//
 // 	}
 // }
 
 func ensureInstallDir(installDir string) {
-	log.Printf("[TRACE] ensureInstallDir %s", installDir)
+	slog.Debug("ensureInstallDir", "installDir", installDir)
 	if _, err := os.Stat(installDir); os.IsNotExist(err) {
-		log.Printf("[TRACE] creating install dir")
+		slog.Debug("creating install dir")
 		err = os.MkdirAll(installDir, 0755)
-		fmt.Printf("installDir: %s", installDir)
 		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create installation directory: %s", installDir))
 	}
 
