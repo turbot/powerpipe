@@ -3,7 +3,9 @@ package dashboardassets
 import (
 	"context"
 	"encoding/json"
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"log"
 	"os"
 
@@ -18,6 +20,13 @@ func Ensure(ctx context.Context) error {
 	logging.LogTime("dashboardassets.Ensure start")
 	defer logging.LogTime("dashboardassets.Ensure end")
 
+	// if this is a local build, just check there is an assets folder
+	if viper.GetString("main.builtBy") == "local" {
+		if filehelpers.DirectoryExists(filepaths.EnsureDashboardAssetsDir()) {
+			return nil
+		}
+		return sperr.New("Dashboard assets not found - run `make dashboard-assets`")
+	}
 	// load report assets versions.json
 	versionFile, err := loadReportAssetVersionFile()
 	if err != nil {
@@ -31,11 +40,6 @@ func Ensure(ctx context.Context) error {
 	statushooks.SetStatus(ctx, "Installing dashboard server…")
 
 	reportAssetsPath := filepaths.EnsureDashboardAssetsDir()
-
-	// remove the legacy report folder, if it exists
-	if _, err := os.Stat(filepaths.LegacyDashboardAssetsDir()); !os.IsNotExist(err) {
-		os.RemoveAll(filepaths.LegacyDashboardAssetsDir())
-	}
 
 	return ociinstaller.InstallAssets(ctx, reportAssetsPath)
 }

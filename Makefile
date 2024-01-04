@@ -15,5 +15,5 @@ dashboard_assets:
 	$(MAKE) -C ui/dashboard
 
 all:
-	build ,dashboard_assets
+	build dashboard_assets
 

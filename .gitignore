@@ -25,6 +25,7 @@
 /ui/dashboard/.idea
 /ui/dashboard/.vscode
 /ui/dashboard/build
+/ui/dashboard/assets
 /ui/dashboard/node_modules
 /ui/dashboard/src/icons/materialSymbols.ts
 /ui/dashboard/output

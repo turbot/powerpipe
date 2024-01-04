@@ -49,9 +49,7 @@ func runDashboardCmd(cmd *cobra.Command, _ []string) {
 
 	// ensure dashboard assets
 	err := dashboardassets.Ensure(ctx)
-	if err != nil {
-		panic(err)
-	}
+	error_helpers.FailOnError(err)
 
 	// setup a new webSocket service
 	webSocket := melody.New()

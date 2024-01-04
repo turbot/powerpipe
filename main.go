@@ -17,7 +17,7 @@ var exitCode int
 
 var (
 	// These variables will be set by GoReleaser.
-	version = ""
+	version = "0.0.0"
 	commit  = "none"
 	date    = "unknown"
 	builtBy = "local"
