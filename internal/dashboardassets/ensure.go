@@ -107,7 +107,6 @@ func ExtractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error 
 
 	for {
 		header, err := tarReader.Next()
-		statushooks.SetStatus(ctx, fmt.Sprintf("Extracting %s…", header.Name))
 
 		switch {
 		case err == io.EOF:
@@ -126,6 +125,7 @@ func ExtractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error 
 				return err
 			}
 		case tar.TypeReg:
+			statushooks.SetStatus(ctx, fmt.Sprintf("Extracting %s…", header.Name))
 			outFile, err := os.Create(target)
 			if err != nil {
 				return err
