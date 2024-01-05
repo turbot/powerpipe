@@ -10,6 +10,10 @@ const DashboardControls = () => {
   const isBenchmark =
     dashboard?.children && dashboard.children[0].panel_type === "benchmark";
 
+  if (!isBenchmark && dataMode !== DashboardDataModeCLISnapshot) {
+    return null;
+  }
+
   return (
     <div className="grid p-4 gap-6 grid-cols-2 bg-dashboard-panel print:hidden">
       {dataMode === DashboardDataModeCLISnapshot && <SnapshotHeader />}
