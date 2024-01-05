@@ -44,7 +44,7 @@ type DbClient struct {
 	UserSearchPath []string
 }
 
-func NewDbClient(ctx context.Context, connectionString string, opts ...ClientOption) (_ *DbClient, err error) {
+func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err error) {
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
@@ -69,12 +69,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...ClientOpt
 		}
 	}()
 
-	config := clientConfig{}
-	for _, o := range opts {
-		o(&config)
-	}
-
-	if err := client.establishConnectionPool(ctx, config); err != nil {
+	if err := client.establishConnectionPool(ctx); err != nil {
 		return nil, err
 	}
 

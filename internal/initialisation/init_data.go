@@ -58,7 +58,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
+func (i *InitData) Init(ctx context.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -132,7 +132,7 @@ func (i *InitData) Init(ctx context.Context, opts ...db_client.ClientOption) {
 		return
 	}
 
-	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
+	client, err := db_client.NewDbClient(ctx, connectionString)
 	if err != nil {
 		i.Result.Error = err
 		return
