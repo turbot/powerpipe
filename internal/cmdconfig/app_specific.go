@@ -1,18 +1,24 @@
-package constants
+package cmdconfig
 
 import (
+	"os"
+	"path/filepath"
+	"strings"
+
 	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
-	"os"
-	"path/filepath"
-	"strings"
+	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/error_helpers"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
 func SetAppSpecificConstants() {
 	app_specific.AppName = "powerpipe"
+
+	// set all app specific env var keys
+	app_specific.SetAppSpecificEnvVarKeys("POWERPIPE_")
 
 	// version
 	versionString := viper.GetString("main.version")
@@ -21,12 +27,9 @@ func SetAppSpecificConstants() {
 
 	// set the default install dir
 	defaultInstallDir, err := files.Tildefy("~/.powerpipe")
-	if err != nil {
-		panic(err)
-	}
+	error_helpers.FailOnError(err)
 	app_specific.DefaultInstallDir = defaultInstallDir
 
-	// TODO KAI CHECK THIS
 	// set the default config path
 	globalConfigPath := filepath.Join(defaultInstallDir, "config")
 	// check whether install-dir env has been set - if so, respect it
@@ -34,12 +37,6 @@ func SetAppSpecificConstants() {
 		globalConfigPath = filepath.Join(envInstallDir, "config")
 		app_specific.InstallDir = envInstallDir
 	} else {
-		/*
-			NOTE:
-			If InstallDir is settable outside of default & env var, need to add
-			the following code to end of initGlobalConfig in init.go
-			app_specific.InstallDir = viper.GetString(constants.ArgInstallDir) at end of
-		*/
 		app_specific.InstallDir = defaultInstallDir
 	}
 	app_specific.DefaultConfigPath = strings.Join([]string{".", globalConfigPath}, ":")
@@ -49,6 +46,7 @@ func SetAppSpecificConstants() {
 	app_specific.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
 
 	// extensions
+	// TODO KAI change to pp when we have mods
 	app_specific.ModDataExtension = ".sp"
 	app_specific.ModFileName = "mod.sp"
 	app_specific.ConfigExtension = ".ppc"
@@ -56,8 +54,11 @@ func SetAppSpecificConstants() {
 
 	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
 	app_specific.WorkspaceDataDir = ".powerpipe"
-	app_specific.EnvAppPrefix = "POWERPIPE_"
 	// EnvInputVarPrefix is the prefix for environment variables that represent values for input variables.
 	app_specific.EnvInputVarPrefix = "PP_VAR_"
+
+	// set the command pre and post hooks
+	cmdconfig.CustomPreRunHook = preRunHook
+	cmdconfig.CustomPostRunHook = postRunHook
 
 }

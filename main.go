@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"os"
 
 	"github.com/spf13/viper"
@@ -9,8 +10,6 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
-	"github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/internal/logger"
 )
 
 var exitCode int
@@ -30,9 +29,7 @@ func main() {
 	// add the auto-populated version properties into viper
 	setVersionProperties()
 	// set app specific constants defined in pipe-fittings
-	constants.SetAppSpecificConstants()
-
-	logger.SetDefaultLogger()
+	cmdconfig.SetAppSpecificConstants()
 
 	defer func() {
 		if r := recover(); r != nil {

@@ -1,11 +1,16 @@
 package cmdconfig
 
 import (
+	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/task"
+	"github.com/turbot/powerpipe/internal/logger"
 	"log/slog"
 	"os"
 	"runtime/debug"
 	"strings"
+	"time"
 
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
@@ -13,58 +18,43 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
-	sdklogging "github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-//var waitForTasksChannel chan struct{}
-//var tasksCancelFn context.CancelFunc
+var waitForTasksChannel chan struct{}
+var tasksCancelFn context.CancelFunc
 
 // postRunHook is a function that is executed after the PostRun of every command handler
-func postRunHook(cmd *cobra.Command, args []string) {
+func postRunHook(_ *cobra.Command, _ []string) error {
 	utils.LogTime("cmdhook.postRunHook start")
 	defer utils.LogTime("cmdhook.postRunHook end")
 
-	// TODO re-add tasks
-	//if waitForTasksChannel != nil {
-	//	// wait for the async tasks to finish
-	//	select {
-	//	case <-time.After(100 * time.Millisecond):
-	//		tasksCancelFn()
-	//		return
-	//	case <-waitForTasksChannel:
-	//		return
-	//	}
-	//}
+	if waitForTasksChannel != nil {
+		// wait for the async tasks to finish
+		select {
+		case <-time.After(100 * time.Millisecond):
+			tasksCancelFn()
+			return nil
+		case <-waitForTasksChannel:
+			return nil
+		}
+	}
+	return nil
 }
 
 // postRunHook is a function that is executed before the PreRun of every command handler
-func preRunHook(cmd *cobra.Command, args []string) {
+func preRunHook(cmd *cobra.Command, args []string) error {
 	utils.LogTime("cmdhook.preRunHook start")
 	defer utils.LogTime("cmdhook.preRunHook end")
 
 	viper.Set(constants.ConfigKeyActiveCommand, cmd)
 	viper.Set(constants.ConfigKeyActiveCommandArgs, args)
 	viper.Set(constants.ConfigKeyIsTerminalTTY, isatty.IsTerminal(os.Stdout.Fd()))
-
-	// steampipe completion should not create INSTALL DIR or seup/init global config
-	if cmd.Name() == "completion" {
-		return
-	}
-
-	// create a buffer which can be used as a sink for log writes
-	// till INSTALL_DIR is setup in initGlobalConfig
-	// logBuffer := bytes.NewBuffer([]byte{})
-
-	// create a logger before initGlobalConfig - we may need to reinitialize the logger
-	// depending on the value of the log_level value in global general options
-	// createLogger(logBuffer, cmd)
 
 	// set up the global viper config with default values from
 	// config files and ENV variables
@@ -74,16 +64,14 @@ func preRunHook(cmd *cobra.Command, args []string) {
 	// check for error
 	error_helpers.FailOnError(ew.Error)
 
-	// recreate the logger
-	// this will put the new log level (if any) to effect as well as start streaming to the
-	// log file.
-	// createLogger(logBuffer, cmd)
+	logger.SetDefaultLogger()
 
 	// runScheduledTasks skips running tasks if this instance is the plugin manager
-	//waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args, ew)
+	waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args)
 
 	// set the max memory if specified
 	setMemoryLimit()
+	return nil
 }
 
 func setMemoryLimit() {
@@ -94,63 +82,48 @@ func setMemoryLimit() {
 	}
 }
 
-// TODO re-add tasks
 // runScheduledTasks runs the task runner and returns a channel which is closed when
 // task run is complete
 //
 // runScheduledTasks skips running tasks if this instance is the plugin manager
-//func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string, ew *error_helpers.ErrorAndWarnings) chan struct{} {
-//	// skip running the task runner if this is the plugin manager
-//	// since it's supposed to be a daemon
-//	if task.IsPluginManagerCmd(cmd) {
-//		return nil
-//	}
-//
-//	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
-//	tasksCancelFn = cancelFn
-//
-//	return task.RunTasks(
-//		taskUpdateCtx,
-//		cmd,
-//		args,
-//		// pass the config value in rather than runRasks querying viper directly - to avoid concurrent map access issues
-//		// (we can use the update-check viper config here, since initGlobalConfig has already set it up
-//		// with values from the config files and ENV settings - update-check cannot be set from the command line)
-//		task.WithUpdateCheck(viper.GetBool(constants.ArgUpdateCheck)),
-//		// show deprecation warnings
-//		task.WithPreHook(func(_ context.Context) {
-//			displayDeprecationWarnings(ew)
-//		}),
-//	)
-//
-//}
+func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string) chan struct{} {
+	updateCheck := viper.GetBool(constants.ArgUpdateCheck)
+	// for now the only scheduled task we support is update check so if that is disabled, do nothing
+	if !updateCheck {
+		return nil
+	}
 
-// envLogLevelSet checks whether any of the current or legacy log level env vars are set
-func envLogLevelSet() bool {
-	_, ok := os.LookupEnv(sdklogging.EnvLogLevel)
-	if ok {
-		return ok
-	}
-	// handle legacy env vars
-	for _, e := range sdklogging.LegacyLogLevelEnvVars {
-		_, ok = os.LookupEnv(e)
-		if ok {
-			return ok
-		}
-	}
-	return false
+	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
+	tasksCancelFn = cancelFn
+
+	return task.RunTasks(
+		taskUpdateCtx,
+		cmd,
+		args,
+		// pass the config value in rather than runRasks querying viper directly - to avoid concurrent map access issues
+		// (we can use the update-check viper config here, since initGlobalConfig has already set it up
+		// with values from the config files and ENV settings - update-check cannot be set from the command line)
+		task.WithUpdateCheck(updateCheck),
+	)
 }
 
 // initConfig reads in config file and ENV variables if set.
-func initGlobalConfig() *error_helpers.ErrorAndWarnings {
+func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	utils.LogTime("cmdconfig.initGlobalConfig start")
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
+
+	// load workspace profile from the configured install dir
+	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]()
+	error_helpers.FailOnError(err)
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
 
 	// set-up viper with defaults from the env and default workspace profile
 
-	cmdconfig.BootstrapViper(cmd, cmdconfig.WithConfigDefaults(configDefaults), cmdconfig.WithDirectoryEnvMappings(dirEnvMappings))
+	cmdconfig.BootstrapViper(loader, cmd,
+		cmdconfig.WithConfigDefaults(configDefaults()),
+		cmdconfig.WithDirectoryEnvMappings(dirEnvMappings()))
+
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
@@ -160,7 +133,7 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 
 	// set the rest of the defaults from ENV
 	// ENV takes precedence over any default configuration
-	cmdconfig.SetDefaultsFromEnv(envMappings)
+	cmdconfig.SetDefaultsFromEnv(envMappings())
 
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
@@ -178,28 +151,6 @@ func initGlobalConfig() *error_helpers.ErrorAndWarnings {
 	// loadConfigErrorsAndWarnings.Merge(ew)
 
 	return error_helpers.NewErrorsAndWarning(nil)
-}
-
-func setCloudTokenDefault() error {
-	/*
-	   saved cloud token
-	   cloud_token in default workspace
-	   explicit env var (STEAMIPE_CLOUD_TOKEN ) wins over
-	   cloud_token in specific workspace
-	*/
-	// set viper defaults in order of increasing precedence
-	// 1) saved cloud token
-	savedToken, err := cloud.LoadToken()
-	if err != nil {
-		return err
-	}
-	if savedToken != "" {
-		viper.SetDefault(constants.ArgCloudToken, savedToken)
-	}
-	// 3) env var (STEAMIPE_CLOUD_TOKEN )
-	cmdconfig.SetDefaultFromEnv(constants.EnvCloudToken, constants.ArgCloudToken, cmdconfig.EnvVarTypeString)
-
-	return nil
 }
 
 // now validate  config values have appropriate values
