@@ -11,13 +11,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/ociinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -74,28 +72,6 @@ func downloadAssets(ctx context.Context, assetsLocation string) (string, error) 
 		return "", sperr.WrapWithMessage(err, "could not download dashboard assets")
 	}
 	return filePath, nil
-}
-
-func resolveDownloadUrl() (string, error) {
-	url := fmt.Sprintf("https://github.com/turbot/powerpipe/releases/download/%s/dashboard_ui_assets.tar.gz", viper.GetString(constants.ConfigKeyVersion))
-	if viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild {
-		url = "https://github.com/turbot/steampipe/releases/latest/download/dashboard_ui_assets.tar.gz"
-
-		// this block of code is here to support downloading of assets till this is in a private repository
-		{
-			assets, err := getLatestReleaseAssets()
-			if err != nil {
-				return "", sperr.WrapWithMessage(err, "could not fetch release assets")
-			}
-			for _, asset := range assets {
-				if asset.Name == "dashboard_ui_assets.tar.gz" {
-					url = asset.Url
-					break
-				}
-			}
-		}
-	}
-	return url, nil
 }
 
 type ReportAssetsVersionFile struct {
