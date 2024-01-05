@@ -2,7 +2,6 @@ package dashboardassets
 
 import (
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"os"
@@ -100,6 +99,7 @@ func resolveDownloadUrl() (string, error) {
 	}
 	return url, nil
 
+	// this is the code that should be used when powerpipe goes public
 	// url := fmt.Sprintf("https://github.com/turbot/powerpipe/releases/download/%s/dashboard_ui_assets.tar.gz", viper.GetString(constants.ConfigKeyVersion))
 	// if viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild {
 	// 	url = "https://github.com/turbot/steampipe/releases/latest/download/dashboard_ui_assets.tar.gz"
@@ -133,8 +133,6 @@ func getReleaseAssets(version string) ([]Asset, error) {
 		return nil, err
 	}
 
-	fmt.Println(string(body))
-
 	var releases []*Release
 	if err := json.Unmarshal(body, &releases); err != nil {
 		return nil, err
@@ -143,7 +141,7 @@ func getReleaseAssets(version string) ([]Asset, error) {
 	theRelease := releases[0]
 	for _, r := range releases {
 		// if version is specified, then we need to find the release with that version
-		if version != "" {
+		if version != "latest" {
 			if r.Name == version {
 				theRelease = r
 				break
