@@ -1,5 +1,5 @@
 {
-  "name": "steampipe-dashboard-ui",
+  "name": "powerpipe-dashboard-ui",
   "version": "0.14.0",
   "private": true,
   "main": "index.js",
