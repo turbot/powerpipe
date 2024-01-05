@@ -188,7 +188,7 @@ jobs:
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --clean
+          args: release --clean --skip-validate
           workdir: powerpipe
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
