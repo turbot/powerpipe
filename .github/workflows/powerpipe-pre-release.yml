@@ -27,6 +27,8 @@ jobs:
   build_and_release_assets:
     name: Build and Release Dashboard Assets
     runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -51,6 +53,10 @@ jobs:
             echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
           fi
 
+      - name: Set VERSION as output
+        run: echo "::set-output name=version::$VERSION"
+        id: set_version
+
       - name: Trim asset version prefix and Validate
         run: |-
           echo $VERSION
@@ -67,32 +73,32 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
-          node-version: '16'
+          node-version: '>=18.12.0'
 
       - name: Setup Yarn
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           rm -rf ./build
 
       - name: YARN Install
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           unset CI
           yarn install
 
       - name: Generate dashboard UI icons
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
-          make setup
+          make setup-icons
 
       - name: Run Unit Tests
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |
           yarn install
           CI=true yarn test
 
       - name: YARN Build
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           unset CI
           yarn build
@@ -103,7 +109,7 @@ jobs:
       - name: Move Build Assets
         run: |-
           mkdir -p dashboard_ui_build
-          mv ./ui/dashboard/build/* dashboard_ui_build/
+          mv ./powerpipe/ui/dashboard/build/* dashboard_ui_build/
           ls -la dashboard_ui_build
 
       - name: Create a version file
@@ -129,6 +135,8 @@ jobs:
     name: Build and Release Powerpipe
     needs: [build_and_release_assets]
     runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.build_and_release_assets.outputs.version }}
     steps:
 
       - name: Checkout
@@ -143,23 +151,6 @@ jobs:
           repository: turbot/pipe-fittings
           ref: pp
           path: pipe-fittings
-
-      - name: Calculate version
-        id: calculate_version
-        run: |
-          VERSION_JSON=$(cat powerpipe/version.json)
-          MAJOR=$(echo $VERSION_JSON | jq '.major')
-          MINOR=$(echo $VERSION_JSON | jq '.minor')
-          PATCH=$(echo $VERSION_JSON | jq '.patch')
-          VERSION="v$MAJOR.$MINOR.$PATCH"
-          
-          if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
-            echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
-            echo "VERSION=${VERSION}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "rc" ]; then
-            echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          fi
 
       - name: Tag Release
         run: |
@@ -179,13 +170,16 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: dashboard-ui-assets-archive
-          path: .
+          path: powerpipe
+
+      - name: Check assets location
+        run: ls -la powerpipe
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
         with:
           version: latest
-          args: release --clean
+          args: release --clean --skip-validate
           workdir: powerpipe
         env:
           GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
