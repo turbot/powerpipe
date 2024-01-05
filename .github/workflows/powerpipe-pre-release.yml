@@ -83,7 +83,7 @@ jobs:
       - name: Generate dashboard UI icons
         working-directory: ./powerpipe/ui/dashboard
         run: |-
-          make setup
+          make setup-icons
 
       - name: Run Unit Tests
         working-directory: ./powerpipe/ui/dashboard
