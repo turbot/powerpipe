@@ -70,29 +70,29 @@ jobs:
           node-version: '16'
 
       - name: Setup Yarn
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           rm -rf ./build
 
       - name: YARN Install
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           unset CI
           yarn install
 
       - name: Generate dashboard UI icons
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           make setup
 
       - name: Run Unit Tests
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |
           yarn install
           CI=true yarn test
 
       - name: YARN Build
-        working-directory: ./ui/dashboard
+        working-directory: ./powerpipe/ui/dashboard
         run: |-
           unset CI
           yarn build
@@ -103,7 +103,7 @@ jobs:
       - name: Move Build Assets
         run: |-
           mkdir -p dashboard_ui_build
-          mv ./ui/dashboard/build/* dashboard_ui_build/
+          mv ./powerpipe/ui/dashboard/build/* dashboard_ui_build/
           ls -la dashboard_ui_build
 
       - name: Create a version file
