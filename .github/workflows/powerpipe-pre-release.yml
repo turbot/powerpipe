@@ -1,0 +1,192 @@
+name: Powerpipe - Pre-Release
+
+
+on:
+  workflow_dispatch:
+    inputs:
+      pre_release_identifier:
+        type: choice
+        description: 'Select Pre-Release Identifier'
+        options:
+          - alpha
+          - beta
+          - rc
+        required: true
+
+env:
+  PROJECT_ID: steampipe
+  ORG: turbot
+  CORE_REPO: us-docker.pkg.dev/steampipe/steampipe
+  ASSET_IMAGE_NAME: assets
+  GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
+jobs:
+
+  # TODO Acceptance test job before build and release
+
+  build_and_release_assets:
+    name: Build and Release Dashboard Assets
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+          
+          if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
+            echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
+            echo "VERSION=${VERSION}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "rc" ]; then
+            echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          fi
+
+      - name: Trim asset version prefix and Validate
+        run: |-
+          echo $VERSION
+          trim=${VERSION#"v"}
+          echo $trim
+          if [[ $trim =~  ^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+            echo "Version OK: $trim"
+          else
+            echo "Invalid version: $trim"
+            exit 1
+          fi
+          echo "VERSION=${trim}" >> $GITHUB_ENV
+        
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: '16'
+
+      - name: Setup Yarn
+        working-directory: ./ui/dashboard
+        run: |-
+          rm -rf ./build
+
+      - name: YARN Install
+        working-directory: ./ui/dashboard
+        run: |-
+          unset CI
+          yarn install
+
+      - name: Generate dashboard UI icons
+        working-directory: ./ui/dashboard
+        run: |-
+          make setup
+
+      - name: Run Unit Tests
+        working-directory: ./ui/dashboard
+        run: |
+          yarn install
+          CI=true yarn test
+
+      - name: YARN Build
+        working-directory: ./ui/dashboard
+        run: |-
+          unset CI
+          yarn build
+        env:
+          REACT_APP_HEAP_ID: ${{ secrets.HEAP_ANALYTICS_PRODUCTION_ID }}
+          REACT_APP_VERSION: $VERSION
+
+      - name: Move Build Assets
+        run: |-
+          mkdir -p dashboard_ui_build
+          mv ./ui/dashboard/build/* dashboard_ui_build/
+          ls -la dashboard_ui_build
+
+      - name: Create a version file
+        run: |-
+          JSON_STRING=$( jq -n \
+              --arg version "$VERSION" \
+            '{
+                "version":$version,
+            }' )
+
+            echo $JSON_STRING > ./dashboard_ui_build/version.json
+
+      - name: Archive built dashboard assets
+        run: tar -czvf dashboard_ui_assets.tar.gz dashboard_ui_build/
+
+      - name: Upload dashboard assets artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: dashboard-ui-assets-archive
+          path: dashboard_ui_assets.tar.gz
+
+  build_and_release:
+    name: Build and Release Powerpipe
+    needs: [build_and_release_assets]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Checkout Pipe Fittings Components repository
+        uses: actions/checkout@v3
+        with:
+          repository: turbot/pipe-fittings
+          ref: pp
+          path: pipe-fittings
+
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+          
+          if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
+            echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
+            echo "VERSION=${VERSION}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "rc" ]; then
+            echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          fi
+
+      - name: Tag Release
+        run: |
+          cd powerpipe
+          git config user.name "Powerpipe GitHub Actions Bot"
+          git config user.email noreply@github.com
+          git tag $VERSION
+          git push origin $VERSION
+
+      # this is required, check golangci-lint-action docs
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
+
+      - name: Download Dashboard UI Assets Artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: dashboard-ui-assets-archive
+          path: .
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --clean
+          workdir: powerpipe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          VERSION: $VERSION

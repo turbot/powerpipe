@@ -2,7 +2,16 @@ before:
   hooks:
     - go mod tidy
 builds:
-  - env:
+  - id: "powerpipe"
+    # Custom ldflags.
+    #
+    # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
+    # Templates: allowed
+    ldflags:
+      # Go Releaser analyzes your Git repository and identifies the most recent Git tag (typically the highest version number) as the version for your release.
+      # This is how it determinse the value of {{.Version}}.
+      - -s -w -X main.version={{.Version}} -X version.buildTime={{.Date}} -X version.commit={{.Commit}} -X version.builtBy=goreleaser
+    env:
       - CGO_ENABLED=0
       - GO111MODULE=on
     goos:
@@ -11,18 +20,12 @@ builds:
     goarch:
       - amd64
       - arm64
-
-    id: "powerpipe"
     binary: "powerpipe"
+
 archives:
-  - files:
-      - none*
-    format: zip
+  - format: tar.gz
     id: homebrew
-    name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
-    format_overrides:
-      - goos: linux
-        format: tar.gz
+    name_template: "{{ .ProjectName }}.{{ .Os }}.{{ .Arch }}"
 
 nfpms:
   - id: "powerpipe"
@@ -34,27 +37,24 @@ nfpms:
     homepage: "https://powerpipe.io/"
     maintainer: "Turbot Support <help@turbot.com>"
     description: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
-    file_name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+    file_name_template: "{{ .ProjectName }}.{{ .Os }}.{{ .Arch }}"
     rpm:
       summary: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
 
 # it is necessary to specify the name_template of the snapshot, or else the snapshot gets created with
 # two dash(-) which results in a 500 error while downloading
 snapshot:
-  name_template: "{{ .Version }}"
-
-# snapcrafts:
-#   - id: "powerpipe"
-#     builds: ['powerpipe']
-#     description: "Use SQL to instantly query your cloud services (AWS, Azure, GCP and more). Open source CLI. No DB required."
-#     summary: "Snap package"
-#     name_template: "{{ .ProjectName }}_{{ .Os }}_{{ .Arch }}"
+  name_template: "{{ incpatch .Version }}-next"
 
 checksum:
   name_template: "checksums.txt"
+
 release:
   # Visit your project's GitHub Releases page to publish this release.
   draft: true
+  extra_files:
+    - glob: ../dashboard_ui_assets.tar.gz
+
 changelog:
   skip: true
 

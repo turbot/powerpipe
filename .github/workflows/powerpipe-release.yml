@@ -1,0 +1,199 @@
+name: Powerpipe - Release
+
+
+on:
+  workflow_dispatch:
+
+env:
+  GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+
+jobs:
+
+  # TODO Acceptance test job before ensure_branch_in_homebrew
+
+  ensure_branch_in_homebrew:
+    name: Ensure branch exists in homebrew-tap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV 
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@v1
+        with:
+          input_string: $VERSION
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@v4
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Delete base branch if exists
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git fetch --all
+          git push origin --delete powerpipe-brew
+          git push origin --delete $VERSION
+        continue-on-error: true
+
+      - name: Create base branch
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git checkout -b powerpipe-brew
+          git push --set-upstream origin powerpipe-brew
+
+  build_and_release:
+    name: Build and Release Powerpipe
+    needs: [ensure_branch_in_homebrew]
+    runs-on: ubuntu-latest
+    steps:
+
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Checkout Pipe Fittings Components repository
+        uses: actions/checkout@v3
+        with:
+          ssh-key: ${{ secrets.PIPE_FITTINGS_DEPLOY_PRIVATE_KEY }}
+          repository: turbot/pipe-fittings
+          ref: pp
+          path: pipe-fittings
+
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV     
+
+      - name: Tag Release
+        run: |
+          cd powerpipe
+          git config user.name "powerpipe GitHub Actions Bot"
+          git config user.email noreply@github.com
+          git tag $VERSION
+          git push origin $VERSION
+
+      # this is required, check golangci-lint-action docs
+      - uses: actions/setup-go@v4
+        with:
+          go-version: '1.21'
+          cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
+
+      - name: Run GoReleaser
+        uses: goreleaser/goreleaser-action@v5
+        with:
+          version: latest
+          args: release --clean
+          workdir: powerpipe
+        env:
+          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+          VERSION: $VERSION
+
+  create_pr_in_homebrew:
+    name: Create PR in homebrew-tap
+    needs: [build_and_release]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@v1
+        with:
+          input_string: ${{ github.event.inputs.version }}
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@v4
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Create a new branch off the base branch
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git fetch --all
+          git checkout powerpipe-brew
+          git checkout -b $VERSION
+          git push --set-upstream origin $VERSION
+
+      - name: Close pull request if already exists
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          gh pr close $VERSION
+        continue-on-error: true
+
+      - name: Create pull request
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          gh pr create --base main --head $VERSION --title "$VERSION" --body "Update formula"
+
+  update_pr_for_versioning:
+    name: Update PR
+    needs: [create_pr_in_homebrew]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          VERSION_JSON=$(cat powerpipe/version.json)
+          MAJOR=$(echo $VERSION_JSON | jq '.major')
+          MINOR=$(echo $VERSION_JSON | jq '.minor')
+          PATCH=$(echo $VERSION_JSON | jq '.patch')
+          VERSION="v$MAJOR.$MINOR.$PATCH"
+
+          echo "VERSION=${VERSION}" >> $GITHUB_ENV  
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@v1
+        with:
+          input_string: $VERSION
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@v4
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: $VERSION
+
+      - name: Update live version
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          scripts/formula_versioning_powerpipe.sh
+          git config user.name "powerpipe GitHub Actions Bot"
+          git config user.email noreply@github.com
+          git add .
+          git commit -m "Versioning brew formulas"
+          git push origin $VERSION
