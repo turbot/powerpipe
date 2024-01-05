@@ -179,7 +179,10 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: dashboard-ui-assets-archive
-          path: .
+          path: powerpipe
+
+      - name: Check assets location
+        run: ls -la powerpipe
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
