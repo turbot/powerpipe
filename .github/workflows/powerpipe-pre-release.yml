@@ -128,7 +128,7 @@ jobs:
           tar -czvf ../dashboard_ui_assets.tar.gz *
 
       - name: Upload dashboard assets artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: dashboard-ui-assets-archive
           path: dashboard_ui_assets.tar.gz
