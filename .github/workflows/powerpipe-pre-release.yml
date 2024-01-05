@@ -123,7 +123,9 @@ jobs:
             echo $JSON_STRING > ./dashboard_ui_build/version.json
 
       - name: Archive built dashboard assets
-        run: tar -czvf dashboard_ui_assets.tar.gz dashboard_ui_build/**
+        run: |
+          cd dashboard_ui_build
+          tar -czvf ../dashboard_ui_assets.tar.gz *
 
       - name: Upload dashboard assets artifact
         uses: actions/upload-artifact@v3
