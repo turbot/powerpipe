@@ -6,5 +6,12 @@ const (
 	ConfigKeyDate    = "main.date"
 	ConfigKeyBuiltBy = "main.builtBy"
 
-	LocalBuild = "local"
+	LocalBuild = DefaultBuiltBy
+)
+
+const (
+	DefaultVersion = "0.0.0"
+	DefaultCommit  = "none"
+	DefaultDate    = "unknown"
+	DefaultBuiltBy = "local"
 )

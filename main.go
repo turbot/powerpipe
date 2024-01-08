@@ -17,10 +17,10 @@ var exitCode int
 
 var (
 	// These variables will be set by GoReleaser.
-	version = "0.0.0"
-	commit  = "none"
-	date    = "unknown"
-	builtBy = "local"
+	version = constants.DefaultVersion
+	commit  = constants.DefaultCommit
+	date    = constants.DefaultDate
+	builtBy = constants.DefaultBuiltBy
 )
 
 func main() {

@@ -11,67 +11,111 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/ociinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+)
+
+const (
+	EnvDisableAssetsLookup = "POWERPIPE_DISABLE_ASSETS_LOOKUP" // an environment which disables fetching and verification of assets
 )
 
 func Ensure(ctx context.Context) error {
 	logging.LogTime("dashboardassets.Ensure start")
 	defer logging.LogTime("dashboardassets.Ensure end")
 
-	// load report assets versions.json
-	versionFile, err := loadReportAssetVersionFile()
-	if err != nil {
-		return err
-	}
-
-	if versionFile.Version == app_specific.AppVersion.String() {
-		return nil
-	}
-
-	statushooks.SetStatus(ctx, "Installing dashboard server…")
-
 	reportAssetsPath := filepaths.EnsureDashboardAssetsDir()
-	tempDir := ociinstaller.NewTempDir(reportAssetsPath)
+	isLocalBuild := viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild
+
+	// this is false when this binary is built by goreleaser
+	if !isLocalBuild {
+		if _, ok := os.LookupEnv(EnvDisableAssetsLookup); ok {
+			// assets lookup is disabled
+			return nil
+		}
+
+		if doAssetVersionMatch() {
+			// this is a released version and the version of the assets matches the version of the app
+			return nil
+		}
+		statushooks.SetStatus(ctx, "Installing dashboard server…")
+		// there is a version mismatch - we need to download and install the assets of this version
+		return downloadReleasedAssets(ctx, reportAssetsPath, viper.GetString(constants.ConfigKeyVersion))
+	}
+
+	// check that the assets are already installed
+	if !filehelpers.DirectoryExists(reportAssetsPath) {
+		// assets are not installed - error out
+		return sperr.New("dashboard assets need to be preinstalled in %s when developing", reportAssetsPath)
+	}
+
+	return nil
+}
+
+func downloadReleasedAssets(ctx context.Context, location string, version string) error {
+	// get the list of releases
+	releases, err := getReleases()
+	if err != nil {
+		return sperr.WrapWithMessage(err, "could not fetch release assets")
+	}
+	var release *Release
+	for _, r := range releases {
+		if r.Name == version {
+			release = r
+			break
+		}
+	}
+	if release == nil {
+		return sperr.New("could not find assets for release %s", version)
+	}
+
+	return downloadAndInstallAssets(ctx, release, location)
+}
+
+func downloadAndInstallAssets(ctx context.Context, release *Release, location string) error {
+	tempDir := ociinstaller.NewTempDir(location)
 	defer func() {
 		if err := tempDir.Delete(); err != nil {
 			slog.Debug("Failed to delete temp dir after installing assets", "tempDir", tempDir, "error", err)
 		}
 	}()
+	// download the assets
+	asset := release.getDashboardAsset()
+	if asset == nil {
+		return sperr.New("could not find dashboard asset in release")
+	}
 
-	statushooks.SetStatus(ctx, "Downloading dashboard server…")
-	assetTarGz, err := downloadAssets(ctx, tempDir.Path)
+	filePath := filepath.Join(location, "assets.tar.gz")
+	// download the assets
+	err := downloadFile(filePath, asset.Url)
 	if err != nil {
-		return sperr.WrapWithMessage(err, "could not ensure dashboard assets")
+		return sperr.WrapWithMessage(err, "could not download dashboard assets")
 	}
-	tarGz, err := os.Open(assetTarGz)
-	if err != nil {
-		return sperr.WrapWithMessage(err, "could not open dashboard assets archive")
-	}
-	defer tarGz.Close()
+
+	// remove the file after we are done
+	defer os.Remove(filePath)
 
 	statushooks.SetStatus(ctx, "Extracting dashboard server…")
-	err = ExtractTarGz(ctx, tarGz, reportAssetsPath)
-	return sperr.WrapWithMessage(err, "could not open deflate assets archive")
+	err = extractTarGz(ctx, filePath, location)
+	if err != nil {
+		return sperr.WrapWithMessage(err, "could not extract dashboard assets")
+	}
+	return nil
 }
 
-func downloadAssets(ctx context.Context, assetsLocation string) (string, error) {
-	// download the blobs
-	filePath := filepath.Join(assetsLocation, "assets.tar.gz")
-	assetUrl, err := resolveDownloadUrl()
+func doAssetVersionMatch() bool {
+	versionFile, err := loadReportAssetVersionFile()
 	if err != nil {
-		return "", sperr.WrapWithMessage(err, "could not resolve dashboard assets download url")
+		return false
 	}
 
-	if err := downloadFile(filePath, assetUrl); err != nil {
-		return "", sperr.WrapWithMessage(err, "could not download dashboard assets")
-	}
-	return filePath, nil
+	return versionFile.Version == app_specific.AppVersion.String()
 }
 
 type ReportAssetsVersionFile struct {
@@ -95,13 +139,21 @@ func loadReportAssetVersionFile() (*ReportAssetsVersionFile, error) {
 
 }
 
-// ExtractTarGz extracts a .tar.gz archive to a destination directory.
+// extractTarGz extracts a .tar.gz archive to a destination directory.
 // this can go into pipe-fittings
-func ExtractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error {
+// TODO::Binaek - move this to pipe-fittings
+func extractTarGz(ctx context.Context, assetTarGz string, dest string) error {
+	gzipStream, err := os.Open(assetTarGz)
+	if err != nil {
+		return sperr.WrapWithMessage(err, "could not open dashboard assets archive")
+	}
+	defer gzipStream.Close()
+
 	uncompressedStream, err := gzip.NewReader(gzipStream)
 	if err != nil {
 		return err
 	}
+	uncompressedStream.Close()
 
 	tarReader := tar.NewReader(uncompressedStream)
 
