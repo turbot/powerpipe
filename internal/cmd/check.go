@@ -212,9 +212,7 @@ func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, ini
 
 	// print the location where the file is exported if progress=true
 	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
-		fmt.Printf("\n")
-		fmt.Println(strings.Join(exportMsg, "\n"))
-		fmt.Printf("\n")
+		fmt.Printf("\n%s\n", strings.Join(exportMsg, "\n")) //nolint:forbidigo // we want to print
 	}
 
 	return nil
@@ -316,11 +314,12 @@ func createCheckContext(ctx context.Context) context.Context {
 
 func validateCheckArgs(ctx context.Context, cmd *cobra.Command, args []string) bool {
 	if len(args) == 0 {
-		fmt.Println()
+		// TODO KAI can we use cobra validation
+		fmt.Println() //nolint:forbidigo // expected output
 		error_helpers.ShowError(ctx, fmt.Errorf("you must provide at least one argument"))
-		fmt.Println()
-		cmd.Help()
-		fmt.Println()
+		fmt.Println() //nolint:forbidigo // expected output
+		_ = cmd.Help()
+		fmt.Println() //nolint:forbidigo // expected output
 		return false
 	}
 
@@ -378,12 +377,13 @@ func printTiming(tree *controlexecute.ExecutionTree) {
 	//display.ShowWrappedTable(headers, rows, &display.ShowWrappedTableOptions{AutoMerge: false})
 }
 
-func shouldPrintTiming() bool {
-	outputFormat := viper.GetString(constants.ArgOutput)
-
-	return (viper.GetBool(constants.ArgTiming) && !viper.GetBool(constants.ArgDryRun)) &&
-		(outputFormat == constants.OutputFormatText || outputFormat == constants.OutputFormatBrief)
-}
+//
+//func shouldPrintTiming() bool {
+//	outputFormat := viper.GetString(constants.ArgOutput)
+//
+//	return (viper.GetBool(constants.ArgTiming) && !viper.GetBool(constants.ArgDryRun)) &&
+//		(outputFormat == constants.OutputFormatText || outputFormat == constants.OutputFormatBrief)
+//}
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)

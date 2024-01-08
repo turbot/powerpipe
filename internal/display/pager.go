@@ -57,7 +57,7 @@ func isPagerNeeded(content string) bool {
 func nullPager(content string) {
 	// just dump the whole thing out
 	// we will use this for non-tty environments as well
-	fmt.Print(content)
+	fmt.Print(content) //nolint:forbidigo // we want to print the whole thing out
 }
 
 func nixPager(ctx context.Context, content string) {

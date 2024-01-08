@@ -7,6 +7,7 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 )
 
+// TO DO KAI introspection
 type variableInfo struct {
 	Name        string `json:"name"`
 	Type        string `json:"type"`
@@ -32,7 +33,7 @@ func ShowVarsListJson(vars []*modconfig.Variable) {
 	jsonOutput, err := json.MarshalIndent(jsonStructs, "", "  ")
 	error_helpers.FailOnErrorWithMessage(err, "failed to marshal variables to JSON")
 
-	fmt.Println(string(jsonOutput))
+	fmt.Println(string(jsonOutput)) //nolint:forbidigo // we want to print
 }
 
 func ShowVarsListTable(vars []*modconfig.Variable) {
