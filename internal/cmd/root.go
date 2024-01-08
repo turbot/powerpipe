@@ -50,6 +50,7 @@ func rootCommand() *cobra.Command {
 	rootCmd.AddCommand(
 		modCmd(),
 		dashboardCmd(),
+		checkCmd(),
 	)
 
 	// disable auto completion generation, since we don't want to support
