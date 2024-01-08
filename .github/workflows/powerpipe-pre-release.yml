@@ -212,7 +212,7 @@ jobs:
         run: |
           echo "docker_tag=${VERSION#"v"}" >> $GITHUB_OUTPUT
     
-      - name: Build and Push to DockerHub and Container Registry
+      - name: Build and Push to GitHub Container Registry
         id: docker_build
         uses: docker/build-push-action@v5
         with:
