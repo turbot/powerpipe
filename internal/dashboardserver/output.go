@@ -43,7 +43,7 @@ func output(_ context.Context, prefix string, msg interface{}) {
 	if logSink == nil {
 		logSink = os.Stdout
 	}
-	fmt.Fprintf(logSink, "%s %v\n", prefix, msg) //nolint:forbidigo // acceptable
+	_, _ = fmt.Fprintf(logSink, "%s %v\n", prefix, msg)
 }
 
 func OutputMessage(ctx context.Context, msg string) {

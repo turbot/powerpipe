@@ -32,7 +32,7 @@ type GetModResponse struct {
 }
 
 func (api *APIService) getModHandler(c *gin.Context) {
-	mods := []Mod{}
+	var mods []Mod
 	if api.workspace.Mod != nil {
 		mods = []Mod{{
 			Title:       api.workspace.Mod.Title,
@@ -42,7 +42,7 @@ func (api *APIService) getModHandler(c *gin.Context) {
 		}}
 	}
 	c.JSON(http.StatusOK, GetModResponse{Items: mods})
-	return
+
 }
 
 type InstallModResponse struct {
@@ -62,7 +62,7 @@ type InstallModRequest struct {
 func (api *APIService) installModHandler(c *gin.Context) {
 	input := InstallModRequest{}
 	if err := c.ShouldBindJSON(&input); err != nil {
-		c.AbortWithError(http.StatusBadRequest, err)
+		_ = c.AbortWithError(http.StatusBadRequest, err)
 	}
 
 	mod := api.workspace.Mod

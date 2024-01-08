@@ -76,7 +76,7 @@ func runDashboardCmd(cmd *cobra.Command, _ []string) {
 			dashboardserver.OutputWarning(ctx, "Could not start web browser.")
 		}
 	}
-	fmt.Println("server started")
+	dashboardserver.OutputMessage(ctx, "server started")
 	<-ctx.Done()
 }
 

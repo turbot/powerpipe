@@ -227,7 +227,7 @@ func (s *RuntimeDependencySubscriberImpl) waitForRuntimeDependencies(ctx context
 		return nil
 	}
 
-	slog.Debug("BLOCKED", s.Name)
+	slog.Debug("BLOCKED", "name", s.Name)
 	// set status to blocked
 	s.setStatus(ctx, dashboardtypes.RunBlocked)
 
@@ -275,7 +275,7 @@ wait_loop:
 		}
 	}
 
-	slog.Debug("all runtime dependencies ready", s.resource.Name())
+	slog.Debug("all runtime dependencies ready", "name", s.resource.Name())
 	return error_helpers.CombineErrors(errors...)
 }
 
@@ -311,7 +311,7 @@ func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyForParentProperty
 
 // resolve the sql for this leaf run into the source sql and resolved args
 func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
-	slog.Debug("resolveSQLAndArgs", s.resource.Name())
+	slog.Debug("resolveSQLAndArgs", "name", s.resource.Name())
 	queryProvider, ok := s.resource.(modconfig.QueryProvider)
 	if !ok {
 		// not a query provider - nothing to do

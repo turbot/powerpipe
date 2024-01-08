@@ -30,8 +30,8 @@ func configDefaults() map[string]any {
 // environment variable mappings for directory paths which must be set as part of the viper bootstrap process
 func dirEnvMappings() map[string]cmdconfig.EnvMapping {
 	return map[string]cmdconfig.EnvMapping{
-		app_specific.EnvInstallDir:  {[]string{constants.ArgInstallDir}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvModLocation: {[]string{constants.ArgModLocation}, cmdconfig.EnvVarTypeString},
+		app_specific.EnvInstallDir:  {ConfigVar: []string{constants.ArgInstallDir}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvModLocation: {ConfigVar: []string{constants.ArgModLocation}, VarType: cmdconfig.EnvVarTypeString},
 	}
 }
 
@@ -41,31 +41,28 @@ func dirEnvMappings() map[string]cmdconfig.EnvMapping {
 // a map of known environment variables to map to viper keys - these are set as part of LoadGlobalConfig
 func envMappings() map[string]cmdconfig.EnvMapping {
 	return map[string]cmdconfig.EnvMapping{
-		app_specific.EnvInstallDir:    {[]string{constants.ArgInstallDir}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvModLocation:   {[]string{constants.ArgModLocation}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvIntrospection: {[]string{constants.ArgIntrospection}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvTelemetry:     {[]string{constants.ArgTelemetry}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvUpdateCheck:   {[]string{constants.ArgUpdateCheck}, cmdconfig.EnvVarTypeBool},
+		app_specific.EnvInstallDir:        {ConfigVar: []string{constants.ArgInstallDir}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvModLocation:       {ConfigVar: []string{constants.ArgModLocation}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvIntrospection:     {ConfigVar: []string{constants.ArgIntrospection}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvTelemetry:         {ConfigVar: []string{constants.ArgTelemetry}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvUpdateCheck:       {ConfigVar: []string{constants.ArgUpdateCheck}, VarType: cmdconfig.EnvVarTypeBool},
+		app_specific.EnvSnapshotLocation:  {ConfigVar: []string{constants.ArgSnapshotLocation}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvWorkspaceDatabase: {ConfigVar: []string{constants.ArgWorkspaceDatabase}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvDisplayWidth:      {ConfigVar: []string{constants.ArgDisplayWidth}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvMaxParallel:       {ConfigVar: []string{constants.ArgMaxParallel}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvQueryTimeout:      {ConfigVar: []string{constants.ArgDatabaseQueryTimeout}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvCacheTTL:          {ConfigVar: []string{constants.ArgCacheTtl}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvCacheMaxTTL:       {ConfigVar: []string{constants.ArgCacheMaxTtl}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvMemoryMaxMb:       {ConfigVar: []string{constants.ArgMemoryMaxMb}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvMemoryMaxMbPlugin: {ConfigVar: []string{constants.ArgMemoryMaxMbPlugin}, VarType: cmdconfig.EnvVarTypeInt},
+		app_specific.EnvCacheEnabled:      {ConfigVar: []string{constants.ArgClientCacheEnabled, constants.ArgServiceCacheEnabled}, VarType: cmdconfig.EnvVarTypeBool},
 		// EnvPipesHost needs to be defined before EnvCloudHost,
 		// so that if EnvCloudHost is defined, it can override EnvPipesHost
-		constants.EnvPipesHost:    {[]string{constants.ArgCloudHost}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvCloudHost: {[]string{constants.ArgCloudHost}, cmdconfig.EnvVarTypeString},
+		constants.EnvPipesHost:    {ConfigVar: []string{constants.ArgCloudHost}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvCloudHost: {ConfigVar: []string{constants.ArgCloudHost}, VarType: cmdconfig.EnvVarTypeString},
 		// EnvPipesToken needs to be defined before EnvCloudToken,
 		// so that if EnvCloudToken is defined, it can override EnvPipesToken
-		constants.EnvPipesToken:    {[]string{constants.ArgCloudToken}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvCloudToken: {[]string{constants.ArgCloudToken}, cmdconfig.EnvVarTypeString},
-		//
-		app_specific.EnvSnapshotLocation:  {[]string{constants.ArgSnapshotLocation}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvWorkspaceDatabase: {[]string{constants.ArgWorkspaceDatabase}, cmdconfig.EnvVarTypeString},
-		app_specific.EnvDisplayWidth:      {[]string{constants.ArgDisplayWidth}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvMaxParallel:       {[]string{constants.ArgMaxParallel}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvQueryTimeout:      {[]string{constants.ArgDatabaseQueryTimeout}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvCacheTTL:          {[]string{constants.ArgCacheTtl}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvCacheMaxTTL:       {[]string{constants.ArgCacheMaxTtl}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvMemoryMaxMb:       {[]string{constants.ArgMemoryMaxMb}, cmdconfig.EnvVarTypeInt},
-		app_specific.EnvMemoryMaxMbPlugin: {[]string{constants.ArgMemoryMaxMbPlugin}, cmdconfig.EnvVarTypeInt},
-
-		// we need this value to go into different locations
-		app_specific.EnvCacheEnabled: {[]string{constants.ArgClientCacheEnabled, constants.ArgServiceCacheEnabled}, cmdconfig.EnvVarTypeBool},
+		constants.EnvPipesToken:    {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
+		app_specific.EnvCloudToken: {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
 	}
 }

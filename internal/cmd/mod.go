@@ -128,7 +128,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	fmt.Println(modinstaller.BuildInstallSummary(installData))
+	fmt.Println(modinstaller.BuildInstallSummary(installData)) //nolint:forbidigo // intended output
 }
 
 func modUninstallCmd() *cobra.Command {
@@ -231,7 +231,7 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 	}
 
 	if parse.ModfileExists(workspacePath) {
-		fmt.Println("Working folder already contains a mod definition file")
+		error_helpers.ShowWarning("Working folder already contains a mod definition file")
 		return nil, nil
 	}
 	mod := modconfig.CreateDefaultMod(workspacePath)

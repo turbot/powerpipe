@@ -3,16 +3,12 @@ package cmdconfig
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/task"
-	"github.com/turbot/powerpipe/internal/logger"
 	"log/slog"
 	"os"
 	"runtime/debug"
 	"strings"
 	"time"
 
-	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -21,7 +17,10 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/task"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/logger"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -64,7 +63,7 @@ func preRunHook(cmd *cobra.Command, args []string) error {
 	// check for error
 	error_helpers.FailOnError(ew.Error)
 
-	logger.SetDefaultLogger()
+	logger.Initialize()
 
 	// runScheduledTasks skips running tasks if this instance is the plugin manager
 	waitForTasksChannel = runScheduledTasks(cmd.Context(), cmd, args)
@@ -170,58 +169,6 @@ func validateConfig() *error_helpers.ErrorAndWarnings {
 	return res
 }
 
-// create a hclog logger with the level specified by the SP_LOG env var
-// func createLogger(logBuffer *bytes.Buffer, cmd *cobra.Command) {
-// 	if task.IsPluginManagerCmd(cmd) {
-// 		// nothing to do here - plugin manager sets up it's own logger
-// 		// refer https://github.com/turbot/steampipe/blob/710a96d45fd77294de8d63d77bf78db65133e5ca/cmd/plugin_manager.go#L102
-// 		return
-// 	}
-
-// 	level := sdklogging.LogLevel()
-// 	var logDestination io.Writer
-// 	if len(filepaths.SteampipeDir) == 0 {
-// 		// write to the buffer - this is to make sure that we don't lose logs
-// 		// till the time we get the log directory
-// 		logDestination = logBuffer
-// 	} else {
-// 		logDestination = logging.NewRotatingLogWriter(filepaths.EnsureLogDir(), "steampipe")
-
-// 		// write out the buffered contents
-// 		_, _ = logDestination.Write(logBuffer.Bytes())
-// 	}
-
-// 	hcLevel := hclog.LevelFromString(level)
-
-// 	options := &hclog.LoggerOptions{
-// 		// make the name unique so that logs from this instance can be filtered
-// 		Name:       fmt.Sprintf("steampipe [%s]", runtime.ExecutionID),
-// 		Level:      hcLevel,
-// 		Output:     logDestination,
-// 		TimeFn:     func() time.Time { return time.Now().UTC() },
-// 		TimeFormat: "2006-01-02 15:04:05.000 UTC",
-// 	}
-// 	logger := sdklogging.NewLogger(options)
-// 	log.SetOutput(logger.StandardWriter(&hclog.StandardLoggerOptions{InferLevels: true}))
-// 	log.SetPrefix("")
-// 	log.SetFlags(0)
-
-// 	// if the buffer is empty then this is the first time the logger is getting setup
-// 	// write out a banner
-// 	if logBuffer.Len() == 0 {
-// 		// pump in the initial set of logs
-// 		// this will also write out the Execution ID - enabling easy filtering of logs for a single execution
-// 		// we need to do this since all instances will log to a single file and logs will be interleaved
-// 		slog.Info("********************************************************\n")
-// 		slog.Info("**%16s%20s%16s**\n", " ", fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID), " ")
-// 		slog.Info("********************************************************\n")
-// 		slog.Info("AppVersion:   v%s\n", version.VersionString)
-// 		slog.Info("Log level: %s\n", sdklogging.LogLevel())
-// 		slog.Info("Log date: %s\n", time.Now().Format("2006-01-02"))
-// 		//
-// 	}
-// }
-
 func ensureInstallDir(installDir string) {
 	slog.Debug("ensureInstallDir", "installDir", installDir)
 	if _, err := os.Stat(installDir); os.IsNotExist(err) {
@@ -230,18 +177,6 @@ func ensureInstallDir(installDir string) {
 		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create installation directory: %s", installDir))
 	}
 
-	// store as PowerpipeDir
+	// store as InstallDir
 	app_specific.InstallDir = installDir
-}
-
-// displayDeprecationWarnings shows the deprecated warnings in a formatted way
-func displayDeprecationWarnings(errorsAndWarnings *error_helpers.ErrorAndWarnings) {
-	if len(errorsAndWarnings.Warnings) > 0 {
-		fmt.Println(color.YellowString(fmt.Sprintf("\nDeprecation %s:", utils.Pluralize("warning", len(errorsAndWarnings.Warnings)))))
-		for _, warning := range errorsAndWarnings.Warnings {
-			fmt.Printf("%s\n\n", warning)
-		}
-		fmt.Println("For more details, see https://steampipe.io/docs/reference/config-files/workspace")
-		fmt.Println()
-	}
 }

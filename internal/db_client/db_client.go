@@ -109,9 +109,7 @@ func (c *DbClient) RegisterNotificationListener(func(notification *pgconn.Notifi
 // Close closes the connection to the database and shuts down the backend
 func (c *DbClient) Close(context.Context) error {
 	slog.Debug("DbClient.Close user pool")
-	c.closePools()
-
-	return nil
+	return c.closePools()
 }
 
 // TODO KAI STEAMPIPE ONLY <MISC>

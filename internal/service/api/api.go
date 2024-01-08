@@ -159,7 +159,7 @@ func (api *APIService) Start() error {
 	if api.webSocket != nil {
 		router.GET("/ws", func(c *gin.Context) {
 			if err := api.webSocket.HandleRequest(c.Writer, c.Request); err != nil {
-				c.AbortWithError(http.StatusInternalServerError, err)
+				_ = c.AbortWithError(http.StatusInternalServerError, err)
 			}
 		})
 	}
