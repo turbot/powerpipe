@@ -48,7 +48,7 @@ require (
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
 	github.com/google/uuid v1.4.0
-	github.com/jackc/pgx/v5 v5.4.3
+	github.com/jackc/pgx/v5 v5.5.1
 	github.com/jedib0t/go-pretty/v6 v6.5.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/shirou/gopsutil v3.21.11+incompatible
@@ -154,6 +154,7 @@ require (
 	github.com/jackc/pgpassfile v1.0.0 // indirect
 	github.com/jackc/pgproto3/v2 v2.3.2 // indirect
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
+	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
