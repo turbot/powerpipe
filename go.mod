@@ -49,6 +49,7 @@ require (
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
 	github.com/google/uuid v1.4.0
 	github.com/jackc/pgx/v5 v5.4.3
+	github.com/jedib0t/go-pretty/v6 v6.5.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/shirou/gopsutil v3.21.11+incompatible
 	golang.org/x/sync v0.5.0
