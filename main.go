@@ -2,7 +2,6 @@ package main
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"os"
 
 	"github.com/spf13/viper"
@@ -10,16 +9,18 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/cmd"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/powerpipe/internal/constants"
 )
 
 var exitCode int
 
 var (
 	// These variables will be set by GoReleaser.
-	version = "0.0.0"
-	commit  = "none"
-	date    = "unknown"
-	builtBy = "local"
+	version = constants.DefaultVersion
+	commit  = constants.DefaultCommit
+	date    = constants.DefaultDate
+	builtBy = constants.DefaultBuiltBy
 )
 
 func main() {
@@ -48,8 +49,8 @@ func main() {
 }
 
 func setVersionProperties() {
-	viper.SetDefault("main.version", version)
-	viper.SetDefault("main.commit", commit)
-	viper.SetDefault("main.date", date)
-	viper.SetDefault("main.builtBy", builtBy)
+	viper.SetDefault(constants.ConfigKeyVersion, version)
+	viper.SetDefault(constants.ConfigKeyCommit, commit)
+	viper.SetDefault(constants.ConfigKeyDate, date)
+	viper.SetDefault(constants.ConfigKeyBuiltBy, builtBy)
 }
