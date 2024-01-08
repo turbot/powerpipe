@@ -220,6 +220,7 @@ jobs:
           platforms: linux/amd64,linux/arm64
           build-args: |
             TARGETVERSION=${{ env.VERSION }}
+            GITHUB_TOKEN=${{ secrets.GH_ACCESS_TOKEN }}
           tags: |
             ghcr.io/turbot/powerpipe:${{ steps.generate_docker_tag.outputs.docker_tag }}
             ghcr.io/turbot/powerpipe:latest
