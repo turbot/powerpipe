@@ -10,6 +10,7 @@ import (
 	"log/slog"
 	"os"
 	"path/filepath"
+	"strings"
 
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
@@ -23,7 +24,7 @@ import (
 )
 
 const (
-	EnvDisableAssetsLookup = "POWERPIPE_DISABLE_ASSETS_LOOKUP" // an environment which disables fetching and verification of assets
+	EnvAssetsLookup = "POWERPIPE_ASSETS_LOOKUP" // an environment which disables fetching and verification of assets
 )
 
 func Ensure(ctx context.Context) error {
@@ -35,7 +36,7 @@ func Ensure(ctx context.Context) error {
 
 	// this is false when this binary is built by goreleaser
 	if !isLocalBuild {
-		if _, ok := os.LookupEnv(EnvDisableAssetsLookup); ok {
+		if lookup, ok := os.LookupEnv(EnvAssetsLookup); ok && strings.ToLower(lookup) == "disabled" {
 			// assets lookup is disabled
 			return nil
 		}
