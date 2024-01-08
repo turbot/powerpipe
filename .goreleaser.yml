@@ -50,8 +50,6 @@ checksum:
   name_template: "checksums.txt"
 
 release:
-  # Visit your project's GitHub Releases page to publish this release.
-  draft: true
   extra_files:
     - glob: dashboard_ui_assets.tar.gz
 
