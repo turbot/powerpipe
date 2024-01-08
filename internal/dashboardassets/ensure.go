@@ -12,6 +12,7 @@ import (
 	"path/filepath"
 	"strings"
 
+	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -47,7 +48,7 @@ func Ensure(ctx context.Context) error {
 		}
 		statushooks.SetStatus(ctx, "Installing dashboard server…")
 		// there is a version mismatch - we need to download and install the assets of this version
-		return downloadReleasedAssets(ctx, reportAssetsPath, viper.GetString(constants.ConfigKeyVersion))
+		return downloadReleasedAssets(ctx, reportAssetsPath, app_specific.AppVersion)
 	}
 
 	// check that the assets are already installed
@@ -59,7 +60,8 @@ func Ensure(ctx context.Context) error {
 	return nil
 }
 
-func downloadReleasedAssets(ctx context.Context, location string, version string) error {
+func downloadReleasedAssets(ctx context.Context, location string, version *semver.Version) error {
+	versionString := "v" + version.String()
 	// get the list of releases
 	releases, err := getReleases()
 	if err != nil {
@@ -67,7 +69,7 @@ func downloadReleasedAssets(ctx context.Context, location string, version string
 	}
 	var release *Release
 	for _, r := range releases {
-		if r.Name == version {
+		if r.Name == versionString {
 			release = r
 			break
 		}
