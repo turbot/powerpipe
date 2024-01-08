@@ -41,7 +41,7 @@ func Ensure(ctx context.Context) error {
 			return nil
 		}
 
-		if doAssetVersionMatch() {
+		if installedAsstesMatchAppVersion() {
 			// this is a released version and the version of the assets matches the version of the app
 			return nil
 		}
@@ -110,7 +110,7 @@ func downloadAndInstallAssets(ctx context.Context, release *Release, location st
 	return nil
 }
 
-func doAssetVersionMatch() bool {
+func installedAsstesMatchAppVersion() bool {
 	versionFile, err := loadReportAssetVersionFile()
 	if err != nil {
 		return false
