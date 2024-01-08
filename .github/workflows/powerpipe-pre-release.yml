@@ -192,7 +192,7 @@ jobs:
     needs: [build_and_release_assets, build_and_release]
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.build_and_release.outputs.version }}
+      VERSION: ${{ needs.build_and_release_assets.outputs.version }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
