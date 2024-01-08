@@ -15,11 +15,6 @@ func InitDashboard(ctx context.Context) *initialisation.InitData {
 	// initialise
 	initData := getInitData(ctx)
 
-	// there must be a mod-file
-	if !initData.Workspace.ModfileExists() {
-		error_helpers.ShowWarning("Could not find mod definition file in the current directory tree.")
-	}
-
 	return initData
 }
 
@@ -36,5 +31,9 @@ func getInitData(ctx context.Context) *initialisation.InitData {
 	i.Result.Warnings = errAndWarnings.Warnings
 	i.Init(ctx)
 
+	// there must be a mod-file
+	if !i.Workspace.ModfileExists() {
+		error_helpers.ShowWarning("Could not find mod definition file in the current directory tree.")
+	}
 	return i
 }
