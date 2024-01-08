@@ -39,6 +39,8 @@ func dashboardCmd() *cobra.Command {
 }
 
 func runDashboardCmd(cmd *cobra.Command, _ []string) {
+	fmt.Println("runDashboardCmd")
+
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
@@ -47,9 +49,13 @@ func runDashboardCmd(cmd *cobra.Command, _ []string) {
 	modInitData := dashboard.InitDashboard(ctx)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
+	fmt.Println("back from InitDashboard")
+
 	// ensure dashboard assets
 	err := dashboardassets.Ensure(ctx)
 	error_helpers.FailOnError(err)
+
+	fmt.Println("back from dashboardassets.Ensure")
 
 	// setup a new webSocket service
 	webSocket := melody.New()
@@ -57,6 +63,7 @@ func runDashboardCmd(cmd *cobra.Command, _ []string) {
 	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.WorkspaceEvents, webSocket)
 	error_helpers.FailOnError(err)
 
+	fmt.Println("back from dashboardserver.NewServer")
 	// send it over to the powerpipe API Server
 	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
 	if err != nil {

@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"os"
 
@@ -23,6 +24,9 @@ var (
 )
 
 func main() {
+
+	fmt.Println("Main")
+
 	ctx := context.Background()
 	utils.LogTime("main start")
 
