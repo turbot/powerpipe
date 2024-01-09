@@ -194,6 +194,7 @@ func extractTarGz(ctx context.Context, assetTarGz string, dest string) error {
 			continue
 		}
 
+		//nolint:gosec // TODO G110: Potential DoS vulnerability via decompression bomb
 		target := filepath.Join(dest, header.Name)
 
 		switch header.Typeflag {
@@ -207,6 +208,7 @@ func extractTarGz(ctx context.Context, assetTarGz string, dest string) error {
 			if err != nil {
 				return err
 			}
+			//nolint:gosec // TODO G110: Potential DoS vulnerability via decompression bomb
 			if _, err := io.Copy(outFile, tarReader); err != nil {
 				outFile.Close()
 				return err
