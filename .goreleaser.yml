@@ -50,7 +50,6 @@ checksum:
   name_template: "checksums.txt"
 
 release:
-  header: ""
   extra_files:
     - glob: dashboard_ui_assets.tar.gz
 
