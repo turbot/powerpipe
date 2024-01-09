@@ -69,7 +69,16 @@ func downloadReleasedAssets(ctx context.Context, location string, version *semve
 	}
 	var release *Release
 	for _, r := range releases {
-		if r.Name == versionString {
+		// parse this as a semver
+		// we do this to make it more resilient against the 'v' prefix
+		// which may or may not be present in either
+		releaseVersion, err := semver.NewVersion(r.Name)
+		if err != nil {
+			// we couldn't parse this version - skip it
+			slog.Info("Could not parse release version", "version", r.Name, "error", err)
+			continue
+		}
+		if version.Equal(releaseVersion) {
 			release = r
 			break
 		}
@@ -118,7 +127,20 @@ func installedAsstesMatchAppVersion() bool {
 		return false
 	}
 
-	return versionFile.Version == app_specific.AppVersion.String()
+	currentAppVersion, err := semver.NewVersion(app_specific.AppVersion.String())
+	if err != nil {
+		// if we couldn't parse this, assume we need to download
+		return false
+	}
+	currentAssetVersion, err := semver.NewVersion(versionFile.Version)
+	if err != nil {
+		// if we couldn't parse this, assume we need to download
+		return false
+	}
+
+	slog.Info("installedAsstesMatchAppVersion", "currentAppVersion", currentAppVersion, "currentAssetVersion", currentAssetVersion, "equal", currentAppVersion.Equal(currentAssetVersion))
+
+	return currentAppVersion.Equal(currentAssetVersion)
 }
 
 type ReportAssetsVersionFile struct {
