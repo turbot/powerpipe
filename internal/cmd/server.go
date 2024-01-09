@@ -2,29 +2,24 @@ package cmd
 
 import (
 	"context"
-	"fmt"
-	"github.com/turbot/powerpipe/internal/service/api"
-	"os"
-	"os/signal"
-
 	"github.com/spf13/cobra"
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
+	"github.com/turbot/powerpipe/internal/service/api"
 	"gopkg.in/olahol/melody.v1"
+	"os"
+	"os/signal"
 )
 
-func dashboardCmd() *cobra.Command {
+func serverCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "dashboard",
+		Use:   "server",
 		Args:  cobra.NoArgs,
-		Run:   runDashboardCmd,
+		Run:   runServerCmd,
 		Short: "Start Powerpipe dashboard server",
 		Long:  "Start Powerpipe dashboard server.",
 	}
@@ -32,18 +27,12 @@ func dashboardCmd() *cobra.Command {
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
-		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddBoolFlag(constants.ArgBrowser, true, "Specify whether to launch the browser after starting the dashboard server")
+		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h"))
 
-	cmd.AddCommand(modInstallCmd())
-	cmd.AddCommand(modUninstallCmd())
-	cmd.AddCommand(modUpdateCmd())
-	cmd.AddCommand(modListCmd())
-	cmd.AddCommand(modInitCmd())
 	return cmd
 }
 
-func runDashboardCmd(cmd *cobra.Command, _ []string) {
+func runServerCmd(cmd *cobra.Command, _ []string) {
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
@@ -75,26 +64,26 @@ func runDashboardCmd(cmd *cobra.Command, _ []string) {
 		error_helpers.FailOnError(err)
 	}
 	// start browser if required
-	if viper.GetBool(constants.ArgBrowser) {
-		url := buildDashboardURL(9194, modInitData.Workspace)
-		if err := utils.OpenBrowser(url); err != nil {
-			dashboardserver.OutputWarning(ctx, "Could not start web browser.")
-		}
-	}
+	//if viper.GetBool(constants.ArgBrowser) {
+	//	url := buildDashboardURL(9194, modInitData.Workspace)
+	//	if err := utils.OpenBrowser(url); err != nil {
+	//		dashboardserver.OutputWarning(ctx, "Could not start web browser.")
+	//	}
+	//}
 	dashboardserver.OutputMessage(ctx, "server started")
 	<-ctx.Done()
 }
 
-func buildDashboardURL(serverPort dashboardserver.ListenPort, w *workspace.Workspace) string {
-	url := fmt.Sprintf("http://localhost:%d", serverPort)
-	if len(w.SourceSnapshots) == 1 {
-		for snapshotName := range w.GetResourceMaps().Snapshots {
-			url += fmt.Sprintf("/%s", snapshotName)
-			break
-		}
-	}
-	return url
-}
+//func buildDashboardURL(serverPort dashboardserver.ListenPort, w *workspace.Workspace) string {
+//	url := fmt.Sprintf("http://localhost:%d", serverPort)
+//	if len(w.SourceSnapshots) == 1 {
+//		for snapshotName := range w.GetResourceMaps().Snapshots {
+//			url += fmt.Sprintf("/%s", snapshotName)
+//			break
+//		}
+//	}
+//	return url
+//}
 
 //func StartDashboardServer(ctx context.Context, serverPort dashboardserver.ListenPort, serverListen dashboardserver.ListenType) {
 //	// create context for the dashboard execution

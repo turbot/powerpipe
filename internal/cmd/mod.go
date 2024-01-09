@@ -45,11 +45,14 @@ Examples:
     powerpipe mod uninstall github.com/turbot/steampipe-mod-aws-compliance
 	`,
 	}
-	cmd.AddCommand(modInstallCmd())
-	cmd.AddCommand(modUninstallCmd())
-	cmd.AddCommand(modUpdateCmd())
-	cmd.AddCommand(modListCmd())
-	cmd.AddCommand(modInitCmd())
+	cmd.AddCommand(modInstallCmd(),
+		modUninstallCmd(),
+		modUpdateCmd(), modListCmd(),
+		modInitCmd(),
+		listCmd[*modconfig.Mod](),
+		showCmd[*modconfig.Mod](),
+	)
+
 	cmd.Flags().BoolP("help", "h", false, "Help for mod")
 
 	return cmd
