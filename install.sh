@@ -1,4 +1,4 @@
-#!/bin/sh
+#!/bin/bash
 
 set -e
 
@@ -88,7 +88,7 @@ main() {
   AUTH="Authorization: token $GITHUB_TOKEN"
 
   response=$(curl -sH "$AUTH" $uri)
-  id=$(echo "$response" | jq --arg asset_name "$asset_name" '.assets[] | select(.name == $asset_name) | .id' |  tr -d '"')
+  id=$(echo "$response" | jq --arg asset_name "$asset_name" '.assets[] | select(.name == $asset_name) | .id' | tr -d '"')
   GH_ASSET="$uri/releases/assets/$id"
 
   echo ""
