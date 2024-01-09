@@ -20,7 +20,6 @@ import (
 	"github.com/turbot/pipe-fittings/ociinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -29,15 +28,18 @@ const (
 )
 
 func Ensure(ctx context.Context) error {
-	logging.LogTime("dashboardassets.Ensure start")
-	defer logging.LogTime("dashboardassets.Ensure end")
+	slog.Info("dashboardassets.Ensure start")
+	defer slog.Info("dashboardassets.Ensure end")
 
 	reportAssetsPath := filepaths.EnsureDashboardAssetsDir()
 	isLocalBuild := viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild
 
+	slog.Info("dashboardassets.Ensure", "reportAssetsPath", reportAssetsPath, "isLocalBuild", isLocalBuild)
+
 	// this is false when this binary is built by goreleaser
 	if !isLocalBuild {
 		if lookup, ok := os.LookupEnv(EnvAssetsLookup); ok && strings.ToLower(lookup) == "disabled" {
+			slog.Info("dashboardassets.Ensure", "EnvAssetsLookup", lookup)
 			// assets lookup is disabled
 			return nil
 		}
@@ -61,7 +63,9 @@ func Ensure(ctx context.Context) error {
 }
 
 func downloadReleasedAssets(ctx context.Context, location string, version *semver.Version) error {
-	versionString := "v" + version.String()
+	slog.Info("dashboardassets.downloadReleasedAssets start")
+	defer slog.Info("dashboardassets.downloadReleasedAssets end")
+
 	// get the list of releases
 	releases, err := getReleases()
 	if err != nil {
@@ -91,10 +95,13 @@ func downloadReleasedAssets(ctx context.Context, location string, version *semve
 }
 
 func downloadAndInstallAssets(ctx context.Context, release *Release, location string) error {
+	slog.Info("dashboardassets.downloadAndInstallAssets start")
+	defer slog.Info("dashboardassets.downloadAndInstallAssets end")
+
 	tempDir := ociinstaller.NewTempDir(location)
 	defer func() {
 		if err := tempDir.Delete(); err != nil {
-			slog.Debug("Failed to delete temp dir after installing assets", "tempDir", tempDir, "error", err)
+			slog.Info("Failed to delete temp dir after installing assets", "tempDir", tempDir, "error", err)
 		}
 	}()
 	// download the assets
@@ -126,6 +133,8 @@ func installedAsstesMatchAppVersion() bool {
 	if err != nil {
 		return false
 	}
+
+	slog.Info("installedAsstesMatchAppVersion", "versionFile", versionFile, "app_specific.AppVersion", app_specific.AppVersion.String())
 
 	currentAppVersion, err := semver.NewVersion(app_specific.AppVersion.String())
 	if err != nil {
@@ -168,6 +177,9 @@ func loadReportAssetVersionFile() (*ReportAssetsVersionFile, error) {
 // this can go into pipe-fittings
 // TODO::Binaek - move this to pipe-fittings
 func extractTarGz(ctx context.Context, assetTarGz string, dest string) error {
+	slog.Info("dashboardassets.extractTarGz start")
+	defer slog.Info("dashboardassets.extractTarGz end")
+
 	gzipStream, err := os.Open(assetTarGz)
 	if err != nil {
 		return sperr.WrapWithMessage(err, "could not open dashboard assets archive")

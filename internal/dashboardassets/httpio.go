@@ -3,6 +3,7 @@ package dashboardassets
 import (
 	"encoding/json"
 	"io"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -10,6 +11,9 @@ import (
 )
 
 func resolveGithubToken() (string, error) {
+	slog.Info("dashboardassets.resolveGithubToken start")
+	defer slog.Info("dashboardassets.resolveGithubToken end")
+
 	if token, ok := os.LookupEnv("GITHUB_TOKEN"); ok {
 		return token, nil
 	}
@@ -17,6 +21,9 @@ func resolveGithubToken() (string, error) {
 }
 
 func downloadFile(filepath string, url string) error {
+	slog.Info("dashboardassets.downloadFile start")
+	defer slog.Info("dashboardassets.downloadFile end")
+
 	// Create the file
 	out, err := os.Create(filepath)
 	if err != nil {
@@ -35,8 +42,10 @@ func downloadFile(filepath string, url string) error {
 		return err
 	}
 
-	// Add authorization header to the req
-	req.Header.Add("Authorization", "token "+token)
+	// Add authorization header to the req if we have a token
+	if len(token) > 0 {
+		req.Header.Add("Authorization", "token "+token)
+	}
 
 	// Add accept header to the req - we need to send this otherwise github will just send back the JSON body
 	req.Header.Add("Accept", "application/octet-stream")
@@ -66,6 +75,9 @@ type Release struct {
 }
 
 func (r *Release) getDashboardAsset() *Asset {
+	slog.Info("dashboardassets.Release.getDashboardAsset start")
+	defer slog.Info("dashboardassets.Release.getDashboardAsset end")
+
 	for _, asset := range r.Assets {
 		if asset.Name == "dashboard_ui_assets.tar.gz" {
 			return asset
@@ -82,6 +94,9 @@ type Asset struct {
 }
 
 func getReleases() ([]*Release, error) {
+	slog.Info("dashboardassets.getReleases start")
+	defer slog.Info("dashboardassets.getReleases end")
+
 	token, err := resolveGithubToken()
 	if err != nil {
 		return nil, err
@@ -94,7 +109,11 @@ func getReleases() ([]*Release, error) {
 		return nil, err
 	}
 
-	req.Header.Add("Authorization", "token "+token)
+	// Add authorization header to the req if we have a token
+	if len(token) > 0 {
+		req.Header.Add("Authorization", "token "+token)
+	}
+
 	client := &http.Client{}
 	resp, err := client.Do(req)
 	if err != nil {
