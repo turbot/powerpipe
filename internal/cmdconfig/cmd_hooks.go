@@ -112,7 +112,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
 	// load workspace profile from the configured install dir
-	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]()
+	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]()
 	error_helpers.FailOnError(err)
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
