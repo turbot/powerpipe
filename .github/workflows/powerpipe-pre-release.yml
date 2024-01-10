@@ -176,15 +176,15 @@ jobs:
       - name: Check assets location
         run: ls -la powerpipe
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          version: latest
-          args: release --clean --skip-validate
-          workdir: powerpipe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          VERSION: $VERSION
+      - name: Setup release environment
+        run: |-
+          cd powerpipe
+          echo 'GITHUB_TOKEN=${{secrets.GH_ACCESS_TOKEN}}' > .release-env
+
+      - name: Release publish
+        run: |-
+          cd powerpipe
+          make release
 
   publish_docker_image:
     name: Publish Docker Image
