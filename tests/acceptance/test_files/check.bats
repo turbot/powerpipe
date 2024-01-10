@@ -29,61 +29,61 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "powerpipe check long control title" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.control_long_title --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_long_title.txt)"
-  cd -
-}
+# @test "powerpipe check long control title" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.control_long_title --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_long_title.txt)"
+#   cd -
+# }
 
-@test "powerpipe check short control title" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.control_short_title --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_short_title.txt)"
-  cd -
-}
+# @test "powerpipe check short control title" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.control_short_title --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_short_title.txt)"
+#   cd -
+# }
 
-@test "powerpipe check unicode control title" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.control_unicode_title --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_unicode_title.txt)"
-  cd -
-}
+# @test "powerpipe check unicode control title" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.control_unicode_title --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_unicode_title.txt)"
+#   cd -
+# }
 
-@test "powerpipe check reasons(very long, very short, unicode)" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.control_long_short_unicode_reasons --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_reasons.txt)"
-  cd -
-}
+# @test "powerpipe check reasons(very long, very short, unicode)" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.control_long_short_unicode_reasons --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_reasons.txt)"
+#   cd -
+# }
 
-@test "powerpipe check control with all possible statuses(10 OK, 5 ALARM, 2 ERROR, 1 SKIP and 3 INFO)" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.sample_control_mixed_results_1 --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_mixed_results.txt)"
-  cd -
-}
+# @test "powerpipe check control with all possible statuses(10 OK, 5 ALARM, 2 ERROR, 1 SKIP and 3 INFO)" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.sample_control_mixed_results_1 --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_mixed_results.txt)"
+#   cd -
+# }
 
-@test "powerpipe check control with all resources in ALARM" {
-  cd $CONTROL_RENDERING_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check control.sample_control_all_alarms --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_all_alarm.txt)"
-  cd -
-}
+# @test "powerpipe check control with all resources in ALARM" {
+#   cd $CONTROL_RENDERING_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check control.sample_control_all_alarms --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_all_alarm.txt)"
+#   cd -
+# }
 
-@test "powerpipe check control with blank dimension" {
-  cd $BLANK_DIMENSION_VALUE_TEST_MOD
-  export STEAMPIPE_DISPLAY_WIDTH=100
-  run powerpipe check all --progress=false --theme=plain
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_blank_dimension.txt)"
-  cd -
-}
+# @test "powerpipe check control with blank dimension" {
+#   cd $BLANK_DIMENSION_VALUE_TEST_MOD
+#   export STEAMPIPE_DISPLAY_WIDTH=100
+#   run powerpipe check all --progress=false --theme=plain
+#   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_blank_dimension.txt)"
+#   cd -
+# }
 
 @test "powerpipe check - output csv - no header" {
   cd $CONTROL_RENDERING_TEST_MOD

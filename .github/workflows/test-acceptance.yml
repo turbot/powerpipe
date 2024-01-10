@@ -65,3 +65,82 @@ jobs:
           name: build-artifact-darwin
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
+
+  acceptance_test:
+    name: Test
+    needs: goreleaser
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-latest, macos-latest]
+        test_block:
+          - "check"
+    runs-on: ${{ matrix.platform }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          submodules: true
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - uses: actions/setup-go@v5
+        with:
+          go-version: 1.21
+          cache: false
+
+      - name: Prepare for downloads
+        id: prepare-for-downloads
+        run: |
+          mkdir ~/artifacts
+  
+      - name: Download Linux Build Artifacts
+        uses: actions/download-artifact@v3
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
+        with:
+          name: build-artifact-linux
+          path: ~/artifacts
+
+      - name: Download Darwin Build Artifacts
+        uses: actions/download-artifact@v3
+        if: ${{ matrix.platform == 'macos-latest' }}
+        with:
+          name: build-artifact-darwin
+          path: ~/artifacts
+
+      - name: Extract Darwin Artifacts and Install Binary
+        if: ${{ matrix.platform == 'macos-latest' }}
+        run: |
+          mkdir ~/build
+          tar -xf ~/artifacts/darwin.tar.gz -C ~/build
+
+      - name: Extract Ubuntu Artifacts and Install Binary
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
+        run: |
+          mkdir ~/build
+          tar -xf ~/artifacts/linux.tar.gz -C ~/build
+      
+      - name: Install Steampipe(Darwin)
+        if: ${{ matrix.platform == 'macos-latest' }}
+        run: |
+          brew install turbot/tap/steampipe
+          steampipe -v
+
+      - name: Install Steampipe(Linux)
+        if: ${{ matrix.platform == 'ubuntu-latest' }}
+        run: |
+          sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+          steampipe -v
+      
+      - name: Set PATH
+        run: |
+          echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV
+
+      - name: Go install jd
+        run: |
+          go install github.com/josephburnett/jd@latest
+
+      - name: service start
+        run: |
+          steampipe service start
+          steampipe service stop
