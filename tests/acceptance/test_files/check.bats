@@ -99,3 +99,37 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
+@test "powerpipe check - output json" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe check control.sample_control_mixed_results_1 --output json --progress=false --export output.json
+  output=""
+  run jd "$TEST_DATA_DIR/expected_check_json.json" output.json
+  echo $output
+  assert_success
+  rm -f output.json
+  cd -
+}
+
+@test "powerpipe check - export csv" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe check control.sample_control_mixed_results_1 --export test.csv --progress=false
+  assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv.csv)"
+  rm -f test.csv
+  cd -
+}
+
+@test "powerpipe check - export csv - pipe separator" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe check control.sample_control_mixed_results_1 --export test.csv --separator="|" --progress=false
+  assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv_pipe_separator.csv)"
+  rm -f test.csv
+  cd -
+}
+
+@test "powerpipe check - export csv(check tags and dimensions sorting)" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe check control.sample_control_sorted_tags_and_dimensions --export test.csv --progress=false
+  assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv_sorted_tags.csv)"
+  rm -f test.csv
+  cd -
+}
