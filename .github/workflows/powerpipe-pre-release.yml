@@ -182,7 +182,10 @@ jobs:
           path: powerpipe/internal/dashboardassets
 
       - name: Check assets location
-        run: ls -la powerpipe/internal/dashboardassets
+        run: |
+          ls -la powerpipe/internal/dashboardassets
+          mv powerpipe/internal/dashboardassets/dashboard_ui_assets.tar.gz powerpipe/internal/dashboardassets/assets.tar.gz
+          ls -la powerpipe/internal/dashboardassets
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
