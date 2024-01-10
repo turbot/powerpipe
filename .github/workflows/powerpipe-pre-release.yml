@@ -24,7 +24,7 @@ jobs:
 
   # TODO Acceptance test job before build and release
 
-  build_and_release_assets:
+  build_assets:
     name: Build and Release Dashboard Assets
     runs-on: ubuntu-latest
     outputs:
@@ -79,6 +79,17 @@ jobs:
         working-directory: ./powerpipe/ui/dashboard
         run: |-
           rm -rf ./build
+
+      # Cache node modules to speed up builds
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@v3
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
 
       - name: YARN Install
         working-directory: ./powerpipe/ui/dashboard
@@ -135,10 +146,10 @@ jobs:
 
   build_and_release:
     name: Build and Release Powerpipe
-    needs: [build_and_release_assets]
+    needs: [build_assets]
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.build_and_release_assets.outputs.version }}
+      VERSION: ${{ needs.build_assets.outputs.version }}
     steps:
 
       - name: Checkout
@@ -152,6 +163,12 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+
+      - name: Download Dashboard UI Assets Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-ui-assets-archive
+          path: powerpipe/internal/dashboardassets/assets.tar.gz
 
       - name: Tag Release
         run: |
@@ -167,14 +184,8 @@ jobs:
           go-version: '1.21'
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
-      - name: Download Dashboard UI Assets Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dashboard-ui-assets-archive
-          path: powerpipe
-
       - name: Check assets location
-        run: ls -la powerpipe
+        run: ls -la powerpipe/internal/dashboardassets
 
       - name: Run GoReleaser
         uses: goreleaser/goreleaser-action@v5
@@ -188,10 +199,10 @@ jobs:
 
   publish_docker_image:
     name: Publish Docker Image
-    needs: [build_and_release_assets, build_and_release]
+    needs: [build_assets, build_and_release]
     runs-on: ubuntu-latest
     env:
-      VERSION: ${{ needs.build_and_release_assets.outputs.version }}
+      VERSION: ${{ needs.build_assets.outputs.version }}
     steps:
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3

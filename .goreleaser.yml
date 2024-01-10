@@ -49,10 +49,6 @@ snapshot:
 checksum:
   name_template: "checksums.txt"
 
-release:
-  extra_files:
-    - glob: dashboard_ui_assets.tar.gz
-
 changelog:
   skip: true
 
