@@ -85,7 +85,7 @@ brews:
   - ids:
       - homebrew
     name: powerpipe@{{ .Major }}.{{ .Minor }}.{{ .Patch }}
-    tap:
+    repository:
       owner: turbot
       name: homebrew-tap
       branch: bump-brew
