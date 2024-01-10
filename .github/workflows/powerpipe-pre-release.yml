@@ -1,12 +1,11 @@
 name: Powerpipe - Pre-Release
 
-
 on:
   workflow_dispatch:
     inputs:
       pre_release_identifier:
         type: choice
-        description: 'Select Pre-Release Identifier'
+        description: "Select Pre-Release Identifier"
         options:
           - alpha
           - beta
@@ -21,7 +20,6 @@ env:
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
-
   # TODO Acceptance test job before build and release
 
   build_assets:
@@ -44,7 +42,7 @@ jobs:
           MINOR=$(echo $VERSION_JSON | jq '.minor')
           PATCH=$(echo $VERSION_JSON | jq '.patch')
           VERSION="v$MAJOR.$MINOR.$PATCH"
-          
+
           if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
             echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
           elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
@@ -69,11 +67,11 @@ jobs:
             exit 1
           fi
           echo "VERSION=${trim}" >> $GITHUB_ENV
-        
+
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: '>=18.12.0'
+          node-version: ">=18.12.0"
 
       - name: Setup Yarn
         working-directory: ./powerpipe/ui/dashboard
@@ -151,7 +149,6 @@ jobs:
     env:
       VERSION: ${{ needs.build_assets.outputs.version }}
     steps:
-
       - name: Checkout
         uses: actions/checkout@v3
         with:
@@ -164,12 +161,6 @@ jobs:
           repository: turbot/pipe-fittings
           path: pipe-fittings
 
-      - name: Download Dashboard UI Assets Artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: dashboard-ui-assets-archive
-          path: powerpipe/internal/dashboardassets/assets.tar.gz
-
       - name: Tag Release
         run: |
           cd powerpipe
@@ -181,8 +172,14 @@ jobs:
       # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: "1.21"
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
+
+      - name: Download Dashboard UI Assets Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: dashboard-ui-assets-archive
+          path: powerpipe/internal/dashboardassets
 
       - name: Check assets location
         run: ls -la powerpipe/internal/dashboardassets
@@ -221,7 +218,7 @@ jobs:
         id: generate_docker_tag
         run: |
           echo "docker_tag=${VERSION#"v"}" >> $GITHUB_OUTPUT
-    
+
       - name: Build and Push to GitHub Container Registry
         id: docker_build
         uses: docker/build-push-action@v5
