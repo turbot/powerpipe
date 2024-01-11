@@ -12,10 +12,12 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -32,6 +34,20 @@ const (
 func Ensure(ctx context.Context) error {
 	logging.LogTime("dashboardassets.Ensure start")
 	defer logging.LogTime("dashboardassets.Ensure end")
+
+	isLocal := (viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild)
+	if isLocal {
+		// verify that the assets exists
+		// to verify, read the version file and verify that it has content
+		versionFile, err := LoadDashboardAssetVersion()
+		if err != nil {
+			return sperr.WrapWithMessage(err, "could not load dashboard assets version file")
+		}
+		if versionFile.Version == "" {
+			return sperr.New("during development, dashboard assets must be present when running powerpipe dashboard")
+		}
+		return nil
+	}
 
 	if installedAsstesMatchAppVersion() {
 		// nothing to do here
@@ -58,7 +74,7 @@ func Ensure(ctx context.Context) error {
 }
 
 func updateAssetVersionFile() error {
-	versionFile := ReportAssetsVersionFile{
+	versionFile := ReportAssetsVersion{
 		Version: app_specific.AppVersion.String(),
 	}
 
@@ -77,7 +93,7 @@ func updateAssetVersionFile() error {
 }
 
 func installedAsstesMatchAppVersion() bool {
-	versionFile, err := loadReportAssetVersionFile()
+	versionFile, err := LoadDashboardAssetVersion()
 	if err != nil {
 		return false
 	}
@@ -85,25 +101,24 @@ func installedAsstesMatchAppVersion() bool {
 	return versionFile.Version == app_specific.AppVersion.String()
 }
 
-type ReportAssetsVersionFile struct {
+type ReportAssetsVersion struct {
 	Version string `json:"version"`
 }
 
-func loadReportAssetVersionFile() (*ReportAssetsVersionFile, error) {
+func LoadDashboardAssetVersion() (*ReportAssetsVersion, error) {
 	versionFilePath := filepaths.ReportAssetsVersionFilePath()
 	if !filehelpers.FileExists(versionFilePath) {
-		return &ReportAssetsVersionFile{}, nil
+		return &ReportAssetsVersion{}, nil
 	}
 
 	file, _ := os.ReadFile(versionFilePath)
-	var versionFile ReportAssetsVersionFile
+	var versionFile ReportAssetsVersion
 	if err := json.Unmarshal(file, &versionFile); err != nil {
 		slog.Error("Error while reading dashboard assets version file", "error", err)
 		return nil, err
 	}
 
 	return &versionFile, nil
-
 }
 
 // extractTarGz extracts a .tar.gz archive to a destination directory.
