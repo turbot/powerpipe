@@ -12,6 +12,7 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/Masterminds/semver/v3"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
@@ -98,7 +99,15 @@ func installedAssetsMatchAppVersion() bool {
 		return false
 	}
 
-	return versionFile.Version == app_specific.AppVersion.String()
+	assetVersion, err := semver.NewVersion(versionFile.Version)
+	if err != nil {
+		// the version file is written by the asset install code - therefore, it MUST always be a valid
+		// semver version. if it isn't, it must have been corrupted somehow
+		// in that case, we should just return false and let the ensure code run
+		return false
+	}
+
+	return assetVersion.Equal(app_specific.AppVersion)
 }
 
 type ReportAssetsVersion struct {
