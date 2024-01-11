@@ -12,12 +12,11 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/powerpipe/internal/constants"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -35,8 +34,7 @@ func Ensure(ctx context.Context) error {
 	logging.LogTime("dashboardassets.Ensure start")
 	defer logging.LogTime("dashboardassets.Ensure end")
 
-	isLocal := (viper.GetString(constants.ConfigKeyBuiltBy) == constants.LocalBuild)
-	if isLocal {
+	if localcmdconfig.IsLocal() {
 		// verify that the assets exists
 		// to verify, read the version file and verify that it has content
 		versionFile, err := LoadDashboardAssetVersion()

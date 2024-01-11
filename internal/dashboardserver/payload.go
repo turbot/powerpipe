@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
-	ppconstants "github.com/turbot/powerpipe/internal/constants"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -38,8 +38,7 @@ func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, c
 	// this is because the UI depends on the version of the assets to be equal to the version
 	// it gets from this response
 	// since during development, the cli version is always timestamped, we need to hack the response
-	isLocal := (viper.GetString(ppconstants.ConfigKeyBuiltBy) == ppconstants.LocalBuild)
-	if isLocal {
+	if localcmdconfig.IsLocal() {
 		versionFile, err := dashboardassets.LoadDashboardAssetVersion()
 		if err != nil {
 			return nil, sperr.WrapWithMessage(err, "could not load dashboard assets version file")
