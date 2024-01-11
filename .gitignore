@@ -31,6 +31,7 @@
 /ui/dashboard/output
 /ui/dashboard/yarn-debug.log*
 /ui/dashboard/yarn-error.log*
+/internal/dashboardassets/assets.tar.gz
 
 # Dist directory is created by goreleaser
 /dist
