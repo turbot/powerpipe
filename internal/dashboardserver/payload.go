@@ -33,10 +33,8 @@ func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, c
 
 	cliVersion := app_specific.AppVersion.String()
 
-	// when in local mode, we need to hack the response to include the version
-	// of the assets and not the version of the cli
-	// this is because the UI depends on the version of the assets to be equal to the version
-	// it gets from this response
+	// when in local mode, we need to hack the response to include the version of the assets and not the version of the cli
+	// this is because the UI depends on the version of the assets to be equal to the version it gets from this response
 	// since during development, the cli version is always timestamped, we need to hack the response
 	if localcmdconfig.IsLocal() {
 		versionFile, err := dashboardassets.LoadDashboardAssetVersion()
