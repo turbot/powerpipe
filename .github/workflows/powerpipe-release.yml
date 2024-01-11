@@ -61,13 +61,13 @@ jobs:
     steps:
 
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
 
       - name: Checkout Pipe Fittings Components repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           ssh-key: ${{ secrets.PIPE_FITTINGS_DEPLOY_PRIVATE_KEY }}
           repository: turbot/pipe-fittings
