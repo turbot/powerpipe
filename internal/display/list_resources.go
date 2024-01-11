@@ -18,14 +18,14 @@ func ListResources[T modconfig.HclResource](cmd *cobra.Command) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
-	dashboards := workspace.GetWorkspaceResourcesOfType[T](w)
+	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
 	printer, err := GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
 	}
-	printableResource := NewPrintableHclResource[T](maps.Values(dashboards))
+	printableResource := NewPrintableHclResource[T](maps.Values(resources))
 
 	err = printer.PrintResource(ctx, printableResource, cmd.OutOrStdout())
 	if err != nil {

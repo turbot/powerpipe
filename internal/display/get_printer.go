@@ -7,9 +7,5 @@ import (
 
 // TODO is this even needed
 func GetPrinter[T any](cmd *cobra.Command) (printers.ResourcePrinter[T], error) {
-	return printers.GetPrinter[T](cmd, printers.WithTableCommands([]string{
-		"powerpipe.dashboard.list",
-		"powerpipe.benchmark.list",
-		"powerpipe.control.list",
-	}))
+	return printers.GetPrinter[T](cmd)
 }
