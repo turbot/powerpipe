@@ -34,6 +34,8 @@ func Ensure(ctx context.Context) error {
 	logging.LogTime("dashboardassets.Ensure start")
 	defer logging.LogTime("dashboardassets.Ensure end")
 
+	// if we are running in development, we don't need to download assets
+	// let's just make sure that the assets exist at all (error out if not)
 	if localcmdconfig.IsLocal() {
 		// verify that the assets exists
 		// to verify, read the version file and verify that it has content
