@@ -29,6 +29,8 @@ func pgxReadCell(columnValue any, col *queryresult.ColumnDef) (any, error) {
 	var result any
 	if columnValue != nil {
 		result = columnValue
+
+		// add special handling for some types
 		switch col.DataType {
 		case "_TEXT":
 			if arr, ok := columnValue.([]interface{}); ok {
