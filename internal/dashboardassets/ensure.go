@@ -49,7 +49,7 @@ func Ensure(ctx context.Context) error {
 		return nil
 	}
 
-	if installedAsstesMatchAppVersion() {
+	if installedAssetsMatchAppVersion() {
 		// nothing to do here
 		return nil
 	}
@@ -92,7 +92,7 @@ func updateAssetVersionFile() error {
 	return nil
 }
 
-func installedAsstesMatchAppVersion() bool {
+func installedAssetsMatchAppVersion() bool {
 	versionFile, err := LoadDashboardAssetVersion()
 	if err != nil {
 		return false
