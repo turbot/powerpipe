@@ -3,18 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/contexthelpers"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/pipe-fittings/workspace"
-	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
-	localconstants "github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/internal/controlinit"
-
 	"io"
 	"os"
 	"strings"
@@ -22,39 +10,32 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/contexthelpers"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/utils"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func checkCmd() *cobra.Command {
+// generic command thi
+func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
+	typeName := localcmdconfig.GetGenericTypeName[T]()
 	cmd := &cobra.Command{
-		Use:              "check [flags] [mod/benchmark/control/\"all\"]",
+		Use:              checkCmdUse(typeName),
 		TraverseChildren: true,
-		Args:             cobra.ArbitraryArgs,
-		Run:              runCheckCmd,
-		Short:            "Execute one or more controls",
-		Long: `Execute one or more Steampipe benchmarks and controls.
-
-You may specify one or more benchmarks or controls to run (separated by a space), or run 'steampipe check all' to run all controls in the workspace.`,
-		ValidArgsFunction: func(cmd *cobra.Command, args []string, toComplete string) ([]string, cobra.ShellCompDirective) {
-			ctx := cmd.Context()
-			workspaceResources, err := workspace.LoadResourceNames(ctx, viper.GetString(constants.ArgModLocation))
-			if err != nil {
-				return []string{}, cobra.ShellCompDirectiveError
-			}
-
-			completions := []string{}
-
-			for _, item := range workspaceResources.GetSortedBenchmarksAndControlNames() {
-				if strings.HasPrefix(item, toComplete) {
-					completions = append(completions, item)
-				}
-			}
-
-			return completions, cobra.ShellCompDirectiveNoFileComp
-		},
+		Args:             cobra.MinimumNArgs(1),
+		Run:              runCheckCmd[T],
+		Short:            checkCmdShort(typeName),
+		Long:             checkCmdLong(typeName),
 	}
 
 	cmdconfig.
@@ -63,12 +44,12 @@ You may specify one or more benchmarks or controls to run (separated by a space)
 		AddWorkspaceDatabaseFlag().
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
-		AddBoolFlag(constants.ArgHelp, false, "Help for check", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgOutput, constants.OutputFormatText, "Output format: brief, csv, html, json, md, text, snapshot or none").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports check time").
-		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a check session (comma-separated)").
-		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a check session (comma-separated)").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
+		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
+		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
 		AddStringFlag(constants.ArgTheme, "dark", "Set the output theme for 'text' output: light, dark or plain").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
@@ -82,7 +63,7 @@ You may specify one or more benchmarks or controls to run (separated by a space)
 		AddStringFlag(constants.ArgWhere, "", "SQL 'where' clause, or named query, used to filter controls (cannot be used with '--tag')").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the check").
+		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
@@ -90,10 +71,19 @@ You may specify one or more benchmarks or controls to run (separated by a space)
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot")
 
-	// TODO KAI this relates to introspection
-	//cmd.AddCommand(getListSubCmd(listSubCmdOptions{parentCmd: cmd}))
-
 	return cmd
+}
+
+func checkCmdUse(typeName string) string {
+	return fmt.Sprintf("run [flags] [%s]", typeName)
+}
+func checkCmdShort(typeName string) string {
+	return fmt.Sprintf("Execute one or more %ss", typeName)
+}
+func checkCmdLong(typeName string) string {
+	return fmt.Sprintf(`Execute one or more %ss.
+
+You may specify one or more benchmarks to run, separated by a space.`, typeName)
 }
 
 // exitCode=0 no runtime errors, no control alarms or errors
@@ -101,7 +91,7 @@ You may specify one or more benchmarks or controls to run (separated by a space)
 // exitCode=2 no runtime errors, 1 or more control errors
 // exitCode=3+ runtime errors
 
-func runCheckCmd(cmd *cobra.Command, args []string) {
+func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	utils.LogTime("runCheckCmd start")
 
 	// setup a cancel context and start cancel handler
@@ -116,20 +106,17 @@ func runCheckCmd(cmd *cobra.Command, args []string) {
 		}
 	}()
 
-	// verify we have an argument
-	if !validateCheckArgs(ctx, cmd, args) {
+	// validate the arguments
+	err := validateCheckArgs(ctx)
+	if err != nil {
 		exitCode = constants.ExitCodeInsufficientOrWrongInputs
+		error_helpers.ShowError(ctx, err)
 		return
 	}
 	// if diagnostic mode is set, print out config and return
 	if _, ok := os.LookupEnv(localconstants.EnvConfigDump); ok {
 		localcmdconfig.DisplayConfig()
 		return
-	}
-
-	// verify that no other benchmarks/controls are given with an all
-	if helpers.StringSliceContains(args, "all") && len(args) > 1 {
-		error_helpers.FailOnError(sperr.New("cannot execute 'all' with other benchmarks/controls"))
 	}
 
 	// show the status spinner
@@ -140,7 +127,7 @@ func runCheckCmd(cmd *cobra.Command, args []string) {
 	// disable status hooks in init - otherwise we will end up
 	// getting status updates all the way down from the service layer
 	initCtx := statushooks.DisableStatusHooks(ctx)
-	initData := controlinit.NewInitData(initCtx)
+	initData := controlinit.NewInitData[T](initCtx, args)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.ShowError(ctx, initData.Result.Error)
@@ -162,7 +149,7 @@ func runCheckCmd(cmd *cobra.Command, args []string) {
 	// example :
 	// "check benchmark.b1 benchmark.b2 --export check.json" would give one merged tree
 	// "check benchmark.b1 benchmark.b2 --export json" would give multiple trees
-	trees, err := getExecutionTrees(ctx, initData, args...)
+	trees, err := getExecutionTrees(ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// execute controls synchronously (execute returns the number of alarms and errors)
@@ -255,27 +242,27 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 // example :
 // "check benchmark.b1 benchmark.b2 --export check.json" would give one merged tree
 // "check benchmark.b1 benchmark.b2 --export json" would give multiple trees
-func getExecutionTrees(ctx context.Context, initData *controlinit.InitData, args ...string) ([]*namedExecutionTree, error) {
+func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 
 	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
 		// create a single merged execution tree from all arguments
-		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, args...)
+		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, initData.Targets...)
 		if err != nil {
 			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 		}
 		name := fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
 		trees = append(trees, newNamedExecutionTree(name, executionTree))
 	} else {
-		for _, arg := range args {
+		for _, target := range initData.Targets {
 			if error_helpers.IsContextCanceled(ctx) {
 				return nil, ctx.Err()
 			}
-			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, arg)
+			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
 			if err != nil {
-				return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", arg)
+				return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target.GetUnqualifiedName())
 			}
-			name := getExportName(arg, initData.Workspace.Mod.ShortName)
+			name := getExportName(target.Name(), initData.Workspace.Mod.ShortName)
 			trees = append(trees, newNamedExecutionTree(name, executionTree))
 		}
 	}
@@ -312,41 +299,28 @@ func createCheckContext(ctx context.Context) context.Context {
 	return controlstatus.AddControlHooksToContext(ctx, controlstatus.NewStatusControlHooks())
 }
 
-func validateCheckArgs(ctx context.Context, cmd *cobra.Command, args []string) bool {
-	if len(args) == 0 {
-		// TODO KAI can we use cobra validation
-		fmt.Println() //nolint:forbidigo // expected output
-		error_helpers.ShowError(ctx, fmt.Errorf("you must provide at least one argument"))
-		fmt.Println() //nolint:forbidigo // expected output
-		_ = cmd.Help()
-		fmt.Println() //nolint:forbidigo // expected output
-		return false
-	}
+func validateCheckArgs(ctx context.Context) error {
 
 	if err := localcmdconfig.ValidateSnapshotArgs(ctx); err != nil {
-		error_helpers.ShowError(ctx, err)
-		return false
+		return err
 	}
 
 	// only 1 character is allowed for '--separator'
 	if len(viper.GetString(constants.ArgSeparator)) > 1 {
-		error_helpers.ShowError(ctx, fmt.Errorf("'--%s' can be 1 character long at most", constants.ArgSeparator))
-		return false
+		return fmt.Errorf("'--%s' can be 1 character long at most", constants.ArgSeparator)
 	}
 
 	// only 1 of 'share' and 'snapshot' may be set
 	if viper.GetBool(constants.ArgShare) && viper.GetBool(constants.ArgSnapshot) {
-		error_helpers.ShowError(ctx, fmt.Errorf("only 1 of '--%s' and '--%s' may be set", constants.ArgShare, constants.ArgSnapshot))
-		return false
+		return fmt.Errorf("only 1 of '--%s' and '--%s' may be set", constants.ArgShare, constants.ArgSnapshot)
 	}
 
 	// if both '--where' and '--tag' have been used, then it's an error
 	if viper.IsSet(constants.ArgWhere) && viper.IsSet(constants.ArgTag) {
-		error_helpers.ShowError(ctx, fmt.Errorf("only 1 of '--%s' and '--%s' may be set", constants.ArgWhere, constants.ArgTag))
-		return false
+		return fmt.Errorf("only 1 of '--%s' and '--%s' may be set", constants.ArgWhere, constants.ArgTag)
 	}
 
-	return true
+	return nil
 }
 
 func printTiming(tree *controlexecute.ExecutionTree) {

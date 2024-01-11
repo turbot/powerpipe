@@ -24,10 +24,12 @@ func serverCmd() *cobra.Command {
 		Long:  "Start Powerpipe dashboard server.",
 	}
 
+	// TODO KAI CHECK ARGS
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
-		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h"))
+		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddIntFlag(constants.ArgDashboardPort, constants.DashboardServerDefaultPort, "Dashboard server port")
 
 	return cmd
 }
@@ -63,65 +65,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	if err != nil {
 		error_helpers.FailOnError(err)
 	}
-	// start browser if required
-	//if viper.GetBool(constants.ArgBrowser) {
-	//	url := buildDashboardURL(9194, modInitData.Workspace)
-	//	if err := utils.OpenBrowser(url); err != nil {
-	//		dashboardserver.OutputWarning(ctx, "Could not start web browser.")
-	//	}
-	//}
+
 	dashboardserver.OutputMessage(ctx, "server started")
 	<-ctx.Done()
 }
-
-//func buildDashboardURL(serverPort dashboardserver.ListenPort, w *workspace.Workspace) string {
-//	url := fmt.Sprintf("http://localhost:%d", serverPort)
-//	if len(w.SourceSnapshots) == 1 {
-//		for snapshotName := range w.GetResourceMaps().Snapshots {
-//			url += fmt.Sprintf("/%s", snapshotName)
-//			break
-//		}
-//	}
-//	return url
-//}
-
-//func StartDashboardServer(ctx context.Context, serverPort dashboardserver.ListenPort, serverListen dashboardserver.ListenType) {
-//	// create context for the dashboard execution
-//	dashboardCtx, cancel := context.WithCancel(ctx)
-//	contexthelpers.StartCancelHandler(cancel)
-//
-//	// ensure dashboard assets are present and extract if not
-//	err := dashboard.Ensure(dashboardCtx)
-//	error_helpers.FailOnError(err)
-//
-//	// load the workspace
-//	initData := initDashboard(dashboardCtx)
-//	defer initData.Cleanup(dashboardCtx)
-//	if initData.Result.Error != nil {
-//		exitCode = constants.ExitCodeInitializationFailed
-//		error_helpers.FailOnError(initData.Result.Error)
-//	}
-//
-//	// if there is a usage warning we display it
-//	initData.Result.DisplayMessage = dashboardserver.OutputMessage
-//	initData.Result.DisplayWarning = dashboardserver.OutputWarning
-//	initData.Result.DisplayMessages()
-//
-//	// create the server
-//	server, err := dashboardserver.NewServer(dashboardCtx, initData.Client, initData.Workspace)
-//	error_helpers.FailOnError(err)
-//
-//	// start the server asynchronously - this returns a chan which is signalled when the internal API server terminates
-//	doneChan := server.Start(dashboardCtx)
-//
-//	// cleanup
-//	defer server.Shutdown(dashboardCtx)
-//
-//	// server has started - update state file/start browser, as required
-//	onServerStarted(dashboardCtx, serverPort, serverListen, initData.Workspace)
-//
-//	// wait for API server to terminate
-//	<-doneChan
-//
-//slog.Debug("runDashboardCmd exiting")
-//}

@@ -47,10 +47,10 @@ Examples:
 	}
 	cmd.AddCommand(modInstallCmd(),
 		modUninstallCmd(),
-		modUpdateCmd(), modListCmd(),
+		modUpdateCmd(),
+		modListCmd(),
+		modShowCmd(),
 		modInitCmd(),
-		listCmd[*modconfig.Mod](),
-		showCmd[*modconfig.Mod](),
 	)
 
 	cmd.Flags().BoolP("help", "h", false, "Help for mod")
@@ -205,7 +205,32 @@ Example:
 	return cmd
 }
 
-func runModListCmd(cmd *cobra.Command, _ []string) {}
+func modShowCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "show",
+		Run:   runModShowCmd,
+		Short: "List currently installed mods",
+		Long: `List currently installed mods.
+		
+Example:
+
+  # List installed mods
+  powerpipe mod list`,
+	}
+
+	cmdconfig.OnCmd(cmd).
+		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddModLocationFlag()
+	return cmd
+}
+
+func runModShowCmd(cmd *cobra.Command, args []string) {
+	// TODO KAI
+}
+
+func runModListCmd(cmd *cobra.Command, _ []string) {
+	// TODO KAI
+}
 
 func modInitCmd() *cobra.Command {
 	var cmd = &cobra.Command{

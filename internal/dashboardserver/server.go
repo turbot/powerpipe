@@ -267,9 +267,12 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == changedDashboardName {
 					clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
-					_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedDashboardName, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+					if changedResource := s.getResource(changedDashboardName); changedResource != nil {
+						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+					}
 				}
 			}
+
 		}
 
 		// Special case - if we previously had a workspace error, any previously existing dashboards
@@ -287,7 +290,9 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == newDashboardName {
 					clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
-					_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboardName, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+					if newDashboard := s.getResource(newDashboardName); newDashboard != nil {
+						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+					}
 				}
 			}
 		}
@@ -359,7 +364,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		case "select_dashboard":
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 			clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues, s.workspace, clientMap)
+			if dashboard := s.getResource(request.Payload.Dashboard.FullName); dashboard != nil {
+				_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, clientMap)
+			}
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
@@ -456,6 +463,22 @@ func (s *Server) deleteDashboardClient(sessionId string) {
 	s.mutex.Lock()
 	delete(s.dashboardClients, sessionId)
 	s.mutex.Unlock()
+}
+
+// resolve a resource from the name
+func (s *Server) getResource(name string) modconfig.ModTreeItem {
+	parsedResourceName, err := modconfig.ParseResourceName(name)
+	if err != nil {
+		slog.Warn("failed to parse changed resource name", "error", err.Error())
+		return nil
+	}
+
+	resource, ok := s.workspace.GetResource(parsedResourceName)
+	if !ok {
+		slog.Warn("changed resource not found in workspace", "resource", name)
+		return nil
+	}
+	return resource.(modconfig.ModTreeItem)
 }
 
 func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.DashboardTreeItemDiffs) []string {

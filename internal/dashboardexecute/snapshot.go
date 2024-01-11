@@ -10,13 +10,9 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
-func GenerateSnapshot(ctx context.Context, target string, initData *initialisation.InitData, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	w := initData.WorkspaceEvents
 
-	parsedName, err := modconfig.ParseResourceName(target)
-	if err != nil {
-		return nil, err
-	}
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)
@@ -28,10 +24,16 @@ func GenerateSnapshot(ctx context.Context, target string, initData *initialisati
 	// clear event handlers again in case another snapshot will be generated in this run
 	defer w.UnregisterDashboardEventHandlers()
 
+	// pull out the target dashboard
+	rootResource, ok := initData.Targets[0].(modconfig.ModTreeItem)
+	if !ok {
+		// not expected - this is a bug
+		return nil, fmt.Errorf("expected target to be a dashboard, but was %T", initData.Targets[0])
+	}
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
 	clientMap := map[string]*db_client.DbClient{initData.Client.GetConnectionString(): initData.Client}
-	if err := Executor.ExecuteDashboard(ctx, sessionId, target, inputs, w, clientMap); err != nil {
+	if err := Executor.ExecuteDashboard(ctx, sessionId, rootResource, inputs, w, clientMap); err != nil {
 		return nil, err
 	}
 
@@ -40,7 +42,8 @@ func GenerateSnapshot(ctx context.Context, target string, initData *initialisati
 		return nil, err
 	case snapshot = <-resultChannel:
 		// set the filename root of the snapshot
-		fileRootName := parsedName.ToFullNameWithMod(w.Mod.ShortName)
+		// TODO KAI CHECK THIS
+		fileRootName := initData.Targets[0].Name()
 
 		snapshot.FileNameRoot = fileRootName
 		//  return the context error (if any) to ensure we respect cancellation

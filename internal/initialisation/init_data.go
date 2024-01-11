@@ -12,6 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/db_common"
@@ -29,6 +30,7 @@ type InitData struct {
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
+	Targets           []modconfig.ModTreeItem
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -58,7 +60,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData) Init(ctx context.Context) {
+func (i *InitData) Init(ctx context.Context, targetType string, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -76,6 +78,14 @@ func (i *InitData) Init(ctx context.Context) {
 		i.Result.Error = sperr.WrapWithRootMessage(error_helpers.InvalidStateError, "InitData.Init called before setting up WorkspaceEvents")
 		return
 	}
+
+	// resolve target resources
+	targets, err := cmdconfig.ResolveTargetArgs(args, targetType, i.Workspace)
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	i.Targets = targets
 
 	statushooks.SetStatus(ctx, "Initializing")
 	i.WorkspaceEvents = dashboardworkspace.NewWorkspaceEvents(i.Workspace)
@@ -167,7 +177,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
 
 func (i *InitData) Cleanup(ctx context.Context) {
 	if i.Client != nil {
-		i.Client.Close(ctx)
+		_ = i.Client.Close(ctx)
 	}
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()

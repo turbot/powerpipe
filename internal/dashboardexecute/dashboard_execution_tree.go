@@ -42,10 +42,10 @@ type DashboardExecutionTree struct {
 	id          string
 }
 
-func NewDashboardExecutionTree(rootName string, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
+func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
-		dashboardName: rootName,
+		dashboardName: rootResource.Name(),
 		sessionId:     sessionId,
 		// TODO KAI pass in default connection string? <MISC>
 		defaultConnectionString: viper.GetString(constants.ArgWorkspaceDatabase),
@@ -58,7 +58,7 @@ func NewDashboardExecutionTree(rootName string, sessionId string, clients map[st
 	executionTree.id = fmt.Sprintf("%p", executionTree)
 
 	// create the root run node (either a report run or a counter run)
-	root, err := executionTree.createRootItem(rootName)
+	root, err := executionTree.createRootItem(rootResource)
 	if err != nil {
 		return nil, err
 	}
@@ -67,62 +67,30 @@ func NewDashboardExecutionTree(rootName string, sessionId string, clients map[st
 	return executionTree, nil
 }
 
-func (e *DashboardExecutionTree) createRootItem(rootName string) (dashboardtypes.DashboardTreeRun, error) {
-	parsedName, err := modconfig.ParseResourceName(rootName)
-	if err != nil {
-		return nil, err
-	}
-	fullName := parsedName.ToFullName()
-
-	if parsedName.ItemType == "" {
-		return nil, fmt.Errorf("root item is not valid named resource")
-	}
-	// if no mod is specified, assume the workspace mod
-	if parsedName.Mod == "" {
-		parsedName.Mod = e.workspace.Mod.ShortName
-		rootName = fullName
-	}
-	switch parsedName.ItemType {
-	case schema.BlockTypeDashboard:
-		dashboard, ok := e.workspace.GetResourceMaps().Dashboards[rootName]
-		if !ok {
-			return nil, fmt.Errorf("dashboard '%s' does not exist in workspace", rootName)
-		}
-		return NewDashboardRun(dashboard, e, e)
-	case schema.BlockTypeBenchmark:
-		benchmark, ok := e.workspace.GetResourceMaps().Benchmarks[rootName]
-		if !ok {
-			return nil, fmt.Errorf("benchmark '%s' does not exist in workspace", rootName)
-		}
-		return NewCheckRun(benchmark, e, e)
-	case schema.BlockTypeQuery:
-		// wrap in a table
-		query, ok := e.workspace.GetResourceMaps().Queries[rootName]
-		if !ok {
-			return nil, fmt.Errorf("query '%s' does not exist in workspace", rootName)
-		}
+func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
+	switch r := rootResource.(type) {
+	case *modconfig.Dashboard:
+		return NewDashboardRun(r, e, e)
+	case *modconfig.Benchmark:
+		return NewCheckRun(r, e, e)
+	case *modconfig.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(query)
+		dashboard, err := modconfig.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		e.dashboardName = dashboard.Name()
 		if err != nil {
 			return nil, err
 		}
 		return NewDashboardRun(dashboard, e, e)
-	case schema.BlockTypeControl:
-		// wrap in a table
-		control, ok := e.workspace.GetResourceMaps().Controls[rootName]
-		if !ok {
-			return nil, fmt.Errorf("query '%s' does not exist in workspace", rootName)
-		}
+	case *modconfig.Control:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(control)
+		dashboard, err := modconfig.NewQueryDashboard(r)
 		if err != nil {
 			return nil, err
 		}
 		return NewDashboardRun(dashboard, e, e)
 	default:
-		return nil, fmt.Errorf("reporting type %s cannot be executed as dashboard", parsedName.ItemType)
+		return nil, fmt.Errorf("type %T cannot be executed as dashboard", r)
 	}
 }
 
