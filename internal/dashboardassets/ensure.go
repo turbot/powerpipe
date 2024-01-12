@@ -72,12 +72,15 @@ func verifyAssetsExist() error {
 	// verify that the assets exists
 	assetDir := filepaths.EnsureDashboardAssetsDir()
 	// list the files in the directory
-	files, err := os.ReadDir(assetDir)
+	files, err := filehelpers.ListFiles(assetDir, &filehelpers.ListOptions{
+		Flags:      filehelpers.FilesRecursive,
+		MaxResults: 5, // a low number so that we can short circuit earlier
+	})
 	if err != nil {
 		return sperr.WrapWithMessage(err, "could not read dashboard assets directory")
 	}
 	if len(files) == 0 {
-		return sperr.New("dashboard assets directory is empty")
+		return sperr.WrapWithMessage(os.ErrNotExist, "dashboard assets directory is empty")
 	}
 	return nil
 }
