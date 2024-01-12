@@ -16,7 +16,10 @@ func RowReaderFactory(backend DBClientBackendType) RowReader {
 		reader = NewPgxRowReader()
 	case MySQLDBClientBackend:
 		reader = NewMySqlRowReader()
+	case SqliteDBClientBackend:
+		reader = NewGenericSQLRowReader()
 	default:
+		// we don't knwo which backend it is, so use the generic reader
 		reader = NewGenericSQLRowReader()
 	}
 	return reader
