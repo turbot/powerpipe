@@ -1,4 +1,4 @@
-# HCL Resource Tags
+`# HCL Resource Tags
 
 ## Introduction
 Hcl resources use several different tags, which can be quite confusing. This document will attempt to explain the purpose of each tag.
@@ -10,13 +10,31 @@ These are used for implicit HCL parsing of the resource. We mostly try to use th
 These use used to control the cty representation of the resource in the evaluation context. Any property which may be referenced within the HCL _must_ have a cty tag
 
 ## `column` tags
-These are used to control which properties are shown as columns in the introspection tables. 
+These are used to control which properties are shown as columns in the introspection tables.
 
 ## `JSON` tags
-In Steampipe, these are only set on resources which implement `DashboardLeafNode`. They are used to control how the resource is serialised in a SteampipeSnapshot
-where they appear under the `properties` property.
+In steampipe, these are only set on resources which implement `DashboardLeafNode` (and `Control`. They are used to add _resource specific_ properties to a SteampipeSnapshot
+where they appear under the `properties` property. NOTE: teh HclResourceImple class currently has empty JSON tags for all properties to avoid including them in the snapshot
 
-In Powerpipe, the json tags are required for all resources which may be  
+```
+    Resource modconfig.DashboardLeafNode     `json:"properties,omitempty"
+    Control *modconfig.Control               `json:"properties,omitempty"`
+```
 
-NOTE: `HclResourceImpl` has empty json tags for all properties, to avoid them being serialised in the snapshot. 
-
+DashboardLeafNode is implemented by all resources which are leaf nodes in the dashboard tree.
+Benchmark
+Control
+Dashboard
+DashboardCard
+DashboardChart
+DashboardContainer
+DashboardEdge
+DashboardFlow
+DashboardGraph
+DashboardHierarchy
+DashboardImage
+DashboardInput
+DashboardNode
+DashboardTable
+DashboardText
+DashboardWith
