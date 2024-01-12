@@ -3,6 +3,7 @@ package display
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
+	"strings"
 )
 
 type PrintableHclResource[T modconfig.HclResource] struct {
@@ -51,8 +52,32 @@ func (p PrintableHclResource[T]) GetTable() (printers.Table, error) {
 			columnsDefs = append(columnsDefs, itemColumns...)
 		}
 
+		// strip tabs and newlines
+		cleanRow(row)
+
+		//cleanRow := p.Sanitizer.SanitizeTableRow(row)
 		tableRows = append(tableRows, row)
 	}
 
 	return printers.NewTable(tableRows, columnsDefs), nil
+}
+
+func cleanRow(row printers.TableRow) {
+	var charsToRemove = []string{"\t", "\n", "\r"}
+	for i, c := range row.Cells {
+		str, ok := c.(string)
+		if !ok {
+			continue
+		}
+
+		for _, r := range charsToRemove {
+			str = strings.ReplaceAll(str, r, "")
+		}
+		// TODO tactical column width to 100
+		const maxWidth = 100
+		if len(str) > maxWidth {
+			str = str[:maxWidth] + "…"
+		}
+		row.Cells[i] = str
+	}
 }
