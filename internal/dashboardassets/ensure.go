@@ -38,7 +38,7 @@ func Ensure(ctx context.Context) error {
 	// if we are running in development, we don't need to download assets
 	// let's just make sure that the assets exist at all (error out if not)
 	if localcmdconfig.IsLocal() {
-		if err := verifyAssetsExist(); err != nil {
+		if err := verifyAssetsExist(ctx); err != nil {
 			return sperr.New("during development, dashboard assets must be present when running powerpipe dashboard")
 		}
 		return nil
@@ -68,13 +68,13 @@ func Ensure(ctx context.Context) error {
 	return nil
 }
 
-func verifyAssetsExist() error {
+func verifyAssetsExist(ctx context.Context) error {
 	// verify that the assets exists
 	assetDir := filepaths.EnsureDashboardAssetsDir()
 	// list the files in the directory
-	files, err := filehelpers.ListFiles(assetDir, &filehelpers.ListOptions{
+	files, err := filehelpers.ListFilesWithContext(ctx, assetDir, &filehelpers.ListOptions{
 		Flags:      filehelpers.FilesRecursive,
-		MaxResults: 5, // a low number so that we can short circuit earlier
+		MaxResults: 5, // a low number so that ListFiles can short circuit earlier
 	})
 	if err != nil {
 		return sperr.WrapWithMessage(err, "could not read dashboard assets directory")
