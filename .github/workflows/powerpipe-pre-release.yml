@@ -29,7 +29,7 @@ jobs:
       version: ${{ steps.set_version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
@@ -150,13 +150,13 @@ jobs:
       VERSION: ${{ needs.build_assets.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
 
       - name: Checkout Pipe Fittings Components repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
