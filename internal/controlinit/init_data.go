@@ -3,18 +3,23 @@ package controlinit
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/controldisplay"
-	"github.com/turbot/powerpipe/internal/initialisation"
-
+	"github.com/spf13/viper"
 	"net/url"
 	"strings"
 
-	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/workspace"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/powerpipe/internal/controldisplay"
+	"github.com/turbot/powerpipe/internal/initialisation"
 )
+
+type CheckTarget interface {
+	*modconfig.Benchmark | *modconfig.Control
+}
 
 type InitData struct {
 	initialisation.InitData
@@ -25,7 +30,7 @@ type InitData struct {
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData(ctx context.Context) *InitData {
+func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
 	i := &InitData{
 		InitData: *initialisation.NewInitData(),
@@ -92,7 +97,9 @@ func NewInitData(ctx context.Context) *InitData {
 	i.setControlFilterClause()
 
 	// initialize
-	i.InitData.Init(ctx)
+	// pull out the type name of the command target
+	typeName := localcmdconfig.GetGenericTypeName[T]()
+	i.InitData.Init(ctx, typeName, args...)
 
 	return i
 }

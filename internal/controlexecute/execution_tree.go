@@ -2,16 +2,13 @@ package controlexecute
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"sort"
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
@@ -38,19 +35,19 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]bool
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, args ...string) (*ExecutionTree, error) {
-	if len(args) < 1 {
-		return nil, sperr.New("need at least one argument to create a check execution tree")
+func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
+	if len(targets) < 1 {
+		return nil, sperr.New("need at least one target to create a check execution tree")
 	}
 
-	// TODO STEAMPIPE ONLY
+	// TODO KAI STEAMPIPE ONLY
 	//searchPath := client.GetRequiredSessionSearchPath()
 
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
 		client:    client,
-		// TODO STEAMPIPE
+		// TODO KAI STEAMPIPE
 		SearchPath: nil, //utils.UnquoteStringArray(searchPath),
 	}
 	// if a "--where" or "--tag" parameter was passed, build a map of control names used to filter the controls to run
@@ -64,26 +61,15 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	var resolvedItem modconfig.ModTreeItem
 
 	// if only one argument is provided, add this as execution root
-	if len(args) == 1 {
-		resolvedItem, err = executionTree.getExecutionRootFromArg(args[0])
-		if err != nil {
-			return nil, err
-		}
+	if len(targets) == 1 {
+		resolvedItem = targets[0]
 	} else {
 		// for multiple items, use a root benchmark as the parent of the items
 		// this root benchmark will be converted to a ResultGroup that can be worked with
 		// this is necessary because snapshots only support a single tree item as the child of the root
-		items := []modconfig.ModTreeItem{}
-		for _, arg := range args {
-			item, err := executionTree.getExecutionRootFromArg(arg)
-			if err != nil {
-				return nil, err
-			}
-			items = append(items, item)
-		}
 
-		// create a root benchmark with `items` as it's children
-		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, items).(modconfig.ModTreeItem)
+		// create a root benchmark with `targets` as it's children
+		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
 	}
 	// build tree of result groups, starting with a synthetic 'root' node
 	executionTree.Root = NewRootResultGroup(ctx, executionTree, resolvedItem)
@@ -122,14 +108,6 @@ func (e *ExecutionTree) Execute(ctx context.Context) error {
 		e.EndTime = time.Now()
 		e.Progress.Finish(ctx)
 	}()
-
-	//// TODO should we always wait even with non custom search path?
-	//// if there is a custom search path, wait until the first connection of each plugin has loaded
-	//if customSearchPath := e.client.GetCustomSearchPath(); customSearchPath != nil {
-	//	if err := connection_sync.WaitForSearchPathSchemas(ctx, e.client, customSearchPath); err != nil {
-	//		return err
-	//	}
-	//}
 
 	// the number of goroutines parallel to start
 	var maxParallelGoRoutines int64 = constants.DefaultMaxConnections
@@ -188,49 +166,6 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 	}
 	_, ok := e.controlNameFilterMap[controlName]
 	return ok
-}
-
-// getExecutionRootFromArg resolves the arg into the execution root
-// - if the arg is a control name, the root will be the Control with that name
-// - if the arg is a benchmark name, the root will be the Benchmark with that name
-// - if the arg is a mod name, the root will be the Mod with that name
-// - if the arg is 'all' the root will be a node with all Mods as children
-func (e *ExecutionTree) getExecutionRootFromArg(arg string) (modconfig.ModTreeItem, error) {
-	// special case handling for the string "all"
-	if arg == "all" {
-		// if the arg is "all", we want to execute all _direct_ children of the Mod
-		// but NOT children which come from dependency mods
-
-		// to achieve this, use a  DirectChildrenModDecorator
-		return &DirectChildrenModDecorator{Mod: e.Workspace.Mod}, nil
-	}
-
-	// if the arg is the name of one of the workspace dependendencies, wrap it in DirectChildrenModDecorator
-	// so we only execute _its_ direct children
-	for _, mod := range e.Workspace.Mods {
-		if mod.ShortName == arg {
-			return &DirectChildrenModDecorator{Mod: mod}, nil
-		}
-	}
-
-	// what resource type is arg?
-	parsedName, err := modconfig.ParseResourceName(arg)
-	if err != nil {
-		// just log error
-		return nil, fmt.Errorf("failed to parse check argument '%s': %v", arg, err)
-	}
-
-	resource, found := e.Workspace.GetResource(parsedName)
-
-	root, ok := resource.(modconfig.ModTreeItem)
-	if !found || !ok {
-		return nil, fmt.Errorf("no resources found matching argument '%s'", arg)
-	}
-	// root item must be either a benchmark or a control
-	if !helpers.StringSliceContains([]string{schema.BlockTypeControl, schema.BlockTypeBenchmark}, root.BlockType()) {
-		return nil, fmt.Errorf("cannot execute '%s' using check, only controls and benchmarks may be run", resource.Name())
-	}
-	return root, nil
 }
 
 // Get a map of control names from the introspection table steampipe_control

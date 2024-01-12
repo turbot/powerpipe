@@ -29,7 +29,7 @@ func getInitData(ctx context.Context) *initialisation.InitData {
 	i := initialisation.NewInitData()
 	i.Workspace = w
 	i.Result.Warnings = errAndWarnings.Warnings
-	i.Init(ctx)
+	i.Init(ctx, "dashboard")
 
 	// there must be a mod-file
 	if !i.Workspace.ModfileExists() {

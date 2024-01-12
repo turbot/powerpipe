@@ -52,7 +52,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 
 	// TODO KAI HACK - just pass top level client <MISC>
 	client := r.executionTree.clients[viper.GetString(constants.ArgWorkspaceDatabase)]
-	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource.Name())
+	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)
@@ -72,7 +72,10 @@ func (r *CheckRun) Execute(ctx context.Context) {
 
 	// create a context with a DashboardEventControlHooks to report control execution progress
 	ctx = controlstatus.AddControlHooksToContext(ctx, NewDashboardEventControlHooks(r))
-	r.controlExecutionTree.Execute(ctx) //nolint:errcheck // TODO: fix this
+	if err := r.controlExecutionTree.Execute(ctx); err != nil {
+		r.SetError(ctx, err)
+		return
+	}
 
 	// set the summary on the CheckRun
 	r.Summary = r.controlExecutionTree.Root.Summary
