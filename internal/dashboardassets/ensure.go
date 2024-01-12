@@ -38,13 +38,7 @@ func Ensure(ctx context.Context) error {
 	// if we are running in development, we don't need to download assets
 	// let's just make sure that the assets exist at all (error out if not)
 	if localcmdconfig.IsLocal() {
-		// verify that the assets exists
-		// to verify, read the version file and verify that it has content
-		versionFile, err := LoadDashboardAssetVersion()
-		if err != nil {
-			return sperr.WrapWithMessage(err, "could not load dashboard assets version file")
-		}
-		if versionFile.Version == "" {
+		if err := verifyAssetsExist(); err != nil {
 			return sperr.New("during development, dashboard assets must be present when running powerpipe dashboard")
 		}
 		return nil
@@ -71,6 +65,20 @@ func Ensure(ctx context.Context) error {
 		return sperr.WrapWithMessage(err, "could not update dashboard assets version file")
 	}
 
+	return nil
+}
+
+func verifyAssetsExist() error {
+	// verify that the assets exists
+	assetDir := filepaths.EnsureDashboardAssetsDir()
+	// list the files in the directory
+	files, err := os.ReadDir(assetDir)
+	if err != nil {
+		return sperr.WrapWithMessage(err, "could not read dashboard assets directory")
+	}
+	if len(files) == 0 {
+		return sperr.New("dashboard assets directory is empty")
+	}
 	return nil
 }
 
