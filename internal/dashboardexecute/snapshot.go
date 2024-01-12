@@ -3,7 +3,6 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -25,11 +24,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	defer w.UnregisterDashboardEventHandlers()
 
 	// pull out the target dashboard
-	rootResource, ok := initData.Targets[0].(modconfig.ModTreeItem)
-	if !ok {
-		// not expected - this is a bug
-		return nil, fmt.Errorf("expected target to be a dashboard, but was %T", initData.Targets[0])
-	}
+	rootResource := initData.Targets[0]
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
 	clientMap := map[string]*db_client.DbClient{initData.Client.GetConnectionString(): initData.Client}

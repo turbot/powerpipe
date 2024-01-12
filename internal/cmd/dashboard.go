@@ -139,9 +139,8 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 
 	// print the location where the file is exported
 	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
-		fmt.Printf("\n")
-		fmt.Println(strings.Join(exportMsg, "\n"))
-		fmt.Printf("\n")
+		//nolint:forbidigo // Intentional UI output
+		fmt.Printf("\n%s\n", strings.Join(exportMsg, "\n"))
 	}
 
 }
@@ -175,6 +174,7 @@ func displaySnapshot(snapshot *steampipeconfig.SteampipeSnapshot) {
 		// just display result
 		snapshotText, err := json.MarshalIndent(snapshot, "", "  ")
 		error_helpers.FailOnError(err)
+		//nolint:forbidigo // Intentional UI output
 		fmt.Println(string(snapshotText))
 	}
 }
@@ -225,6 +225,7 @@ func publishSnapshotIfNeeded(ctx context.Context, snapshot *steampipeconfig.Stea
 		return handlePublishSnapshotError(err)
 	}
 	if viper.GetBool(constants.ArgProgress) {
+		//nolint:forbidigo // Intentional UI output
 		fmt.Println(message)
 	}
 	return nil
