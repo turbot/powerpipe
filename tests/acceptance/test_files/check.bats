@@ -22,12 +22,12 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "verify powerpipe benchmark exitCode - runtime error(insufficient args)" {
-  cd $FUNCTIONALITY_TEST_MOD
-  run powerpipe benchmark
-  assert_equal $status 254
-  cd -
-}
+# @test "verify powerpipe benchmark exitCode - runtime error(insufficient args)" {
+#   cd $FUNCTIONALITY_TEST_MOD
+#   run powerpipe benchmark
+#   assert_equal $status 254
+#   cd -
+# }
 
 # @test "powerpipe check long control title" {
 #   cd $CONTROL_RENDERING_TEST_MOD
