@@ -15,7 +15,6 @@ import (
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
-	"github.com/turbot/powerpipe/internal/db_common"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 	"log/slog"
@@ -26,7 +25,7 @@ type InitData struct {
 	WorkspaceEvents *dashboardworkspace.WorkspaceEvents
 
 	Client *db_client.DbClient
-	Result *db_common.InitResult
+	Result *InitResult
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
@@ -35,7 +34,7 @@ type InitData struct {
 
 func NewErrorInitData(err error) *InitData {
 	return &InitData{
-		Result: &db_common.InitResult{
+		Result: &InitResult{
 			ErrorAndWarnings: error_helpers.NewErrorsAndWarning(err),
 		},
 	}
@@ -43,7 +42,7 @@ func NewErrorInitData(err error) *InitData {
 
 func NewInitData() *InitData {
 	i := &InitData{
-		Result:        &db_common.InitResult{},
+		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
 

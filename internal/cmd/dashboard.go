@@ -152,6 +152,10 @@ func validateDashboardArgs(ctx context.Context) error {
 		return err
 	}
 
+	if viper.IsSet(constants.ArgSearchPath) && viper.IsSet(constants.ArgSearchPathPrefix) {
+		return fmt.Errorf("only one of --search-path or --search-path-prefix may be set")
+	}
+
 	// only 1 of 'share' and 'snapshot' may be set
 	share := viper.GetBool(constants.ArgShare)
 	snapshot := viper.GetBool(constants.ArgSnapshot)

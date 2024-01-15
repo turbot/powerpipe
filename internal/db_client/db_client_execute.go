@@ -20,7 +20,7 @@ import (
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
 func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*queryresult.Result, error) {
 	// acquire a connection
-	databaseConnection, err := c.UserPool.Conn(ctx)
+	databaseConnection, err := c.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -42,14 +42,14 @@ func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*que
 	// define callback to close session when the async execution is complete
 	// TODO KAI session close  waited for pg shutdown <SESSION>
 
-	closeSessionCallback := func() { databaseConnection.Close() }
+	closeSessionCallback := func() { _ = databaseConnection.Close() }
 	return c.executeOnConnection(ctx, databaseConnection, closeSessionCallback, query, args...)
 }
 
 // execute a query against this client and wait for the result
 func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*queryresult.SyncQueryResult, error) {
 	// acquire a connection
-	dbConn, err := c.UserPool.Conn(ctx)
+	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -160,9 +160,8 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 	}()
 
 	// start query
-	var rows *sql.Rows
-	// call overridable) startQueryFunc
-	rows, err = c.startQueryFunc(ctxExecute, dbConn, query, args...)
+
+	rows, err := c.StartQuery(ctxExecute, dbConn, query, args...)
 	if err != nil {
 		return
 	}
