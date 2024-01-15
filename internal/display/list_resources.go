@@ -3,11 +3,15 @@ package display
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"golang.org/x/exp/maps"
+
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/workspace"
-	"golang.org/x/exp/maps"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 func ListResources[T modconfig.HclResource](cmd *cobra.Command) {
@@ -34,7 +38,7 @@ func ListResources[T modconfig.HclResource](cmd *cobra.Command) {
 	}
 }
 
-func ShowResource[T modconfig.HclResource](cmd *cobra.Command) {
+func ShowResource[T modconfig.HclResource](cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 
 	modLocation := viper.GetString(constants.ArgModLocation)
@@ -42,14 +46,28 @@ func ShowResource[T modconfig.HclResource](cmd *cobra.Command) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
-	dashboards := workspace.GetWorkspaceResourcesOfType[T](w)
+	typeName := localcmdconfig.GetGenericTypeName[T]()
+	// special case for variable
+	if typeName == schema.BlockTypeVariable {
+		// variables are named var.xxxx, not variable.xxxx
+		typeName = schema.AttributeVar
+	}
+
+	targets, err := localcmdconfig.ResolveTargetArgs(args, typeName, w)
+	error_helpers.FailOnError(err)
+
+	var target T = targets[0].(T)
+	// we expect a single target - this will be enforced by cobra
+	if len(targets) != 1 {
+		error_helpers.FailOnError(sperr.New("expected a single target, got %d", len(targets)))
+	}
 
 	printer, err := GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
 	}
-	printableResource := NewPrintableHclResource[T](maps.Values(dashboards))
+	printableResource := NewPrintableHclResource[T]([]T{target})
 
 	err = printer.PrintResource(ctx, printableResource, cmd.OutOrStdout())
 	if err != nil {
