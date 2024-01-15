@@ -14,6 +14,10 @@ func getUseableConnectionString(driver string, connString string) string {
 	connString = strings.TrimPrefix(connString, "sqlite3://")
 	connString = strings.TrimPrefix(connString, "sqlite://")
 
+	// using this to remove the duckdb:// prefix from the connection string
+	// this is necessary because the duckdb driver doesn't recognize the duckdb:// prefix
+	connString = strings.TrimPrefix(connString, "duckdb://")
+
 	// case for mysql connection strings
 	connString = strings.TrimPrefix(connString, "mysql://")
 	return connString
@@ -23,5 +27,6 @@ func IsConnectionString(connString string) bool {
 	isPostgres := backend.IsPostgresConnectionString(connString)
 	isSqlite := backend.IsSqliteConnectionString(connString)
 	isMysql := backend.IsMySqlConnectionString(connString)
-	return isPostgres || isSqlite || isMysql
+	isDuckdb := backend.IsDuckDBConnectionString(connString)
+	return isPostgres || isSqlite || isMysql || isDuckdb
 }
