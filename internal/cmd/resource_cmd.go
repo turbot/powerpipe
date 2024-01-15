@@ -50,7 +50,7 @@ func showCmd[T modconfig.HclResource]() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
 		Args:  cobra.ExactArgs(1),
-		Run:   func(cmd *cobra.Command, args []string) { display.ShowResource[*modconfig.Dashboard](cmd) },
+		Run:   func(cmd *cobra.Command, args []string) { display.ShowResource[T](cmd, args) },
 		Short: showCommandShortDescription(typeName),
 		Long:  showCommandLongDescription(typeName),
 	}
