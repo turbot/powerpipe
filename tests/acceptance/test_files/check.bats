@@ -1,30 +1,30 @@
 load "$LIB_BATS_ASSERT/load.bash"
 load "$LIB_BATS_SUPPORT/load.bash"
 
-@test "powerpipe check exitCode - no control alarms or errors" {
+@test "verify powerpipe benchmark exitCode - no control alarms or errors" {
   cd $FUNCTIONALITY_TEST_MOD
-  run powerpipe check benchmark.all_controls_ok
+  run powerpipe benchmark run all_controls_ok
   assert_equal $status 0
   cd -
 }
 
-@test "powerpipe check exitCode - with controls in error" {
+@test "verify powerpipe benchmark exitCode - with controls in error" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check benchmark.control_check_rendering_benchmark
+  run powerpipe benchmark run control_check_rendering_benchmark
   assert_equal $status 2
   cd -
 }
 
-@test "powerpipe check exitCode - with controls in error(running multiple benchmarks together)" {
+@test "verify powerpipe benchmark exitCode - with controls in error(running multiple benchmarks together)" {
   cd $FUNCTIONALITY_TEST_MOD
-  run powerpipe check benchmark.control_summary_benchmark benchmark.check_cache_benchmark
+  run powerpipe benchmark run control_summary_benchmark check_cache_benchmark
   assert_equal $status 2
   cd -
 }
 
-@test "powerpipe check exitCode - runtime error(insufficient args)" {
+@test "verify powerpipe benchmark exitCode - runtime error(insufficient args)" {
   cd $FUNCTIONALITY_TEST_MOD
-  run powerpipe check
+  run powerpipe benchmark
   assert_equal $status 254
   cd -
 }
@@ -85,23 +85,23 @@ load "$LIB_BATS_SUPPORT/load.bash"
 #   cd -
 # }
 
-@test "powerpipe check - output csv - no header" {
+@test "powerpipe control run - output csv - no header" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_mixed_results_1 --output=csv --progress=false --header=false
+  run powerpipe control run sample_control_mixed_results_1 --output=csv --progress=false --header=false
   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_check_csv_noheader.csv)"
   cd -
 }
 
-@test "powerpipe check - output csv(check tags and dimensions sorting)" {
+@test "powerpipe control run - output csv(check tags and dimensions sorting)" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_sorted_tags_and_dimensions --output=csv --progress=false
+  run powerpipe control run sample_control_sorted_tags_and_dimensions --output=csv --progress=false
   assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_check_csv_sorted_tags.csv)"
   cd -
 }
 
-@test "powerpipe check - output json" {
+@test "powerpipe control run - output json" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_mixed_results_1 --output json --progress=false --export output.json
+  run powerpipe control run sample_control_mixed_results_1 --output json --progress=false --export output.json
   output=""
   run jd "$TEST_DATA_DIR/expected_check_json.json" output.json
   echo $output
@@ -110,25 +110,25 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "powerpipe check - export csv" {
+@test "powerpipe control run - export csv" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_mixed_results_1 --export test.csv --progress=false
+  run powerpipe control run sample_control_mixed_results_1 --export test.csv --progress=false
   assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv.csv)"
   rm -f test.csv
   cd -
 }
 
-@test "powerpipe check - export csv - pipe separator" {
+@test "powerpipe control run - export csv - pipe separator" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_mixed_results_1 --export test.csv --separator="|" --progress=false
+  run powerpipe control run sample_control_mixed_results_1 --export test.csv --separator="|" --progress=false
   assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv_pipe_separator.csv)"
   rm -f test.csv
   cd -
 }
 
-@test "powerpipe check - export csv(check tags and dimensions sorting)" {
+@test "powerpipe control run - export csv(check tags and dimensions sorting)" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe check control.sample_control_sorted_tags_and_dimensions --export test.csv --progress=false
+  run powerpipe control run sample_control_sorted_tags_and_dimensions --export test.csv --progress=false
   assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv_sorted_tags.csv)"
   rm -f test.csv
   cd -
