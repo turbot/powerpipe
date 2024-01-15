@@ -40,7 +40,7 @@ jobs:
       - name: Move build artifacts
         run: |
           ls -al $GITHUB_WORKSPACE/powerpipe
-          chown -R runner:docker $GITHUB_WORKSPACE/powerpipe/dist
+          sudo chown -R runner:docker $GITHUB_WORKSPACE/powerpipe/dist
           mkdir ~/artifacts
           mv $GITHUB_WORKSPACE/powerpipe/dist/powerpipe.linux.amd64.tar.gz ~/artifacts/linux.tar.gz
           mv $GITHUB_WORKSPACE/powerpipe/dist/powerpipe.darwin.amd64.tar.gz ~/artifacts/darwin.tar.gz
