@@ -152,17 +152,25 @@ func (c *DbClient) resolveDesiredSearchPath(ctx context.Context, db *sql.DB) err
 	}
 
 	if viper.IsSet(constants.ArgSearchPathPrefix) {
-		originalSearchPath, err := c.getSearchPath(ctx, db)
+		requiredSearchPath, err := c.constructSearchPathFromPrefix(ctx, db)
 		if err != nil {
 			return err
 		}
-
-		searchPathPrefix := cleanSearchPath(viper.GetStringSlice(constants.ArgSearchPathPrefix))
-		c.requiredSearchPath = append(searchPathPrefix, originalSearchPath...)
-		return nil
+		c.requiredSearchPath = requiredSearchPath
 	}
 
 	return nil
+}
+
+func (c *DbClient) constructSearchPathFromPrefix(ctx context.Context, db *sql.DB) ([]string, error) {
+	originalSearchPath, err := c.getSearchPath(ctx, db)
+	if err != nil {
+		return nil, err
+	}
+
+	searchPathPrefix := cleanSearchPath(viper.GetStringSlice(constants.ArgSearchPathPrefix))
+	return append(searchPathPrefix, originalSearchPath...), nil
+
 }
 
 func cleanSearchPath(searchPath []string) []string {

@@ -9,7 +9,6 @@ import (
 
 type PgxConnector struct {
 	driver.Connector
-	searchPath       string
 	AfterConnectFunc func(context.Context, driver.Conn) error
 }
 
