@@ -8,7 +8,7 @@ type RowReader interface {
 	Read(columnValues []any, cols []*queryresult.ColumnDef) ([]any, error)
 }
 
-func RowReaderFactory(backend DBClientBackendType) RowReader {
+func RowReaderFactory(backend DBClientBackendType) (RowReader, error) {
 	var reader RowReader
 	switch backend {
 	case PostgresDBClientBackend:
@@ -18,9 +18,10 @@ func RowReaderFactory(backend DBClientBackendType) RowReader {
 		reader = NewMySqlRowReader()
 	case SqliteDBClientBackend:
 		reader = NewGenericSQLRowReader()
+	case DuckDBClientBackend:
+		reader = NewDuckDBRowReader()
 	default:
-		// we don't knwo which backend it is, so use the generic reader
-		reader = NewGenericSQLRowReader()
+		return nil, ErrUnknownBackend
 	}
-	return reader
+	return reader, nil
 }
