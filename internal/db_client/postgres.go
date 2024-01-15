@@ -1,4 +1,4 @@
-package db_common
+package db_client
 
 import (
 	"fmt"

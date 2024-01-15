@@ -305,6 +305,10 @@ func validateCheckArgs(ctx context.Context) error {
 		return err
 	}
 
+	if viper.IsSet(constants.ArgSearchPath) && viper.IsSet(constants.ArgSearchPathPrefix) {
+		return fmt.Errorf("only one of --search-path or --search-path-prefix may be set")
+	}
+
 	// only 1 character is allowed for '--separator'
 	if len(viper.GetString(constants.ArgSeparator)) > 1 {
 		return fmt.Errorf("'--%s' can be 1 character long at most", constants.ArgSeparator)
