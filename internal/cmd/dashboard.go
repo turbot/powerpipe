@@ -65,7 +65,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
 		// NOTE: use StringArrayFlag for ArgDashboardInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
-		AddStringArrayFlag(constants.ArgDashboardInput, nil, "Specify the value of a dashboard input").
+		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)").
 		// hidden flags that are used internally
@@ -253,7 +253,7 @@ func setExitCodeForDashboardError(err error) {
 
 func collectInputs() (map[string]interface{}, error) {
 	res := make(map[string]interface{})
-	inputArgs := viper.GetStringSlice(constants.ArgDashboardInput)
+	inputArgs := viper.GetStringSlice(constants.ArgArg)
 	for _, variableArg := range inputArgs {
 		// Value should be in the form "name=value", where value is a string
 		raw := variableArg
