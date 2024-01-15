@@ -5,7 +5,9 @@ package backend
 type DBClientBackendType int
 
 const (
-	PostgresDBClientBackend DBClientBackendType = iota
+	UnknownClientBackend DBClientBackendType = iota
+	PostgresDBClientBackend
 	MySQLDBClientBackend
 	SqliteDBClientBackend
+	DuckDBClientBackend
 )

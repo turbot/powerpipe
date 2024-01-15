@@ -52,6 +52,7 @@ require (
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/jedib0t/go-pretty/v6 v6.5.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
+	github.com/marcboeker/go-duckdb v1.5.6
 	github.com/mattn/go-sqlite3 v1.14.19
 	golang.org/x/sync v0.5.0
 	golang.org/x/text v0.14.0
