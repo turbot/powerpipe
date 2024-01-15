@@ -28,7 +28,7 @@ release-dry-run:
 		-v `pwd`/../pipe-fittings:/go/src/pipe-fittings \
 		-w /go/src/powerpipe \
 		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		--clean --skip=validate --skip=publish
+		--clean --skip-validate --skip-publish --snapshot --rm-dist
 
 
 .PHONY: release

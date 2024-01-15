@@ -32,19 +32,15 @@ jobs:
           go-version: '1.21'
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
-      - name: Run GoReleaser
-        uses: goreleaser/goreleaser-action@v5
-        with:
-          version: latest
-          args: release --clean --skip-validate --snapshot
-          workdir: powerpipe
-        env:
-          GITHUB_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
-          VERSION: $VERSION
+      - name: Build
+        run: |-
+          cd powerpipe
+          make release-dry-run
 
       - name: Move build artifacts
         run: |
           ls -al $GITHUB_WORKSPACE/powerpipe
+          sudo chown -R runner:docker $GITHUB_WORKSPACE/powerpipe/dist
           mkdir ~/artifacts
           mv $GITHUB_WORKSPACE/powerpipe/dist/powerpipe.linux.amd64.tar.gz ~/artifacts/linux.tar.gz
           mv $GITHUB_WORKSPACE/powerpipe/dist/powerpipe.darwin.amd64.tar.gz ~/artifacts/darwin.tar.gz
