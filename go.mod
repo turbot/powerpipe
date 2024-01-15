@@ -47,12 +47,12 @@ require (
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/gin-contrib/gzip v0.0.6
 	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/google/uuid v1.4.0
 	github.com/jackc/pgx/v5 v5.5.1
 	github.com/jedib0t/go-pretty/v6 v6.5.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/shirou/gopsutil v3.21.11+incompatible
 	golang.org/x/sync v0.5.0
 	golang.org/x/text v0.14.0
 )
@@ -198,6 +198,7 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/sergi/go-diff v1.2.0 // indirect
+	github.com/shirou/gopsutil v3.21.11+incompatible // indirect
 	github.com/shopspring/decimal v1.2.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/skeema/knownhosts v1.2.1 // indirect
