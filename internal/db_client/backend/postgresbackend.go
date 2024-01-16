@@ -1,6 +1,8 @@
 package backend
 
 import (
+	"context"
+	"database/sql"
 	"fmt"
 	"net/netip"
 	"strings"
@@ -12,9 +14,36 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 )
 
+type PostgresBackend struct {
+	originalConnectionString string
+	rowreader                RowReader
+}
+
+// Connect implements Backend.
+func (s *PostgresBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, error) {
+	connString := s.originalConnectionString
+	return sql.Open("postgres", connString)
+}
+
+// GetType implements Backend.
+func (s *PostgresBackend) GetType() DBClientBackendType {
+	return PostgresDBClientBackend
+}
+
+// RowReader implements Backend.
+func (s *PostgresBackend) RowReader() RowReader {
+	return s.rowreader
+}
+
+func NewPostgresBackend(ctx context.Context, connString string) Backend {
+	return &PostgresBackend{
+		rowreader: NewPgxRowReader(),
+	}
+}
+
 func NewPgxRowReader() *pgxRowReader {
 	return &pgxRowReader{
-		genericSQLRowReader: genericSQLRowReader{
+		PassThruRowReader: PassThruRowReader{
 			CellReader: pgxReadCell,
 		},
 	}
@@ -22,7 +51,7 @@ func NewPgxRowReader() *pgxRowReader {
 
 // pgxRowReader is a RowReader implementation for the pgx database/sql driver
 type pgxRowReader struct {
-	genericSQLRowReader
+	PassThruRowReader
 }
 
 func pgxReadCell(columnValue any, col *queryresult.ColumnDef) (any, error) {

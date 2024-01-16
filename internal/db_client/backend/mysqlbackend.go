@@ -1,19 +1,51 @@
 package backend
 
 import (
+	"context"
+	"database/sql"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/turbot/pipe-fittings/queryresult"
 )
 
+type MySQLBackend struct {
+	originalConnectionString string
+	rowreader                RowReader
+}
+
+// Connect implements Backend.
+func (s *MySQLBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, error) {
+	connString := s.originalConnectionString
+	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
+	connString = strings.TrimPrefix(connString, "mysql://")
+	return sql.Open("mysql", connString)
+}
+
+// GetType implements Backend.
+func (s *MySQLBackend) GetType() DBClientBackendType {
+	return MySQLDBClientBackend
+}
+
+// RowReader implements Backend.
+func (s *MySQLBackend) RowReader() RowReader {
+	return s.rowreader
+}
+
+func NewMySQLBackend(ctx context.Context, connString string) Backend {
+	return &MySQLBackend{
+		rowreader: NewMySqlRowReader(),
+	}
+}
+
 type mysqlRowReader struct {
-	genericSQLRowReader
+	PassThruRowReader
 }
 
 func NewMySqlRowReader() RowReader {
 	return &mysqlRowReader{
-		genericSQLRowReader: genericSQLRowReader{
+		PassThruRowReader: PassThruRowReader{
 			CellReader: mysqlReadCell,
 		},
 	}
