@@ -19,7 +19,7 @@ type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
 	Resource         modconfig.DashboardLeafNode `json:"properties,omitempty"`
-	ConnectionString string                      `json:"connection_string,omitempty"`
+	ConnectionString string                      `json:"-"`
 
 	Data         *dashboardtypes.LeafData  `json:"data,omitempty"`
 	TimingResult *queryresult.TimingResult `json:"-"`
