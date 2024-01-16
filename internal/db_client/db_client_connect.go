@@ -24,13 +24,15 @@ const (
 // getDriverNameFromConnectionString returns the driver name for the given connection string
 func getDriverNameFromConnectionString(connStr string) string {
 	if backend.IsPostgresConnectionString(connStr) {
-		return "pgx"
+		return DriverPostgres
 	} else if backend.IsSqliteConnectionString(connStr) {
-		return "sqlite3"
+		return DriverSQLite
 	} else if backend.IsMySqlConnectionString(connStr) {
-		return "mysql"
+		return DriverMySQL
+	} else if backend.IsDuckDBConnectionString(connStr) {
+		return DriverDuckDB
 	}
-	return "Unknown"
+	return DriverUnknown
 }
 
 func (c *DbClient) establishConnectionPool(ctx context.Context) error {

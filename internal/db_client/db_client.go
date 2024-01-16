@@ -37,10 +37,15 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 		return nil, err
 	}
 
+	rowReader, err := backend.RowReaderFactory(backendType)
+	if err != nil {
+		return nil, err
+	}
+
 	client := &DbClient{
 		connectionString: connectionString,
 		backend:          backendType,
-		rowReader:        backend.RowReaderFactory(backendType),
+		rowReader:        rowReader,
 	}
 
 	defer func() {
