@@ -24,7 +24,7 @@ func (s *MySQLBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, erro
 }
 
 // GetType implements Backend.
-func (s *MySQLBackend) GetType() DBClientBackendType {
+func (s *MySQLBackend) GetType() BackendType {
 	return MySQLDBClientBackend
 }
 
@@ -40,12 +40,12 @@ func NewMySQLBackend(ctx context.Context, connString string) Backend {
 }
 
 type mysqlRowReader struct {
-	PassThruRowReader
+	GenericRowReader
 }
 
 func NewMySqlRowReader() RowReader {
 	return &mysqlRowReader{
-		PassThruRowReader: PassThruRowReader{
+		GenericRowReader: GenericRowReader{
 			CellReader: mysqlReadCell,
 		},
 	}

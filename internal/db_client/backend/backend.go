@@ -15,7 +15,7 @@ type RowReader interface {
 }
 
 type Backend interface {
-	GetType() DBClientBackendType
+	GetType() BackendType
 	Connect(context.Context, ...ConnectOption) (*sql.DB, error)
 	RowReader() RowReader
 }
@@ -36,7 +36,7 @@ func FromConnectionString(ctx context.Context, str string) (Backend, error) {
 
 var ErrUnknownBackend = errors.New("unknown backend")
 
-func GetBackendFromConnectionString(ctx context.Context, connectionString string) (DBClientBackendType, error) {
+func GetBackendFromConnectionString(ctx context.Context, connectionString string) (BackendType, error) {
 	switch {
 	case IsPostgresConnectionString(connectionString):
 		return PostgresDBClientBackend, nil

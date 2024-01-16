@@ -20,7 +20,7 @@ func (s *SqliteBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, err
 }
 
 // GetType implements Backend.
-func (s *SqliteBackend) GetType() DBClientBackendType {
+func (s *SqliteBackend) GetType() BackendType {
 	return SqliteDBClientBackend
 }
 
@@ -36,12 +36,12 @@ func NewSqliteBackend(ctx context.Context, connString string) Backend {
 }
 
 type sqliteRowReader struct {
-	PassThruRowReader
+	GenericRowReader
 }
 
 func NewSqliteRowReader() *sqliteRowReader {
 	return &sqliteRowReader{
 		// use the generic row reader - there's no real difference between sqlite and generic
-		PassThruRowReader: *NewPassThruRowReader(),
+		GenericRowReader: *NewPassThruRowReader(),
 	}
 }

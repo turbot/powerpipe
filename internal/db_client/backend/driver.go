@@ -1,6 +1,6 @@
 package backend
 
-var Drivers = map[DBClientBackendType]string{
+var Drivers = map[BackendType]string{
 	PostgresDBClientBackend: "pgx",
 	DuckDBClientBackend:     "duckdb",
 	MySQLDBClientBackend:    "mysql",

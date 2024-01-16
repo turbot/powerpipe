@@ -26,7 +26,7 @@ func (s *PostgresBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, e
 }
 
 // GetType implements Backend.
-func (s *PostgresBackend) GetType() DBClientBackendType {
+func (s *PostgresBackend) GetType() BackendType {
 	return PostgresDBClientBackend
 }
 
@@ -43,7 +43,7 @@ func NewPostgresBackend(ctx context.Context, connString string) Backend {
 
 func NewPgxRowReader() *pgxRowReader {
 	return &pgxRowReader{
-		PassThruRowReader: PassThruRowReader{
+		GenericRowReader: GenericRowReader{
 			CellReader: pgxReadCell,
 		},
 	}
@@ -51,7 +51,7 @@ func NewPgxRowReader() *pgxRowReader {
 
 // pgxRowReader is a RowReader implementation for the pgx database/sql driver
 type pgxRowReader struct {
-	PassThruRowReader
+	GenericRowReader
 }
 
 func pgxReadCell(columnValue any, col *queryresult.ColumnDef) (any, error) {

@@ -20,7 +20,7 @@ func (s *DuckDBBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, err
 }
 
 // GetType implements Backend.
-func (s *DuckDBBackend) GetType() DBClientBackendType {
+func (s *DuckDBBackend) GetType() BackendType {
 	return SqliteDBClientBackend
 }
 
@@ -36,12 +36,12 @@ func NewDuckDBBackend(ctx context.Context, connString string) Backend {
 }
 
 type duckdbRowReader struct {
-	PassThruRowReader
+	GenericRowReader
 }
 
 func NewDuckDBRowReader() *duckdbRowReader {
 	return &duckdbRowReader{
 		// use the generic row reader - to start with
-		PassThruRowReader: *NewPassThruRowReader(),
+		GenericRowReader: *NewPassThruRowReader(),
 	}
 }
