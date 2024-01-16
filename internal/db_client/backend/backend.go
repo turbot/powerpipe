@@ -11,13 +11,14 @@ import (
 var ErrUnknownBackend = errors.New("unknown backend")
 
 func GetBackendFromConnectionString(ctx context.Context, connectionString string) (DBClientBackendType, error) {
-	if IsPostgresConnectionString(connectionString) {
+	switch {
+	case IsPostgresConnectionString(connectionString):
 		return PostgresDBClientBackend, nil
-	} else if IsMySqlConnectionString(connectionString) {
+	case IsMySqlConnectionString(connectionString):
 		return MySQLDBClientBackend, nil
-	} else if IsDuckDBConnectionString(connectionString) {
+	case IsDuckDBConnectionString(connectionString):
 		return DuckDBClientBackend, nil
-	} else if IsSqliteConnectionString(connectionString) {
+	case IsSqliteConnectionString(connectionString):
 		return SqliteDBClientBackend, nil
 	}
 	return UnknownClientBackend, sperr.WrapWithMessage(ErrUnknownBackend, "could not evaluate backend: %s", connectionString)
