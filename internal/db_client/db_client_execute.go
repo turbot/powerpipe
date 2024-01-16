@@ -10,8 +10,8 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/powerpipe/internal/queryresult"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )

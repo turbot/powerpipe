@@ -3,7 +3,18 @@ package display
 import (
 	"bufio"
 	"bytes"
+	"context"
+	"encoding/csv"
+	"encoding/json"
+	"fmt"
+	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/powerpipe/internal/queryresult"
+	"golang.org/x/text/language"
+	"golang.org/x/text/message"
 	"os"
+	"strings"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/jedib0t/go-pretty/v6/table"
@@ -13,6 +24,32 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 )
+
+// ShowOutput displays the output using the proper formatter as applicable
+func ShowOutput(ctx context.Context, result *queryresult.Result, opts ...DisplayOption) int {
+	rowErrors := 0
+	config := NewDisplayConfiguration()
+	for _, o := range opts {
+		o(config)
+	}
+
+	switch cmdconfig.Viper().GetString(constants.ArgOutput) {
+	case constants.OutputFormatJSON:
+		rowErrors = displayJSON(ctx, result)
+	case constants.OutputFormatCSV:
+		rowErrors = displayCSV(ctx, result)
+	case constants.OutputFormatLine:
+		rowErrors = displayLine(ctx, result)
+	case constants.OutputFormatTable:
+		rowErrors = displayTable(ctx, result)
+	}
+
+	if config.timing {
+		fmt.Println(buildTimingString(result))
+	}
+	// return the number of rows that returned errors
+	return rowErrors
+}
 
 type ShowWrappedTableOptions struct {
 	AutoMerge        bool
@@ -126,4 +163,249 @@ func getTerminalColumnsRequiredForString(str string) int {
 		}
 	}
 	return colsRequired
+}
+
+func displayLine(ctx context.Context, result *queryresult.Result) int {
+
+	maxColNameLength, rowErrors := 0, 0
+	for _, col := range result.Cols {
+		thisLength := utf8.RuneCountInString(col.Name)
+		if thisLength > maxColNameLength {
+			maxColNameLength = thisLength
+		}
+	}
+	itemIdx := 0
+
+	// define a function to display each row
+	rowFunc := func(row []interface{}, result *queryresult.Result) {
+		recordAsString, _ := ColumnValuesAsString(row, result.Cols)
+		requiredTerminalColumnsForValuesOfRecord := 0
+		for _, colValue := range recordAsString {
+			colRequired := getTerminalColumnsRequiredForString(colValue)
+			if requiredTerminalColumnsForValuesOfRecord < colRequired {
+				requiredTerminalColumnsForValuesOfRecord = colRequired
+			}
+		}
+
+		lineFormat := fmt.Sprintf("%%-%ds | %%s\n", maxColNameLength)
+		multiLineFormat := fmt.Sprintf("%%-%ds | %%-%ds", maxColNameLength, requiredTerminalColumnsForValuesOfRecord)
+
+		fmt.Printf("-[ RECORD %-2d ]%s\n", (itemIdx + 1), strings.Repeat("-", 75))
+		for idx, column := range recordAsString {
+			lines := strings.Split(column, "\n")
+			if len(lines) == 1 {
+				fmt.Printf(lineFormat, result.Cols[idx].Name, lines[0])
+			} else {
+				for lineIdx, line := range lines {
+					if lineIdx == 0 {
+						// the first line
+						fmt.Printf(multiLineFormat, result.Cols[idx].Name, line)
+					} else {
+						// next lines
+						fmt.Printf(multiLineFormat, "", line)
+					}
+
+					// is this not the last line of value?
+					if lineIdx < len(lines)-1 {
+						fmt.Printf(" +\n")
+					} else {
+						fmt.Printf("\n")
+					}
+
+				}
+			}
+		}
+		itemIdx++
+
+	}
+
+	// call this function for each row
+	if err := iterateResults(result, rowFunc); err != nil {
+		error_helpers.ShowError(ctx, err)
+		rowErrors++
+		return rowErrors
+	}
+	return rowErrors
+}
+
+func displayJSON(ctx context.Context, result *queryresult.Result) int {
+	rowErrors := 0
+	jsonOutput := make([]map[string]interface{}, 0)
+
+	// define function to add each row to the JSON output
+	rowFunc := func(row []interface{}, result *queryresult.Result) {
+		record := map[string]interface{}{}
+		for idx, col := range result.Cols {
+			value, _ := ParseJSONOutputColumnValue(row[idx], col)
+			record[col.Name] = value
+		}
+		jsonOutput = append(jsonOutput, record)
+	}
+
+	// call this function for each row
+	if err := iterateResults(result, rowFunc); err != nil {
+		error_helpers.ShowError(ctx, err)
+		rowErrors++
+		return rowErrors
+	}
+	// display the JSON
+	encoder := json.NewEncoder(os.Stdout)
+	encoder.SetIndent("", " ")
+	encoder.SetEscapeHTML(false)
+	if err := encoder.Encode(jsonOutput); err != nil {
+		fmt.Print("Error displaying result as JSON", err)
+		return 0
+	}
+	return rowErrors
+}
+
+func displayCSV(ctx context.Context, result *queryresult.Result) int {
+	rowErrors := 0
+	csvWriter := csv.NewWriter(os.Stdout)
+	csvWriter.Comma = []rune(cmdconfig.Viper().GetString(constants.ArgSeparator))[0]
+
+	if cmdconfig.Viper().GetBool(constants.ArgHeader) {
+		_ = csvWriter.Write(ColumnNames(result.Cols))
+	}
+
+	// print the data as it comes
+	// define function display each csv row
+	rowFunc := func(row []interface{}, result *queryresult.Result) {
+		rowAsString, _ := ColumnValuesAsString(row, result.Cols, WithNullString(""))
+		_ = csvWriter.Write(rowAsString)
+	}
+
+	// call this function for each row
+	if err := iterateResults(result, rowFunc); err != nil {
+		error_helpers.ShowError(ctx, err)
+		rowErrors++
+		return rowErrors
+	}
+
+	csvWriter.Flush()
+	if csvWriter.Error() != nil {
+		error_helpers.ShowErrorWithMessage(ctx, csvWriter.Error(), "unable to print csv")
+	}
+	return rowErrors
+}
+
+func displayTable(ctx context.Context, result *queryresult.Result) int {
+	rowErrors := 0
+	// the buffer to put the output data in
+	outbuf := bytes.NewBufferString("")
+
+	// the table
+	t := table.NewWriter()
+	t.SetOutputMirror(outbuf)
+	t.SetStyle(table.StyleDefault)
+	t.Style().Format.Header = text.FormatDefault
+
+	colConfigs := []table.ColumnConfig{}
+	headers := make(table.Row, len(result.Cols))
+
+	for idx, column := range result.Cols {
+		headers[idx] = column.Name
+		colConfigs = append(colConfigs, table.ColumnConfig{
+			Name:     column.Name,
+			Number:   idx + 1,
+			WidthMax: constants.MaxColumnWidth,
+		})
+	}
+
+	t.SetColumnConfigs(colConfigs)
+	if viper.GetBool(constants.ArgHeader) {
+		t.AppendHeader(headers)
+	}
+
+	// define a function to execute for each row
+	rowFunc := func(row []interface{}, result *queryresult.Result) {
+		rowAsString, _ := ColumnValuesAsString(row, result.Cols)
+		rowObj := table.Row{}
+		for _, col := range rowAsString {
+			// trim out non-displayable code-points in string
+			// exfept white-spaces
+			col = strings.Map(func(r rune) rune {
+				if unicode.IsSpace(r) || unicode.IsGraphic(r) {
+					// return if this is a white space character
+					return r
+				}
+				return -1
+			}, col)
+			rowObj = append(rowObj, col)
+		}
+		t.AppendRow(rowObj)
+	}
+
+	// iterate each row, adding each to the table
+	err := iterateResults(result, rowFunc)
+	if err != nil {
+		// display the error
+		fmt.Println()
+		error_helpers.ShowError(ctx, err)
+		rowErrors++
+		fmt.Println()
+	}
+	// write out the table to the buffer
+	t.Render()
+
+	// page out the table
+	ShowPaged(ctx, outbuf.String())
+	return rowErrors
+}
+
+type displayResultsFunc func(row []interface{}, result *queryresult.Result)
+
+// call func displayResult for each row of results
+func iterateResults(result *queryresult.Result, displayResult displayResultsFunc) error {
+	for row := range *result.RowChan {
+		if row == nil {
+			return nil
+		}
+		if row.Error != nil {
+			return row.Error
+		}
+		displayResult(row.Data, result)
+	}
+	// we will not get here
+	return nil
+}
+
+func buildTimingString(result *queryresult.Result) string {
+	timingResult := <-result.TimingResult
+	if timingResult == nil {
+		return ""
+	}
+	var sb strings.Builder
+	// large numbers should be formatted with commas
+	p := message.NewPrinter(language.English)
+
+	milliseconds := float64(timingResult.Duration.Microseconds()) / 1000
+	seconds := timingResult.Duration.Seconds()
+	if seconds < 0.5 {
+		sb.WriteString(p.Sprintf("\nTime: %dms.", int64(milliseconds)))
+	} else {
+		sb.WriteString(p.Sprintf("\nTime: %.1fs.", seconds))
+	}
+
+	if timingMetadata := timingResult.Metadata; timingMetadata != nil {
+		totalRows := timingMetadata.RowsFetched + timingMetadata.CachedRowsFetched
+		sb.WriteString(" Rows fetched: ")
+		if totalRows == 0 {
+			sb.WriteString("0")
+		} else {
+			if totalRows > 0 {
+				sb.WriteString(p.Sprintf("%d", timingMetadata.RowsFetched+timingMetadata.CachedRowsFetched))
+			}
+			if timingMetadata.CachedRowsFetched > 0 {
+				if timingMetadata.RowsFetched == 0 {
+					sb.WriteString(" (cached)")
+				} else {
+					sb.WriteString(p.Sprintf(" (%d cached)", timingMetadata.CachedRowsFetched))
+				}
+			}
+		}
+		sb.WriteString(p.Sprintf(". Hydrate calls: %d.", timingMetadata.HydrateCalls))
+	}
+
+	return sb.String()
 }

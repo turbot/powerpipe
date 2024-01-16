@@ -4,7 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/powerpipe/internal/queryresult"
 	"time"
 
 	typeHelpers "github.com/turbot/go-kit/types"

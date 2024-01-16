@@ -2,12 +2,12 @@ package controlexecute
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/queryresult"
 
 	"github.com/turbot/go-kit/helpers"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )

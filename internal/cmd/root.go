@@ -60,6 +60,7 @@ func rootCommand() *cobra.Command {
 	rootCmd.AddCommand(
 		serverCmd(),
 		modCmd(),
+		resourceCmd[*modconfig.Query](),
 		resourceCmd[*modconfig.Dashboard](),
 		resourceCmd[*modconfig.Benchmark](),
 		resourceCmd[*modconfig.Control](),

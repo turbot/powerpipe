@@ -1,7 +1,7 @@
 package dashboardtypes
 
 import (
-	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/powerpipe/internal/queryresult"
 )
 
 type LeafData struct {

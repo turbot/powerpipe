@@ -3,6 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/queryresult"
 	"log/slog"
 	"sync"
 	"time"
@@ -11,7 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/queryresult"
+
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"

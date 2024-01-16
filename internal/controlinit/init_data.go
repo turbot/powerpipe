@@ -31,24 +31,21 @@ type InitData struct {
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
 func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
-	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData{
-		InitData: *initialisation.NewInitData(),
-	}
+	typeName := localcmdconfig.GetGenericTypeName[T]()
 
 	statushooks.SetStatus(ctx, "Loading workspace")
 
-	// load the workspace
-	modLocation := viper.GetString(constants.ArgModLocation)
+	initData := initialisation.NewInitData(ctx, typeName, args...)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
-	if errAndWarnings.GetError() != nil {
-		return &InitData{
-			InitData: *initialisation.NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error())),
-		}
+	// create InitData, but do not initialize yet, since 'viper' is not completely setup
+	i := &InitData{
+		InitData: *initData,
 	}
-	i.Workspace = w
-	i.Result.AddWarnings(errAndWarnings.Warnings...)
+	if i.Result.Error != nil {
+		return i
+	}
+
+	w := i.Workspace
 	if !w.ModfileExists() {
 		i.Result.Error = workspace.ErrorNoModDefinition
 	}
@@ -95,11 +92,6 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	i.OutputFormatter = formatter
 
 	i.setControlFilterClause()
-
-	// initialize
-	// pull out the type name of the command target
-	typeName := localcmdconfig.GetGenericTypeName[T]()
-	i.InitData.Init(ctx, typeName, args...)
 
 	return i
 }

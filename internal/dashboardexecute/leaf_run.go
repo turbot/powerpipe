@@ -6,11 +6,11 @@ import (
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/queryresult"
 	"golang.org/x/exp/maps"
 )
 
