@@ -37,7 +37,7 @@ func Execute(ctx context.Context, initData *initialisation.InitData) error {
 		return err
 	}
 
-	utils.LogTime("query.execute.executeQuery start")
+	utils.LogTime("query.e¡xecute.executeQuery start")
 	defer utils.LogTime("query.execute.executeQuery end")
 
 	utils.LogTime("db.ExecuteQuery start")

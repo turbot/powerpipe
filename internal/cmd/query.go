@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -29,6 +30,9 @@ import (
 	"os"
 	"strings"
 )
+
+// variable used to assign the output mode flag
+var queryOutputMode localconstants.QueryOutputMode
 
 func queryRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -55,6 +59,10 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
+		// Define the CLI flag parameters for wrapped enum flag.
+		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.QueryOutputModeIds), ", "))).
 		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").

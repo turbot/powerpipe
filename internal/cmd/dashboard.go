@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/thediveo/enumflag/v2"
 	"os"
 	"strings"
 
@@ -29,6 +30,9 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
+
+// variable used to assign the output mode flag
+var dashboardOutputMode localconstants.DashboardOutputMode
 
 func dashboardRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -57,8 +61,10 @@ The current mod is the working directory, or the directory specified by the --mo
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		// TODO use enum
-		AddStringFlag(constants.ArgOutput, constants.OutputFormatSnapshot, "Select a console output format: none, snapshot"). // TODO KAI available options in help
+		// Define the CLI flag parameters for wrapped enum flag.
+		AddVarFlag(enumflag.New(&dashboardOutputMode, constants.ArgOutput, localconstants.DashboardOutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").

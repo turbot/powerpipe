@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/thediveo/enumflag/v2"
 	"io"
 	"os"
 	"strings"
@@ -26,6 +27,9 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
+// variable used to assign the output mode flag
+var checkOutputMode localconstants.CheckOutputMode
+
 // generic command thi
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := localcmdconfig.GetGenericTypeName[T]()
@@ -47,6 +51,10 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgOutput, constants.OutputFormatText, "Output format: brief, csv, html, json, md, text, snapshot or none").
+		// Define the CLI flag parameters for wrapped enum flag.
+		AddVarFlag(enumflag.New(&checkOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.CheckOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").

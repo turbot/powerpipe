@@ -2,9 +2,7 @@ package cmd
 
 import (
 	"context"
-	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/types"
 	"os"
 
 	"github.com/mattn/go-isatty"
@@ -18,9 +16,6 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 )
-
-// variable used to assign the output mode flag
-var outputMode types.OutputMode
 
 var exitCode int
 
@@ -51,10 +46,10 @@ func rootCommand() *cobra.Command {
 		OnCmd(rootCmd).
 		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
 		AddPersistentStringFlag(constants.ArgWorkspaceDatabase, app_specific.DefaultWorkspaceDatabase, "Path to the workspace database").
-		// Define the CLI flag parameters for wrapped enum flag.
-		AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
-			constants.ArgOutput,
-			"Output format; one of: pretty, plain, yaml, json").
+		//// Define the CLI flag parameters for wrapped enum flag.
+		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
+		//	constants.ArgOutput,
+		//	"Output format; one of: pretty, plain, yaml, json").
 		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the mod")
 
 	rootCmd.AddCommand(
