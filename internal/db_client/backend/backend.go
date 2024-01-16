@@ -10,6 +10,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
+var ErrUnknownBackend = errors.New("unknown backend")
+
 type RowReader interface {
 	Read(columnValues []any, cols []*queryresult.ColumnDef) ([]any, error)
 }
@@ -32,22 +34,6 @@ func FromConnectionString(ctx context.Context, str string) (Backend, error) {
 		return NewSqliteBackend(ctx, str), nil
 	}
 	return nil, sperr.WrapWithMessage(ErrUnknownBackend, "could not evaluate backend: %s", str)
-}
-
-var ErrUnknownBackend = errors.New("unknown backend")
-
-func GetBackendFromConnectionString(ctx context.Context, connectionString string) (BackendType, error) {
-	switch {
-	case IsPostgresConnectionString(connectionString):
-		return PostgresDBClientBackend, nil
-	case IsMySqlConnectionString(connectionString):
-		return MySQLDBClientBackend, nil
-	case IsDuckDBConnectionString(connectionString):
-		return DuckDBClientBackend, nil
-	case IsSqliteConnectionString(connectionString):
-		return SqliteDBClientBackend, nil
-	}
-	return UnknownClientBackend, sperr.WrapWithMessage(ErrUnknownBackend, "could not evaluate backend: %s", connectionString)
 }
 
 // IsPostgresConnectionString returns true if the connection string is for postgres
