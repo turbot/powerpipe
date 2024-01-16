@@ -71,6 +71,7 @@ jobs:
         platform: [ubuntu-latest, macos-latest]
         test_block:
           - "check"
+          - "dashboard"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
