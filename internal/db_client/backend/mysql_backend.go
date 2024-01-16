@@ -23,11 +23,6 @@ func (s *MySQLBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, erro
 	return sql.Open("mysql", connString)
 }
 
-// GetType implements Backend.
-func (s *MySQLBackend) GetType() BackendType {
-	return MySQLDBClientBackend
-}
-
 // RowReader implements Backend.
 func (s *MySQLBackend) RowReader() RowReader {
 	return s.rowreader
@@ -35,7 +30,8 @@ func (s *MySQLBackend) RowReader() RowReader {
 
 func NewMySQLBackend(ctx context.Context, connString string) Backend {
 	return &MySQLBackend{
-		rowreader: NewMySqlRowReader(),
+		originalConnectionString: connString,
+		rowreader:                NewMySqlRowReader(),
 	}
 }
 

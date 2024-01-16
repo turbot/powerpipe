@@ -25,11 +25,6 @@ func (s *PostgresBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, e
 	return sql.Open("postgres", connString)
 }
 
-// GetType implements Backend.
-func (s *PostgresBackend) GetType() BackendType {
-	return PostgresDBClientBackend
-}
-
 // RowReader implements Backend.
 func (s *PostgresBackend) RowReader() RowReader {
 	return s.rowreader
@@ -37,7 +32,8 @@ func (s *PostgresBackend) RowReader() RowReader {
 
 func NewPostgresBackend(ctx context.Context, connString string) Backend {
 	return &PostgresBackend{
-		rowreader: NewPgxRowReader(),
+		originalConnectionString: connString,
+		rowreader:                NewPgxRowReader(),
 	}
 }
 

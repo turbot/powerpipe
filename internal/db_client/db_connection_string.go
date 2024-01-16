@@ -1,6 +1,7 @@
 package db_client
 
 import (
+	"context"
 	"strings"
 
 	"github.com/turbot/powerpipe/internal/db_client/backend"
@@ -24,9 +25,8 @@ func getUseableConnectionString(driver string, connString string) string {
 }
 
 func IsConnectionString(connString string) bool {
-	isPostgres := backend.IsPostgresConnectionString(connString)
-	isSqlite := backend.IsSqliteConnectionString(connString)
-	isMysql := backend.IsMySqlConnectionString(connString)
-	isDuckdb := backend.IsDuckDBConnectionString(connString)
-	return isPostgres || isSqlite || isMysql || isDuckdb
+	if m, err := backend.FromConnectionString(context.Background(), connString); m != nil && err == nil {
+		return true
+	}
+	return false
 }

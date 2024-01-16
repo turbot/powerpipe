@@ -19,11 +19,6 @@ func (s *SqliteBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, err
 	return sql.Open("sqlite3", connString)
 }
 
-// GetType implements Backend.
-func (s *SqliteBackend) GetType() BackendType {
-	return SqliteDBClientBackend
-}
-
 // RowReader implements Backend.
 func (s *SqliteBackend) RowReader() RowReader {
 	return s.rowreader
@@ -31,7 +26,8 @@ func (s *SqliteBackend) RowReader() RowReader {
 
 func NewSqliteBackend(ctx context.Context, connString string) Backend {
 	return &SqliteBackend{
-		rowreader: NewSqliteRowReader(),
+		originalConnectionString: connString,
+		rowreader:                NewSqliteRowReader(),
 	}
 }
 

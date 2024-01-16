@@ -19,11 +19,6 @@ func (s *DuckDBBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, err
 	return sql.Open("sqlite3", connString)
 }
 
-// GetType implements Backend.
-func (s *DuckDBBackend) GetType() BackendType {
-	return SqliteDBClientBackend
-}
-
 // RowReader implements Backend.
 func (s *DuckDBBackend) RowReader() RowReader {
 	return s.rowreader
@@ -31,7 +26,8 @@ func (s *DuckDBBackend) RowReader() RowReader {
 
 func NewDuckDBBackend(ctx context.Context, connString string) Backend {
 	return &DuckDBBackend{
-		rowreader: NewDuckDBRowReader(),
+		originalConnectionString: connString,
+		rowreader:                NewDuckDBRowReader(),
 	}
 }
 
@@ -41,7 +37,7 @@ type duckdbRowReader struct {
 
 func NewDuckDBRowReader() *duckdbRowReader {
 	return &duckdbRowReader{
-		// use the generic row reader - to start with
+		// use the generic row reader - there's no real difference between sqlite and duckdb
 		GenericRowReader: *NewPassThruRowReader(),
 	}
 }
