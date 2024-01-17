@@ -45,7 +45,7 @@ func ShowOutput(ctx context.Context, result *queryresult.Result, opts ...Display
 	}
 
 	if config.timing {
-		fmt.Println(buildTimingString(result))
+		fmt.Println(buildTimingString(result)) //nolint:forbidigo // intentional use of fmt
 	}
 	// return the number of rows that returned errors
 	return rowErrors
@@ -190,26 +190,26 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 		lineFormat := fmt.Sprintf("%%-%ds | %%s\n", maxColNameLength)
 		multiLineFormat := fmt.Sprintf("%%-%ds | %%-%ds", maxColNameLength, requiredTerminalColumnsForValuesOfRecord)
 
-		fmt.Printf("-[ RECORD %-2d ]%s\n", (itemIdx + 1), strings.Repeat("-", 75))
+		fmt.Printf("-[ RECORD %-2d ]%s\n", (itemIdx + 1), strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
 		for idx, column := range recordAsString {
 			lines := strings.Split(column, "\n")
 			if len(lines) == 1 {
-				fmt.Printf(lineFormat, result.Cols[idx].Name, lines[0])
+				fmt.Printf(lineFormat, result.Cols[idx].Name, lines[0]) //nolint:forbidigo // intentional use of fmt
 			} else {
 				for lineIdx, line := range lines {
 					if lineIdx == 0 {
 						// the first line
-						fmt.Printf(multiLineFormat, result.Cols[idx].Name, line)
+						fmt.Printf(multiLineFormat, result.Cols[idx].Name, line) //nolint:forbidigo // intentional use of fmt
 					} else {
 						// next lines
-						fmt.Printf(multiLineFormat, "", line)
+						fmt.Printf(multiLineFormat, "", line) //nolint:forbidigo // intentional use of fmt
 					}
 
 					// is this not the last line of value?
 					if lineIdx < len(lines)-1 {
-						fmt.Printf(" +\n")
+						fmt.Printf(" +\n") //nolint:forbidigo // intentional use of fmt
 					} else {
-						fmt.Printf("\n")
+						fmt.Printf("\n") //nolint:forbidigo // intentional use of fmt
 					}
 
 				}
@@ -253,7 +253,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 	encoder.SetIndent("", " ")
 	encoder.SetEscapeHTML(false)
 	if err := encoder.Encode(jsonOutput); err != nil {
-		fmt.Print("Error displaying result as JSON", err)
+		error_helpers.ShowErrorWithMessage(ctx, err, "Error displaying result as JSON")
 		return 0
 	}
 	return rowErrors
@@ -340,10 +340,10 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	err := iterateResults(result, rowFunc)
 	if err != nil {
 		// display the error
-		fmt.Println()
+		fmt.Println() //nolint:forbidigo // intentional use of fmt
 		error_helpers.ShowError(ctx, err)
 		rowErrors++
-		fmt.Println()
+		fmt.Println() //nolint:forbidigo // intentional use of fmt
 	}
 	// write out the table to the buffer
 	t.Render()

@@ -25,8 +25,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 
 	"golang.org/x/exp/maps"
-	"path"
-
 	"os"
 	"strings"
 )
@@ -217,7 +215,7 @@ func executeQuery(ctx context.Context, initData *initialisation.InitData, resolv
 		if err != nil {
 			error_helpers.FailOnErrorWithMessage(err, "failed to display result as snapshot")
 		}
-		fmt.Println(string(jsonOutput))
+		fmt.Println(string(jsonOutput)) //nolint:forbidigo // intentional use of fmt
 	default:
 		// otherwise convert the snapshot into a query result
 		result, err := snapshotToQueryResult(snap)
@@ -238,9 +236,9 @@ func executeQuery(ctx context.Context, initData *initialisation.InitData, resolv
 	error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
 	// print the location where the file is exported
 	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
-		fmt.Printf("\n")
-		fmt.Println(strings.Join(exportMsg, "\n"))
-		fmt.Printf("\n")
+		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
+		fmt.Println(strings.Join(exportMsg, "\n")) //nolint:forbidigo // intentional use of fmt
+		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
 	}
 
 	return nil
@@ -282,17 +280,17 @@ func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot) (*queryresul
 	return res, nil
 }
 
-func snapshotRequired() bool {
-	SnapshotFormatNames := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort}
-	// if a snapshot exporter is specified return true
-	for _, e := range viper.GetStringSlice(constants.ArgExport) {
-		if helpers.StringSliceContains(SnapshotFormatNames, e) || path.Ext(e) == constants.SnapshotExtension {
-			return true
-		}
-	}
-	// if share/snapshot args are set or output is snapshot, return true
-	return viper.IsSet(constants.ArgShare) ||
-		viper.IsSet(constants.ArgSnapshot) ||
-		helpers.StringSliceContains(SnapshotFormatNames, viper.GetString(constants.ArgOutput))
-
-}
+//func snapshotRequired() bool {
+//	SnapshotFormatNames := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort}
+//	// if a snapshot exporter is specified return true
+//	for _, e := range viper.GetStringSlice(constants.ArgExport) {
+//		if helpers.StringSliceContains(SnapshotFormatNames, e) || path.Ext(e) == constants.SnapshotExtension {
+//			return true
+//		}
+//	}
+//	// if share/snapshot args are set or output is snapshot, return true
+//	return viper.IsSet(constants.ArgShare) ||
+//		viper.IsSet(constants.ArgSnapshot) ||
+//		helpers.StringSliceContains(SnapshotFormatNames, viper.GetString(constants.ArgOutput))
+//
+//}
