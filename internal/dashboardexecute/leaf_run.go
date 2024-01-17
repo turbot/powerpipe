@@ -21,6 +21,7 @@ import (
 type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
+
 	Resource modconfig.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
 	Properties       map[string]any            `json:"properties,omitempty"`

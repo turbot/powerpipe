@@ -7,14 +7,13 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-// TagColumn is the tag used to specify the column name and type in the introspection tables
-const TagColumn = "column"
+const TagSnapshot = "snapshot"
 
 // SnapshotTag is a struct used to display column info in introspection tables
 type SnapshotTag string
 
 func newSnapshotTag(field reflect.StructField) *SnapshotTag {
-	columnTag, ok := field.Tag.Lookup(TagColumn)
+	columnTag, ok := field.Tag.Lookup(TagSnapshot)
 	if !ok {
 		return nil
 	}
@@ -53,7 +52,7 @@ func GetAsSnapshotPropertyMap(item any) (map[string]any, error) {
 			v = nil
 		} else {
 			v = fieldVal.Interface()
-			if val.Kind() == reflect.Struct || val.Kind() == reflect.Slice {
+			if fieldVal.Kind() == reflect.Struct {
 				var target = make(map[string]any)
 				jsonBytes, err := json.Marshal(v)
 				if err != nil {
@@ -65,6 +64,10 @@ func GetAsSnapshotPropertyMap(item any) (map[string]any, error) {
 				}
 				v = target
 			}
+			// to do kai what about slices
+			//else if  val.Kind() == reflect.Slice{
+			//
+			//}
 		}
 
 		if v != nil {
