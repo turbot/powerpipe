@@ -107,7 +107,6 @@
       "panel_type": "graph",
       "properties": {
         "categories": {},
-        "direction": null,
         "edges": [
           "dashboard_graphs.edge.chaos_cache_check_1",
           "dashboard_graphs.edge.chaos_cache_check_2"

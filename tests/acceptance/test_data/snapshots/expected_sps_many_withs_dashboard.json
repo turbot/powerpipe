@@ -119,7 +119,6 @@
       "panel_type": "graph",
       "properties": {
         "categories": {},
-        "direction": null,
         "edges": [
           "dashbaord_withs.edge.chaos_cache_check_1"
         ],
