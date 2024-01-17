@@ -5,58 +5,60 @@ import (
 )
 
 const (
-	MaxConnLifeTime = 10 * time.Minute
-	MaxConnIdleTime = 1 * time.Minute
+	DefaultMaxConnLifeTime  = 10 * time.Minute
+	DefaultMaxConnIdleTime  = 1 * time.Minute
+	DefaultMaxOpenConns     = 10
+	DefaultSearchPath       = ""
+	DefaultSearchPathPrefix = ""
 )
 
-type poolConfig struct {
-	maxConnLifeTime time.Duration
-	maxConnIdleTime time.Duration
-	maxOpenConns    int
+type PoolConfig struct {
+	MaxConnLifeTime time.Duration
+	MaxConnIdleTime time.Duration
+	MaxOpenConns    int
 }
 
-type searchPathConfig struct {
-	searchPath       string
-	searchPathPrefix string
+type SearchPathConfig struct {
+	SearchPath       string
+	SearchPathPrefix string
 }
 
-type connectconfig struct {
-	poolConfig       *poolConfig
-	searchPathConfig *searchPathConfig
+type ConnectConfig struct {
+	PoolConfig       *PoolConfig
+	SearchPathConfig *SearchPathConfig
 }
 
-func newConnectConfig(opts []ConnectOption) *connectconfig {
-	c := &connectconfig{
-		poolConfig: &poolConfig{
-			maxConnLifeTime: MaxConnLifeTime,
-			maxConnIdleTime: MaxConnIdleTime,
-			maxOpenConns:    0,
+func newConnectConfig(opts []ConnectOption) *ConnectConfig {
+	c := &ConnectConfig{
+		PoolConfig: &PoolConfig{
+			MaxConnLifeTime: DefaultMaxConnLifeTime,
+			MaxConnIdleTime: DefaultMaxConnIdleTime,
+			MaxOpenConns:    DefaultMaxOpenConns,
 		},
-		searchPathConfig: &searchPathConfig{
-			searchPath:       "",
-			searchPathPrefix: "",
+		SearchPathConfig: &SearchPathConfig{
+			SearchPath:       DefaultSearchPath,
+			SearchPathPrefix: DefaultSearchPathPrefix,
 		},
 	}
-	c.apply(opts)
+	for _, opt := range opts {
+		opt(c)
+	}
 	return c
 }
 
-type ConnectOption func(*connectconfig)
+type ConnectOption func(*ConnectConfig)
 
-func WithPoolConfig(config *poolConfig) ConnectOption {
-	return func(c *connectconfig) {
-		c.poolConfig = config
+func WithPoolConfig(config *PoolConfig) ConnectOption {
+	return func(c *ConnectConfig) {
+		c.PoolConfig = config
 	}
 }
 
-func WithSearchPathConfig(config *searchPathConfig) ConnectOption {
-	return func(c *connectconfig) {
-		c.searchPathConfig = config
-	}
-}
-
-func (c *connectconfig) apply(opts []ConnectOption) {
-	for _, opt := range opts {
-		opt(c)
+// WithSearchPathConfig sets the search path to use when connecting to the database.
+// If a prefix is also set, the search path will be resolved to the first matching
+// schema in the search path. Only applies if the backend is postgres
+func WithSearchPathConfig(config *SearchPathConfig) ConnectOption {
+	return func(c *ConnectConfig) {
+		c.SearchPathConfig = config
 	}
 }
