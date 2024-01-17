@@ -5,12 +5,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/thediveo/enumflag/v2"
 	"os"
 	"strings"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
@@ -32,7 +32,7 @@ import (
 )
 
 // variable used to assign the output mode flag
-var dashboardOutputMode localconstants.DashboardOutputMode
+var dashboardOutputMode = localconstants.DashboardOutputModeSnapshotShort
 
 func dashboardRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -174,13 +174,6 @@ func validateDashboardArgs(ctx context.Context) error {
 	snapshot := viper.GetBool(constants.ArgSnapshot)
 	if share && snapshot {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
-	}
-
-	// TODO use enum for output
-	validOutputFormats := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort, constants.OutputFormatNone}
-	output := viper.GetString(constants.ArgOutput)
-	if !helpers.StringSliceContains(validOutputFormats, output) {
-		return fmt.Errorf("invalid output format: '%s', must be one of [%s]", output, strings.Join(validOutputFormats, ", "))
 	}
 
 	return nil

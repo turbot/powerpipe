@@ -32,7 +32,7 @@ import (
 )
 
 // variable used to assign the output mode flag
-var queryOutputMode localconstants.QueryOutputMode
+var queryOutputMode = localconstants.QueryOutputModeSnapshot
 
 func queryRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -53,8 +53,6 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a query session (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a query session (comma-separated)").
-		// TO DO use enum
-		AddStringFlag(constants.ArgOutput, constants.OutputFormatSnapshot, "Select a console output format: none, snapshot"). // TODO KAI available options in help
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
@@ -166,13 +164,6 @@ func validateQueryArgs(ctx context.Context) error {
 	snapshot := viper.GetBool(constants.ArgSnapshot)
 	if share && snapshot {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
-	}
-
-	// TODO use enum for output
-	validOutputFormats := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort, constants.OutputFormatNone}
-	output := viper.GetString(constants.ArgOutput)
-	if !helpers.StringSliceContains(validOutputFormats, output) {
-		return fmt.Errorf("invalid output format: '%s', must be one of [%s]", output, strings.Join(validOutputFormats, ", "))
 	}
 
 	return nil
