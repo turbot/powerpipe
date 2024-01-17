@@ -122,36 +122,38 @@ func (c *PostgresBackend) getSearchPath(ctx context.Context, db *sql.DB) ([]stri
 }
 
 // resolveDesiredSearchPath resolves the desired search path from the prefix or the custom search path
-func (c *PostgresBackend) resolveDesiredSearchPath(ctx context.Context, db *sql.DB, searchPath *SearchPathConfig) error {
-	if searchPath == nil {
-		// nothing to do here
+func (c *PostgresBackend) resolveDesiredSearchPath(ctx context.Context, db *sql.DB, cfg SearchPathConfig) error {
+	if len(cfg.SearchPath) > 0 && len(cfg.SearchPathPrefix) > 0 {
+		return sperr.WrapWithMessage(ErrInvalidConfig, "cannot specify both search_path and search_path_prefix")
+	}
+
+	if len(cfg.SearchPath) == 0 && len(cfg.SearchPathPrefix) == 0 {
 		return nil
 	}
 
-	if len(searchPath.SearchPath) > 0 {
-		c.requiredSearchPath = c.cleanSearchPath(searchPath.SearchPath)
+	if len(cfg.SearchPath) > 0 {
+		c.requiredSearchPath = c.cleanSearchPath(cfg.SearchPath)
 		return nil
 	}
 
-	if len(searchPath.SearchPathPrefix) > 0 {
-		requiredSearchPath, err := c.constructSearchPathFromPrefix(ctx, db, searchPath)
-		if err != nil {
-			return err
-		}
-		c.requiredSearchPath = requiredSearchPath
+	// must be that the SearchPathPrefix is set
+	requiredSearchPath, err := c.constructSearchPathFromPrefix(ctx, db, cfg)
+	if err != nil {
+		return err
 	}
+	c.requiredSearchPath = requiredSearchPath
 
 	return nil
 }
 
 // constructSearchPathFromPrefix constructs the search path from the prefix and the original search path
-func (c *PostgresBackend) constructSearchPathFromPrefix(ctx context.Context, db *sql.DB, searchPath *SearchPathConfig) ([]string, error) {
+func (c *PostgresBackend) constructSearchPathFromPrefix(ctx context.Context, db *sql.DB, cfg SearchPathConfig) ([]string, error) {
 	originalSearchPath, err := c.getSearchPath(ctx, db)
 	if err != nil {
 		return nil, err
 	}
 
-	searchPathPrefix := c.cleanSearchPath(searchPath.SearchPathPrefix)
+	searchPathPrefix := c.cleanSearchPath(cfg.SearchPathPrefix)
 	return append(searchPathPrefix, originalSearchPath...), nil
 }
 

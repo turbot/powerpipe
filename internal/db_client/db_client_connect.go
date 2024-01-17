@@ -20,13 +20,13 @@ func (c *DbClient) connect(ctx context.Context) error {
 	utils.LogTime("db_client.establishConnectionPool start")
 	defer utils.LogTime("db_client.establishConnectionPool end")
 
-	poolConfig := &backend.PoolConfig{
+	poolConfig := backend.PoolConfig{
 		MaxConnIdleTime: MaxConnIdleTime,
 		MaxConnLifeTime: MaxConnLifeTime,
 		MaxOpenConns:    MaxDbConnections(),
 	}
 
-	searchPathConfig := &backend.SearchPathConfig{
+	searchPathConfig := backend.SearchPathConfig{
 		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
 		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
 	}

@@ -1,6 +1,7 @@
 package backend
 
 import (
+	"errors"
 	"time"
 )
 
@@ -9,6 +10,8 @@ const (
 	DefaultMaxConnIdleTime = 1 * time.Minute
 	DefaultMaxOpenConns    = 10
 )
+
+var ErrInvalidConfig = errors.New("invalid config")
 
 type PoolConfig struct {
 	MaxConnLifeTime time.Duration
@@ -22,18 +25,18 @@ type SearchPathConfig struct {
 }
 
 type ConnectConfig struct {
-	PoolConfig       *PoolConfig
-	SearchPathConfig *SearchPathConfig
+	PoolConfig       PoolConfig
+	SearchPathConfig SearchPathConfig
 }
 
 func newConnectConfig(opts []ConnectOption) *ConnectConfig {
 	c := &ConnectConfig{
-		PoolConfig: &PoolConfig{
+		PoolConfig: PoolConfig{
 			MaxConnLifeTime: DefaultMaxConnLifeTime,
 			MaxConnIdleTime: DefaultMaxConnIdleTime,
 			MaxOpenConns:    DefaultMaxOpenConns,
 		},
-		SearchPathConfig: nil,
+		SearchPathConfig: SearchPathConfig{},
 	}
 	for _, opt := range opts {
 		opt(c)
@@ -43,7 +46,7 @@ func newConnectConfig(opts []ConnectOption) *ConnectConfig {
 
 type ConnectOption func(*ConnectConfig)
 
-func WithPoolConfig(config *PoolConfig) ConnectOption {
+func WithPoolConfig(config PoolConfig) ConnectOption {
 	return func(c *ConnectConfig) {
 		c.PoolConfig = config
 	}
@@ -52,7 +55,7 @@ func WithPoolConfig(config *PoolConfig) ConnectOption {
 // WithSearchPathConfig sets the search path to use when connecting to the database.
 // If a prefix is also set, the search path will be resolved to the first matching
 // schema in the search path. Only applies if the backend is postgres
-func WithSearchPathConfig(config *SearchPathConfig) ConnectOption {
+func WithSearchPathConfig(config SearchPathConfig) ConnectOption {
 	return func(c *ConnectConfig) {
 		c.SearchPathConfig = config
 	}
