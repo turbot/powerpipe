@@ -6,9 +6,9 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
+	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"gopkg.in/olahol/melody.v1"
 	"os"
@@ -40,7 +40,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	defer stopFn()
 
 	// initialise the workspace
-	modInitData := dashboard.InitDashboard(ctx)
+	modInitData := initialisation.NewInitData(ctx, "dashboard")
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets

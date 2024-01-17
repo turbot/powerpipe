@@ -10,6 +10,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
@@ -29,6 +30,9 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
+
+// variable used to assign the output mode flag
+var dashboardOutputMode = localconstants.DashboardOutputModeSnapshotShort
 
 func dashboardRunCmd() *cobra.Command {
 	cmd := &cobra.Command{
@@ -57,8 +61,10 @@ The current mod is the working directory, or the directory specified by the --mo
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		// DO use enum
-		AddStringFlag(constants.ArgOutput, constants.OutputFormatSnapshot, "Select a console output format: none, snapshot"). // TODO KAI available options in help
+		// Define the CLI flag parameters for wrapped enum flag.
+		AddVarFlag(enumflag.New(&dashboardOutputMode, constants.ArgOutput, localconstants.DashboardOutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
@@ -67,9 +73,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)").
-		// hidden flags that are used internally
-		AddBoolFlag(constants.ArgServiceMode, false, "Hidden flag to specify whether this is starting as a service", cmdconfig.FlagOptions.Hidden())
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)")
 
 	return cmd
 }
@@ -108,7 +112,16 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := getInitData(ctx, dashboardName)
+	initData := initialisation.NewInitData(ctx, "dashboard", dashboardName)
+
+	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
+		err := initData.RegisterExporters(dashboardExporters()...)
+		error_helpers.FailOnError(err)
+
+		// validate required export formats
+		err = initData.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport))
+		error_helpers.FailOnError(err)
+	}
 
 	statushooks.Done(ctx)
 
@@ -163,12 +176,6 @@ func validateDashboardArgs(ctx context.Context) error {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
 	}
 
-	validOutputFormats := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort, constants.OutputFormatNone}
-	output := viper.GetString(constants.ArgOutput)
-	if !helpers.StringSliceContains(validOutputFormats, output) {
-		return fmt.Errorf("invalid output format: '%s', must be one of [%s]", output, strings.Join(validOutputFormats, ", "))
-	}
-
 	return nil
 }
 
@@ -181,34 +188,6 @@ func displaySnapshot(snapshot *steampipeconfig.SteampipeSnapshot) {
 		//nolint:forbidigo // Intentional UI output
 		fmt.Println(string(snapshotText))
 	}
-}
-
-func getInitData(ctx context.Context, dashboardName string) *initialisation.InitData {
-	modLocation := viper.GetString(constants.ArgModLocation)
-
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
-	if errAndWarnings.GetError() != nil {
-		return initialisation.NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
-	}
-
-	i := initialisation.NewInitData()
-	i.Workspace = w
-	i.Result.Warnings = errAndWarnings.Warnings
-	i.Init(ctx, "dashboard", dashboardName)
-
-	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		if err := i.RegisterExporters(dashboardExporters()...); err != nil {
-			i.Result.Error = err
-			return i
-		}
-		// validate required export formats
-		if err := i.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport)); err != nil {
-			i.Result.Error = err
-			return i
-		}
-	}
-
-	return i
 }
 
 func dashboardExporters() []export.Exporter {
@@ -255,6 +234,7 @@ func setExitCodeForDashboardError(err error) {
 	}
 }
 
+// gather the arg values provided with the --args flag
 func collectInputs() (map[string]interface{}, error) {
 	res := make(map[string]interface{})
 	inputArgs := viper.GetStringSlice(constants.ArgArg)

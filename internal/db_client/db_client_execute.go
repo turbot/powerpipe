@@ -4,21 +4,22 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"time"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/statushooks"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 // execute the query in the given Context
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
-func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*queryresult.Result, error) {
+func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*localqueryresult.Result, error) {
 	// acquire a connection
 	databaseConnection, err := c.db.Conn(ctx)
 	if err != nil {
@@ -47,7 +48,7 @@ func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*que
 }
 
 // execute a query against this client and wait for the result
-func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*queryresult.SyncQueryResult, error) {
+func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*localqueryresult.SyncQueryResult, error) {
 	// acquire a connection
 	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
@@ -89,9 +90,9 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 }
 
 // execute a query against this client and wait for the result
-func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (*queryresult.SyncQueryResult, error) {
+func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (*localqueryresult.SyncQueryResult, error) {
 	if query == "" {
-		return &queryresult.SyncQueryResult{}, nil
+		return &localqueryresult.SyncQueryResult{}, nil
 	}
 
 	result, err := c.executeOnConnection(ctx, dbConn, nil, query, args...)
@@ -99,7 +100,7 @@ func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn
 		return nil, error_helpers.WrapError(err)
 	}
 
-	syncResult := &queryresult.SyncQueryResult{Cols: result.Cols}
+	syncResult := &localqueryresult.SyncQueryResult{Cols: result.Cols}
 	for row := range *result.RowChan {
 		select {
 		case <-ctx.Done():
@@ -122,9 +123,9 @@ func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn
 // execute the query in the given Context using the provided DatabaseSession
 // executeOnConnection assumes no responsibility over the lifecycle of the DatabaseSession - that is the responsibility of the caller
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
-func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, onComplete func(), query string, args ...any) (res *queryresult.Result, err error) {
+func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, onComplete func(), query string, args ...any) (res *localqueryresult.Result, err error) {
 	if query == "" {
-		return queryresult.NewResult(nil), nil
+		return localqueryresult.NewResult(nil), nil
 	}
 
 	// TODO KAI be clear about which execute calls we need to call the hook for - simplify? <TIMING>
@@ -172,7 +173,7 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 	}
 	colDefs := fieldDescriptionsToColumns(colTypes, dbConn)
 
-	result := queryresult.NewResult(colDefs)
+	result := localqueryresult.NewResult(colDefs)
 
 	// read the rows in a go routine
 	go func() {
@@ -229,7 +230,7 @@ func (c *DbClient) StartQuery(ctx context.Context, dbConn *sql.Conn, query strin
 	return
 }
 
-func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *queryresult.Result, onRow, onComplete func()) {
+func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqueryresult.Result, onRow, onComplete func()) {
 	// defer this, so that these get cleaned up even if there is an unforeseen error
 	defer func() {
 		// we are done fetching results. time for display. clear the status indication

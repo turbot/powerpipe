@@ -2,6 +2,7 @@ package dashboardtypes
 
 import (
 	"github.com/turbot/pipe-fittings/queryresult"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 )
 
 type LeafData struct {
@@ -9,7 +10,7 @@ type LeafData struct {
 	Rows    []map[string]interface{} `json:"rows"`
 }
 
-func NewLeafData(result *queryresult.SyncQueryResult) *LeafData {
+func NewLeafData(result *localqueryresult.SyncQueryResult) *LeafData {
 	leafData := &LeafData{
 		Rows:    make([]map[string]interface{}, len(result.Rows)),
 		Columns: result.Cols,
@@ -17,7 +18,7 @@ func NewLeafData(result *queryresult.SyncQueryResult) *LeafData {
 
 	for rowIdx, row := range result.Rows {
 		rowData := make(map[string]interface{}, len(result.Cols))
-		for i, data := range row.(*queryresult.RowResult).Data {
+		for i, data := range row.(*localqueryresult.RowResult).Data {
 			columnName := leafData.Columns[i].Name
 			rowData[columnName] = data
 		}

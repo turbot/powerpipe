@@ -40,14 +40,12 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		return nil, sperr.New("need at least one target to create a check execution tree")
 	}
 
-	// TODO KAI STEAMPIPE ONLY
-	//searchPath := client.GetRequiredSessionSearchPath()
-
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
 		client:    client,
-		// TODO KAI STEAMPIPE
+		// TODO KAI
+		// populate from client
 		SearchPath: nil, //utils.UnquoteStringArray(searchPath),
 	}
 	// if a "--where" or "--tag" parameter was passed, build a map of control names used to filter the controls to run

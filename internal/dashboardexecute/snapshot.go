@@ -23,7 +23,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	// clear event handlers again in case another snapshot will be generated in this run
 	defer w.UnregisterDashboardEventHandlers()
 
-	// pull out the target dashboard
+	// pull out the target resource
 	rootResource := initData.Targets[0]
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false

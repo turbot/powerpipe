@@ -16,7 +16,7 @@ require (
 	github.com/go-playground/validator/v10 v10.16.0
 	github.com/hashicorp/go-hclog v1.6.1 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
-	github.com/hashicorp/hcl/v2 v2.19.1 // indirect
+	github.com/hashicorp/hcl/v2 v2.19.1
 	github.com/jackc/pgconn v1.14.1 // indirect
 	github.com/karrick/gows v0.3.0
 	github.com/mattn/go-isatty v0.0.20

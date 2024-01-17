@@ -2,6 +2,7 @@ package initialisation
 
 import (
 	"context"
+	"fmt"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -40,11 +41,22 @@ func NewErrorInitData(err error) *InitData {
 	}
 }
 
-func NewInitData() *InitData {
+func NewInitData(ctx context.Context, targetType string, targetNames ...string) *InitData {
+	modLocation := viper.GetString(constants.ArgModLocation)
+
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
+	if errAndWarnings.GetError() != nil {
+		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+	}
+
 	i := &InitData{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
+
+	i.Workspace = w
+	i.Result.Warnings = errAndWarnings.Warnings
+	i.Init(ctx, targetType, targetNames...)
 
 	return i
 }

@@ -26,7 +26,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-// generic command thi
+// generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := localcmdconfig.GetGenericTypeName[T]()
 	cmd := &cobra.Command{
