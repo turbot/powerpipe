@@ -35,6 +35,13 @@ func FromConnectionString(ctx context.Context, str string) (Backend, error) {
 	return nil, sperr.WrapWithMessage(ErrUnknownBackend, "could not evaluate backend: %s", str)
 }
 
+func HasBackend(connString string) bool {
+	if m, err := FromConnectionString(context.Background(), connString); m != nil && err == nil {
+		return true
+	}
+	return false
+}
+
 // IsPostgresConnectionString returns true if the connection string is for postgres
 // looks for the postgresql:// or postgres:// prefix
 func IsPostgresConnectionString(connString string) bool {

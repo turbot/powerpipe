@@ -8,7 +8,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
@@ -24,7 +24,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	var cloudMetadata *steampipeconfig.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
-	workspaceDatabaseIsConnectionString := db_client.IsConnectionString(workspaceDatabase)
+	workspaceDatabaseIsConnectionString := backend.HasBackend(workspaceDatabase)
 	if !workspaceDatabaseIsConnectionString {
 		// it must be a database name - verify the cloud token was provided
 		cloudToken := viper.GetString(constants.ArgCloudToken)

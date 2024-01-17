@@ -20,10 +20,6 @@ type DbClient struct {
 
 	// TODO KAI new hook <TIMING>
 	BeforeExecuteHook func(context.Context, *sql.Conn) error
-
-	// if a custom search path or a prefix is used, store the resolved search path
-	// NOTE: only applies to postgres backend
-	requiredSearchPath []string
 }
 
 func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err error) {
@@ -47,7 +43,7 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 		}
 	}()
 
-	if err := client.establishConnectionPool(ctx); err != nil {
+	if err := client.connect(ctx); err != nil {
 		return nil, err
 	}
 
