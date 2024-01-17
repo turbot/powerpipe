@@ -59,26 +59,20 @@ func NewMySqlRowReader() RowReader {
 	}
 }
 
-func mysqlReadCell(columnValue any, col *queryresult.ColumnDef) (any, error) {
-	var result any
+func mysqlReadCell(columnValue any, col *queryresult.ColumnDef) (result any, err error) {
 	if columnValue != nil {
 		asStr := string(columnValue.([]byte))
 		switch col.DataType {
 		case "INT", "TINYINT", "SMALLINT", "MEDIUMINT", "BIGINT", "YEAR":
-			r, _ := strconv.ParseInt(asStr, 10, 64)
-			result = r
+			result, err = strconv.ParseInt(asStr, 10, 64)
 		case "DECIMAL", "NUMERIC", "FLOAT", "DOUBLE":
-			r, _ := strconv.ParseFloat(asStr, 64)
-			result = r
+			result, err = strconv.ParseFloat(asStr, 64)
 		case "DATE":
-			tim, _ := time.Parse(time.DateOnly, asStr)
-			result = tim
+			result, err = time.Parse(time.DateOnly, asStr)
 		case "TIME":
-			tim, _ := time.Parse(time.TimeOnly, asStr)
-			result = tim
+			result, err = time.Parse(time.TimeOnly, asStr)
 		case "DATETIME", "TIMESTAMP":
-			tim, _ := time.Parse(time.DateTime, asStr)
-			result = tim
+			result, err = time.Parse(time.DateTime, asStr)
 		case "BIT":
 			result = columnValue.([]byte)
 		// case "CHAR", "VARCHAR", "TEXT", "BINARY", "VARBINARY", "ENUM", "SET":
@@ -86,5 +80,5 @@ func mysqlReadCell(columnValue any, col *queryresult.ColumnDef) (any, error) {
 			result = asStr
 		}
 	}
-	return result, nil
+	return result, err
 }
