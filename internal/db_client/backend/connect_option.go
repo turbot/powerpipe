@@ -5,11 +5,9 @@ import (
 )
 
 const (
-	DefaultMaxConnLifeTime  = 10 * time.Minute
-	DefaultMaxConnIdleTime  = 1 * time.Minute
-	DefaultMaxOpenConns     = 10
-	DefaultSearchPath       = ""
-	DefaultSearchPathPrefix = ""
+	DefaultMaxConnLifeTime = 10 * time.Minute
+	DefaultMaxConnIdleTime = 1 * time.Minute
+	DefaultMaxOpenConns    = 10
 )
 
 type PoolConfig struct {
@@ -19,8 +17,8 @@ type PoolConfig struct {
 }
 
 type SearchPathConfig struct {
-	SearchPath       string
-	SearchPathPrefix string
+	SearchPath       []string
+	SearchPathPrefix []string
 }
 
 type ConnectConfig struct {
@@ -35,10 +33,7 @@ func newConnectConfig(opts []ConnectOption) *ConnectConfig {
 			MaxConnIdleTime: DefaultMaxConnIdleTime,
 			MaxOpenConns:    DefaultMaxOpenConns,
 		},
-		SearchPathConfig: &SearchPathConfig{
-			SearchPath:       DefaultSearchPath,
-			SearchPathPrefix: DefaultSearchPathPrefix,
-		},
+		SearchPathConfig: nil,
 	}
 	for _, opt := range opts {
 		opt(c)

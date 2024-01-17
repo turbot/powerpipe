@@ -45,23 +45,28 @@ func HasBackend(connString string) bool {
 // IsPostgresConnectionString returns true if the connection string is for postgres
 // looks for the postgresql:// or postgres:// prefix
 func IsPostgresConnectionString(connString string) bool {
-	return strings.HasPrefix(connString, "postgresql://") || strings.HasPrefix(connString, "postgres://")
+	for _, v := range postgresConnectionStringPrefixes {
+		if strings.HasPrefix(connString, v) {
+			return true
+		}
+	}
+	return false
 }
 
 // IsSqliteConnectionString returns true if the connection string is for sqlite
 // looks for the sqlite:// prefix
 func IsSqliteConnectionString(connString string) bool {
-	return strings.HasPrefix(connString, "sqlite://")
+	return strings.HasPrefix(connString, sqliteConnectionStringPrefix)
 }
 
 // IsDuckDBConnectionString returns true if the connection string is for duckdb
 // looks for the duckdb:// prefix
 func IsDuckDBConnectionString(connString string) bool {
-	return strings.HasPrefix(connString, "duckdb://")
+	return strings.HasPrefix(connString, duckDBConnectionStringPrefix)
 }
 
 // IsMySqlConnectionString returns true if the connection string is for mysql
 // looks for the mysql:// prefix
 func IsMySqlConnectionString(connString string) bool {
-	return strings.HasPrefix(connString, "mysql://")
+	return strings.HasPrefix(connString, mysqlConnectionStringPrefix)
 }

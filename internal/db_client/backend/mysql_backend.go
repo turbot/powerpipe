@@ -11,16 +11,25 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
+const mysqlConnectionStringPrefix = "mysql://"
+
 type MySQLBackend struct {
 	originalConnectionString string
 	rowreader                RowReader
+}
+
+func NewMySQLBackend(ctx context.Context, connString string) Backend {
+	return &MySQLBackend{
+		originalConnectionString: connString,
+		rowreader:                NewMySqlRowReader(),
+	}
 }
 
 // Connect implements Backend.
 func (s *MySQLBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
 	connString := s.originalConnectionString
 	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
-	connString = strings.TrimPrefix(connString, "mysql://")
+	connString = strings.TrimPrefix(connString, mysqlConnectionStringPrefix)
 
 	config := newConnectConfig(options)
 	db, err := sql.Open("mysql", connString)
@@ -38,20 +47,13 @@ func (s *MySQLBackend) RowReader() RowReader {
 	return s.rowreader
 }
 
-func NewMySQLBackend(ctx context.Context, connString string) Backend {
-	return &MySQLBackend{
-		originalConnectionString: connString,
-		rowreader:                NewMySqlRowReader(),
-	}
-}
-
 type mysqlRowReader struct {
-	GenericRowReader
+	BasicRowReader
 }
 
 func NewMySqlRowReader() RowReader {
 	return &mysqlRowReader{
-		GenericRowReader: GenericRowReader{
+		BasicRowReader: BasicRowReader{
 			CellReader: mysqlReadCell,
 		},
 	}

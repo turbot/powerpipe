@@ -25,12 +25,10 @@ func (c *DbClient) connect(ctx context.Context) error {
 		MaxConnLifeTime: MaxConnLifeTime,
 		MaxOpenConns:    MaxDbConnections(),
 	}
-	var searchPathConfig *backend.SearchPathConfig
-	if _, ok := c.backend.(*backend.PostgresBackend); ok {
-		searchPathConfig = &backend.SearchPathConfig{
-			SearchPath:       viper.GetString(constants.ArgSearchPath),
-			SearchPathPrefix: viper.GetString(constants.ArgSearchPathPrefix),
-		}
+
+	searchPathConfig := &backend.SearchPathConfig{
+		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
+		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
 	}
 
 	db, err := c.backend.Connect(ctx, backend.WithPoolConfig(poolConfig), backend.WithSearchPathConfig(searchPathConfig))
