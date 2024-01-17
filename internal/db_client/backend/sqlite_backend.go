@@ -4,6 +4,8 @@ import (
 	"context"
 	"database/sql"
 	"strings"
+
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 type SqliteBackend struct {
@@ -12,11 +14,20 @@ type SqliteBackend struct {
 }
 
 // Connect implements Backend.
-func (s *SqliteBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, error) {
+func (s *SqliteBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
 	connString := s.originalConnectionString
 	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
 	connString = strings.TrimPrefix(connString, "sqlite://")
-	return sql.Open("sqlite3", connString)
+
+	config := newConnectConfig(options)
+	db, err := sql.Open("sqlite3", connString)
+	if err != nil {
+		return nil, sperr.WrapWithMessage(err, "could not connect to duckdb backend")
+	}
+	db.SetConnMaxIdleTime(config.PoolConfig.MaxConnIdleTime)
+	db.SetConnMaxLifetime(config.PoolConfig.MaxConnLifeTime)
+	db.SetMaxOpenConns(config.PoolConfig.MaxOpenConns)
+	return db, nil
 }
 
 // RowReader implements Backend.

@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 type MySQLBackend struct {
@@ -16,11 +17,20 @@ type MySQLBackend struct {
 }
 
 // Connect implements Backend.
-func (s *MySQLBackend) Connect(context.Context, ...ConnectOption) (*sql.DB, error) {
+func (s *MySQLBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
 	connString := s.originalConnectionString
 	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
 	connString = strings.TrimPrefix(connString, "mysql://")
-	return sql.Open("mysql", connString)
+
+	config := newConnectConfig(options)
+	db, err := sql.Open("mysql", connString)
+	if err != nil {
+		return nil, sperr.WrapWithMessage(err, "could not connect to duckdb backend")
+	}
+	db.SetConnMaxIdleTime(config.PoolConfig.MaxConnIdleTime)
+	db.SetConnMaxLifetime(config.PoolConfig.MaxConnLifeTime)
+	db.SetMaxOpenConns(config.PoolConfig.MaxOpenConns)
+	return db, nil
 }
 
 // RowReader implements Backend.
