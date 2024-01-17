@@ -3,8 +3,9 @@ package db_client
 import (
 	"context"
 	"database/sql"
+
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 // DbClient wraps over `sql.DB` and gives an interface to the database
@@ -14,38 +15,25 @@ type DbClient struct {
 	// db handle
 	db *sql.DB
 
-	// the db backend type
-	backend backend.DBClientBackendType
-
-	// a reader which can be used to read rows from a pgx.Rows object
-	rowReader backend.RowReader
+	// the backend
+	backend backend.Backend
 
 	// TODO KAI new hook <TIMING>
 	BeforeExecuteHook func(context.Context, *sql.Conn) error
-
-	// if a custom search path or a prefix is used, store the resolved search path
-	// NOTE: only applies to postgres backend
-	requiredSearchPath []string
 }
 
 func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err error) {
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
-	backendType, err := backend.GetBackendFromConnectionString(ctx, connectionString)
-	if err != nil {
-		return nil, err
-	}
-
-	rowReader, err := backend.RowReaderFactory(backendType)
+	backend, err := backend.FromConnectionString(ctx, connectionString)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &DbClient{
 		connectionString: connectionString,
-		backend:          backendType,
-		rowReader:        rowReader,
+		backend:          backend,
 	}
 
 	defer func() {
@@ -55,7 +43,7 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 		}
 	}()
 
-	if err := client.establishConnectionPool(ctx); err != nil {
+	if err := client.connect(ctx); err != nil {
 		return nil, err
 	}
 

@@ -315,7 +315,7 @@ func (c *DbClient) readRow(rows *sql.Rows, cols []*queryresult.ColumnDef) ([]any
 	if err != nil {
 		return nil, error_helpers.WrapError(err)
 	}
-	return c.rowReader.Read(columnValues, cols)
+	return c.backend.RowReader().Read(columnValues, cols)
 }
 
 func isStreamingOutput() bool {
