@@ -1,6 +1,7 @@
 package queryresult
 
 import (
+	"github.com/turbot/pipe-fittings/queryresult"
 	"time"
 )
 
@@ -20,11 +21,11 @@ type RowResult struct {
 }
 type Result struct {
 	RowChan      *chan *RowResult
-	Cols         []*ColumnDef
+	Cols         []*queryresult.ColumnDef
 	TimingResult chan *TimingResult
 }
 
-func NewResult(cols []*ColumnDef) *Result {
+func NewResult(cols []*queryresult.ColumnDef) *Result {
 
 	rowChan := make(chan *RowResult)
 	return &Result{
@@ -51,6 +52,6 @@ func (r *Result) StreamError(err error) {
 
 type SyncQueryResult struct {
 	Rows         []interface{}
-	Cols         []*ColumnDef
+	Cols         []*queryresult.ColumnDef
 	TimingResult *TimingResult
 }

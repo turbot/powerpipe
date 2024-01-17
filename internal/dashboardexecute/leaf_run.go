@@ -6,11 +6,13 @@ import (
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/queryresult"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+
 	"golang.org/x/exp/maps"
 )
 
@@ -21,8 +23,8 @@ type LeafRun struct {
 	Resource         modconfig.DashboardLeafNode `json:"properties,omitempty"`
 	ConnectionString string                      `json:"-"`
 
-	Data         *dashboardtypes.LeafData  `json:"data,omitempty"`
-	TimingResult *queryresult.TimingResult `json:"-"`
+	Data         *dashboardtypes.LeafData       `json:"data,omitempty"`
+	TimingResult *localqueryresult.TimingResult `json:"-"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete func()

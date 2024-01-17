@@ -3,7 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"log/slog"
 	"sync"
 	"time"
@@ -12,6 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -65,7 +66,7 @@ type ControlRun struct {
 	RunErrorString string `json:"error,omitempty"`
 	runError       error
 	// the query result stream
-	queryResult *queryresult.Result
+	queryResult *localqueryresult.Result
 	rowMap      map[string]ResultRows
 	stateLock   sync.Mutex
 	doneChan    chan bool
