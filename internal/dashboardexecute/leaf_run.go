@@ -2,7 +2,6 @@ package dashboardexecute
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/dashboard"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -12,6 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/snapshot"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 
 	"golang.org/x/exp/maps"
@@ -246,7 +246,7 @@ func (r *LeafRun) populateProperties() error {
 	if r.resource == nil {
 		return nil
 	}
-	properties, err := dashboard.GetAsSnapshotPropertyMap(r.resource)
+	properties, err := snapshot.GetAsSnapshotPropertyMap(r.resource)
 	if err != nil {
 		return err
 

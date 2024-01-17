@@ -1,8 +1,10 @@
-package dashboard
+package snapshot
 
 import (
 	"encoding/json"
 	"reflect"
+
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 // TagColumn is the tag used to specify the column name and type in the introspection tables
@@ -21,7 +23,7 @@ func newSnapshotTag(field reflect.StructField) *SnapshotTag {
 	return &res
 }
 
-func GetAsSnapshotPropertyMap(item interface{}) (map[string]any, error) {
+func GetAsSnapshotPropertyMap(item any) (map[string]any, error) {
 	var res = make(map[string]any)
 
 	t := reflect.TypeOf(item)
@@ -68,6 +70,12 @@ func GetAsSnapshotPropertyMap(item interface{}) (map[string]any, error) {
 		if v != nil {
 			res[string(*snapshotTag)] = v
 		}
+	}
+
+	// tactical
+	// add in name property from HclResource
+	if hr, ok := item.(modconfig.HclResource); ok {
+		res["name"] = hr.GetShortName()
 	}
 	return res, nil
 }

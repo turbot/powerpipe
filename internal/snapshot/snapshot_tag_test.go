@@ -1,4 +1,4 @@
-package dashboard
+package snapshot
 
 import (
 	"github.com/turbot/pipe-fittings/modconfig"

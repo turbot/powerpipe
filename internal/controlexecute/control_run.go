@@ -3,6 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/powerpipe/internal/dashboard"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"log/slog"
@@ -426,7 +427,7 @@ func (r *ControlRun) populateProperties() error {
 	if r.Control == nil {
 		return nil
 	}
-	properties, err := dashboard.GetAsSnapshotPropertyMap(r.Control)
+	properties, err := snapshot.GetAsSnapshotPropertyMap(r.Control)
 	if err != nil {
 		return err
 
