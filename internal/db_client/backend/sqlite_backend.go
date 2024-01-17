@@ -11,25 +11,23 @@ import (
 const sqliteConnectionStringPrefix = "sqlite://"
 
 type SqliteBackend struct {
-	originalConnectionString string
-	rowreader                RowReader
+	connectionString string
+	rowreader        RowReader
 }
 
 func NewSqliteBackend(ctx context.Context, connString string) Backend {
+	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
+	connString = strings.TrimPrefix(connString, sqliteConnectionStringPrefix)
 	return &SqliteBackend{
-		originalConnectionString: connString,
-		rowreader:                NewSqliteRowReader(),
+		connectionString: connString,
+		rowreader:        NewSqliteRowReader(),
 	}
 }
 
 // Connect implements Backend.
 func (s *SqliteBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
-	connString := s.originalConnectionString
-	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
-	connString = strings.TrimPrefix(connString, sqliteConnectionStringPrefix)
-
 	config := newConnectConfig(options)
-	db, err := sql.Open("sqlite3", connString)
+	db, err := sql.Open("sqlite3", s.connectionString)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not connect to duckdb backend")
 	}

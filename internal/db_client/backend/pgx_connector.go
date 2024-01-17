@@ -8,6 +8,8 @@ import (
 	"github.com/jackc/pgx/v5/stdlib"
 )
 
+// PgxConnector is a wrapper around driver.Connector that allows for a callback
+// to be executed after the connection is established.
 type PgxConnector struct {
 	driver.Connector
 	AfterConnectFunc func(context.Context, driver.Conn) error

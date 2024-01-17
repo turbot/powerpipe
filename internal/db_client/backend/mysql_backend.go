@@ -14,25 +14,24 @@ import (
 const mysqlConnectionStringPrefix = "mysql://"
 
 type MySQLBackend struct {
-	originalConnectionString string
-	rowreader                RowReader
+	connectionString string
+	rowreader        RowReader
 }
 
 func NewMySQLBackend(ctx context.Context, connString string) Backend {
+	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
+	connString = strings.TrimPrefix(connString, mysqlConnectionStringPrefix)
+
 	return &MySQLBackend{
-		originalConnectionString: connString,
-		rowreader:                NewMySqlRowReader(),
+		connectionString: connString,
+		rowreader:        NewMySqlRowReader(),
 	}
 }
 
 // Connect implements Backend.
 func (s *MySQLBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
-	connString := s.originalConnectionString
-	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
-	connString = strings.TrimPrefix(connString, mysqlConnectionStringPrefix)
-
 	config := newConnectConfig(options)
-	db, err := sql.Open("mysql", connString)
+	db, err := sql.Open("mysql", s.connectionString)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not connect to duckdb backend")
 	}

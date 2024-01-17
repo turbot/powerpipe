@@ -11,25 +11,23 @@ import (
 const duckDBConnectionStringPrefix = "duckdb://"
 
 type DuckDBBackend struct {
-	originalConnectionString string
-	rowreader                RowReader
+	connectionString string
+	rowreader        RowReader
 }
 
 func NewDuckDBBackend(ctx context.Context, connString string) Backend {
+	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
+	connString = strings.TrimPrefix(connString, duckDBConnectionStringPrefix)
 	return &DuckDBBackend{
-		originalConnectionString: connString,
-		rowreader:                NewDuckDBRowReader(),
+		connectionString: connString,
+		rowreader:        NewDuckDBRowReader(),
 	}
 }
 
 // Connect implements Backend.
 func (s *DuckDBBackend) Connect(_ context.Context, options ...ConnectOption) (*sql.DB, error) {
-	connString := s.originalConnectionString
-	connString = strings.TrimSpace(connString) // remove any leading or trailing whitespace
-	connString = strings.TrimPrefix(connString, duckDBConnectionStringPrefix)
-
 	config := newConnectConfig(options)
-	db, err := sql.Open("duckdb", connString)
+	db, err := sql.Open("duckdb", s.connectionString)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not connect to duckdb backend")
 	}
