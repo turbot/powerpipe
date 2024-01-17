@@ -95,22 +95,22 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_equal "$diff" ""
 }
 
-# @test "dashboard with 'input' and test --dashboard-input arg" {
-#   # run a dashboard and shapshot the output
-#   run powerpipe dashboard run testing_dashboard_inputs --export test.sps --output none --mod-location "$FILE_PATH/test_data/mods/dashboard_inputs" --dashboard-input new_input=test
+@test "dashboard with 'input' and test --arg" {
+  # run a dashboard and shapshot the output
+  run powerpipe dashboard run testing_dashboard_inputs --export test.sps --output none --mod-location "$FILE_PATH/test_data/mods/dashboard_inputs" --arg new_input=test
 
-#   # get the patch diff between the two snapshots
-#   run jd -f patch $SNAPSHOTS_DIR/expected_sps_testing_dashboard_inputs.json test.sps
+  # get the patch diff between the two snapshots
+  run jd -f patch $SNAPSHOTS_DIR/expected_sps_testing_dashboard_inputs.json test.sps
 
-#   # run the script to evaluate the patch
-#   # returns nothing if there is no diff(except start_time, end_time & search_path)
-#   diff=$($FILE_PATH/json_patch.sh $output)
-#   echo $diff
-#   rm -f test.sps
+  # run the script to evaluate the patch
+  # returns nothing if there is no diff(except start_time, end_time & search_path)
+  diff=$($FILE_PATH/json_patch.sh $output)
+  echo $diff
+  rm -f test.sps
 
-#   # check if there is no diff returned by the script
-#   assert_equal "$diff" ""
-# }
+  # check if there is no diff returned by the script
+  assert_equal "$diff" ""
+}
 
 
 @test "dashboard input with base" {
