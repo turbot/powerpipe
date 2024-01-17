@@ -5,9 +5,9 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/db_client/backend"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 

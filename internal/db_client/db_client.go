@@ -4,8 +4,8 @@ import (
 	"context"
 	"database/sql"
 
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 // DbClient wraps over `sql.DB` and gives an interface to the database

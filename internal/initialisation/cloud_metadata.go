@@ -4,11 +4,11 @@ import (
 	"context"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/powerpipe/internal/db_client/backend"
 )
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
