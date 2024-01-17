@@ -112,6 +112,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 #   assert_equal "$diff" ""
 # }
 
+
 @test "dashboard input with base" {
   # run a dashboard and shapshot the output
   run powerpipe dashboard run resource_details --export test.sps --output none --mod-location "$FILE_PATH/test_data/mods/dashboard_inputs_with_base"
