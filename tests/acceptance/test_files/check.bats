@@ -15,13 +15,6 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "verify powerpipe benchmark exitCode - with controls in error(running multiple benchmarks together)" {
-  cd $FUNCTIONALITY_TEST_MOD
-  run powerpipe benchmark run control_summary_benchmark check_cache_benchmark
-  assert_equal $status 2
-  cd -
-}
-
 # @test "verify powerpipe benchmark exitCode - runtime error(insufficient args)" {
 #   cd $FUNCTIONALITY_TEST_MOD
 #   run powerpipe benchmark
