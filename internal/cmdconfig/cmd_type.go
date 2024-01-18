@@ -42,7 +42,7 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 		if err != nil {
 			return nil, nil, err
 		}
-		if argsValues != nil {
+		if !argsValues.Empty() {
 			queryArgsMap[targetName] = argsValues
 		}
 
@@ -119,7 +119,7 @@ func getCommandLineQueryArgs() *modconfig.QueryArgs {
 		return nil
 	}
 
-	var res = &modconfig.QueryArgs{}
+	var res = modconfig.NewQueryArgs()
 	for _, argTuple := range argTuples {
 		parts := strings.Split(argTuple, "=")
 		if len(parts) != 2 {
