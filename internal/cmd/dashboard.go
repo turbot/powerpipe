@@ -55,7 +55,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a dashboard session (comma-separated)").
 		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
-		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .spvar file containing variable values").
+		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
 		AddBoolFlag(constants.ArgProgress, true, "Display dashboard execution progress respected when a dashboard name argument is passed").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw

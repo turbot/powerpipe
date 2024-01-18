@@ -31,6 +31,7 @@ type InitData struct {
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
 	Targets           []modconfig.ModTreeItem
+	Args              map[string]*modconfig.QueryArgs
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -56,6 +57,8 @@ func NewInitData(ctx context.Context, targetType string, targetNames ...string) 
 
 	i.Workspace = w
 	i.Result.Warnings = errAndWarnings.Warnings
+
+	// now do the actual initialisation
 	i.Init(ctx, targetType, targetNames...)
 
 	return i
@@ -91,12 +94,13 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 	}
 
 	// resolve target resources
-	targets, err := cmdconfig.ResolveTargetArgs(args, targetType, i.Workspace)
+	targets, queryArgs, err := cmdconfig.ResolveTargets(args, targetType, i.Workspace)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 	i.Targets = targets
+	i.Args = queryArgs
 
 	statushooks.SetStatus(ctx, "Initializing")
 	i.WorkspaceEvents = dashboardworkspace.NewWorkspaceEvents(i.Workspace)

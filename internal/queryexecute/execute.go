@@ -16,9 +16,6 @@ func Execute(ctx context.Context, initData *initialisation.InitData) error {
 	utils.LogTime("queryexecute.Execute start")
 	defer utils.LogTime("queryexecute.Execute end")
 
-	// failures return the number of queries that failed and also the number of rows that
-	// returned errors
-
 	//t := time.Now()
 	// we expect a single query only
 	if len(initData.Targets) != 1 {

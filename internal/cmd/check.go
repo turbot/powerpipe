@@ -32,14 +32,14 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	cmd := &cobra.Command{
 		Use:              checkCmdUse(typeName),
 		TraverseChildren: true,
-		Args:             cobra.MinimumNArgs(1),
+		Args:             cobra.ExactArgs(1),
 		Run:              runCheckCmd[T],
 		Short:            checkCmdShort(typeName),
 		Long:             checkCmdLong(typeName),
 	}
 
-	cmdconfig.
-		OnCmd(cmd).
+	builder := cmdconfig.OnCmd(cmd)
+	builder.
 		AddCloudFlags().
 		AddWorkspaceDatabaseFlag().
 		AddModLocationFlag().
@@ -55,7 +55,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which controls will be run without running them").
 		AddStringSliceFlag(constants.ArgTag, nil, "Filter controls based on their tag values ('--tag key=value')").
-		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .spvar file containing variable values").
+		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV,
 		// where args passed to StringArrayFlag are not parsed and used raw
@@ -71,6 +71,10 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot")
 
+	// for control command, add --arg
+	if typeName == "control" {
+		builder.AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a control argument")
+	}
 	return cmd
 }
 
