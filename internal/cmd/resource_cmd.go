@@ -62,16 +62,13 @@ func showCmd[T modconfig.HclResource]() *cobra.Command {
 
 // determine which resource commands apply to this resource
 func getResourceCommands[T modconfig.HclResource]() []*cobra.Command {
-	var empty T
-	switch any(empty).(type) {
-	case *modconfig.Variable:
-		// variable does not have run commands
-		return []*cobra.Command{listCmd[T](), showCmd[T]()}
-	case *modconfig.Dashboard, *modconfig.Benchmark, *modconfig.Control, *modconfig.Query:
-		return []*cobra.Command{listCmd[T](), showCmd[T](), runCmd[T]()}
-	default:
-		panic(fmt.Sprintf("getResourceCommands does not support resource type: %T", any(empty)))
+	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
+
+	// only some resources support run
+	if runCommand := runCmd[T](); runCommand != nil {
+		res = append(res, runCommand)
 	}
+	return res
 }
 
 func runCmd[T modconfig.HclResource]() *cobra.Command {
