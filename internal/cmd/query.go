@@ -1,10 +1,15 @@
 package cmd
 
+import localconstants "github.com/turbot/powerpipe/internal/constants"
+
 import (
 	"context"
 	"encoding/json"
 	"errors"
 	"fmt"
+	"os"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
@@ -16,17 +21,12 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
-	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/display"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-
-	"golang.org/x/exp/maps"
-	"os"
-	"strings"
 )
 
 // variable used to assign the output mode flag
@@ -70,9 +70,6 @@ The current mod is the working directory, or the directory specified by the --mo
 func queryRun(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 
-	// there can only be a single arg - cobra will validate
-	//queryName := args[0]
-
 	var err error
 	logging.LogTime("queryRun start")
 	defer func() {
@@ -94,93 +91,13 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	//inputs, err := collectInputs()
-	//error_helpers.FailOnError(err)
-
 	initData := initialisation.NewInitData(ctx, "query", args...)
-
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
 
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
-
-	// convert the query or sql file arg into an array of executable queries - check names queries in the current workspace
-	resolvedQueries, err := initData.Workspace.GetQueriesFromArgs(args)
-	error_helpers.FailOnError(err)
-
-	// only a single query is supported - this should already be enforced by Cobra
-	if len(resolvedQueries) != 1 {
-		error_helpers.FailOnError(fmt.Errorf("only a single query is supported"))
-	}
-	q := maps.Values(resolvedQueries)[0]
-	err = executeQuery(ctx, initData, q)
-	//err = queryexecute.Execute(ctx, initData)
-	error_helpers.FailOnError(err)
-	// TODO snapshot
-	//
-	//// so a query name was specified - just call GenerateSnapshot
-	//snap, err := queryexecute.GenerateSnapshot(ctx, initData, inputs)
-	//error_helpers.FailOnError(err)
-	//// display the snapshot result (if needed)
-	//displaySnapshot(snap)
-	//
-	//// upload the snapshot (if needed)
-	//err = publishSnapshotIfNeeded(ctx, snap)
-	//if err != nil {
-	//	exitCode = constants.ExitCodeSnapshotUploadFailed
-	//	error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("failed to publish snapshot to %s", viper.GetString(constants.ArgSnapshotLocation)))
-	//}
-	//
-	//// export the result (if needed)
-	//exportArgs := viper.GetStringSlice(constants.ArgExport)
-	//exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
-	//error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
-	//
-	//// print the location where the file is exported
-	//if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
-	//	//nolint:forbidigo // Intentional UI output
-	//	fmt.Printf("\n%s\n", strings.Join(exportMsg, "\n"))
-	//}
-
-}
-
-// validate the args and extract a query name, if provided
-func validateQueryArgs(ctx context.Context) error {
-	err := localcmdconfig.ValidateSnapshotArgs(ctx)
-	if err != nil {
-		return err
-	}
-
-	if viper.IsSet(constants.ArgSearchPath) && viper.IsSet(constants.ArgSearchPathPrefix) {
-		return fmt.Errorf("only one of --search-path or --search-path-prefix may be set")
-	}
-
-	// only 1 of 'share' and 'snapshot' may be set
-	share := viper.GetBool(constants.ArgShare)
-	snapshot := viper.GetBool(constants.ArgSnapshot)
-	if share && snapshot {
-		return fmt.Errorf("only one of --share or --snapshot may be set")
-	}
-
-	return nil
-}
-
-func setExitCodeForQueryError(err error) {
-	// if exit code already set, leave as is
-	if exitCode != 0 || err == nil {
-		return
-	}
-
-	if errors.Is(err, workspace.ErrorNoModDefinition) {
-		exitCode = constants.ExitCodeNoModFile
-	} else {
-		exitCode = constants.ExitCodeUnknownErrorPanic
-	}
-}
-
-func executeQuery(ctx context.Context, initData *initialisation.InitData, resolvedQuery *modconfig.ResolvedQuery) error {
 
 	// TODO check cancellation
 	// start cancel handler to intercept interrupts and cancel the context
@@ -192,6 +109,15 @@ func executeQuery(ctx context.Context, initData *initialisation.InitData, resolv
 		error_helpers.FailOnError(err)
 	}
 
+	// if there are args, put them into viper for retrieval by the dashboard execution
+	if initData.Args != nil {
+		queryArgs, ok := initData.Args[initData.Targets[0].GetUnqualifiedName()]
+		if !ok {
+			// not expected
+			error_helpers.FailOnError(sperr.New("arguments have been provided but none found for the query"))
+		}
+		viper.Set(constants.ConfigKeyQueryArgs, queryArgs)
+	}
 	// so a dashboard name was specified - just call GenerateSnapshot
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData, nil)
 	if err != nil {
@@ -240,8 +166,40 @@ func executeQuery(ctx context.Context, initData *initialisation.InitData, resolv
 		fmt.Println(strings.Join(exportMsg, "\n")) //nolint:forbidigo // intentional use of fmt
 		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
 	}
+}
+
+// validate the args and extract a query name, if provided
+func validateQueryArgs(ctx context.Context) error {
+	err := localcmdconfig.ValidateSnapshotArgs(ctx)
+	if err != nil {
+		return err
+	}
+
+	if viper.IsSet(constants.ArgSearchPath) && viper.IsSet(constants.ArgSearchPathPrefix) {
+		return fmt.Errorf("only one of --search-path or --search-path-prefix may be set")
+	}
+
+	// only 1 of 'share' and 'snapshot' may be set
+	share := viper.GetBool(constants.ArgShare)
+	snapshot := viper.GetBool(constants.ArgSnapshot)
+	if share && snapshot {
+		return fmt.Errorf("only one of --share or --snapshot may be set")
+	}
 
 	return nil
+}
+
+func setExitCodeForQueryError(err error) {
+	// if exit code already set, leave as is
+	if exitCode != 0 || err == nil {
+		return
+	}
+
+	if errors.Is(err, workspace.ErrorNoModDefinition) {
+		exitCode = constants.ExitCodeNoModFile
+	} else {
+		exitCode = constants.ExitCodeUnknownErrorPanic
+	}
 }
 
 func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot) (*queryresult.Result, error) {
@@ -279,18 +237,3 @@ func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot) (*queryresul
 
 	return res, nil
 }
-
-//func snapshotRequired() bool {
-//	SnapshotFormatNames := []string{constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort}
-//	// if a snapshot exporter is specified return true
-//	for _, e := range viper.GetStringSlice(constants.ArgExport) {
-//		if helpers.StringSliceContains(SnapshotFormatNames, e) || path.Ext(e) == constants.SnapshotExtension {
-//			return true
-//		}
-//	}
-//	// if share/snapshot args are set or output is snapshot, return true
-//	return viper.IsSet(constants.ArgShare) ||
-//		viper.IsSet(constants.ArgSnapshot) ||
-//		helpers.StringSliceContains(SnapshotFormatNames, viper.GetString(constants.ArgOutput))
-//
-//}

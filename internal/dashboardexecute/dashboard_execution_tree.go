@@ -73,18 +73,17 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 		return NewDashboardRun(r, e, e)
 	case *modconfig.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *modconfig.Query:
-		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r)
-		// TACTICAL - set the execution tree dashboard name from the query dashboard
-		e.dashboardName = dashboard.Name()
-		if err != nil {
-			return nil, err
+	case *modconfig.Query, *modconfig.Control:
+		// look in viper for args
+		var queryArgs *modconfig.QueryArgs
+		if viper.IsSet(constants.ConfigKeyQueryArgs) {
+			queryArgs = viper.Get(constants.ConfigKeyQueryArgs).(*modconfig.QueryArgs)
 		}
-		return NewDashboardRun(dashboard, e, e)
-	case *modconfig.Control:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r)
+		dashboard, err := modconfig.NewQueryDashboard(r.(modconfig.QueryProvider), queryArgs)
+		// TACTICAL - set the execution tree dashboard name from the query dashboard
+		// TODO KAI query only???
+		e.dashboardName = dashboard.Name()
 		if err != nil {
 			return nil, err
 		}

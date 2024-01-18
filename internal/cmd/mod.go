@@ -79,7 +79,7 @@ Examples:
   # Install a version of a mod using a semver constraint
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@'^1'
 
-  # Install all mods specified in the mod.sp and their dependencies
+  # Install all mods specified in the mod.pp and their dependencies
   powerpipe mod install
 
   # Preview what powerpipw mod install will do, without actually installing anything
@@ -170,7 +170,7 @@ Example:
   # Update a mod to the latest version allowed by its current constraint
   powerpipe mod update github.com/turbot/steampipe-mod-aws-compliance
 
-  # Update all mods specified in the mod.sp and their dependencies to the latest versions that meet their constraints, and install any that are missing
+  # Update all mods specified in the mod.pp and their dependencies to the latest versions that meet their constraints, and install any that are missing
   powerpipe mod update`,
 	}
 
@@ -236,12 +236,12 @@ func modInitCmd() *cobra.Command {
 	var cmd = &cobra.Command{
 		Use:   "init",
 		Run:   runModInitCmd,
-		Short: "Initialize the current directory with a mod.sp file",
-		Long: `Initialize the current directory with a mod.sp file.
+		Short: "Initialize the current directory with a mod.pp file",
+		Long: `Initialize the current directory with a mod.pp file.
 		
 Example:
 
-  # Initialize the current directory with a mod.sp file
+  # Initialize the current directory with a mod.pp file
   powerpipe mod init`,
 	}
 

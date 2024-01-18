@@ -2,13 +2,17 @@ package cmdconfig
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/hashicorp/hcl/v2"
-	modconfig "github.com/turbot/pipe-fittings/modconfig"
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"strings"
 )
 
 // GetGenericTypeName returns lower case form of type unqualified name
@@ -18,34 +22,76 @@ func GetGenericTypeName[T any]() string {
 	return strings.ToLower(split[len(split)-1])
 }
 
-func ResolveTargetArgs(args []string, commandTargetType string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+// ResolveTargets	extracts a list of targets and (if present) query args from the command line parameters
+//   - if no resource type is specified in the name, it is added from the command type
+//   - validate the resource type specified in the name matches the command type
+//   - verify the resource exists in the workspace
+//   - if the command type is 'query', the target may be a query string rather than a resource name
+//     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
+func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Workspace) ([]modconfig.ModTreeItem, map[string]*modconfig.QueryArgs, error) {
 	var targets []modconfig.ModTreeItem
-	for _, targetName := range args {
+	var queryArgsMap = map[string]*modconfig.QueryArgs{}
+
+	for _, targetName := range cmdArgs {
+
+		// try to parse args out of the invocation (only query supported at present - control too?)
+		// for example:
+		//		query.my_query("val1","val1")
+		// 		query.my_query(my_arg1 => "test", my_arg2 => "test2")
+		targetName, argsValues, err := parse.ParseQueryInvocation(targetName)
+		if err != nil {
+			return nil, nil, err
+		}
+		if argsValues != nil {
+			queryArgsMap[targetName] = argsValues
+		}
+
 		target, err := resolveResourceName(targetName, commandTargetType, w)
 		if err != nil {
 			if commandTargetType != "query" {
-				return nil, err
+				return nil, nil, err
 			}
-			// special case handling for query - the arg may be a query string rather than a resource name
-			// if a manual query is being run (i.e. not a named query), convert into a query and add to workspace
-			// this is to allow us to use existing dashboard execution code
-			target, err = ensureSnapshotQueryResource(targetName, w)
-			if err != nil {
-				return nil, err
+
+			if commandTargetType == "query" {
+				// special case handling for query - the arg may be a query string rather than a resource name
+				// if a manual query is being run (i.e. not a named query), convert into a query and add to workspace
+				// this is to allow us to use existing dashboard execution code
+				target, err := ensureSnapshotQueryResource(targetName, w)
+				if err != nil {
+					return nil, nil, err
+				}
+				targets = append(targets, target)
 			}
 			// fall through to add target
 		}
-
 		targets = append(targets, target)
-
 	}
-	return targets, nil
+
+	// now check if any args were specified on the command line using the --arg flag
+	// if so verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
+	commandLineArgs := getCommandLineQueryArgs()
+
+	// so args were passed using --arg
+	if !commandLineArgs.Empty() {
+		// verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
+		if len(queryArgsMap) > 0 {
+			return nil, nil, sperr.New("both command line args and query invocation args are set")
+		}
+		// there must only be 1 target - this should be enforced by cobra as the only
+		// command which accept the `--arg` flag (`query run` and `control run`  accept a single argument
+		if len(targets) != 1 {
+			return nil, nil, sperr.New("'--arg' can only be used with a single target")
+		}
+
+		queryArgsMap[targets[0].GetUnqualifiedName()] = commandLineArgs
+	}
+
+	return targets, queryArgsMap, nil
 }
 
 // convert the given command line query into a query resource and add to workspace
 // this is to allow us to use existing dashboard execution code
-func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (queryProvider modconfig.ModTreeItem, err error) {
-
+func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (*modconfig.Query, error) {
 	// TODO KAI file root???
 	// build name
 	shortName := "command_line_query"
@@ -64,6 +110,28 @@ func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (qu
 	}
 	// return the new resource name
 	return q, nil
+}
+
+// build a QueryArgs from any args passed using the --args flag
+func getCommandLineQueryArgs() *modconfig.QueryArgs {
+	argTuples := viper.GetStringSlice(constants.ArgArg)
+	if argTuples == nil {
+		return nil
+	}
+
+	var res = &modconfig.QueryArgs{}
+	for _, argTuple := range argTuples {
+		parts := strings.Split(argTuple, "=")
+		if len(parts) != 2 {
+			// TODO KAI error
+			return nil
+		}
+		argName := parts[0]
+		argValue := parts[1]
+		res.ArgMap[argName] = argValue
+	}
+	return res
+
 }
 
 // resolveResourceName parses targetName to verify it is a named resource

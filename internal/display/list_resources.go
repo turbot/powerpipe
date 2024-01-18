@@ -53,7 +53,7 @@ func ShowResource[T modconfig.HclResource](cmd *cobra.Command, args []string) {
 		typeName = schema.AttributeVar
 	}
 
-	targets, err := localcmdconfig.ResolveTargetArgs(args, typeName, w)
+	targets, _, err := localcmdconfig.ResolveTargets(args, typeName, w)
 	error_helpers.FailOnError(err)
 
 	var target T = targets[0].(T)
