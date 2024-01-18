@@ -3,12 +3,19 @@ package cmd
 import (
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
+	"strings"
 )
+
+// variable used to assign the output mode flag
+var outputMode = localconstants.OutputModePretty
 
 func resourceCmd[T modconfig.HclResource]() *cobra.Command {
 	typeName := localcmdconfig.GetGenericTypeName[T]()
@@ -39,7 +46,10 @@ func listCmd[T modconfig.HclResource]() *cobra.Command {
 		Short: listCommandShortDescription(typeName),
 		Long:  listCommandLongDescription(typeName)}
 	// initialize hooks
-	cmdconfig.OnCmd(cmd)
+	cmdconfig.OnCmd(cmd).
+		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", ")))
 
 	return cmd
 }
@@ -55,7 +65,10 @@ func showCmd[T modconfig.HclResource]() *cobra.Command {
 		Long:  showCommandLongDescription(typeName),
 	}
 	// initialize hooks
-	cmdconfig.OnCmd(cmd)
+	cmdconfig.OnCmd(cmd).
+		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", ")))
 
 	return cmd
 }
