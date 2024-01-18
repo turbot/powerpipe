@@ -55,24 +55,21 @@ func rootCommand() *cobra.Command {
 	rootCmd.AddCommand(
 		serverCmd(),
 		modCmd(),
-		resourceCmd[*modconfig.Query](),
-		resourceCmd[*modconfig.Dashboard](),
 		resourceCmd[*modconfig.Benchmark](),
 		resourceCmd[*modconfig.Control](),
-		resourceCmd[*modconfig.Variable](),
-		resourceCmd[*modconfig.DashboardChart](),
+		resourceCmd[*modconfig.Dashboard](),
 		resourceCmd[*modconfig.DashboardCard](),
+		resourceCmd[*modconfig.DashboardChart](),
 		resourceCmd[*modconfig.DashboardContainer](),
-		resourceCmd[*modconfig.DashboardEdge](),
 		resourceCmd[*modconfig.DashboardFlow](),
 		resourceCmd[*modconfig.DashboardGraph](),
 		resourceCmd[*modconfig.DashboardHierarchy](),
 		resourceCmd[*modconfig.DashboardImage](),
 		resourceCmd[*modconfig.DashboardInput](),
-		resourceCmd[*modconfig.DashboardNode](),
 		resourceCmd[*modconfig.DashboardTable](),
 		resourceCmd[*modconfig.DashboardText](),
-		resourceCmd[*modconfig.DashboardWith](),
+		resourceCmd[*modconfig.Query](),
+		resourceCmd[*modconfig.Variable](),
 	)
 
 	// disable auto completion generation, since we don't want to support
