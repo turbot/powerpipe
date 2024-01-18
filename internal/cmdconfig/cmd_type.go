@@ -115,11 +115,12 @@ func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (*m
 // build a QueryArgs from any args passed using the --args flag
 func getCommandLineQueryArgs() *modconfig.QueryArgs {
 	argTuples := viper.GetStringSlice(constants.ArgArg)
+	var res = modconfig.NewQueryArgs()
+
 	if argTuples == nil {
-		return nil
+		return res
 	}
 
-	var res = modconfig.NewQueryArgs()
 	for _, argTuple := range argTuples {
 		parts := strings.Split(argTuple, "=")
 		if len(parts) != 2 {
