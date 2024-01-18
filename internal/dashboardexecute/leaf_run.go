@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"golang.org/x/exp/maps"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -11,10 +12,8 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/snapshot"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
-
-	"golang.org/x/exp/maps"
+	"github.com/turbot/powerpipe/internal/snapshot"
 )
 
 // LeafRun is a struct representing the execution of a leaf dashboard node
@@ -24,10 +23,10 @@ type LeafRun struct {
 
 	Resource modconfig.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties       map[string]any            `json:"properties,omitempty"`
-	ConnectionString string                    `json:"-"`
-	Data             *dashboardtypes.LeafData  `json:"data,omitempty"`
-	TimingResult     *queryresult.TimingResult `json:"-"`
+	Properties       map[string]any                 `json:"properties,omitempty"`
+	ConnectionString string                         `json:"-"`
+	Data             *dashboardtypes.LeafData       `json:"data,omitempty"`
+	TimingResult     *localqueryresult.TimingResult `json:"-"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete func()

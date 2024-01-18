@@ -3,9 +3,6 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/snapshot"
-	"github.com/turbot/powerpipe/internal/dashboard"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"log/slog"
 	"sync"
 	"time"
@@ -14,8 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
-	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
-
+	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -23,6 +19,8 @@ import (
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
 
