@@ -163,7 +163,8 @@ func parseOutputArg(arg string) (formatter controldisplay.Formatter, err error) 
 }
 
 func initialiseCheckColorScheme() error {
-	theme := viper.GetString(constants.ArgTheme)
+	// TODO kai remove themes and use standard color codes
+	theme := "dark"
 	if !viper.GetBool(constants.ConfigKeyIsTerminalTTY) {
 		// enforce plain output for non-terminals
 		theme = "plain"

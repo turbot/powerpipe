@@ -50,19 +50,14 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
-		AddStringFlag(constants.ArgTheme, "dark", "Set the output theme for 'text' output: light, dark or plain").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
-		AddBoolFlag(constants.ArgDryRun, false, "Show which controls will be run without running them").
-		AddStringSliceFlag(constants.ArgTag, nil, "Filter controls based on their tag values ('--tag key=value')").
 		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV,
 		// where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
-		AddStringFlag(constants.ArgWhere, "", "SQL 'where' clause, or named query, used to filter controls (cannot be used with '--tag')").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
-		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
@@ -72,9 +67,17 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot")
 
 	// for control command, add --arg
-	if typeName == "control" {
+	switch typeName {
+	case "control":
 		builder.AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a control argument")
+	case "benchmark":
+		builder.
+			AddStringFlag(constants.ArgWhere, "", "SQL 'where' clause, or named query, used to filter controls (cannot be used with '--tag')").
+			AddBoolFlag(constants.ArgDryRun, false, "Show which controls will be run without running them").
+			AddStringSliceFlag(constants.ArgTag, nil, "Filter controls based on their tag values ('--tag key=value')").
+			AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open")
 	}
+
 	return cmd
 }
 
