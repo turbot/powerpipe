@@ -3,7 +3,6 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"log/slog"
 	"sync"
 	"time"
@@ -12,8 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
-	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
-
+	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -21,6 +19,8 @@ import (
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
 
@@ -43,7 +43,10 @@ type ControlRun struct {
 	NodeType string `json:"panel_type"`
 
 	// the control being run
-	Control *modconfig.Control `json:"properties,omitempty"`
+	Control *modconfig.Control `json:"-"`
+	// this is populated by retrieving Control properties with the snapshot tag
+	Properties map[string]any `json:"properties,omitempty"`
+
 	// control summary
 	Summary   *controlstatus.StatusSummary `json:"summary"`
 	RunStatus dashboardtypes.RunStatus     `json:"status"`
@@ -73,7 +76,7 @@ type ControlRun struct {
 	attempts    int
 }
 
-func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) *ControlRun {
+func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
 	controlId := control.Name()
 
 	// only show qualified control names for controls from dependent mods
@@ -98,11 +101,16 @@ func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree
 		Tree:      executionTree,
 		RunStatus: dashboardtypes.RunInitialized,
 
-		Group:    group,
-		NodeType: schema.BlockTypeControl,
-		doneChan: make(chan bool, 1),
+		Group:      group,
+		NodeType:   schema.BlockTypeControl,
+		doneChan:   make(chan bool, 1),
+		Properties: make(map[string]any),
 	}
-	return res
+	if err := res.populateProperties(); err != nil {
+		return nil, err
+	}
+
+	return res, nil
 }
 
 // GetControlId implements ControlRunStatusProvider
@@ -411,4 +419,17 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 		// close the doneChan - we don't need it anymore
 		close(r.doneChan)
 	}
+}
+
+func (r *ControlRun) populateProperties() error {
+	if r.Control == nil {
+		return nil
+	}
+	properties, err := snapshot.GetAsSnapshotPropertyMap(r.Control)
+	if err != nil {
+		return err
+
+	}
+	r.Properties = properties
+	return nil
 }

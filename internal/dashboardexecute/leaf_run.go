@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"golang.org/x/exp/maps"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -12,19 +13,20 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
-
-	"golang.org/x/exp/maps"
+	"github.com/turbot/powerpipe/internal/snapshot"
 )
 
 // LeafRun is a struct representing the execution of a leaf dashboard node
 type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
-	Resource         modconfig.DashboardLeafNode `json:"properties,omitempty"`
-	ConnectionString string                      `json:"-"`
 
-	Data         *dashboardtypes.LeafData       `json:"data,omitempty"`
-	TimingResult *localqueryresult.TimingResult `json:"-"`
+	Resource modconfig.DashboardLeafNode `json:"-"`
+	// this is populated by retrieving Resource properties with the snapshot tag
+	Properties       map[string]any                 `json:"properties,omitempty"`
+	ConnectionString string                         `json:"-"`
+	Data             *dashboardtypes.LeafData       `json:"data,omitempty"`
+	TimingResult     *localqueryresult.TimingResult `json:"-"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete func()
@@ -39,7 +41,8 @@ func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 
 func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
 	r := &LeafRun{
-		Resource: resource,
+		Resource:   resource,
+		Properties: make(map[string]any),
 	}
 	// get the connection string from the QueryProvider
 	if qp, ok := resource.(modconfig.ConnectionStringItem); ok {
@@ -86,6 +89,9 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 	// populate the names of any withs we depend on
 	r.setRuntimeDependencies()
 
+	if err := r.populateProperties(); err != nil {
+		return nil, err
+	}
 	return r, nil
 }
 
@@ -234,4 +240,17 @@ func (r *LeafRun) combineChildData() {
 		r.Data.Rows = append(r.Data.Rows, data.Rows...)
 	}
 	r.Data.Columns = maps.Values(schemaMap)
+}
+
+func (r *LeafRun) populateProperties() error {
+	if r.resource == nil {
+		return nil
+	}
+	properties, err := snapshot.GetAsSnapshotPropertyMap(r.resource)
+	if err != nil {
+		return err
+
+	}
+	r.Properties = properties
+	return nil
 }

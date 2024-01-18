@@ -42,7 +42,7 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 		if err != nil {
 			return nil, nil, err
 		}
-		if argsValues != nil {
+		if !argsValues.Empty() {
 			queryArgsMap[targetName] = argsValues
 		}
 
@@ -115,11 +115,12 @@ func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (*m
 // build a QueryArgs from any args passed using the --args flag
 func getCommandLineQueryArgs() *modconfig.QueryArgs {
 	argTuples := viper.GetStringSlice(constants.ArgArg)
+	var res = modconfig.NewQueryArgs()
+
 	if argTuples == nil {
-		return nil
+		return res
 	}
 
-	var res = &modconfig.QueryArgs{}
 	for _, argTuple := range argTuples {
 		parts := strings.Split(argTuple, "=")
 		if len(parts) != 2 {

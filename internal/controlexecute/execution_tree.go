@@ -70,7 +70,10 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
 	}
 	// build tree of result groups, starting with a synthetic 'root' node
-	executionTree.Root = NewRootResultGroup(ctx, executionTree, resolvedItem)
+	executionTree.Root, err = NewRootResultGroup(ctx, executionTree, resolvedItem)
+	if err != nil {
+		return nil, err
+	}
 
 	// after tree has built, ControlCount will be set - create progress rendered
 	executionTree.Progress = controlstatus.NewControlProgress(len(executionTree.ControlRuns))
@@ -83,17 +86,21 @@ func (*ExecutionTree) IsExportSourceData() {}
 
 // AddControl checks whether control should be included in the tree
 // if so, creates a ControlRun, which is added to the parent group
-func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) {
+func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.ShortName) {
 		// create new ControlRun with treeItem as the parent
-		controlRun := NewControlRun(control, group, e)
+		controlRun, err := NewControlRun(control, group, e)
+		if err != nil {
+			return err
+		}
 		// add it into the group
 		group.addControl(controlRun)
 
 		// also add it into the execution tree control run list
 		e.ControlRuns = append(e.ControlRuns, controlRun)
 	}
+	return nil
 }
 
 func (e *ExecutionTree) Execute(ctx context.Context) error {

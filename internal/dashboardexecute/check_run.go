@@ -18,11 +18,9 @@ import (
 type CheckRun struct {
 	DashboardParentImpl
 
-	Summary   *controlexecute.GroupSummary `json:"summary"`
-	SessionId string                       `json:"-"`
-	// if the dashboard node is a control, serialise to json as 'properties'
-	Control *modconfig.Control               `json:"properties,omitempty"`
-	Root    controlexecute.ExecutionTreeNode `json:"-"`
+	Summary   *controlexecute.GroupSummary     `json:"summary"`
+	SessionId string                           `json:"-"`
+	Root      controlexecute.ExecutionTreeNode `json:"-"`
 
 	controlExecutionTree *controlexecute.ExecutionTree
 }
@@ -32,17 +30,21 @@ func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 }
 
 func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
-	c := &CheckRun{SessionId: executionTree.sessionId}
+	r := &CheckRun{SessionId: executionTree.sessionId}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
-	c.DashboardParentImpl = newDashboardParentImpl(resource, parent, c, executionTree)
+	r.DashboardParentImpl = newDashboardParentImpl(resource, parent, r, executionTree)
 
-	c.NodeType = resource.BlockType()
+	r.NodeType = resource.BlockType()
 	//  set status to initialized
-	c.Status = dashboardtypes.RunInitialized
+	r.Status = dashboardtypes.RunInitialized
 	// add r into execution tree
-	executionTree.runs[c.Name] = c
-	return c, nil
+	executionTree.runs[r.Name] = r
+
+	//if err := r.populateProperties(); err != nil {
+	//	return nil, err
+	//}
+	return r, nil
 }
 
 // Initialise implements DashboardTreeRun
