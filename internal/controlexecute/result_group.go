@@ -88,7 +88,10 @@ func NewRootResultGroup(ctx context.Context, executionTree *ExecutionTree, rootI
 		}
 	} else {
 		// create a result group for this item
-		itemGroup := NewResultGroup(ctx, executionTree, rootItem, root)
+		itemGroup, err := NewResultGroup(ctx, executionTree, rootItem, root)
+		if err != nil {
+			return nil, err
+		}
 		root.addResultGroup(itemGroup)
 	}
 
@@ -96,7 +99,7 @@ func NewRootResultGroup(ctx context.Context, executionTree *ExecutionTree, rootI
 }
 
 // NewResultGroup creates a result group from a ModTreeItem
-func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem modconfig.ModTreeItem, parent *ResultGroup) *ResultGroup {
+func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem modconfig.ModTreeItem, parent *ResultGroup) (*ResultGroup, error) {
 	group := &ResultGroup{
 		GroupId:     treeItem.Name(),
 		Title:       treeItem.GetTitle(),
@@ -126,7 +129,10 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 	for _, c := range treeItem.GetChildren() {
 		if benchmark, ok := c.(*modconfig.Benchmark); ok {
 			// create a result group for this item
-			benchmarkGroup := NewResultGroup(ctx, executionTree, benchmark, group)
+			benchmarkGroup, err := NewResultGroup(ctx, executionTree, benchmark, group)
+			if err != nil {
+				return nil, err
+			}
 			// if the group has any control runs, add to tree
 			if benchmarkGroup.ControlRunCount() > 0 {
 				// create a new result group with 'group' as the parent
@@ -134,15 +140,17 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 			}
 		}
 		if control, ok := c.(*modconfig.Control); ok {
-			executionTree.AddControl(ctx, control, group)
+			if err := executionTree.AddControl(ctx, control, group); err != nil {
+				return nil, err
+			}
 		}
 	}
 
-	return group
+	return group, nil
 }
 
 func (r *ResultGroup) AllTagKeys() []string {
-	tags := []string{}
+	var tags []string
 	for k := range r.Tags {
 		tags = append(tags, k)
 	}
