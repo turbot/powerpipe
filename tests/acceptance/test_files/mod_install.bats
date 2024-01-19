@@ -102,7 +102,7 @@ local
 @test "complex mod dependency resolution - test benchmark and controls resolution 1" {
   powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
 
-  run powerpipe benchmark run bm_version_dependency_mod_1 --output csv
+  run powerpipe benchmark run top_level.benchmark.bm_version_dependency_mod_1 --output csv
   # check the output - benchmark should run the control and query from dependency mod 1 which will
   # have the output:
 # +--------+----------+--------+
@@ -117,7 +117,7 @@ top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod
 @test "complex mod dependency resolution - test benchmark and controls resolution 2" {
   powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
 
-  run powerpipe benchmark run bm_version_dependency_mod_2 --output csv
+  run powerpipe benchmark run top_level.benchmark.bm_version_dependency_mod_2 --output csv
   # check the output - benchmark should run the control and query from dependency mod 2 which will
   # have the output:
 # +--------+----------+--------+
