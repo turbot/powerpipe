@@ -73,12 +73,12 @@ export type CheckResultDimension = {
 };
 
 export enum CheckResultStatus {
-  alarm = 0,
-  ok = 1,
-  info = 2,
-  skip = 3,
-  error = 4,
-  empty = 5,
+  alarm = "alarm",
+  ok = "ok",
+  info = "info",
+  skip = "skip",
+  error = "error",
+  empty = "empty",
 }
 
 export type CheckResultType = "loading" | "error" | "empty" | "result";
