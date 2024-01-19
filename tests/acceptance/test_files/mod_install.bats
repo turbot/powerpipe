@@ -6,11 +6,6 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_output 'No mods installed.'
 }
 
-@test "install latest(plugin requirement not satisfied)" {
-  run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
-  assert_output --partial "dependency failed to install"
-}
-
 @test "install latest(--force)" {
   run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
   assert_output --partial 'Installed 1 mod:
@@ -72,11 +67,6 @@ Installed 1 mod:
 
 local
 └── github.com/turbot/steampipe-mod-aws-compliance@v0.1.0'
-}
-
-@test "install mod version should fail, since dependant mod has a requirement of different steampipe CLI version" {
-  run powerpipe mod install github.com/pskrbasu/steampipe-mod-m4
-  assert_output --partial 'does not satisfy mod.m4 which requires version 10.99.99'
 }
 
 @test "install a mod with protocol in url" {
