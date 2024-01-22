@@ -82,7 +82,7 @@ const validateCheckFilter = (checkFilter: CheckFilter): boolean => {
 
 const CheckFilterConfig = () => {
   const [showEditor, setShowEditor] = useState(false);
-  const [isValid, setIsValid] = useState(false);
+  const [isValid, setIsValid] = useState({value:false, reason: ""});
   const [_, setSearchParams] = useSearchParams();
   const filterConfig = useCheckFilterConfig();
   const [modifiedConfig, setModifiedConfig] =
@@ -90,7 +90,7 @@ const CheckFilterConfig = () => {
 
   useEffect(() => {
     if (!modifiedConfig) {
-      setIsValid(true);
+      setIsValid({value:true, reason: ""});
       return;
     }
 
@@ -98,18 +98,18 @@ const CheckFilterConfig = () => {
       // @ts-ignore
       get(modifiedConfig, "and", []).every((f) => !f.type && !f.key && !f.value)
     ) {
-      setIsValid(true);
+      setIsValid({value:true, reason: ""});
       return;
     }
 
     if (!!modifiedConfig.and) {
-      setIsValid(validateAndFilter(modifiedConfig));
+      setIsValid({value:validateAndFilter(modifiedConfig), reason: ""});
       return;
     } else if (!!modifiedConfig.or) {
-      setIsValid(validateOrFilter(modifiedConfig));
+      setIsValid({value: validateOrFilter(modifiedConfig), reason: ""});
       return;
     }
-    setIsValid(false);
+    setIsValid({value:false, reason: ""});
   }, [modifiedConfig, setIsValid]);
 
   const saveFilterConfig = (toSave: CheckFilter) => {
