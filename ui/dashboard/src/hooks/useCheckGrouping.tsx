@@ -34,7 +34,6 @@ import { default as BenchmarkType } from "../components/dashboards/check/common/
 import { ElementType, IActions, PanelDefinition, PanelsMap } from "../types";
 import { useDashboard } from "./useDashboard";
 import { useDashboardControls } from "../components/dashboards/layout/Dashboard/DashboardControlsProvider";
-import { useSearchParams } from "react-router-dom";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -808,7 +807,6 @@ const CheckGroupingProvider = ({
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const [searchParams] = useSearchParams();
   const groupingsConfig = useCheckGroupingConfig();
 
   const [
