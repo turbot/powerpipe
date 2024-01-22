@@ -1,11 +1,11 @@
-import BenchmarkNode from "../components/dashboards/check/common/node/BenchmarkNode";
-import ControlEmptyResultNode from "../components/dashboards/check/common/node/ControlEmptyResultNode";
-import ControlErrorNode from "../components/dashboards/check/common/node/ControlErrorNode";
-import ControlNode from "../components/dashboards/check/common/node/ControlNode";
-import ControlResultNode from "../components/dashboards/check/common/node/ControlResultNode";
-import ControlRunningNode from "../components/dashboards/check/common/node/ControlRunningNode";
-import KeyValuePairNode from "../components/dashboards/check/common/node/KeyValuePairNode";
-import RootNode from "../components/dashboards/check/common/node/RootNode";
+import BenchmarkNode from "components/dashboards/check/common/node/BenchmarkNode";
+import ControlEmptyResultNode from "components/dashboards/check/common/node/ControlEmptyResultNode";
+import ControlErrorNode from "components/dashboards/check/common/node/ControlErrorNode";
+import ControlNode from "components/dashboards/check/common/node/ControlNode";
+import ControlResultNode from "components/dashboards/check/common/node/ControlResultNode";
+import ControlRunningNode from "components/dashboards/check/common/node/ControlRunningNode";
+import KeyValuePairNode from "components/dashboards/check/common/node/KeyValuePairNode";
+import RootNode from "components/dashboards/check/common/node/RootNode";
 import useCheckFilterConfig from "./useCheckFilterConfig";
 import useCheckGroupingConfig from "./useCheckGroupingConfig";
 import usePrevious from "./usePrevious";
@@ -22,7 +22,7 @@ import {
   Filter,
   findDimension,
   OrFilter,
-} from "../components/dashboards/check/common";
+} from "components/dashboards/check/common";
 import {
   createContext,
   useContext,
@@ -30,10 +30,10 @@ import {
   useMemo,
   useReducer,
 } from "react";
-import { default as BenchmarkType } from "../components/dashboards/check/common/Benchmark";
-import { ElementType, IActions, PanelDefinition, PanelsMap } from "../types";
+import { default as BenchmarkType } from "components/dashboards/check/common/Benchmark";
+import { ElementType, IActions, PanelDefinition, PanelsMap } from "types";
 import { useDashboard } from "./useDashboard";
-import { useDashboardControls } from "../components/dashboards/layout/Dashboard/DashboardControlsProvider";
+import { useDashboardControls } from "components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -784,6 +784,9 @@ const useGrouping = (
 
     // We'll loop over each control result and build up the grouped nodes from there
     b.all_control_results.forEach((checkResult) => {
+      // Record values pre-filter so we can expand out from filtered states with all values later on
+      recordFilterValues(filterValues, checkResult);
+
       // See if the result needs to be filtered
       if (!includeResult(checkResult, checkFilterConfig)) {
         return;
@@ -803,8 +806,6 @@ const useGrouping = (
       // This will be used to calculate totals and severity, amongst other things.
       const node = getCheckResultNode(checkResult);
       grouping._.push(node);
-
-      recordFilterValues(filterValues, checkResult);
     });
 
     const results = new RootNode(result);
