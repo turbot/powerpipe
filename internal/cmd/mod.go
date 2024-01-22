@@ -81,7 +81,7 @@ Examples:
   # Install all mods specified in the mod.pp and their dependencies
   powerpipe mod install
 
-  # Preview what powerpipw mod install will do, without actually installing anything
+  # Preview what powerpipe mod install will do, without actually installing anything
   powerpipe mod install --dry-run`,
 	}
 
