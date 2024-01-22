@@ -49,8 +49,6 @@ Examples:
 		modUpdateCmd(),
 		listCmd[*modconfig.Mod](),
 		showCmd[*modconfig.Mod](),
-		//modListCmd(),
-		//modShowCmd(),
 		modInitCmd(),
 	)
 
@@ -186,80 +184,6 @@ Example:
 }
 
 func runModUpdateCmd(cmd *cobra.Command, args []string) {}
-
-//
-//func modListCmd() *cobra.Command {
-//	var cmd = &cobra.Command{
-//		Use:   "list",
-//		Run:   runModListCmd,
-//		Short: "List currently installed mods",
-//		Long: `List currently installed mods.
-//
-//Example:
-//
-//  # List installed mods
-//  powerpipe mod list`,
-//	}
-//
-//	cmdconfig.OnCmd(cmd).
-//		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
-//		AddModLocationFlag()
-//	return cmd
-//}
-//
-//func modShowCmd() *cobra.Command {
-//	var cmd = &cobra.Command{
-//		Use:   "show",
-//		Run:   runModShowCmd,
-//		Short: "List currently installed mods",
-//		Long: `List currently installed mods.
-//
-//Example:
-//
-//  # List installed mods
-//  powerpipe mod list`,
-//	}
-//
-//	cmdconfig.OnCmd(cmd).
-//		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
-//		AddModLocationFlag()
-//	return cmd
-//}
-//
-//func runModShowCmd(cmd *cobra.Command, args []string) {
-//	// TODO KAI
-//}
-//
-//func runModListCmd(cmd *cobra.Command, _ []string) {
-//	ctx := cmd.Context()
-//	utils.LogTime("cmd.runModListCmd")
-//	defer func() {
-//		utils.LogTime("cmd.runModListCmd end")
-//		if r := recover(); r != nil {
-//			error_helpers.ShowError(ctx, helpers.ToError(r))
-//			exitCode = constants.ExitCodeUnknownErrorPanic
-//		}
-//	}()
-//
-//	// try to load the workspace mod definition
-//	// - if it does not exist, this will return a nil mod and a nil error
-//	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
-//	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
-//	if workspaceMod == nil {
-//		fmt.Println("No mods installed.")
-//		return
-//	}
-//
-//	opts := modinstaller.NewInstallOpts(workspaceMod)
-//	installer, err := modinstaller.NewModInstaller(opts)
-//	error_helpers.FailOnError(err)
-//
-//	treeString := installer.GetModList()
-//	if len(strings.Split(treeString, "\n")) > 1 {
-//		fmt.Println()
-//	}
-//	fmt.Println(treeString)
-//}
 
 func modInitCmd() *cobra.Command {
 	var cmd = &cobra.Command{
