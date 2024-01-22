@@ -41,7 +41,7 @@ Examples:
     powerpipe mod list
     
     # Uninstall a mod
-    powerpipe mod uninstall github.com/turbot/steampipe-mod-aws-compliance
+    powerpipe mod uninstall github.com/turbot/steampipe-mod-aws-compliance 
 	`,
 	}
 	cmd.AddCommand(modInstallCmd(),
