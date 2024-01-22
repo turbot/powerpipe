@@ -90,8 +90,8 @@ const addBenchmarkTrunkNode = (
   benchmark_trunk: BenchmarkType[],
   children: CheckNode[],
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  groupingKeysBeforeBenchmark: string[],
 ): CheckNode => {
-  const currentNode = benchmark_trunk.length > 0 ? benchmark_trunk[0] : null;
   let newChildren: CheckNode[];
   if (benchmark_trunk.length > 1) {
     newChildren = [
@@ -99,14 +99,21 @@ const addBenchmarkTrunkNode = (
         benchmark_trunk.slice(1),
         children,
         benchmarkChildrenLookup,
+        groupingKeysBeforeBenchmark,
       ),
     ];
   } else {
     newChildren = children;
   }
+  const currentNode = benchmark_trunk.length > 0 ? benchmark_trunk[0] : null;
   if (!!currentNode?.name) {
-    const existingChildren =
-      benchmarkChildrenLookup[currentNode?.name || "Other"];
+    const lookupKey =
+      groupingKeysBeforeBenchmark.length > 0
+        ? `${groupingKeysBeforeBenchmark.join("/")}/${
+            currentNode?.name || "Other"
+          }`
+        : currentNode?.name || "Other";
+    const existingChildren = benchmarkChildrenLookup[lookupKey];
     if (existingChildren) {
       // We only want to add children that are not already in the list,
       // else we end up with duplicate nodes in the tree
@@ -120,7 +127,7 @@ const addBenchmarkTrunkNode = (
         existingChildren.push(child);
       }
     } else {
-      benchmarkChildrenLookup[currentNode?.name || "Other"] = newChildren;
+      benchmarkChildrenLookup[lookupKey] = newChildren;
     }
   }
   return new BenchmarkNode(
@@ -144,7 +151,7 @@ const getCheckStatusGroupingKey = (status: CheckResultStatus): string => {
     case CheckResultStatus.skip:
       return "Skipped";
     case CheckResultStatus.empty:
-      return "Unknown";
+      return "Empty";
   }
 };
 
@@ -260,6 +267,7 @@ const getCheckGroupingNode = (
   group: CheckDisplayGroup,
   children: CheckNode[],
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  groupingKeysBeforeBenchmark: string[] = [],
 ): CheckNode => {
   switch (group.type) {
     case "dimension":
@@ -321,6 +329,7 @@ const getCheckGroupingNode = (
             checkResult.benchmark_trunk.slice(1),
             children,
             benchmarkChildrenLookup,
+            groupingKeysBeforeBenchmark,
           )
         : children[0];
     case "control":
@@ -349,12 +358,28 @@ const addBenchmarkGroupingNode = (
   }
 };
 
+function getBenchmarkChildrenLookupKey(
+  groupingHierarchyKeys: string[],
+  groupKey: string,
+) {
+  const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
+    0,
+    groupingHierarchyKeys.indexOf("benchmark"),
+  );
+  const benchmarkChildrenLookupKey =
+    groupingKeysBeforeBenchmark.length > 0
+      ? `${groupingKeysBeforeBenchmark.join("/")}/${groupKey}`
+      : groupKey;
+  return { groupingKeysBeforeBenchmark, benchmarkChildrenLookupKey };
+}
+
 const groupCheckItems = (
   temp: { _: CheckNode[] },
   checkResult: CheckResult,
   groupingsConfig: CheckDisplayGroup[],
   checkNodeStates: CheckGroupNodeStates,
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  groupingHierarchyKeys: string[],
 ) => {
   return groupingsConfig
     .filter((groupConfig) => groupConfig.type !== "result")
@@ -365,6 +390,8 @@ const groupCheckItems = (
       if (!groupKey) {
         return cumulativeGrouping;
       }
+
+      groupingHierarchyKeys.push(groupKey);
 
       // Collapse all benchmark trunk nodes
       if (currentGroupingConfig.type === "benchmark") {
@@ -380,6 +407,9 @@ const groupCheckItems = (
         };
       }
 
+      const { groupingKeysBeforeBenchmark, benchmarkChildrenLookupKey } =
+        getBenchmarkChildrenLookupKey(groupingHierarchyKeys, groupKey);
+
       if (!cumulativeGrouping[groupKey]) {
         cumulativeGrouping[groupKey] = { _: [] };
 
@@ -388,6 +418,7 @@ const groupCheckItems = (
           currentGroupingConfig,
           cumulativeGrouping[groupKey]._,
           benchmarkChildrenLookup,
+          groupingKeysBeforeBenchmark,
         );
 
         if (groupingNode) {
@@ -410,12 +441,12 @@ const groupCheckItems = (
       // the control to the existing children of benchmark 1
       if (
         currentGroupingConfig.type === "benchmark" &&
-        benchmarkChildrenLookup[groupKey]
+        benchmarkChildrenLookup[benchmarkChildrenLookupKey]
       ) {
         const groupingEntry = cumulativeGrouping[groupKey];
         const { _, ...rest } = groupingEntry || {};
         cumulativeGrouping[groupKey] = {
-          _: benchmarkChildrenLookup[groupKey],
+          _: benchmarkChildrenLookup[benchmarkChildrenLookupKey],
           ...rest,
         };
       }
@@ -543,13 +574,6 @@ function recordFilterValues(
     filterValues.severity.value[checkResult.severity.toString()] =
       filterValues.severity.value[checkResult.severity.toString()] || 0;
     filterValues.severity.value[checkResult.severity.toString()] += 1;
-  }
-
-  // Record the status of this check result to allow assisted filtering later
-  if (isNaN(checkResult.status)) {
-    filterValues.status[checkResult.status] =
-      filterValues.status[checkResult.status] || 0;
-    filterValues.status[checkResult.status] += 1;
   }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
@@ -743,6 +767,7 @@ const useGrouping = (
         groupingsConfig,
         checkNodeStates,
         benchmarkChildrenLookup,
+        [],
       );
       // Build and add a check result node to the children of the trailing group.
       // This will be used to calculate totals and severity, amongst other things.
