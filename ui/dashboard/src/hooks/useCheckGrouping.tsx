@@ -823,7 +823,7 @@ const useGrouping = (
       checkNodeStates,
       filterValues,
     ] as const;
-  }, [checkFilterConfig, definition, groupingsConfig, panelsMap]);
+  }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
 };
 
 const CheckGroupingProvider = ({
