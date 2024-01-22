@@ -17,7 +17,7 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
-  isValid: boolean;
+  isValid: { value: boolean; reason: string };
   onCancel: () => void;
   onSave: () => void;
   setConfig: (newValue: CheckDisplayGroup[]) => void;

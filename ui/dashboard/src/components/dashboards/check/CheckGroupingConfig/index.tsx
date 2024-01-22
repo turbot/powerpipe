@@ -31,18 +31,18 @@ const CheckGroupingTitleLabel = ({ item }: CheckGroupingTitleLabelProps) => {
 
 const CheckGroupingConfig = () => {
   const [showEditor, setShowEditor] = useState(false);
-  const [isValid, setIsValid] = useState(false);
+  const [isValid, setIsValid] = useState({ value: false, reason: "" });
   const [_, setSearchParams] = useSearchParams();
   const groupingConfig = useCheckGroupingConfig();
   const [modifiedConfig, setModifiedConfig] =
     useState<CheckDisplayGroup[]>(groupingConfig);
 
   useEffect(() => {
-    const isValid = modifiedConfig.every((c) => {
+    let reason: string = "";
+    const isValid = modifiedConfig.every((c, i) => {
       switch (c.type) {
         case "benchmark":
         case "control":
-        case "result":
         case "reason":
         case "resource":
         case "severity":
@@ -51,9 +51,15 @@ const CheckGroupingConfig = () => {
         case "dimension":
         case "tag":
           return !!c.value;
+        case "result":
+          if (i !== modifiedConfig.length - 1) {
+            reason = "Result must be the last grouping";
+            return false;
+          }
+          return true;
       }
     });
-    setIsValid(isValid);
+    setIsValid({ value: isValid, reason });
   }, [modifiedConfig, setIsValid]);
 
   const saveGroupingConfig = (toSave) => {

@@ -381,7 +381,7 @@ const CheckFilterEditor = ({
         </Reorder.Group>
       )}
       <CheckEditorAddItem
-        label="Add grouping"
+        label="Add filter"
         isValid={isValid}
         // @ts-ignore
         onClick={() => setConfig({ and: [...config.and, { type: "" }] })}
