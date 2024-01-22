@@ -555,6 +555,11 @@ function recordFilterValues(
     filterValues.control.value[checkResult.control.name] || 0;
   filterValues.control.value[checkResult.control.name] += 1;
 
+  // Record the status of this check result to allow assisted filtering later
+  filterValues.status[checkResult.status] =
+    filterValues.status[checkResult.status] || 0;
+  filterValues.status[checkResult.status] += 1;
+
   // Record the reason of this check result to allow assisted filtering later
   if (checkResult.reason) {
     filterValues.reason.value[checkResult.reason] =
