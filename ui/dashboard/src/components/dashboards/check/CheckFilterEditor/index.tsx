@@ -1,11 +1,11 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
-import Icon from "../../../Icon";
+import Icon from "components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { CheckFilter, CheckFilterType, Filter } from "../common";
-import { classNames } from "../../../../utils/styles";
+import { classNames } from "utils/styles";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
@@ -198,15 +198,17 @@ const CheckFilterValueSelect = ({
         Object.entries(filterValues[type] || {})
           // @ts-ignore
           .filter(([, v]) => v > 0)
-          .map(([k]) => ({
+          .map(([k,v]) => ({
             value: k,
             label: k,
+            tags: { occurrences: v},
           }))
       );
     }
-    return Object.keys(filterValues[type].value || {}).map((k) => ({
+    return Object.entries(filterValues[type].value || {}).map(([k,v]) => ({
       value: k,
       label: k,
+      tags: { occurrences: v},
     }));
   }, [filterValues, type]);
 
