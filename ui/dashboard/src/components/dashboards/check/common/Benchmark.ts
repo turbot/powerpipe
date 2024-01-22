@@ -105,7 +105,6 @@ class Benchmark implements CheckNode {
           control.tags,
           control.status,
           control.error,
-          panelsMap,
           thisTrunk,
           this._add_control_results,
         ),

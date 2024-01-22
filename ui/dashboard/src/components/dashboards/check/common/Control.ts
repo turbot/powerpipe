@@ -13,7 +13,7 @@ import {
   CheckTags,
   findDimension,
 } from "./index";
-import { DashboardRunState, PanelsMap } from "../../../../types";
+import { DashboardRunState } from "../../../../types";
 import {
   LeafNodeData,
   LeafNodeDataColumn,
@@ -49,7 +49,6 @@ class Control implements CheckNode {
     tags: CheckTags | undefined,
     status: DashboardRunState,
     error: string | undefined,
-    panelsMap: PanelsMap,
     benchmark_trunk: Benchmark[],
     add_control_results: AddControlResultsAction,
   ) {
