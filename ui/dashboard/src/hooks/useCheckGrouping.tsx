@@ -92,7 +92,6 @@ const addBenchmarkTrunkNode = (
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
   groupingKeysBeforeBenchmark: string[],
 ): CheckNode => {
-  const currentNode = benchmark_trunk.length > 0 ? benchmark_trunk[0] : null;
   let newChildren: CheckNode[];
   if (benchmark_trunk.length > 1) {
     newChildren = [
@@ -106,6 +105,7 @@ const addBenchmarkTrunkNode = (
   } else {
     newChildren = children;
   }
+  const currentNode = benchmark_trunk.length > 0 ? benchmark_trunk[0] : null;
   if (!!currentNode?.name) {
     const lookupKey =
       groupingKeysBeforeBenchmark.length > 0
@@ -358,6 +358,21 @@ const addBenchmarkGroupingNode = (
   }
 };
 
+function getBenchmarkChildrenLookupKey(
+  groupingHierarchyKeys: string[],
+  groupKey: string,
+) {
+  const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
+    0,
+    groupingHierarchyKeys.indexOf("benchmark"),
+  );
+  const benchmarkChildrenLookupKey =
+    groupingKeysBeforeBenchmark.length > 0
+      ? `${groupingKeysBeforeBenchmark.join("/")}/${groupKey}`
+      : groupKey;
+  return { groupingKeysBeforeBenchmark, benchmarkChildrenLookupKey };
+}
+
 const groupCheckItems = (
   temp: { _: CheckNode[] },
   checkResult: CheckResult,
@@ -392,14 +407,8 @@ const groupCheckItems = (
         };
       }
 
-      const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
-        0,
-        groupingHierarchyKeys.indexOf("benchmark"),
-      );
-      const benchmarkChildrenLookupKey =
-        groupingKeysBeforeBenchmark.length > 0
-          ? `${groupingKeysBeforeBenchmark.join("/")}/${groupKey}`
-          : groupKey;
+      const { groupingKeysBeforeBenchmark, benchmarkChildrenLookupKey } =
+        getBenchmarkChildrenLookupKey(groupingHierarchyKeys, groupKey);
 
       if (!cumulativeGrouping[groupKey]) {
         cumulativeGrouping[groupKey] = { _: [] };
