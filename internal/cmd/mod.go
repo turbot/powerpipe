@@ -204,7 +204,23 @@ Example:
 	return cmd
 }
 
-func runModInitCmd(cmd *cobra.Command, args []string) {}
+func runModInitCmd(cmd *cobra.Command, args []string) {
+	utils.LogTime("cmd.runModInitCmd")
+	ctx := cmd.Context()
+
+	defer func() {
+		utils.LogTime("cmd.runModInitCmd end")
+		if r := recover(); r != nil {
+			error_helpers.ShowError(ctx, helpers.ToError(r))
+			exitCode = constants.ExitCodeUnknownErrorPanic
+		}
+	}()
+	workspacePath := viper.GetString(constants.ArgModLocation)
+	if _, err := createWorkspaceMod(ctx, cmd, workspacePath); err != nil {
+		exitCode = constants.ExitCodeModInitFailed
+		error_helpers.FailOnError(err)
+	}
+}
 
 func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (*modconfig.Mod, error) {
 	if !modinstaller.ValidateModLocation(ctx, workspacePath) {
