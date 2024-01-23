@@ -119,8 +119,10 @@ type ClientRequestPayload struct {
 }
 
 type ClientRequest struct {
-	Action  string               `json:"action"`
-	Payload ClientRequestPayload `json:"payload"`
+	Action           string               `json:"action"`
+	Payload          ClientRequestPayload `json:"payload"`
+	SearchPath       []string             `json:"search_path"`
+	SearchPathPrefix []string             `json:"search_path_prefix"`
 }
 
 type ModAvailableDashboard struct {

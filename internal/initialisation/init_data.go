@@ -30,7 +30,7 @@ type InitData struct {
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
-	Targets           []modconfig.ModTreeItem
+	Target            modconfig.ModTreeItem
 	Args              map[string]*modconfig.QueryArgs
 }
 
@@ -93,15 +93,10 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 		return
 	}
 
-	// resolve target resources
-	targets, queryArgs, err := cmdconfig.ResolveTargets(args, targetType, i.Workspace)
-	if err != nil {
-		i.Result.Error = err
+	i.resolveTarget(args, targetType)
+	if i.Result.Error != nil {
 		return
 	}
-	i.Targets = targets
-	i.Args = queryArgs
-
 	statushooks.SetStatus(ctx, "Initializing")
 	i.WorkspaceEvents = dashboardworkspace.NewWorkspaceEvents(i.Workspace)
 
@@ -164,6 +159,33 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 	}
 
 	i.Client = client
+}
+
+// resolve target resource, args and any target specific search path
+func (i *InitData) resolveTarget(args []string, targetType string) {
+	// resolve target resources
+	targets, queryArgs, err := cmdconfig.ResolveTargets(args, targetType, i.Workspace)
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	i.Args = queryArgs
+
+	if len(targets) == 0 {
+		// no targets found
+		return
+	}
+
+	// we only expect a single target - this should be enforced by Cobra
+	if len(targets) > 1 {
+		i.Result.Error = sperr.New("expected a single execution target, got %d", len(targets))
+		return
+	}
+	i.Target = targets[0]
+
+	if err := cmdconfig.UpdateTargetConnectionParams(i.Target, i.Workspace.Mod); err != nil {
+		i.Result.Error = err
+	}
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod) []string {

@@ -4,9 +4,7 @@ import (
 	"context"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -16,22 +14,11 @@ const (
 	MaxConnIdleTime = 1 * time.Minute
 )
 
-func (c *DbClient) connect(ctx context.Context) error {
+func (c *DbClient) connect(ctx context.Context, opts ...backend.ConnectOption) error {
 	utils.LogTime("db_client.establishConnectionPool start")
 	defer utils.LogTime("db_client.establishConnectionPool end")
 
-	poolConfig := backend.PoolConfig{
-		MaxConnIdleTime: MaxConnIdleTime,
-		MaxConnLifeTime: MaxConnLifeTime,
-		MaxOpenConns:    MaxDbConnections(),
-	}
-
-	searchPathConfig := backend.SearchPathConfig{
-		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
-		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
-	}
-
-	db, err := c.backend.Connect(ctx, backend.WithPoolConfig(poolConfig), backend.WithSearchPathConfig(searchPathConfig))
+	db, err := c.backend.Connect(ctx, opts...)
 	if err != nil {
 		return sperr.WrapWithMessage(err, "unable to connect to backend")
 	}
