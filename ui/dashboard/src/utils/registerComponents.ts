@@ -7,6 +7,7 @@ import "../components/ExternalLink";
 import "../components/dashboards/Error";
 import "../components/dashboards/Table";
 import "../components/dashboards/Text";
+import "../components/SnapshotHeader";
 
 // Charts
 import "../components/dashboards/charts/AreaChart";
