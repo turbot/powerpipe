@@ -24,7 +24,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	defer w.UnregisterDashboardEventHandlers()
 
 	// pull out the target resource
-	rootResource := initData.Targets[0]
+	rootResource := initData.Target
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
 	clientMap := map[string]*db_client.DbClient{initData.Client.GetConnectionString(): initData.Client}
@@ -38,7 +38,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	case snapshot = <-resultChannel:
 		// set the filename root of the snapshot
 		// TODO KAI CHECK THIS
-		fileRootName := initData.Targets[0].Name()
+		fileRootName := initData.Target.Name()
 
 		snapshot.FileNameRoot = fileRootName
 		//  return the context error (if any) to ensure we respect cancellation

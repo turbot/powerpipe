@@ -3,6 +3,8 @@ package db_client
 import (
 	"context"
 	"database/sql"
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/utils"
@@ -26,14 +28,14 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
-	backend, err := backend.FromConnectionString(ctx, connectionString)
+	b, err := backend.FromConnectionString(ctx, connectionString)
 	if err != nil {
 		return nil, err
 	}
 
 	client := &DbClient{
 		connectionString: connectionString,
-		backend:          backend,
+		backend:          b,
 	}
 
 	defer func() {
@@ -43,7 +45,18 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 		}
 	}()
 
-	if err := client.connect(ctx); err != nil {
+	poolConfig := backend.PoolConfig{
+		MaxConnIdleTime: MaxConnIdleTime,
+		MaxConnLifeTime: MaxConnLifeTime,
+		MaxOpenConns:    MaxDbConnections(),
+	}
+
+	searchPathConfig := backend.SearchPathConfig{
+		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
+		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
+	}
+
+	if err := client.connect(ctx, backend.WithPoolConfig(poolConfig), backend.WithSearchPathConfig(searchPathConfig)); err != nil {
 		return nil, err
 	}
 

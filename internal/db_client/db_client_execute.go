@@ -55,12 +55,6 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 		return nil, err
 	}
 
-	// TODO KAI REMOVED <SESSION>
-	//sessionResult := c.AcquireSession(ctx)
-	//if sessionResult.Error != nil {
-	//	return nil, sessionResult.Error
-	//}
-
 	// TODO KAI STEAMPIPE ONLY <TIMING>
 	// set setShouldShowTiming flag
 	// (this will refetch ScanMetadataMaxId if timing has just been enabled)

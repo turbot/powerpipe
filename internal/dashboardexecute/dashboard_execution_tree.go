@@ -27,8 +27,10 @@ type DashboardExecutionTree struct {
 	dashboardName string
 	sessionId     string
 	// map of clients, keyed by connection string
-	clients                 map[string]*db_client.DbClient
-	clientsMut              sync.RWMutex
+	clients    map[string]*db_client.DbClient
+	clientsMut sync.RWMutex
+	// if the leaf node does not specify a connection string, this is the connection string which will be used to
+	// retrieve the client
 	defaultConnectionString string
 	// map of executing runs, keyed by full name
 	runs        map[string]dashboardtypes.DashboardTreeRun
@@ -45,9 +47,8 @@ type DashboardExecutionTree struct {
 func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
-		dashboardName: rootResource.Name(),
-		sessionId:     sessionId,
-		// TODO KAI pass in default connection string? <MISC>
+		dashboardName:           rootResource.Name(),
+		sessionId:               sessionId,
 		defaultConnectionString: viper.GetString(constants.ArgDatabase),
 		clients:                 clients,
 		runs:                    make(map[string]dashboardtypes.DashboardTreeRun),
@@ -321,11 +322,9 @@ func (*DashboardExecutionTree) GetResource() modconfig.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
-//nolint:unused // TODO: unused function
-func (e *DashboardExecutionTree) defaultClient() *db_client.DbClient {
-	return e.clients[e.defaultConnectionString]
-}
-
+// return a db client for the given connection string
+// if clients map already contains a client for this connection string, use that
+// otherwise create a new client and add to the map
 func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString string) (*db_client.DbClient, error) {
 	e.clientsMut.RLock()
 	client := e.clients[connectionString]

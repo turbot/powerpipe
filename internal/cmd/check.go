@@ -152,10 +152,6 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	totalAlarms, totalErrors := 0, 0
 
 	// get the execution trees
-	// depending on the set of arguments and the export targets, we may get more than one
-	// example :
-	// "check benchmark.b1 benchmark.b2 --export check.json" would give one merged tree
-	// "check benchmark.b1 benchmark.b2 --export json" would give multiple trees
 	trees, err := getExecutionTrees(ctx, initData)
 	error_helpers.FailOnError(err)
 
@@ -250,29 +246,29 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 // "check benchmark.b1 benchmark.b2 --export check.json" would give one merged tree
 // "check benchmark.b1 benchmark.b2 --export json" would give multiple trees
 func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
+	// TODO KAI probably only need a single tree returned now??
 	var trees []*namedExecutionTree
-
+	target := initData.Target
 	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
 		// create a single merged execution tree from all arguments
-		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, initData.Targets...)
+		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
 		if err != nil {
 			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 		}
 		name := fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
 		trees = append(trees, newNamedExecutionTree(name, executionTree))
 	} else {
-		for _, target := range initData.Targets {
-			if error_helpers.IsContextCanceled(ctx) {
-				return nil, ctx.Err()
-			}
-			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
-			if err != nil {
-				return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target.GetUnqualifiedName())
-			}
-			name := getExportName(target.Name(), initData.Workspace.Mod.ShortName)
-			trees = append(trees, newNamedExecutionTree(name, executionTree))
+		if error_helpers.IsContextCanceled(ctx) {
+			return nil, ctx.Err()
 		}
+		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
+		if err != nil {
+			return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target.GetUnqualifiedName())
+		}
+		name := getExportName(target.Name(), initData.Workspace.Mod.ShortName)
+		trees = append(trees, newNamedExecutionTree(name, executionTree))
 	}
+
 	return trees, ctx.Err()
 }
 

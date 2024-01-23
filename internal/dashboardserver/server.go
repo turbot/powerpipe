@@ -4,6 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"log/slog"
 	"os"
 	"reflect"
@@ -362,11 +365,25 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "select_dashboard":
-			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
-			clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
-			if dashboard := s.getResource(request.Payload.Dashboard.FullName); dashboard != nil {
-				_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, clientMap)
+			dashboard := s.getResource(request.Payload.Dashboard.FullName)
+			if dashboard == nil {
+				return
 			}
+
+			// determines if the target resource is from a dependency mod and if so, checks if
+			// it has a search path, search path prefix or database configured
+			// if so, it sets these values in viper
+			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
+
+			// if a search path or search path prefix was passed in the request payload, set it in viper
+			setSearchPathAndPrefixFromRequest(request)
+
+			if err := localcmdconfig.UpdateTargetConnectionParams(dashboard, s.workspace.Mod); err != nil {
+				panic(fmt.Errorf("failed to update target connection params: %v", err))
+			}
+			// NOT RIGHT
+			clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, clientMap)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
@@ -389,6 +406,16 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
 		}
 	}
+}
+
+func setSearchPathAndPrefixFromRequest(request ClientRequest) {
+	if request.SearchPath != nil {
+		viper.Set(constants.ArgSearchPath, request.SearchPath)
+	}
+	if request.SearchPathPrefix != nil {
+		viper.Set(constants.ArgSearchPathPrefix, request.SearchPathPrefix)
+	}
+
 }
 
 func (s *Server) clearSession(ctx context.Context, session *melody.Session) {
