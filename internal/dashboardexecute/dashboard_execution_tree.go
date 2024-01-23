@@ -48,7 +48,7 @@ func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 		dashboardName: rootResource.Name(),
 		sessionId:     sessionId,
 		// TODO KAI pass in default connection string? <MISC>
-		defaultConnectionString: viper.GetString(constants.ArgWorkspaceDatabase),
+		defaultConnectionString: viper.GetString(constants.ArgDatabase),
 		clients:                 clients,
 		runs:                    make(map[string]dashboardtypes.DashboardTreeRun),
 		workspace:               workspace,
