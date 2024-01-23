@@ -35,7 +35,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 	}
 
 	// if workspace-database or snapshot-location are a cloud workspace handle, cloud token must be set
-	requireCloudToken := steampipeconfig.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgWorkspaceDatabase)) ||
+	requireCloudToken := steampipeconfig.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgDatabase)) ||
 		steampipeconfig.IsCloudWorkspaceIdentifier(viper.GetString(constants.ArgSnapshotLocation))
 
 	// verify cloud token and workspace has been set

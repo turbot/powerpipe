@@ -53,7 +53,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	controlFilterWhereClause := ""
 
 	// TODO KAI HACK - just pass top level client <MISC>
-	client := r.executionTree.clients[viper.GetString(constants.ArgWorkspaceDatabase)]
+	client := r.executionTree.clients[viper.GetString(constants.ArgDatabase)]
 	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event

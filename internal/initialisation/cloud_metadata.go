@@ -12,7 +12,7 @@ import (
 )
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
-	workspaceDatabase := viper.GetString(constants.ArgWorkspaceDatabase)
+	workspaceDatabase := viper.GetString(constants.ArgDatabase)
 	if workspaceDatabase == "local" {
 		// local database - nothing to do here
 		// (if steampipe is running locally, it will have ensured the service is running and set
