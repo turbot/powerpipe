@@ -32,11 +32,6 @@ type InitData struct {
 	ExportManager     *export.Manager
 	Target            modconfig.ModTreeItem
 	Args              map[string]*modconfig.QueryArgs
-
-	// if the target is in a dependency mod, these are the search path, search path prefix and database for the mod
-	targetSearchPath       []string
-	targetSearchPathPrefix []string
-	targetDatabase         *string
 }
 
 func NewErrorInitData(err error) *InitData {

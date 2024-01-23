@@ -55,6 +55,12 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	// retrieve the client for the default database
 	// todo - should we check if the root benchmark specifies a connection string??
 	client, err := r.executionTree.getClient(ctx, viper.GetString(constants.ArgDatabase))
+	if err != nil {
+		// set the error status on the counter - this will raise counter error event
+		r.SetError(ctx, err)
+		return
+	}
+
 	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
