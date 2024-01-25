@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/pipe-fittings/backend"
 	"log/slog"
 	"os"
 	"reflect"
@@ -361,12 +362,17 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 				return
 			}
 
-			// determines if the target resource is from a dependency mod and if so, checks if
-			// it has a search path, search path prefix or database configured
-			// if so, it sets these values in viper
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace)
+			// was a search path passed into the execute command?
+			var opts []backend.ConnectOption
+			if request.Payload.SearchPath != nil || request.Payload.SearchPathPrefix != nil {
+				opts = append(opts, backend.WithSearchPathConfig(backend.SearchPathConfig{
+					SearchPath:       request.Payload.SearchPath,
+					SearchPathPrefix: request.Payload.SearchPathPrefix,
+				}))
+			}
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, opts...)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName

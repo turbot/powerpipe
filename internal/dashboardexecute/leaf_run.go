@@ -2,10 +2,10 @@ package dashboardexecute
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/backend"
 	"golang.org/x/exp/maps"
 	"log/slog"
 
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
@@ -13,6 +13,7 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/snapshot"
 )
@@ -97,7 +98,7 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 
 func (r *LeafRun) resolveDatabaseConfig() error {
 	// resolve the database and connection string for the run
-	database, searchPathConfig, err := getDatabaseConfigForResource(r.Resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(r.Resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
 	if err != nil {
 		return err
 	}

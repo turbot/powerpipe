@@ -17,8 +17,8 @@ type DbClient struct {
 	// db handle
 	db *sql.DB
 
-	// the backend
-	backend backend.Backend
+	// the Backend
+	Backend backend.Backend
 
 	// TODO KAI new hook <TIMING>
 	BeforeExecuteHook func(context.Context, *sql.Conn) error
@@ -35,7 +35,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.C
 
 	client := &DbClient{
 		connectionString: connectionString,
-		backend:          b,
+		Backend:          b,
 	}
 
 	defer func() {
@@ -67,7 +67,7 @@ func (c *DbClient) GetConnectionString() string {
 	return c.connectionString
 }
 
-// Close closes the connection to the database and shuts down the backend
+// Close closes the connection to the database and shuts down the Backend
 func (c *DbClient) Close(context.Context) error {
 	if c.db != nil {
 		return c.db.Close()

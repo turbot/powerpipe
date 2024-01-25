@@ -2,8 +2,8 @@ package dashboardexecute
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/backend"
 
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 // CheckRun is a struct representing the execution of a control or benchmark
@@ -46,15 +47,12 @@ func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Das
 		return nil, err
 	}
 
-	//if err := r.populateProperties(); err != nil {
-	//	return nil, err
-	//}
 	return r, nil
 }
 
 func (r *CheckRun) resolveDatabaseConfig() error {
 	// resolve the database and connection string for the run
-	database, searchPathConfig, err := getDatabaseConfigForResource(r.resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(r.resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
 	if err != nil {
 		return err
 	}
@@ -84,7 +82,6 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 		r.SetError(ctx, err)
 		return
 	}
-
 	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event

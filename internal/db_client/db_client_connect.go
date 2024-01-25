@@ -11,9 +11,9 @@ func (c *DbClient) connect(ctx context.Context, opts ...backend.ConnectOption) e
 	utils.LogTime("db_client.establishConnectionPool start")
 	defer utils.LogTime("db_client.establishConnectionPool end")
 
-	db, err := c.backend.Connect(ctx, opts...)
+	db, err := c.Backend.Connect(ctx, opts...)
 	if err != nil {
-		return sperr.WrapWithMessage(err, "unable to connect to backend")
+		return sperr.WrapWithMessage(err, "unable to connect to Backend")
 	}
 
 	c.db = db

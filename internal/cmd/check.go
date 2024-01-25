@@ -148,42 +148,44 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
-	// pull out useful properties
-	totalAlarms, totalErrors := 0, 0
-
 	// get the execution trees
-	trees, err := getExecutionTrees(ctx, initData)
+	namedTree, err := getExecutionTree(ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// execute controls synchronously (execute returns the number of alarms and errors)
-	for _, namedTree := range trees {
-		err = executeTree(ctx, namedTree.tree, initData)
-		if err != nil {
-			error_helpers.ShowError(ctx, err)
-			continue
-		}
 
-		// append the total number of alarms and errors for multiple runs
-		totalAlarms += namedTree.tree.Root.Summary.Status.Alarm
-		totalErrors += namedTree.tree.Root.Summary.Status.Error
+	// pull out useful properties
+	totalAlarms, totalErrors := 0, 0
+	defer func() {
+		// set the defined exit code after successful execution
+		exitCode = getExitCode(totalAlarms, totalErrors)
+	}()
 
-		err = publishSnapshot(ctx, namedTree.tree, viper.GetBool(constants.ArgShare), viper.GetBool(constants.ArgSnapshot))
-		if err != nil {
-			error_helpers.ShowError(ctx, err)
-			continue
-		}
-
-		printTiming(namedTree.tree)
-
-		err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))
-		if err != nil {
-			error_helpers.ShowError(ctx, err)
-			continue
-		}
+	err = executeTree(ctx, namedTree.tree, initData)
+	if err != nil {
+		totalErrors++
+		error_helpers.ShowError(ctx, err)
+		return
 	}
 
-	// set the defined exit code after successful execution
-	exitCode = getExitCode(totalAlarms, totalErrors)
+	// append the total number of alarms and errors for multiple runs
+	totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
+	totalErrors = namedTree.tree.Root.Summary.Status.Error
+
+	err = publishSnapshot(ctx, namedTree.tree, viper.GetBool(constants.ArgShare), viper.GetBool(constants.ArgSnapshot))
+	if err != nil {
+		error_helpers.ShowError(ctx, err)
+		totalErrors++
+		return
+	}
+
+	printTiming(namedTree.tree)
+
+	err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))
+	if err != nil {
+		error_helpers.ShowError(ctx, err)
+		totalErrors++
+	}
 }
 
 // exportExecutionTree relies on the fact that the given tree is already executed
@@ -236,40 +238,27 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-// getExecutionTrees returns a list of execution trees with the names of their export targets
-// if the --export flag has the name of a file, a single merged tree is generated from the positional arguments
-// otherwise, one tree is generated for each argument
-//
-// this is necessary, since exporters can only export entire execution trees and when a file name is provided, we want to export the whole tree into one file
-//
-// example :
-// "check benchmark.b1 benchmark.b2 --export check.json" would give one merged tree
-// "check benchmark.b1 benchmark.b2 --export json" would give multiple trees
-func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
-	// TODO KAI probably only need a single tree returned now??
-	var trees []*namedExecutionTree
-	target := initData.Target
-	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
-		// create a single merged execution tree from all arguments
-		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
-		if err != nil {
-			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
-		}
-		name := fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
-		trees = append(trees, newNamedExecutionTree(name, executionTree))
-	} else {
-		if error_helpers.IsContextCanceled(ctx) {
-			return nil, ctx.Err()
-		}
-		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
-		if err != nil {
-			return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target.GetUnqualifiedName())
-		}
-		name := getExportName(target.Name(), initData.Workspace.Mod.ShortName)
-		trees = append(trees, newNamedExecutionTree(name, executionTree))
+func getExecutionTree(ctx context.Context, initData *controlinit.InitData) (*namedExecutionTree, error) {
+	// todo kai needed???
+	if error_helpers.IsContextCanceled(ctx) {
+		return nil, ctx.Err()
 	}
 
-	return trees, ctx.Err()
+	target := initData.Target
+	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
+	if err != nil {
+		return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
+	}
+
+	var name string
+	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
+		name = fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
+	} else {
+		name = getExportName(target.Name(), initData.Workspace.Mod.ShortName)
+	}
+
+	return newNamedExecutionTree(name, executionTree), ctx.Err()
+
 }
 
 // getExportName resolves the base name of the target file

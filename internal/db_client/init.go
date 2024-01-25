@@ -20,5 +20,5 @@ func init() {
 	// use this to configure the drivers, if necessary
 	// also can be used to register custom drivers
 	//
-	// also can be used to defined custom connectors that can be used to connect to the backend
+	// also can be used to defined custom connectors that can be used to connect to the Backend
 }
