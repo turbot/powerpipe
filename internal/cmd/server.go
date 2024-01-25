@@ -39,7 +39,6 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
 
-	// TODO KAI do we need a client?? I don't think so
 	// add option
 	// initialise the workspace
 	modInitData := initialisation.NewInitData(ctx, "dashboard")
