@@ -339,7 +339,7 @@ const getCheckGroupingNode = (
         : children[0];
     case "control":
       return new ControlNode(
-        parentGroupType == "benchmark"
+        parentGroupType === "benchmark"
           ? checkResult.control.sort
           : checkResult.control.title || checkResult.control.name,
         checkResult.control.name,

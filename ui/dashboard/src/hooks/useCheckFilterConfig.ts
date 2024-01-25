@@ -1,4 +1,4 @@
-import { AndFilter, CheckFilter } from "../components/dashboards/check/common";
+import { AndFilter, CheckFilter } from "components/dashboards/check/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
