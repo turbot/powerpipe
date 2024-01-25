@@ -99,6 +99,10 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	// set the dashboard database and search patch config
 	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(initData.Target, initData.Workspace.Mod, defaultDatabase, defaultSearchPathConfig)
+	if err != nil {
+		i.Result.Error = err
+		return i
+	}
 
 	var opts []backend.ConnectOption
 	if !searchPathConfig.Empty() {
