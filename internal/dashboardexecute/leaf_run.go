@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/backend"
 	"golang.org/x/exp/maps"
 	"log/slog"
 
@@ -23,13 +24,14 @@ type LeafRun struct {
 
 	Resource modconfig.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties       map[string]any                 `json:"properties,omitempty"`
-	ConnectionString string                         `json:"-"`
-	Data             *dashboardtypes.LeafData       `json:"data,omitempty"`
-	TimingResult     *localqueryresult.TimingResult `json:"-"`
+	Properties   map[string]any                 `json:"properties,omitempty"`
+	Data         *dashboardtypes.LeafData       `json:"data,omitempty"`
+	TimingResult *localqueryresult.TimingResult `json:"-"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
-	onComplete func()
+	onComplete       func()
+	database         string
+	searchPathConfig backend.SearchPathConfig
 }
 
 func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -44,17 +46,15 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 		Resource:   resource,
 		Properties: make(map[string]any),
 	}
-	// get the connection string from the QueryProvider
-	if qp, ok := resource.(modconfig.ConnectionStringItem); ok {
-		r.ConnectionString = executionTree.defaultConnectionString
-		if queryConnectionString := qp.GetConnectionString(); queryConnectionString != nil {
-			r.ConnectionString = *queryConnectionString
-		}
-	}
 
 	// create RuntimeDependencySubscriberImpl- this handles 'with' run creation and resolving runtime dependency resolution
 	// (NOTE: we have to do this after creating run as we need to pass a ref to the run)
 	r.RuntimeDependencySubscriberImpl = *NewRuntimeDependencySubscriber(resource, parent, r, executionTree)
+
+	// now iniialise database and search path
+	if err := r.resolveDatabaseConfig(); err != nil {
+		return nil, err
+	}
 
 	// apply options AFTER calling NewRuntimeDependencySubscriber
 	for _, opt := range opts {
@@ -93,6 +93,25 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 		return nil, err
 	}
 	return r, nil
+}
+
+func (r *LeafRun) resolveDatabaseConfig() error {
+	// resolve the database and connection string for the run
+	database, searchPathConfig, err := getDatabaseConfigForResource(r.Resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
+	if err != nil {
+		return err
+	}
+	// if the resource specifies a connection string, use that
+	// probably not what we want
+	if c, ok := r.resource.(modconfig.ConnectionStringItem); ok {
+		if resourceConnectionString := c.GetConnectionString(); resourceConnectionString != nil {
+			database = *resourceConnectionString
+		}
+	}
+
+	r.database = database
+	r.searchPathConfig = searchPathConfig
+	return nil
 }
 
 func (r *LeafRun) createChildRuns(executionTree *DashboardExecutionTree) error {
@@ -198,7 +217,7 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 	slog.Debug("LeafRun SQL resolved, executing", "name", r.resource.Name())
 
 	// get the client for this connection string
-	client, err := r.executionTree.getClient(ctx, r.ConnectionString)
+	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		return err
 	}

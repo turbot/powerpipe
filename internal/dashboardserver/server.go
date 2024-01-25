@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"log/slog"
 	"os"
 	"reflect"
@@ -21,31 +18,26 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
-	"github.com/turbot/powerpipe/internal/db_client"
 	"gopkg.in/olahol/melody.v1"
 )
 
 type Server struct {
-	dbClient         *db_client.DbClient
 	mutex            *sync.Mutex
 	dashboardClients map[string]*DashboardClientInfo
 	webSocket        *melody.Melody
 	workspace        *dashboardworkspace.WorkspaceEvents
 }
 
-func NewServer(ctx context.Context, dbClient *db_client.DbClient, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
 	initLogSink()
 
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
-
-	// webSocket := melody.New()
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
 
 	var mutex = &sync.Mutex{}
 
 	server := &Server{
-		dbClient:         dbClient,
 		mutex:            mutex,
 		dashboardClients: dashboardClients,
 		webSocket:        webSocket,
@@ -53,6 +45,7 @@ func NewServer(ctx context.Context, dbClient *db_client.DbClient, w *dashboardwo
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
+
 	// TODO KAI client <MISC>
 	err := w.SetupWatcher(ctx /*,dbClient*/, func(c context.Context, e error) {})
 	OutputMessage(ctx, "WorkspaceEvents loaded")
@@ -80,7 +73,6 @@ func (s *Server) Shutdown(ctx context.Context) {
 	}
 
 	slog.Debug("Server shutdown complete")
-
 }
 
 func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents.DashboardEvent) {
@@ -269,9 +261,9 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			sessionMap := s.getDashboardClients()
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == changedDashboardName {
-					clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
+
 					if changedResource := s.getResource(changedDashboardName); changedResource != nil {
-						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace)
 					}
 				}
 			}
@@ -292,9 +284,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		for _, newDashboardName := range newDashboardNames {
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == newDashboardName {
-					clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
 					if newDashboard := s.getResource(newDashboardName); newDashboard != nil {
-						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace, clientMap)
+						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace)
 					}
 				}
 			}
@@ -375,15 +366,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			// if so, it sets these values in viper
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 
-			// if a search path or search path prefix was passed in the request payload, set it in viper
-			setSearchPathAndPrefixFromRequest(request)
-
-			if err := localcmdconfig.UpdateTargetConnectionParams(dashboard, s.workspace.Mod); err != nil {
-				panic(fmt.Errorf("failed to update target connection params: %v", err))
-			}
-			// NOT RIGHT
-			clientMap := map[string]*db_client.DbClient{s.dbClient.GetConnectionString(): s.dbClient}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, clientMap)
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
@@ -406,16 +389,6 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
 		}
 	}
-}
-
-func setSearchPathAndPrefixFromRequest(request ClientRequest) {
-	if request.SearchPath != nil {
-		viper.Set(constants.ArgSearchPath, request.SearchPath)
-	}
-	if request.SearchPathPrefix != nil {
-		viper.Set(constants.ArgSearchPathPrefix, request.SearchPathPrefix)
-	}
-
 }
 
 func (s *Server) clearSession(ctx context.Context, session *melody.Session) {

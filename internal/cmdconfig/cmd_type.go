@@ -33,7 +33,6 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 	var queryArgsMap = map[string]*modconfig.QueryArgs{}
 
 	for _, targetName := range cmdArgs {
-
 		// try to parse args out of the invocation (only query supported at present - control too?)
 		// for example:
 		//		query.my_query("val1","val1")
@@ -48,19 +47,18 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 
 		target, err := resolveResourceName(targetName, commandTargetType, w)
 		if err != nil {
+			// if a query resource is not found, treat as a query string
+			// for all other resources fail
 			if commandTargetType != "query" {
 				return nil, nil, err
 			}
 
-			if commandTargetType == "query" {
-				// special case handling for query - the arg may be a query string rather than a resource name
-				// if a manual query is being run (i.e. not a named query), convert into a query and add to workspace
-				// this is to allow us to use existing dashboard execution code
-				target, err := ensureSnapshotQueryResource(targetName, w)
-				if err != nil {
-					return nil, nil, err
-				}
-				targets = append(targets, target)
+			// special case handling for query - the arg may be a query string rather than a resource name
+			// if a manual query is being run (i.e. not a named query), convert into a query and add to workspace
+			// this is to allow us to use existing dashboard execution code
+			target, err = ensureSnapshotQueryResource(targetName, w)
+			if err != nil {
+				return nil, nil, err
 			}
 			// fall through to add target
 		}

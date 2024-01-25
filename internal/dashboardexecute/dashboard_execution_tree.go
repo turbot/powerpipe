@@ -3,6 +3,8 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
@@ -27,11 +29,8 @@ type DashboardExecutionTree struct {
 	dashboardName string
 	sessionId     string
 	// map of clients, keyed by connection string
-	clients    map[string]*db_client.DbClient
-	clientsMut sync.RWMutex
-	// if the leaf node does not specify a connection string, this is the connection string which will be used to
-	// retrieve the client
-	defaultConnectionString string
+	clients *db_client.ClientMap
+
 	// map of executing runs, keyed by full name
 	runs        map[string]dashboardtypes.DashboardTreeRun
 	workspace   *dashboardworkspace.WorkspaceEvents
@@ -42,21 +41,42 @@ type DashboardExecutionTree struct {
 	inputLock   sync.Mutex
 	inputValues map[string]any
 	id          string
+	// active database and search path config (unless overridden)
+	database         string
+	searchPathConfig backend.SearchPathConfig
 }
 
-func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, clients map[string]*db_client.DbClient, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
+func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
-		dashboardName:           rootResource.Name(),
-		sessionId:               sessionId,
-		defaultConnectionString: viper.GetString(constants.ArgDatabase),
-		clients:                 clients,
-		runs:                    make(map[string]dashboardtypes.DashboardTreeRun),
-		workspace:               workspace,
-		runComplete:             make(chan dashboardtypes.DashboardTreeRun, 1),
-		inputValues:             make(map[string]any),
+		dashboardName: rootResource.Name(),
+		sessionId:     sessionId,
+		clients:       db_client.NewClientMap(),
+		runs:          make(map[string]dashboardtypes.DashboardTreeRun),
+		workspace:     workspace,
+		runComplete:   make(chan dashboardtypes.DashboardTreeRun, 1),
+		inputValues:   make(map[string]any),
 	}
 	executionTree.id = fmt.Sprintf("%p", executionTree)
+
+	// resolve the active database and search search path config for the dashboard
+	defaultSearchPathConfig := backend.SearchPathConfig{
+		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
+		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
+	}
+	defaultDatabase := viper.GetString(constants.ArgDatabase)
+
+	database, searchPathConfig, err := getDatabaseConfigForResource(rootResource, workspace.Mod, defaultDatabase, defaultSearchPathConfig)
+	if err != nil {
+		return nil, err
+	}
+	executionTree.database = database
+	executionTree.searchPathConfig = searchPathConfig
+	// add a client for the active database and search path
+	_, err = executionTree.clients.Get(context.Background(), database, searchPathConfig)
+	if err != nil {
+		return nil, err
+	}
 
 	// create the root run node (either a report run or a counter run)
 	root, err := executionTree.createRootItem(rootResource)
@@ -66,6 +86,42 @@ func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 
 	executionTree.Root = root
 	return executionTree, nil
+}
+
+func getDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *modconfig.Mod, defaultDatabase string, defaultSearchPathConfig backend.SearchPathConfig) (string, backend.SearchPathConfig, error) {
+	database := defaultDatabase
+	searchPathConfig := defaultSearchPathConfig
+
+	// NOTE: if the resource is in a dependency mod, check whether database or search path has been specified for it
+	depName := resource.GetMod().DependencyName
+
+	if depName != "" {
+		// look for this mod in the workspace mod require
+		modRequirement := workspaceMod.Require.GetModDependency(depName)
+		if modRequirement == nil {
+			// not expected
+			return database, searchPathConfig, sperr.New("could not find mod requirement for %s", depName)
+		}
+
+		// if the mod requirement has a search path, prefix or database, set it in viper,
+		// overriding whatever value sth, use it
+		// TODO KAI  should we only respect overriden search path and search path prefix if the db is overriden?
+		//if modRequirement.SearchPath != nil {
+		//	searchPathConfig.SearchPath = modRequirement.SearchPath
+		//}
+		//if modRequirement.SearchPathPrefix != nil {
+		//	searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
+		//}
+		if modRequirement.Database != nil {
+			// if database is overriden, also use overriden search path and search path prefix (even if empty)
+			database = *modRequirement.Database
+			searchPathConfig.SearchPath = modRequirement.SearchPath
+			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
+		}
+	}
+
+	return database, searchPathConfig, nil
+
 }
 
 func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
@@ -97,9 +153,6 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	startTime := time.Now()
 
-	// TODO KAI WHAT DO WE DO HERE <SEARCH PATH>
-	//searchPath := e.defaultClient().GetRequiredSessionSearchPath()
-
 	// store context
 	cancelCtx, cancel := context.WithCancel(ctx)
 	e.cancel = cancel
@@ -111,16 +164,6 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	if e.Root.GetError() != nil {
 		return
 	}
-
-	// TODO KAI HOW TO HANDLE SEARCH PATHS?
-	// TODO should we always wait even with non custom search path?
-	// if there is a custom search path, wait until the first connection of each plugin has loaded
-	//if customSearchPath := e.client.GetCustomSearchPath(); customSearchPath != nil {
-	//	if err := connection_sync.WaitForSearchPathSchemas(ctx, e.client, customSearchPath); err != nil {
-	//		e.Root.SetError(ctx, err)
-	//		return
-	//	}
-	//}
 
 	panels := e.BuildSnapshotPanels()
 	// build map of those variables referenced by the dashboard run
@@ -170,6 +213,9 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 
 	// execute synchronously
 	e.Root.Execute(cancelCtx)
+
+	// now close clients
+	e.clients.Close(ctx)
 }
 
 // GetRunStatus returns the stats of the Root run
@@ -320,25 +366,4 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 
 func (*DashboardExecutionTree) GetResource() modconfig.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
-}
-
-// return a db client for the given connection string
-// if clients map already contains a client for this connection string, use that
-// otherwise create a new client and add to the map
-func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString string) (*db_client.DbClient, error) {
-	e.clientsMut.RLock()
-	client := e.clients[connectionString]
-	e.clientsMut.RUnlock()
-
-	if client != nil {
-		return client, nil
-	}
-	e.clientsMut.Lock()
-	defer e.clientsMut.Unlock()
-
-	client, err := db_client.NewDbClient(ctx, connectionString)
-	if err != nil {
-		return nil, err
-	}
-	return client, nil
 }

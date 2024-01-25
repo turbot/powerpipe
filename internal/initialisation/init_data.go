@@ -24,7 +24,7 @@ import (
 type InitData struct {
 	Workspace       *workspace.Workspace
 	WorkspaceEvents *dashboardworkspace.WorkspaceEvents
-
+	// todo kai remove this and just use clientmap
 	Client *db_client.DbClient
 	Result *InitResult
 
@@ -183,9 +183,6 @@ func (i *InitData) resolveTarget(args []string, targetType string) {
 	}
 	i.Target = targets[0]
 
-	if err := cmdconfig.UpdateTargetConnectionParams(i.Target, i.Workspace.Mod); err != nil {
-		i.Result.Error = err
-	}
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod) []string {

@@ -24,7 +24,7 @@ type DbClient struct {
 	BeforeExecuteHook func(context.Context, *sql.Conn) error
 }
 
-func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err error) {
+func NewDbClient(ctx context.Context, connectionString string, opts ...backend.ConnectOption) (_ *DbClient, err error) {
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
@@ -45,18 +45,18 @@ func NewDbClient(ctx context.Context, connectionString string) (_ *DbClient, err
 		}
 	}()
 
-	poolConfig := backend.PoolConfig{
-		MaxConnIdleTime: MaxConnIdleTime,
-		MaxConnLifeTime: MaxConnLifeTime,
-		MaxOpenConns:    MaxDbConnections(),
+	// process options - searhc path may have been passed in
+	config := backend.NewConnectConfig(opts)
+	config.MaxOpenConns = MaxDbConnections()
+	// if no search path override passed in as an option, use the viper config
+	if config.SearchPathConfig.Empty() {
+		config.SearchPathConfig = backend.SearchPathConfig{
+			SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
+			SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
+		}
 	}
 
-	searchPathConfig := backend.SearchPathConfig{
-		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
-		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
-	}
-
-	if err := client.connect(ctx, backend.WithPoolConfig(poolConfig), backend.WithSearchPathConfig(searchPathConfig)); err != nil {
+	if err := client.connect(ctx, backend.WithConfig(config)); err != nil {
 		return nil, err
 	}
 
