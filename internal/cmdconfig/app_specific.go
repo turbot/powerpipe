@@ -46,8 +46,8 @@ func SetAppSpecificConstants() {
 	app_specific.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
 
 	// extensions
-	// TODO KAI change to pp when we have mods
-	app_specific.ModDataExtension = ".sp"
+
+	app_specific.ModDataExtensions = []string{".sp", ".pp"}
 	app_specific.ModFileName = "mod.sp"
 	app_specific.ConfigExtension = ".ppc"
 	app_specific.VariablesExtension = ".ppvars"
