@@ -3,8 +3,7 @@ package dashboardexecute
 import (
 	"context"
 
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -12,6 +11,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 // CheckRun is a struct representing the execution of a control or benchmark
@@ -23,6 +23,8 @@ type CheckRun struct {
 	Root      controlexecute.ExecutionTreeNode `json:"-"`
 
 	controlExecutionTree *controlexecute.ExecutionTree
+	database             string
+	searchPathConfig     backend.SearchPathConfig
 }
 
 func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -41,10 +43,29 @@ func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Das
 	// add r into execution tree
 	executionTree.runs[r.Name] = r
 
-	//if err := r.populateProperties(); err != nil {
-	//	return nil, err
-	//}
+	if err := r.resolveDatabaseConfig(); err != nil {
+		return nil, err
+	}
+
 	return r, nil
+}
+
+func (r *CheckRun) resolveDatabaseConfig() error {
+	// resolve the database and connection string for the run
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(r.resource, r.executionTree.workspace.Mod, r.executionTree.database, r.executionTree.searchPathConfig)
+	if err != nil {
+		return err
+	}
+	// if the resource specifies a connection string, use that
+	if c, ok := r.resource.(modconfig.ConnectionStringItem); ok {
+		if resourceConnectionString := c.GetConnectionString(); resourceConnectionString != nil {
+			database = *resourceConnectionString
+		}
+	}
+
+	r.database = database
+	r.searchPathConfig = searchPathConfig
+	return nil
 }
 
 // Initialise implements DashboardTreeRun
@@ -53,14 +74,12 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	controlFilterWhereClause := ""
 
 	// retrieve the client for the default database
-	// todo - should we check if the root benchmark specifies a connection string??
-	client, err := r.executionTree.getClient(ctx, viper.GetString(constants.ArgDatabase))
+	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)
 		return
 	}
-
 	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event

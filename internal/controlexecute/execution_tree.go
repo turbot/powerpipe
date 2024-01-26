@@ -7,13 +7,13 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/db_client"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -35,19 +35,19 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]bool
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
-	if len(targets) < 1 {
-		return nil, sperr.New("need at least one target to create a check execution tree")
-	}
-
+func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, target modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
-		client:    client,
-		// TODO KAI
-		// populate from client
-		SearchPath: nil, //utils.UnquoteStringArray(searchPath),
+
+		client: client,
 	}
+
+	// if backend supports search path, get it
+	if sp, ok := client.Backend.(backend.SearchPathProvider); ok {
+		executionTree.SearchPath = sp.SearchPath()
+	}
+
 	// if a "--where" or "--tag" parameter was passed, build a map of control names used to filter the controls to run
 	// create a context with status hooks disabled
 	noStatusCtx := statushooks.DisableStatusHooks(ctx)
@@ -56,21 +56,8 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		return nil, err
 	}
 
-	var resolvedItem modconfig.ModTreeItem
-
-	// if only one argument is provided, add this as execution root
-	if len(targets) == 1 {
-		resolvedItem = targets[0]
-	} else {
-		// for multiple items, use a root benchmark as the parent of the items
-		// this root benchmark will be converted to a ResultGroup that can be worked with
-		// this is necessary because snapshots only support a single tree item as the child of the root
-
-		// create a root benchmark with `targets` as it's children
-		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
-	}
 	// build tree of result groups, starting with a synthetic 'root' node
-	executionTree.Root, err = NewRootResultGroup(ctx, executionTree, resolvedItem)
+	executionTree.Root, err = NewRootResultGroup(ctx, executionTree, target)
 	if err != nil {
 		return nil, err
 	}

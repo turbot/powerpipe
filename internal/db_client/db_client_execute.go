@@ -310,7 +310,7 @@ func (c *DbClient) readRow(rows *sql.Rows, cols []*queryresult.ColumnDef) ([]any
 	if err != nil {
 		return nil, error_helpers.WrapError(err)
 	}
-	return c.backend.RowReader().Read(columnValues, cols)
+	return c.Backend.RowReader().Read(columnValues, cols)
 }
 
 func isStreamingOutput() bool {

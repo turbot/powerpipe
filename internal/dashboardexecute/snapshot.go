@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
-	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
@@ -27,8 +26,8 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	rootResource := initData.Target
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
-	clientMap := map[string]*db_client.DbClient{initData.Client.GetConnectionString(): initData.Client}
-	if err := Executor.ExecuteDashboard(ctx, sessionId, rootResource, inputs, w, clientMap); err != nil {
+
+	if err := Executor.ExecuteDashboard(ctx, sessionId, rootResource, inputs, w); err != nil {
 		return nil, err
 	}
 

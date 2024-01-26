@@ -10,12 +10,12 @@ import (
 	"time"
 
 	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
-	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 type DashboardExecutor struct {
@@ -38,7 +38,7 @@ func newDashboardExecutor() *DashboardExecutor {
 
 var Executor = newDashboardExecutor()
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, clients map[string]*db_client.DbClient) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err != nil && ctx.Err() != nil {
@@ -59,7 +59,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.CancelExecutionForSession(ctx, sessionId)
 
 	// now create a new execution
-	executionTree, err = NewDashboardExecutionTree(rootResource, sessionId, clients, workspace)
+	executionTree, err = NewDashboardExecutionTree(rootResource, sessionId, workspace, opts...)
 	if err != nil {
 		return err
 	}
@@ -159,8 +159,7 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 			sessionId,
 			executionTree.Root.GetResource(),
 			inputs,
-			executionTree.workspace,
-			executionTree.clients)
+			executionTree.workspace)
 	}
 
 	// set the inputs

@@ -50,7 +50,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	// setup a new webSocket service
 	webSocket := melody.New()
 	// create the dashboardServer
-	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Client, modInitData.WorkspaceEvents, webSocket)
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.WorkspaceEvents, webSocket)
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server

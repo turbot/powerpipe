@@ -3,6 +3,8 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -15,18 +17,14 @@ import (
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
-	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"log/slog"
 )
 
 type InitData struct {
 	Workspace       *workspace.Workspace
 	WorkspaceEvents *dashboardworkspace.WorkspaceEvents
-
-	Client *db_client.DbClient
-	Result *InitResult
+	Result          *InitResult
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
@@ -151,14 +149,6 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 		i.Result.Error = sperr.New("connection string is not set")
 		return
 	}
-
-	client, err := db_client.NewDbClient(ctx, connectionString)
-	if err != nil {
-		i.Result.Error = err
-		return
-	}
-
-	i.Client = client
 }
 
 // resolve target resource, args and any target specific search path
@@ -183,9 +173,6 @@ func (i *InitData) resolveTarget(args []string, targetType string) {
 	}
 	i.Target = targets[0]
 
-	if err := cmdconfig.UpdateTargetConnectionParams(i.Target, i.Workspace.Mod); err != nil {
-		i.Result.Error = err
-	}
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
@@ -213,9 +200,6 @@ func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
 }
 
 func (i *InitData) Cleanup(ctx context.Context) {
-	if i.Client != nil {
-		_ = i.Client.Close(ctx)
-	}
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}

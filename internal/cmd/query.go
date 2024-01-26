@@ -110,7 +110,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// if there are args, put them into viper for retrieval by the dashboard execution
-	if initData.Args != nil {
+	if len(initData.Args) > 0 {
 		queryArgs, ok := initData.Args[initData.Target.GetUnqualifiedName()]
 		if !ok {
 			// not expected

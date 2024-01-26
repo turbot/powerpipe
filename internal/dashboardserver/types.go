@@ -113,16 +113,16 @@ type ClientRequestDashboardPayload struct {
 }
 
 type ClientRequestPayload struct {
-	Dashboard    ClientRequestDashboardPayload `json:"dashboard"`
-	InputValues  map[string]interface{}        `json:"input_values"`
-	ChangedInput string                        `json:"changed_input"`
+	Dashboard        ClientRequestDashboardPayload `json:"dashboard"`
+	InputValues      map[string]interface{}        `json:"input_values"`
+	ChangedInput     string                        `json:"changed_input"`
+	SearchPath       []string                      `json:"search_path"`
+	SearchPathPrefix []string                      `json:"search_path_prefix"`
 }
 
 type ClientRequest struct {
-	Action           string               `json:"action"`
-	Payload          ClientRequestPayload `json:"payload"`
-	SearchPath       []string             `json:"search_path"`
-	SearchPathPrefix []string             `json:"search_path_prefix"`
+	Action  string               `json:"action"`
+	Payload ClientRequestPayload `json:"payload"`
 }
 
 type ModAvailableDashboard struct {
@@ -131,6 +131,7 @@ type ModAvailableDashboard struct {
 	ShortName   string            `json:"short_name"`
 	Tags        map[string]string `json:"tags"`
 	ModFullName string            `json:"mod_full_name"`
+	Database    string            `json:"database"`
 }
 
 type ModAvailableBenchmark struct {
