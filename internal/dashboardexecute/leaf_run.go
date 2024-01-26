@@ -52,7 +52,7 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 	// (NOTE: we have to do this after creating run as we need to pass a ref to the run)
 	r.RuntimeDependencySubscriberImpl = *NewRuntimeDependencySubscriber(resource, parent, r, executionTree)
 
-	// now iniialise database and search path
+	// now initialise database and search path
 	if err := r.resolveDatabaseConfig(); err != nil {
 		return nil, err
 	}
@@ -217,7 +217,8 @@ func (*LeafRun) IsSnapshotPanel() {}
 func (r *LeafRun) executeQuery(ctx context.Context) error {
 	slog.Debug("LeafRun SQL resolved, executing", "name", r.resource.Name())
 
-	// get the client for this connection string
+	// get the client for this leaf run
+	// (we have already resolved the database and search path config)
 	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		return err

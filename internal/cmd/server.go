@@ -39,7 +39,6 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
 
-	// add option
 	// initialise the workspace
 	modInitData := initialisation.NewInitData(ctx, "dashboard")
 	error_helpers.FailOnError(modInitData.Result.Error)

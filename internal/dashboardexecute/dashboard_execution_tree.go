@@ -40,7 +40,7 @@ type DashboardExecutionTree struct {
 	inputLock   sync.Mutex
 	inputValues map[string]any
 	id          string
-	// active database and search path config (unless overridden)
+	// active database and search path config (unless overridden at the resource level)
 	database         string
 	searchPathConfig backend.SearchPathConfig
 }
@@ -117,6 +117,17 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	e.cancel = cancel
 	workspace := e.workspace
 
+	// if the default database backend supports search path, retrieve it
+	defaultClient, err := e.clients.Get(ctx, e.database, e.searchPathConfig)
+	if err != nil {
+		e.SetError(ctx, err)
+		return
+	}
+	var searchPath []string
+	if sp, ok := defaultClient.Backend.(backend.SearchPathProvider); ok {
+		searchPath = sp.SearchPath()
+	}
+
 	// perform any necessary initialisation
 	// (e.g. check run creates the control execution tree)
 	e.Root.Initialise(cancelCtx)
@@ -144,22 +155,19 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	})
 	defer func() {
 
-		e := &dashboardevents.ExecutionComplete{
+		ev := &dashboardevents.ExecutionComplete{
 			Root:        e.Root,
 			Session:     e.sessionId,
 			ExecutionId: e.id,
 			Panels:      panels,
 			Inputs:      e.inputValues,
 			Variables:   referencedVariables,
-			// search path elements are quoted (for consumption by postgres)
-			// unquote them
-			// TOSO STEAMPIPE ONLY
-			SearchPath: nil, //utils.UnquoteStringArray(searchPath),
-			StartTime:  startTime,
-			EndTime:    time.Now(),
+			SearchPath:  searchPath,
+			StartTime:   startTime,
+			EndTime:     time.Now(),
 		}
 
-		workspace.PublishDashboardEvent(ctx, e)
+		workspace.PublishDashboardEvent(ctx, ev)
 	}()
 
 	slog.Debug("begin DashboardExecutionTree.Execute")

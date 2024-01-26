@@ -96,7 +96,7 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 
 	i.setControlFilterClause()
 
-	// set the dashboard database and search patch config
+	// set the default database and search patch config, based on the target resource
 	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(initData.Target, initData.Workspace.Mod, defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
@@ -104,12 +104,11 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 		return i
 	}
 
+	// create client
 	var opts []backend.ConnectOption
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-
-	// create client
 	client, err := db_client.NewDbClient(ctx, database, opts...)
 	if err != nil {
 		i.Result.Error = err
@@ -152,7 +151,7 @@ func generateWhereClauseFromTags(tags []string) string {
 			whereMap[k] = append(whereMap[k], v...)
 		}
 	}
-	whereComponents := []string{}
+	var whereComponents []string
 	for key, values := range whereMap {
 		thisComponent := []string{}
 		for _, x := range values {

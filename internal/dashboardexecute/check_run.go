@@ -57,7 +57,6 @@ func (r *CheckRun) resolveDatabaseConfig() error {
 		return err
 	}
 	// if the resource specifies a connection string, use that
-	// probably not what we want
 	if c, ok := r.resource.(modconfig.ConnectionStringItem); ok {
 		if resourceConnectionString := c.GetConnectionString(); resourceConnectionString != nil {
 			database = *resourceConnectionString
@@ -75,7 +74,6 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	controlFilterWhereClause := ""
 
 	// retrieve the client for the default database
-	// todo - should we check if the root benchmark specifies a connection string??
 	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
