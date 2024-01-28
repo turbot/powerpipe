@@ -4,20 +4,20 @@
 
 .theme-steampipe-default {
   /* Control colors */
-  --color-alert: #da1e28;
+  --color-alert: #ba2e0f; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /*#da1e28;*/
   --color-alert-animate: rgba(218, 30, 40, 0.8); /* #e7525a */
   --color-alert-light: rgba(218, 30, 40, 0.3);
   --color-alert-inverse: theme("colors.white");
-  --color-orange: #ff832b;
+  --color-orange: #cc5f21; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #ff832b; */
   --color-orange-inverse: theme("colors.white");
-  --color-severity: #c9a00c;
-  --color-ok: #198038;
+  --color-severity: #b2911c; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #c9a00c; */
+  --color-ok: #67a353; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #198038; */
   --color-ok-animate: rgba(25, 128, 56, 0.8); /* #27ca58 */
   --color-ok-inverse: theme("colors.white");
-  --color-info: #3185fc;
+  --color-info: #3184c2; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #3185fc; */
   --color-info-animate: rgba(49, 133, 252, 0.8); /* #64a3fc */
   --color-info-inverse: theme("colors.white");
-  --color-skip: theme("colors.gray.400");
+  --color-skip: #7d8998; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* theme("colors.gray.400"); */
   --color-skip-animate: rgba(156, 163, 175, 0.8); /* #b4bac3 */
   --color-skip-inverse: theme("colors.white");
 
@@ -59,20 +59,20 @@
 
 .theme-steampipe-dark {
   /* Control colors */
-  --color-alert: #f83741;
+  --color-alert: #d63f38; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #fe6e73; */ /* #f83741; */
   --color-alert-animate: rgba(248, 55, 65, 0.8);
   --color-alert-light: rgba(250, 77, 86, 0.3);
   --color-alert-inverse: theme("colors.white");
-  --color-orange: #ff832b;
+  --color-orange: #f89256; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #ff832b; */
   --color-orange-inverse: theme("colors.white");
-  --color-severity: #bd960b;
-  --color-ok: #24a148;
+  --color-severity: #dfb52c; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #bd960b; */
+  --color-ok: #69ae34; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #24a148; */
   --color-ok-animate: rgba(36, 161, 72, 0.8);
   --color-ok-inverse: theme("colors.white");
-  --color-info: #4589ff;
+  --color-info: #08aad2; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* #4589ff; */
   --color-info-animate: rgba(69, 137, 255, 0.8);
   --color-info-inverse: theme("colors.white");
-  --color-skip: theme("colors.gray.400");
+  --color-skip: #7d8998; /* https://cloudscape.design/foundation/visual-foundation/data-vis-colors/ */ /* theme("colors.gray.400"); */
   --color-skip-animate: rgba(156, 163, 175, 0.8); /* #b4bac3 */
   --color-skip-inverse: theme("colors.white");
 

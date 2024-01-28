@@ -41,7 +41,7 @@ import {
   NodeStatus,
   WithStatus,
 } from "../types";
-import { DashboardRunState } from "../../../../types";
+import { DashboardRunState } from "types";
 import { ExpandedNodes, GraphProvider, useGraph } from "../common/useGraph";
 import { getGraphComponent } from "..";
 import { registerComponent } from "../../index";
@@ -50,10 +50,10 @@ import {
   ZoomIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "../../../../constants/icons";
-import { useDashboard } from "../../../../hooks/useDashboard";
+} from "constants/icons";
+import { useDashboard } from "hooks/useDashboard";
 import { useEffect, useMemo } from "react";
-import { usePanel } from "../../../../hooks/usePanel";
+import { usePanel } from "hooks/usePanel";
 import "reactflow/dist/style.css";
 
 const nodeWidth = 100;
@@ -78,7 +78,7 @@ const getGraphDirection = (direction?: GraphDirection | null): DagreRankDir => {
 
 const getNodeOrEdgeLabel = (
   item: NodeType | EdgeType,
-  category: Category | null
+  category: Category | null,
 ) => {
   if (item.isFolded) {
     if (item.title) {
@@ -107,7 +107,7 @@ const buildGraphNodesAndEdges = (
   properties: GraphProperties | undefined,
   themeColors: any,
   expandedNodes: ExpandedNodes,
-  status: DashboardRunState
+  status: DashboardRunState,
 ) => {
   if (!data) {
     return {
@@ -120,7 +120,7 @@ const buildGraphNodesAndEdges = (
     data,
     properties,
     themeColors,
-    false
+    false,
   );
 
   nodesAndEdges = foldNodesAndEdges(nodesAndEdges, expandedNodes);
@@ -214,8 +214,8 @@ const buildGraphNodesAndEdges = (
     const color = categoryColor
       ? categoryColor
       : targetNodeColor
-      ? targetNodeColor
-      : themeColors.blackScale4;
+        ? targetNodeColor
+        : themeColors.blackScale4;
     const labelOpacity = categoryColor ? 1 : targetNodeColor ? 0.7 : 1;
     const lineOpacity = categoryColor ? 1 : targetNodeColor ? 0.7 : 1;
     edges.push({
@@ -278,7 +278,7 @@ const useGraphOptions = (props: GraphProps) => {
     props.categories,
     props.data,
     props.properties,
-    props.status
+    props.status,
   );
   const { setGraphEdges, setGraphNodes } = useGraph();
   const [nodes, setNodes, onNodesChange] = useNodesState(nodesAndEdges.nodes);
@@ -312,7 +312,7 @@ const useGraphNodesAndEdges = (
   categories: CategoryMap,
   data: LeafNodeData | undefined,
   properties: GraphProperties | undefined,
-  status: DashboardRunState
+  status: DashboardRunState,
 ) => {
   const { expandedNodes } = useGraph();
   const themeColors = useChartThemeColors();
@@ -324,9 +324,9 @@ const useGraphNodesAndEdges = (
         properties,
         themeColors,
         expandedNodes,
-        status
+        status,
       ),
-    [categories, data, expandedNodes, properties, status, themeColors]
+    [categories, data, expandedNodes, properties, status, themeColors],
   );
 
   return {
@@ -410,7 +410,7 @@ const useNodeAndEdgePanelInformation = (
   nodeAndEdgeStatus: NodeAndEdgeStatus,
   dataFormat: NodeAndEdgeDataFormat,
   nodes: Node[],
-  status: DashboardRunState
+  status: DashboardRunState,
 ) => {
   const { setShowPanelInformation, setPanelInformation } = usePanel();
 
@@ -586,21 +586,21 @@ const Graph = (props) => {
     props.nodeAndEdgeStatus,
     props.dataFormat,
     graphOptions.nodes,
-    props.status
+    props.status,
   );
 
   const nodeTypes = useMemo(
     () => ({
       asset: AssetNode,
     }),
-    []
+    [],
   );
 
   const edgeTypes = useMemo(
     () => ({
       floating: FloatingEdge,
     }),
-    []
+    [],
   );
 
   return (
@@ -637,7 +637,7 @@ const GraphWrapper = (props: GraphProps) => {
   const nodeAndEdgeData = useNodeAndEdgeData(
     props.data,
     props.properties,
-    props.status
+    props.status,
   );
 
   if (!nodeAndEdgeData) {
