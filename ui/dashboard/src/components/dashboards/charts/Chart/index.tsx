@@ -569,15 +569,15 @@ const getSeriesForChartType = (
             ? {}
             : { stack: "total" }),
           itemStyle: {
+            borderRadius: [5, 5, 0, 0],
             color: seriesColor,
-            emphasis: {
-              barBorderRadius: [5, 5],
-            },
-            normal: {
-              barBorderRadius: [5, 5, 0, 0],
-            },
             borderColor: themeColors.dashboardPanel,
             borderWidth: 2,
+          },
+          emphasis: {
+            itemStyle: {
+              borderRadius: [5, 5],
+            },
           },
           barMaxWidth: 75,
           // Per https://stackoverflow.com/a/56116442, when using time series you have to manually encode each series
@@ -596,6 +596,33 @@ const getSeriesForChartType = (
           center: ["50%", "45%"],
           radius: ["30%", "50%"],
           label: { color: themeColors.foreground, fontSize: 10 },
+          itemStyle: {
+            borderRadius: 5,
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 2,
+          },
+          emphasis: {
+            itemStyle: {
+              color: "inherit",
+            },
+          },
+        });
+        break;
+      case "pie":
+        series.push({
+          name: seriesName,
+          type: "pie",
+          center: ["50%", "40%"],
+          radius: "50%",
+          label: { color: themeColors.foreground, fontSize: 10 },
+          emphasis: {
+            itemStyle: {
+              color: "inherit",
+              shadowBlur: 5,
+              shadowOffsetX: 0,
+              shadowColor: "rgba(0, 0, 0, 0.5)",
+            },
+          },
           itemStyle: {
             borderRadius: 5,
             borderColor: themeColors.dashboardPanel,
@@ -630,26 +657,6 @@ const getSeriesForChartType = (
           ...(shouldBeTimeSeries ? { encode: { x: 0, y: seriesName } } : {}),
         });
         break;
-      case "pie":
-        series.push({
-          name: seriesName,
-          type: "pie",
-          center: ["50%", "40%"],
-          radius: "50%",
-          label: { color: themeColors.foreground, fontSize: 10 },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 5,
-              shadowOffsetX: 0,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
-            },
-          },
-          itemStyle: {
-            borderRadius: 5,
-            borderColor: themeColors.dashboardPanel,
-            borderWidth: 2,
-          },
-        });
     }
   }
   return series;

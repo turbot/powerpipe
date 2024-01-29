@@ -35,9 +35,9 @@ const useChartThemeColors = () => {
       const foregroundLightest = style
         .getPropertyValue("--color-foreground-lightest")
         .trim();
-      const alert = style.getPropertyValue("--color-alert").trim();
+      const alert = `rgb(${style.getPropertyValue("--color-alert").trim()})`;
       const info = style.getPropertyValue("--color-info").trim();
-      const ok = style.getPropertyValue("--color-ok").trim();
+      const ok = `rgb(${style.getPropertyValue("--color-ok").trim()})`;
       const charts = getChartColors(theme);
       return {
         dashboard,
