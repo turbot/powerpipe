@@ -106,9 +106,14 @@ const Label = ({ value }) => {
   return value;
 };
 
-const Value = ({ value }) => {
-  if (!value) {
-    return null;
+const Value = ({ loading, value }) => {
+  if (loading || value === null || value === undefined) {
+    return (
+      <DashboardIcon
+        className="h-8 w-8"
+        icon="materialsymbols-outline:remove"
+      />
+    );
   }
 
   if (isNumber(value)) {
@@ -237,7 +242,7 @@ const Card = (props: CardProps) => {
             </p>
           </dt>
           <dd className="font-semibold text-3xl mt-1 mb-1">
-            <Value value={state.value} />
+            <Value loading={state.loading} value={state.value} />
           </dd>
         </div>
       </div>
