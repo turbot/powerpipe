@@ -55,6 +55,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
+		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
