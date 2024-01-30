@@ -15,12 +15,7 @@ import {
 import { classNames } from "utils/styles";
 import { PanelDefinition, PanelProperties } from "types";
 import { getComponent, registerComponent } from "../index";
-import {
-  getIconClasses,
-  getIconStyles,
-  getIconWrapperClasses,
-  getWrapperClasses,
-} from "utils/card";
+import { getIconClasses, getIconStyles, getWrapperClasses } from "utils/card";
 import { IDiffProperties } from "../data/types";
 import { useEffect, useState } from "react";
 
@@ -217,12 +212,7 @@ const Card = (props: CardProps) => {
     >
       <div className="flex space-x-3">
         {(state.loading || state.icon) && (
-          <div
-            className={classNames(
-              "shrink-0 grow-0",
-              //getIconWrapperClasses(state.type),
-            )}
-          >
+          <div className={classNames("shrink-0 grow-0")}>
             {state.loading ? (
               <LoadingIndicator className="h-8 w-8" />
             ) : (
@@ -235,9 +225,9 @@ const Card = (props: CardProps) => {
             )}
           </div>
         )}
-        <div className="grow mt-0.5">
-          <dt className="text-lg">
-            <p className="truncate">
+        <div className="grow mt-0.5 min-w-0">
+          <dt>
+            <p className="text-lg truncate" title={state.label || undefined}>
               {state.loading ? "Loading..." : state.label}
             </p>
           </dt>
@@ -246,142 +236,8 @@ const Card = (props: CardProps) => {
           </dd>
         </div>
       </div>
-      {/*<dt>*/}
-      {/*  {state.icon && (*/}
-      {/*    <div*/}
-      {/*      className={classNames(*/}
-      {/*        "absolute rounded-md p-3",*/}
-      {/*        getWrapperClasses(state.type),*/}
-      {/*      )}*/}
-      {/*    >*/}
-      {/*      <DashboardIcon*/}
-      {/*        className="h-6 w-6 text-white"*/}
-      {/*        aria-hidden="true"*/}
-      {/*        icon={state.icon}*/}
-      {/*        style={getIconStyles(state.type)}*/}
-      {/*      />*/}
-      {/*    </div>*/}
-      {/*  )}*/}
-      {/*  <p className="ml-16 truncate text-sm font-medium text-gray-500">*/}
-      {/*    {state.label}*/}
-      {/*  </p>*/}
-      {/*</dt>*/}
-      {/*<dd className="ml-16 flex items-baseline pb-6 sm:pb-7">*/}
-      {/*  <p className="text-2xl font-semibold text-gray-900">{state.value}</p>*/}
-      {/*  /!*<p*!/*/}
-      {/*  /!*  className={classNames(*!/*/}
-      {/*  /!*    item.changeType === "increase" ? "text-green-600" : "text-red-600",*!/*/}
-      {/*  /!*    "ml-2 flex items-baseline text-sm font-semibold",*!/*/}
-      {/*  /!*  )}*!/*/}
-      {/*  /!*>*!/*/}
-      {/*  /!*  {item.changeType === "increase" ? (*!/*/}
-      {/*  /!*    <ArrowUpIcon*!/*/}
-      {/*  /!*      className="h-5 w-5 flex-shrink-0 self-center text-green-500"*!/*/}
-      {/*  /!*      aria-hidden="true"*!/*/}
-      {/*  /!*    />*!/*/}
-      {/*  /!*  ) : (*!/*/}
-      {/*  /!*    <ArrowDownIcon*!/*/}
-      {/*  /!*      className="h-5 w-5 flex-shrink-0 self-center text-red-500"*!/*/}
-      {/*  /!*      aria-hidden="true"*!/*/}
-      {/*  /!*    />*!/*/}
-      {/*  /!*  )}*!/*/}
-
-      {/*  /!*  <span className="sr-only">*!/*/}
-      {/*  /!*    {" "}*!/*/}
-      {/*  /!*    {item.changeType === "increase" ? "Increased" : "Decreased"} by{" "}*!/*/}
-      {/*  /!*  </span>*!/*/}
-      {/*  /!*  {item.change}*!/*/}
-      {/*  /!*</p>*!/*/}
-      {/*  /!*<div className="absolute inset-x-0 bottom-0 bg-gray-50 px-4 py-4 sm:px-6">*!/*/}
-      {/*  /!*  <div className="text-sm">*!/*/}
-      {/*  /!*    <a*!/*/}
-      {/*  /!*      href="#"*!/*/}
-      {/*  /!*      className="font-medium text-indigo-600 hover:text-indigo-500"*!/*/}
-      {/*  /!*    >*!/*/}
-      {/*  /!*      View all<span className="sr-only"> {item.name} stats</span>*!/*/}
-      {/*  /!*    </a>*!/*/}
-      {/*  /!*  </div>*!/*/}
-      {/*  /!*</div>*!/*/}
-      {/*</dd>*/}
     </div>
   );
-
-  // const card = (
-  //   <div
-  //     className={classNames(
-  //       "relative pt-4 px-3 pb-4 sm:px-4 rounded-md overflow-hidden",
-  //       getWrapperClasses(state.type),
-  //     )}
-  //   >
-  //     <dt>
-  //       <div className="absolute">
-  //         <DashboardIcon
-  //           className={classNames(getIconClasses(state.type), "h-8 w-8")}
-  //           icon={state.icon}
-  //         />
-  //       </div>
-  //       <p
-  //         className={classNames(
-  //           "text-sm font-semibold truncate text-foreground",
-  //           state.icon ? "ml-11" : "ml-2",
-  //         )}
-  //         title={state.label || undefined}
-  //       >
-  //         {state.loading && "Loading..."}
-  //         {!state.loading && !state.label && (
-  //           <DashboardIcon
-  //             className="h-5 w-5"
-  //             icon="materialsymbols-outline:remove"
-  //           />
-  //         )}
-  //         <span className={getTextHeaderClasses(state.type)}>
-  //           {!state.loading && state.label}
-  //         </span>
-  //       </p>
-  //     </dt>
-  //     <dd
-  //       className={classNames(
-  //         "flex items-baseline space-x-4",
-  //         state.icon ? "ml-11" : "ml-2",
-  //       )}
-  //       title={state.value || undefined}
-  //     >
-  //       <p
-  //         className={classNames(
-  //           "text-4xl mt-1 font-semibold text-left truncate",
-  //           textClasses,
-  //         )}
-  //       >
-  //         {state.loading && (
-  //           <LoadingIndicator
-  //             className={classNames(
-  //               "h-9 w-9 mt-1",
-  //               theme.name === ThemeNames.STEAMPIPE_DEFAULT
-  //                 ? "text-black-scale-4"
-  //                 : null,
-  //             )}
-  //           />
-  //         )}
-  //         {!state.loading &&
-  //           (state.value === null || state.value === undefined) && (
-  //             <DashboardIcon
-  //               className="h-10 w-10"
-  //               icon="materialsymbols-outline:remove"
-  //             />
-  //           )}
-  //         {state.value !== null &&
-  //           state.value !== undefined &&
-  //           !isNumber(state.value) && <Label value={state.value} />}
-  //         {isNumber(state.value) && (
-  //           <>
-  //             <IntegerDisplay num={state.value} startAt="100k" />
-  //           </>
-  //         )}
-  //       </p>
-  //       <CardDiffDisplay diff={state.diff} />
-  //     </dd>
-  //   </div>
-  // );
 
   if (renderedHref) {
     return <ExternalLink to={renderedHref}>{card}</ExternalLink>;
