@@ -12,17 +12,11 @@ import {
   CardDiffState,
   CardType,
 } from "../data/CardDataProcessor";
-import { classNames } from "../../../utils/styles";
-import { PanelDefinition, PanelProperties } from "../../../types";
+import { classNames } from "utils/styles";
+import { PanelDefinition, PanelProperties } from "types";
 import { getComponent, registerComponent } from "../index";
-import {
-  getIconClasses,
-  getTextClasses,
-  getWrapperClasses,
-} from "../../../utils/card";
+import { getIconClasses, getIconStyles, getWrapperClasses } from "utils/card";
 import { IDiffProperties } from "../data/types";
-import { ThemeNames } from "../../../hooks/useTheme";
-import { useDashboard } from "../../../hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 const Table = getComponent("table");
@@ -40,7 +34,7 @@ export type CardProps = PanelProperties &
     display_type?: CardType;
     properties: CardProperties;
   } & {
-    diff_panel: PanelDefinition;
+    diff_panel?: PanelDefinition;
   };
 
 type CardState = {
@@ -107,6 +101,23 @@ const Label = ({ value }) => {
   return value;
 };
 
+const Value = ({ loading, value }) => {
+  if (loading || value === null || value === undefined) {
+    return (
+      <DashboardIcon
+        className="h-8 w-8"
+        icon="materialsymbols-outline:remove"
+      />
+    );
+  }
+
+  if (isNumber(value)) {
+    return <IntegerDisplay num={value} startAt="100k" />;
+  }
+
+  return <Label value={value} />;
+};
+
 const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
   if (!diff || diff.direction === "none") {
     return null;
@@ -144,10 +155,6 @@ const Card = (props: CardProps) => {
   const [renderedHref, setRenderedHref] = useState<string | null>(
     state.href || null,
   );
-  const textClasses = getTextClasses(state.type);
-  const {
-    themeContext: { theme },
-  } = useDashboard();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
 
   useEffect(() => {
@@ -198,75 +205,37 @@ const Card = (props: CardProps) => {
   const card = (
     <div
       className={classNames(
-        "relative pt-4 px-3 pb-4 sm:px-4 rounded-md overflow-hidden",
+        "overflow-hidden bg-dashboard-panel text-foreground print:bg-white print:text-black shadow-sm p-3 pr-5",
         getWrapperClasses(state.type),
+        !state.icon ? "pl-4" : undefined,
       )}
     >
-      <dt>
-        <div className="absolute">
-          <DashboardIcon
-            className={classNames(getIconClasses(state.type), "h-8 w-8")}
-            icon={state.icon}
-          />
-        </div>
-        <p
-          className={classNames(
-            "text-sm font-semibold truncate text-foreground",
-            state.icon ? "ml-11" : "ml-2",
-          )}
-          title={state.label || undefined}
-        >
-          {state.loading && "Loading..."}
-          {!state.loading && !state.label && (
-            <DashboardIcon
-              className="h-5 w-5"
-              icon="materialsymbols-outline:remove"
-            />
-          )}
-          {!state.loading && state.label}
-        </p>
-      </dt>
-      <dd
-        className={classNames(
-          "flex items-baseline space-x-4",
-          state.icon ? "ml-11" : "ml-2",
-        )}
-        title={state.value || undefined}
-      >
-        <p
-          className={classNames(
-            "text-4xl mt-1 font-semibold text-left truncate",
-            textClasses,
-          )}
-        >
-          {state.loading && (
-            <LoadingIndicator
-              className={classNames(
-                "h-9 w-9 mt-1",
-                theme.name === ThemeNames.STEAMPIPE_DEFAULT
-                  ? "text-black-scale-4"
-                  : null,
-              )}
-            />
-          )}
-          {!state.loading &&
-            (state.value === null || state.value === undefined) && (
+      <div className="flex space-x-3">
+        {(state.loading || state.icon) && (
+          <div className={classNames("shrink-0 grow-0")}>
+            {state.loading ? (
+              <LoadingIndicator className="h-8 w-8" />
+            ) : (
               <DashboardIcon
-                className="h-10 w-10"
-                icon="materialsymbols-outline:remove"
+                className={classNames("h-8 w-8", getIconClasses(state.type))}
+                aria-hidden="true"
+                icon={state.icon}
+                style={getIconStyles(state.type)}
               />
             )}
-          {state.value !== null &&
-            state.value !== undefined &&
-            !isNumber(state.value) && <Label value={state.value} />}
-          {isNumber(state.value) && (
-            <>
-              <IntegerDisplay num={state.value} startAt="100k" />
-            </>
-          )}
-        </p>
-        <CardDiffDisplay diff={state.diff} />
-      </dd>
+          </div>
+        )}
+        <div className="grow mt-0.5 min-w-0">
+          <dt>
+            <p className="text-lg truncate" title={state.label || undefined}>
+              {state.loading ? "Loading..." : state.label}
+            </p>
+          </dt>
+          <dd className="font-semibold text-3xl mt-1 mb-1">
+            <Value loading={state.loading} value={state.value} />
+          </dd>
+        </div>
+      </div>
     </div>
   );
 

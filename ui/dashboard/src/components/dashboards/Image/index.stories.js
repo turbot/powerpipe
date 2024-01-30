@@ -1,5 +1,5 @@
 import Text from "./index";
-import { PanelStoryDecorator } from "../../../utils/storybook";
+import { PanelStoryDecorator } from "utils/storybook";
 
 const story = {
   title: "Primitives/Text",
@@ -80,7 +80,7 @@ Below the fold`,
 export const markdownImage = Template.bind({});
 markdownImage.args = {
   properties: {
-    value: `![Steampipe](https://steampipe.io/images/steampipe_logo_wordmark_color.svg)`,
+    value: `![Steampipe](https://powerpipe.io/images/steampipe_logo_wordmark_color.svg)`,
   },
 };
 

@@ -13,7 +13,7 @@ import { FlowProperties, FlowProps, FlowType } from "../types";
 import { getFlowComponent } from "..";
 import { NodesAndEdges } from "../../common/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({
   animation: false,
@@ -37,7 +37,7 @@ const getSeriesForFlowType = (
   data: LeafNodeData | undefined,
   properties: FlowProperties | undefined,
   nodesAndEdges: NodesAndEdges,
-  themeColors
+  themeColors,
 ) => {
   if (!data) {
     return {};
@@ -47,8 +47,10 @@ const getSeriesForFlowType = (
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     switch (type) {
       case "sankey": {
-        const { data: sankeyData, links } =
-          buildSankeyDataInputs(nodesAndEdges);
+        const { data: sankeyData, links } = buildSankeyDataInputs(
+          nodesAndEdges,
+          themeColors,
+        );
         series.push({
           type: toEChartsType(type),
           layout: "none",
@@ -78,7 +80,7 @@ const getSeriesForFlowType = (
 
 const getOptionOverridesForFlowType = (
   type: FlowType = "sankey",
-  properties: FlowProperties | undefined
+  properties: FlowProperties | undefined,
 ) => {
   if (!properties) {
     return {};
@@ -92,7 +94,7 @@ const buildFlowOptions = (props: FlowProps, themeColors) => {
     props.categories,
     props.data,
     props.properties,
-    themeColors
+    themeColors,
   );
 
   return merge(
@@ -103,9 +105,9 @@ const buildFlowOptions = (props: FlowProps, themeColors) => {
       props.data,
       props.properties,
       nodesAndEdges,
-      themeColors
+      themeColors,
     ),
-    getOptionOverridesForFlowType(props.display_type, props.properties)
+    getOptionOverridesForFlowType(props.display_type, props.properties),
   );
 };
 
@@ -117,7 +119,7 @@ const FlowWrapper = (props: FlowProps) => {
   const nodeAndEdgeData = useNodeAndEdgeData(
     props.data,
     props.properties,
-    props.status
+    props.status,
   );
 
   if (!wrapperRef) {
@@ -142,7 +144,7 @@ const FlowWrapper = (props: FlowProps) => {
           data: nodeAndEdgeData.data,
           properties: nodeAndEdgeData.properties,
         },
-        themeColors
+        themeColors,
       )}
       type={props.display_type || "sankey"}
     />

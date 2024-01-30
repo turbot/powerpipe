@@ -1,6 +1,6 @@
 import ErrorPanel from "../../Error";
 import merge from "lodash/merge";
-import useChartThemeColors from "../../../../hooks/useChartThemeColors";
+import useChartThemeColors from "hooks/useChartThemeColors";
 import useNodeAndEdgeData from "../../common/useNodeAndEdgeData";
 import {
   buildNodesAndEdges,
@@ -12,7 +12,7 @@ import { getHierarchyComponent } from "..";
 import { HierarchyProperties, HierarchyProps, HierarchyType } from "../types";
 import { NodesAndEdges } from "../../common/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({
   animation: false,
@@ -34,7 +34,7 @@ const getSeriesForHierarchyType = (
   data: LeafNodeData | undefined,
   properties: HierarchyProperties | undefined,
   nodesAndEdges: NodesAndEdges,
-  themeColors
+  themeColors,
 ) => {
   if (!data) {
     return {};
@@ -44,7 +44,10 @@ const getSeriesForHierarchyType = (
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     switch (type) {
       case "tree": {
-        const { data: treeData } = buildTreeDataInputs(nodesAndEdges);
+        const { data: treeData } = buildTreeDataInputs(
+          nodesAndEdges,
+          themeColors,
+        );
         series.push({
           type: "tree",
           data: treeData,
@@ -82,7 +85,7 @@ const getSeriesForHierarchyType = (
 
 const getOptionOverridesForHierarchyType = (
   type: HierarchyType = "tree",
-  properties: HierarchyProperties | undefined
+  properties: HierarchyProperties | undefined,
 ) => {
   if (!properties) {
     return {};
@@ -96,7 +99,7 @@ const buildHierarchyOptions = (props: HierarchyProps, themeColors) => {
     props.categories,
     props.data,
     props.properties,
-    themeColors
+    themeColors,
   );
 
   return merge(
@@ -107,9 +110,9 @@ const buildHierarchyOptions = (props: HierarchyProps, themeColors) => {
       props.data,
       props.properties,
       nodesAndEdges,
-      themeColors
+      themeColors,
     ),
-    getOptionOverridesForHierarchyType(props.display_type, props.properties)
+    getOptionOverridesForHierarchyType(props.display_type, props.properties),
   );
 };
 
@@ -122,7 +125,7 @@ const HierarchyWrapper = (props: HierarchyProps) => {
   const nodeAndEdgeData = useNodeAndEdgeData(
     props.data,
     props.properties,
-    props.status
+    props.status,
   );
 
   if (!wrapperRef) {
@@ -147,7 +150,7 @@ const HierarchyWrapper = (props: HierarchyProps) => {
           data: nodeAndEdgeData.data,
           properties: nodeAndEdgeData.properties,
         },
-        themeColors
+        themeColors,
       )}
       type={props.display_type || "tree"}
     />

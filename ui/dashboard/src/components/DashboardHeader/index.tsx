@@ -4,7 +4,7 @@ import OpenSnapshotButton from "../OpenSnapshotButton";
 import PowerpipeLogo from "./PowerpipeLogo";
 import SaveSnapshotButton from "../SaveSnapshotButton";
 import ThemeToggle from "../ThemeToggle";
-import { classNames } from "../../utils/styles";
+import { classNames } from "utils/styles";
 import { getComponent } from "../dashboards";
 
 const DashboardHeader = () => {
@@ -26,7 +26,7 @@ const DashboardHeader = () => {
         <ExternalLink
           className="text-base text-foreground-lighter hover:text-foreground"
           ignoreDataMode
-          to="https://hub.steampipe.io"
+          to="https://hub.powerpipe.io"
           withReferrer={true}
         >
           <>Hub</>
@@ -34,7 +34,7 @@ const DashboardHeader = () => {
         <ExternalLink
           className="text-base text-foreground-lighter hover:text-foreground"
           ignoreDataMode
-          to="https://steampipe.io/docs"
+          to="https://powerpipe.io/docs"
           withReferrer={true}
         >
           <>Docs</>

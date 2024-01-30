@@ -5,14 +5,13 @@ import Placeholder from "../../Placeholder";
 import React, { useEffect, useRef, useState } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import set from "lodash/set";
-import useChartThemeColors from "../../../../hooks/useChartThemeColors";
-import useMediaMode from "../../../../hooks/useMediaMode";
-import useTemplateRender from "../../../../hooks/useTemplateRender";
+import useChartThemeColors from "hooks/useChartThemeColors";
+import useMediaMode from "hooks/useMediaMode";
+import useTemplateRender from "hooks/useTemplateRender";
 import {
   buildChartDataset,
   getColorOverride,
   LeafNodeData,
-  themeColors,
   Width,
 } from "../../common";
 import { EChartsOption } from "echarts-for-react/src/types";
@@ -29,7 +28,7 @@ import { getChartComponent } from "..";
 import { GraphType } from "../../graphs/types";
 import { HierarchyType } from "../../hierarchies/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 
 const getThemeColorsWithPointOverrides = (
@@ -37,17 +36,21 @@ const getThemeColorsWithPointOverrides = (
   series: any[],
   seriesOverrides: ChartSeries | undefined,
   dataset: any[][],
-  themeColorValues
+  themeColorValues,
 ) => {
   switch (type) {
     case "donut":
     case "pie": {
       const newThemeColors: string[] = [];
       for (let rowIndex = 1; rowIndex < dataset.length; rowIndex++) {
-        if (rowIndex - 1 < themeColors.length) {
-          newThemeColors.push(themeColors[rowIndex - 1]);
+        if (rowIndex - 1 < themeColorValues.charts.length) {
+          newThemeColors.push(themeColorValues.charts[rowIndex - 1]);
         } else {
-          newThemeColors.push(themeColors[(rowIndex - 1) % themeColors.length]);
+          newThemeColors.push(
+            themeColorValues.charts[
+              (rowIndex - 1) % themeColorValues.charts.length
+            ],
+          );
         }
       }
       series.forEach((seriesInfo) => {
@@ -61,7 +64,7 @@ const getThemeColorsWithPointOverrides = (
           if (pointOverride && pointOverride.color) {
             newThemeColors[dataRowIndex] = getColorOverride(
               pointOverride.color,
-              themeColorValues
+              themeColorValues,
             );
           }
         });
@@ -71,10 +74,14 @@ const getThemeColorsWithPointOverrides = (
     default:
       const newThemeColors: string[] = [];
       for (let seriesIndex = 0; seriesIndex < series.length; seriesIndex++) {
-        if (seriesIndex < themeColors.length - 1) {
-          newThemeColors.push(themeColors[seriesIndex]);
+        if (seriesIndex < themeColorValues.charts.length - 1) {
+          newThemeColors.push(themeColorValues.charts[seriesIndex]);
         } else {
-          newThemeColors.push(themeColors[seriesIndex % themeColors.length]);
+          newThemeColors.push(
+            themeColorValues.charts[
+              seriesIndex % themeColorValues.charts.length
+            ],
+          );
         }
       }
       return newThemeColors;
@@ -84,7 +91,11 @@ const getThemeColorsWithPointOverrides = (
 const getCommonBaseOptions = () => ({
   animation: false,
   grid: {
-    bottom: 40,
+    left: "5%",
+    right: "5%",
+    top: "7%",
+    bottom: "8%",
+    // bottom: 40,
     containLabel: true,
   },
   legend: {
@@ -93,6 +104,7 @@ const getCommonBaseOptions = () => ({
     top: "10",
     textStyle: {
       fontSize: 11,
+      overflow: "truncate",
     },
   },
   textStyle: {
@@ -147,7 +159,7 @@ const getCommonBaseOptionsForChartType = (
   shouldBeTimeSeries: boolean,
   series: any[],
   seriesOverrides: ChartSeries | undefined,
-  themeColors
+  themeColors,
 ) => {
   switch (type) {
     case "bar":
@@ -157,7 +169,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -168,13 +180,13 @@ const getCommonBaseOptionsForChartType = (
         // Declare an x-axis (category axis).
         // The category map the first row in the dataset by default.
         xAxis: {
-          axisLabel: { color: themeColors.foreground },
+          axisLabel: { color: themeColors.foreground, fontSize: 10 },
           axisLine: {
             show: true,
             lineStyle: { color: themeColors.foregroundLightest },
           },
           axisTick: { show: true },
-          nameGap: 30,
+          nameGap: 25,
           nameLocation: "center",
           nameTextStyle: { color: themeColors.foreground },
           splitLine: { show: false },
@@ -184,12 +196,11 @@ const getCommonBaseOptionsForChartType = (
           type: "category",
           axisLabel: {
             color: themeColors.foreground,
-            width: 50,
             overflow: "truncate",
           },
           axisLine: { lineStyle: { color: themeColors.foregroundLightest } },
           axisTick: { show: false },
-          nameGap: width ? width + 42 : 50,
+          nameGap: 100,
           nameLocation: "center",
           nameTextStyle: { color: themeColors.foreground },
         },
@@ -202,7 +213,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -217,6 +228,7 @@ const getCommonBaseOptionsForChartType = (
           boundaryGap: type !== "area",
           axisLabel: {
             color: themeColors.foreground,
+            fontSize: 10,
             rotate: getXAxisLabelRotation(dataset.length - 1),
             width: getXAxisLabelWidth(dataset.length),
             overflow: "truncate",
@@ -229,7 +241,7 @@ const getCommonBaseOptionsForChartType = (
         },
         // Declare a y-axis (value axis).
         yAxis: {
-          axisLabel: { color: themeColors.foreground },
+          axisLabel: { color: themeColors.foreground, fontSize: 10 },
           axisLine: {
             show: true,
             lineStyle: { color: themeColors.foregroundLightest },
@@ -251,7 +263,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -265,6 +277,7 @@ const getCommonBaseOptionsForChartType = (
           type: shouldBeTimeSeries ? "time" : "category",
           axisLabel: {
             color: themeColors.foreground,
+            fontSize: 10,
             rotate: getXAxisLabelRotation(dataset.length - 1),
             width: getXAxisLabelWidth(dataset.length),
             overflow: "truncate",
@@ -277,7 +290,7 @@ const getCommonBaseOptionsForChartType = (
         },
         // Declare a y-axis (value axis).
         yAxis: {
-          axisLabel: { color: themeColors.foreground },
+          axisLabel: { color: themeColors.foreground, fontSize: 10 },
           axisLine: {
             show: true,
             lineStyle: { color: themeColors.foregroundLightest },
@@ -288,7 +301,7 @@ const getCommonBaseOptionsForChartType = (
           nameLocation: "center",
           nameTextStyle: { color: themeColors.foreground },
         },
-        ...(shouldBeTimeSeries ? {tooltip: {trigger: "axis"}} : {})
+        ...(shouldBeTimeSeries ? { tooltip: { trigger: "axis" } } : {}),
       };
     case "pie":
       return {
@@ -297,7 +310,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: false,
@@ -313,7 +326,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: false,
@@ -360,22 +373,19 @@ const getOptionOverridesForChartType = (
       overrides = set(overrides, "legend.bottom", "auto");
     } else if (legendPosition === "right") {
       overrides = set(overrides, "legend.orient", "vertical");
-      overrides = set(overrides, "legend.left", "right");
+      overrides = set(overrides, "legend.left", 10);
       overrides = set(overrides, "legend.top", "middle");
       overrides = set(overrides, "legend.bottom", "auto");
-      overrides = set(overrides, "grid.right", "20%");
     } else if (legendPosition === "bottom") {
       overrides = set(overrides, "legend.orient", "horizontal");
       overrides = set(overrides, "legend.left", "center");
       overrides = set(overrides, "legend.top", "auto");
       overrides = set(overrides, "legend.bottom", 10);
-      overrides = set(overrides, "grid.top", 30);
     } else if (legendPosition === "left") {
       overrides = set(overrides, "legend.orient", "vertical");
-      overrides = set(overrides, "legend.left", "left");
+      overrides = set(overrides, "legend.left", 10);
       overrides = set(overrides, "legend.top", "middle");
       overrides = set(overrides, "legend.bottom", "auto");
-      overrides = set(overrides, "grid.left", "20%");
     }
   }
 
@@ -442,7 +452,7 @@ const getOptionOverridesForChartType = (
         // X axis min setting (for timeseries)
         if (has(properties, "axes.x.min")) {
           // ECharts wants millis since epoch, not seconds
-          overrides = set(overrides, "xAxis.min", properties.axes.x.min * 1000); 
+          overrides = set(overrides, "xAxis.min", properties.axes.x.min * 1000);
         }
         // Y axis max setting (for timeseries)
         if (has(properties, "axes.x.max")) {
@@ -519,7 +529,7 @@ const getSeriesForChartType = (
   rowSeriesLabels: string[],
   transform: ChartTransform,
   shouldBeTimeSeries: boolean,
-  themeColors
+  themeColors,
 ) => {
   if (!data) {
     return [];
@@ -555,12 +565,21 @@ const getSeriesForChartType = (
           ...(properties && properties.grouping === "compare"
             ? {}
             : { stack: "total" }),
-          itemStyle: { color: seriesColor },
+          itemStyle: {
+            borderRadius: [5, 5, 0, 0],
+            color: seriesColor,
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 2,
+          },
+          emphasis: {
+            itemStyle: {
+              borderRadius: [5, 5],
+            },
+          },
+          barMaxWidth: 75,
           // Per https://stackoverflow.com/a/56116442, when using time series you have to manually encode each series
           // We assume that the first dimension/column is the timestamp
-          ...(shouldBeTimeSeries
-            ? {encode: {x: 0, y: seriesName}}
-            : {}),
+          ...(shouldBeTimeSeries ? { encode: { x: 0, y: seriesName } } : {}),
           // label: {
           //   show: true,
           //   position: 'outside'
@@ -571,9 +590,41 @@ const getSeriesForChartType = (
         series.push({
           name: seriesName,
           type: "pie",
-          center: ["50%", "45%"],
+          center: ["50%", "50%"],
           radius: ["30%", "50%"],
-          label: { color: themeColors.foreground },
+          label: { color: themeColors.foreground, fontSize: 10 },
+          itemStyle: {
+            borderRadius: 5,
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 2,
+          },
+          emphasis: {
+            itemStyle: {
+              color: "inherit",
+            },
+          },
+        });
+        break;
+      case "pie":
+        series.push({
+          name: seriesName,
+          type: "pie",
+          center: ["50%", "40%"],
+          radius: "50%",
+          label: { color: themeColors.foreground, fontSize: 10 },
+          emphasis: {
+            itemStyle: {
+              color: "inherit",
+              shadowBlur: 5,
+              shadowOffsetX: 0,
+              shadowColor: "rgba(0, 0, 0, 0.5)",
+            },
+          },
+          itemStyle: {
+            borderRadius: 5,
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 2,
+          },
         });
         break;
       case "area":
@@ -585,9 +636,7 @@ const getSeriesForChartType = (
             : { stack: "total" }),
           // Per https://stackoverflow.com/a/56116442, when using time series you have to manually encode each series
           // We assume that the first dimension/column is the timestamp
-          ...(shouldBeTimeSeries
-            ? {encode: {x: 0, y: seriesName}}
-            : {}),
+          ...(shouldBeTimeSeries ? { encode: { x: 0, y: seriesName } } : {}),
           areaStyle: {},
           emphasis: {
             focus: "series",
@@ -602,37 +651,57 @@ const getSeriesForChartType = (
           itemStyle: { color: seriesColor },
           // Per https://stackoverflow.com/a/56116442, when using time series you have to manually encode each series
           // We assume that the first dimension/column is the timestamp
-          ...(shouldBeTimeSeries
-            ? {encode: {x: 0, y: seriesName}}
-            : {}),
+          ...(shouldBeTimeSeries ? { encode: { x: 0, y: seriesName } } : {}),
         });
         break;
-      case "pie":
-        series.push({
-          name: seriesName,
-          type: "pie",
-          center: ["50%", "40%"],
-          radius: "50%",
-          label: { color: themeColors.foreground },
-          emphasis: {
-            itemStyle: {
-              shadowBlur: 5,
-              shadowOffsetX: 0,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
-            },
-          },
-        });
     }
   }
   return series;
 };
 
+const adjustGridConfig = (
+  config: EChartsOption,
+  properties: ChartProperties | undefined,
+) => {
+  let newConfig = { ...config };
+  if (!!newConfig?.xAxis?.name) {
+    newConfig = set(newConfig, "grid.containLabel", false);
+    newConfig = set(newConfig, "grid.bottom", "20%");
+  }
+  if (!!newConfig?.yAxis?.name) {
+    newConfig = set(newConfig, "grid.containLabel", false);
+    newConfig = set(newConfig, "grid.left", "25%");
+    newConfig = set(newConfig, "grid.bottom", "25%");
+  }
+  if (newConfig?.legend?.show) {
+    const configuredPosition = properties?.legend?.position || "top";
+    switch (configuredPosition) {
+      case "top":
+        newConfig = set(newConfig, "grid.top", "20%");
+        newConfig = set(newConfig, "grid.top", "20%");
+        break;
+      case "right":
+        newConfig = set(newConfig, "grid.right", "35%");
+        break;
+      case "bottom":
+        newConfig = set(newConfig, "grid.bottom", "25%");
+        break;
+      case "left":
+        newConfig = set(newConfig, "grid.left", "50%");
+        break;
+    }
+  }
+  return newConfig;
+};
+
 const buildChartOptions = (props: ChartProps, themeColors: any) => {
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
     props.data,
-    props.properties
+    props.properties,
   );
-  const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(props.data?.columns[0].data_type.toLowerCase() || "")
+  const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
+    props.data?.columns[0].data_type.toLowerCase() || "",
+  );
   const series = getSeriesForChartType(
     props.display_type || "column",
     props.data,
@@ -640,9 +709,9 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     rowSeriesLabels,
     transform,
     treatAsTimeSeries,
-    themeColors
+    themeColors,
   );
-  return merge(
+  const config = merge(
     getCommonBaseOptions(),
     getCommonBaseOptionsForChartType(
       props.display_type || "column",
@@ -651,7 +720,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
       treatAsTimeSeries,
       series,
       props.properties?.series,
-      themeColors
+      themeColors,
     ),
     getOptionOverridesForChartType(
       props.display_type || "column",
@@ -663,8 +732,9 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
       dataset: {
         source: dataset,
       },
-    }
+    },
   );
+  return adjustGridConfig(config, props.properties);
 };
 
 type ChartComponentProps = {
@@ -686,7 +756,7 @@ const handleClick = async (params: any, navigate, renderTemplates) => {
       }
       const renderedResults = await renderTemplates(
         { graph_node: params.data.href as string },
-        [params.data]
+        [params.data],
       );
       let rowRenderResult = renderedResults[0];
       navigate(rowRenderResult.graph_node.result);

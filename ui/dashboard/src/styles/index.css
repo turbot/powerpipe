@@ -4,21 +4,20 @@
 
 .theme-steampipe-default {
   /* Control colors */
-  --color-alert: #da1e28;
-  --color-alert-animate: rgba(218, 30, 40, 0.8); /* #e7525a */
-  --color-alert-light: rgba(218, 30, 40, 0.3);
+  --color-alert: 218 30 40; /*#DA1E28*/
+  --color-alert-animate: rgba(218, 30, 40, 0.8); /*#DA1E28*/
   --color-alert-inverse: theme("colors.white");
   --color-orange: #ff832b;
   --color-orange-inverse: theme("colors.white");
   --color-severity: #c9a00c;
-  --color-ok: #198038;
-  --color-ok-animate: rgba(25, 128, 56, 0.8); /* #27ca58 */
+  --color-ok: 25 128 56; /*#198038*/
+  --color-ok-animate: rgba(25, 128, 56, 0.8); /*#198038*/
   --color-ok-inverse: theme("colors.white");
-  --color-info: #3185fc;
-  --color-info-animate: rgba(49, 133, 252, 0.8); /* #64a3fc */
+  --color-info: 49 133 252; /*#3185FC*/
+  --color-info-animate: rgba(49, 133, 252, 0.8); /*#3185FC*/
   --color-info-inverse: theme("colors.white");
-  --color-skip: theme("colors.gray.400");
-  --color-skip-animate: rgba(156, 163, 175, 0.8); /* #b4bac3 */
+  --color-skip: 125 137 152; /*#7d8998*/
+  --color-skip-animate: rgba(125, 137, 152, 0.8); /*#7d8998*/
   --color-skip-inverse: theme("colors.white");
 
   /* Primary colors */
@@ -59,21 +58,20 @@
 
 .theme-steampipe-dark {
   /* Control colors */
-  --color-alert: #f83741;
-  --color-alert-animate: rgba(248, 55, 65, 0.8);
-  --color-alert-light: rgba(250, 77, 86, 0.3);
+  --color-alert: 248 55 65; /*#F83741*/
+  --color-alert-animate: rgba(248, 55, 65, 0.8); /*#F83741*/
   --color-alert-inverse: theme("colors.white");
   --color-orange: #ff832b;
   --color-orange-inverse: theme("colors.white");
   --color-severity: #bd960b;
-  --color-ok: #24a148;
-  --color-ok-animate: rgba(36, 161, 72, 0.8);
+  --color-ok: 36 161 72; /*#24a148*/
+  --color-ok-animate: rgba(36, 161, 72, 0.8); /*#24a148*/
   --color-ok-inverse: theme("colors.white");
-  --color-info: #4589ff;
-  --color-info-animate: rgba(69, 137, 255, 0.8);
+  --color-info: 69 137 255; /*#4589FF*/
+  --color-info-animate: rgba(69, 137, 255, 0.8); /*#4589FF*/
   --color-info-inverse: theme("colors.white");
-  --color-skip: theme("colors.gray.400");
-  --color-skip-animate: rgba(156, 163, 175, 0.8); /* #b4bac3 */
+  --color-skip: 125 137 152; /*#7d8998*/
+  --color-skip-animate: rgba(125, 137, 152, 0.8); /*#7d8998*/
   --color-skip-inverse: theme("colors.white");
 
   /* Primary colors */
@@ -81,7 +79,7 @@
   --color-error: red;
   --color-warning: #f9a825;
   --color-dashboard: #1e2329;
-  --color-dashboard-panel: #262b32; /* #2d333b;*/ /*var(--color-black-scale-1);*/
+  --color-dashboard-panel: #262b32;
   --color-foreground: #fff;
   --color-foreground-light: #ccc;
   --color-foreground-lighter: #888;
@@ -156,10 +154,10 @@
 .summary-chart-error-animate {
   background-image: repeating-linear-gradient(
     -45deg,
-    var(--color-alert),
-    var(--color-alert) 0.5rem,
+    rgb(var(--color-alert)),
+    rgb(var(--color-alert)) 0.5rem,
     var(--color-alert-animate) 0.5rem,
-    var(--color-alert-animate) 1.25rem
+    var(--color-alert-animate) 1.25rem,
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -170,8 +168,8 @@
     -45deg,
     var(--color-alert-animate),
     var(--color-alert-animate) 0.5rem,
-    var(--color-alert) 0.5rem,
-    var(--color-alert) 1.25rem
+    rgb(var(--color-alert)) 0.5rem,
+    rgb(var(--color-alert)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -182,8 +180,8 @@
     -45deg,
     var(--color-ok-animate),
     var(--color-ok-animate) 0.5rem,
-    var(--color-ok) 0.5rem,
-    var(--color-ok) 1.25rem
+    rgb(var(--color-ok)) 0.5rem,
+    rgb(var(--color-ok)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -194,8 +192,8 @@
     -45deg,
     var(--color-info-animate),
     var(--color-info-animate) 0.5rem,
-    var(--color-info) 0.5rem,
-    var(--color-info) 1.25rem
+    rgb(var(--color-info)) 0.5rem,
+    rgb(var(--color-info)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -206,8 +204,8 @@
     -45deg,
     var(--color-skip-animate),
     var(--color-skip-animate) 0.5rem,
-    var(--color-skip) 0.5rem,
-    var(--color-skip) 1.25rem
+    rgb(var(--color-skip)) 0.5rem,
+    rgb(var(--color-skip)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -218,8 +216,8 @@
     -45deg,
     var(--color-skip-animate),
     var(--color-skip-animate) 0.5rem,
-    var(--color-skip) 0.5rem,
-    var(--color-skip) 1.25rem
+    rgb(var(--color-skip)) 0.5rem,
+    rgb(var(--color-skip)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;

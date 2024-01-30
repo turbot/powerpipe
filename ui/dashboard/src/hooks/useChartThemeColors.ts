@@ -1,4 +1,5 @@
-import { KeyValueStringPairs } from "../components/dashboards/common/types";
+import { getChartColors } from "components/dashboards/common";
+import { KeyValuePairs } from "components/dashboards/common/types";
 import { useDashboard } from "./useDashboard";
 import { useCallback, useEffect, useState } from "react";
 
@@ -34,9 +35,10 @@ const useChartThemeColors = () => {
       const foregroundLightest = style
         .getPropertyValue("--color-foreground-lightest")
         .trim();
-      const alert = style.getPropertyValue("--color-alert").trim();
+      const alert = `rgb(${style.getPropertyValue("--color-alert").trim()})`;
       const info = style.getPropertyValue("--color-info").trim();
-      const ok = style.getPropertyValue("--color-ok").trim();
+      const ok = `rgb(${style.getPropertyValue("--color-ok").trim()})`;
+      const charts = getChartColors(theme);
       return {
         dashboard,
         dashboardPanel,
@@ -49,15 +51,15 @@ const useChartThemeColors = () => {
         alert,
         info,
         ok,
-      } as KeyValueStringPairs;
+        charts,
+      } as KeyValuePairs;
     } else {
       return {};
     }
-  }, [wrapperRef]);
+  }, [theme, wrapperRef]);
 
-  const [themeColors, setThemeColors] = useState<KeyValueStringPairs>(
-    getThemeColors()
-  );
+  const [themeColors, setThemeColors] =
+    useState<KeyValuePairs>(getThemeColors());
   const [random, setRandom] = useState<number | null>(null);
 
   useEffect(() => {

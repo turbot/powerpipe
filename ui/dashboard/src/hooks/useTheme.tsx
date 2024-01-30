@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import useLocalStorage from "./useLocalStorage";
 import useMediaQuery from "./useMediaQuery";
-import { classNames } from "../utils/styles";
+import { classNames } from "utils/styles";
 
 export type Theme = {
   name: string;
@@ -86,7 +86,7 @@ const FullHeightThemeWrapper = ({ children }) => {
       ref={setWrapperRef}
       className={classNames(
         `h-screen flex flex-col theme-${theme.name} bg-dashboard print:bg-white print:theme-steampipe-default text-foreground print:text-black overflow-y-hidden`,
-        withFooterPadding ? "pb-4" : ""
+        withFooterPadding ? "pb-4" : "",
       )}
     >
       {children}
@@ -112,7 +112,7 @@ const ThemeWrapper = ({ children }) => {
     <div
       ref={setWrapperRef}
       className={classNames(
-        `theme-${theme.name} bg-dashboard print:bg-white print:theme-steampipe-default text-foreground print:text-black`
+        `theme-${theme.name} bg-dashboard print:bg-white print:theme-steampipe-default text-foreground print:text-black`,
       )}
     >
       {children}

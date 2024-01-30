@@ -27,6 +27,7 @@ const Icon = ({
         style={{
           fill: "currentColor",
           color: style ? style.color : undefined,
+          ...style,
         }}
         title={title}
       />

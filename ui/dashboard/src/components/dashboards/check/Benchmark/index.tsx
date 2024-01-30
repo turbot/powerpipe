@@ -1,29 +1,29 @@
-import Card, { CardProps } from "../../Card";
+import Card, { CardProps } from "components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
-import ContainerTitle from "../../titles/ContainerTitle";
-import Error from "../../Error";
-import Grid from "../../layout/Grid";
-import Panel from "../../layout/Panel";
-import PanelControls from "../../layout/Panel/PanelControls";
-import usePanelControls from "../../../../hooks/usePanelControls";
+import ContainerTitle from "components/dashboards/titles/ContainerTitle";
+import Error from "components/dashboards/Error";
+import Grid from "components/dashboards/layout/Grid";
+import Panel from "components/dashboards/layout/Panel";
+import PanelControls from "components/dashboards/layout/Panel/PanelControls";
+import usePanelControls from "hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
   CheckNode,
   CheckSummary,
 } from "../common";
-import { CardType } from "../../data/CardDataProcessor";
+import { CardType } from "components/dashboards/data/CardDataProcessor";
 import {
   CheckGroupingProvider,
   useCheckGrouping,
-} from "../../../../hooks/useCheckGrouping";
+} from "hooks/useCheckGrouping";
 import { default as BenchmarkType } from "../common/Benchmark";
-import { getComponent, registerComponent } from "../../index";
-import { noop } from "../../../../utils/func";
-import { PanelDefinition, PanelsMap } from "../../../../types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { getComponent, registerComponent } from "components/dashboards";
+import { noop } from "utils/func";
+import { PanelDefinition, PanelsMap } from "types";
+import { useDashboard } from "hooks/useDashboard";
 import { useMemo, useState } from "react";
-import { Width } from "../../common";
+import { Width } from "components/dashboards/common";
 
 const Table = getComponent("table");
 
@@ -109,21 +109,25 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.ok`,
         width: 2,
-        display_type: totalSummary.ok > 0 ? "ok" : null,
+        display_type: totalSummary.ok > 0 ? "ok" : "skip",
         properties: {
           label: "OK",
           value: totalSummary.ok,
+          // icon: "materialsymbols-solid:check",
           icon: "materialsymbols-solid:check_circle",
+          // icon: "materialsymbols-outline:check_circle",
         },
         diff_panel: !!diffTotalSummary
           ? {
               name: `${props.definition.name}.container.summary.ok.diff`,
               width: 2,
-              display_type: diffTotalSummary.ok > 0 ? "ok" : null,
+              display_type: diffTotalSummary.ok > 0 ? "ok" : "skip",
               properties: {
                 label: "OK",
                 value: diffTotalSummary.ok,
+                // icon: "materialsymbols-solid:check",
                 icon: "materialsymbols-solid:check_circle",
+                // icon: "materialsymbols-outline:check_circle",
               },
             }
           : null,
@@ -131,21 +135,25 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.alarm`,
         width: 2,
-        display_type: totalSummary.alarm > 0 ? "alert" : null,
+        display_type: totalSummary.alarm > 0 ? "alert" : "skip",
         properties: {
           label: "Alarm",
           value: totalSummary.alarm,
           icon: "materialsymbols-solid:notifications",
+          // icon: "materialsymbols-solid:circle_notifications",
+          // icon: "materialsymbols-outline:circle_notifications",
         },
         diff_panel: !!diffTotalSummary
           ? {
               name: `${props.definition.name}.container.summary.alarm.diff`,
               width: 2,
-              display_type: diffTotalSummary.alarm > 0 ? "alert" : null,
+              display_type: diffTotalSummary.alarm > 0 ? "alert" : "skip",
               properties: {
                 label: "Alarm",
                 value: diffTotalSummary.alarm,
                 icon: "materialsymbols-solid:notifications",
+                // icon: "materialsymbols-solid:circle_notifications",
+                // icon: "materialsymbols-outline:circle_notifications",
               },
             }
           : null,
@@ -153,21 +161,25 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.error`,
         width: 2,
-        display_type: totalSummary.error > 0 ? "alert" : null,
+        display_type: totalSummary.error > 0 ? "alert" : "skip",
         properties: {
           label: "Error",
           value: totalSummary.error,
+          // icon: "materialsymbols-solid:priority_high",
           icon: "materialsymbols-solid:error",
+          // icon: "materialsymbols-outline:error",
         },
         diff_panel: !!diffTotalSummary
           ? {
               name: `${props.definition.name}.container.summary.error.diff`,
               width: 2,
-              display_type: diffTotalSummary.error > 0 ? "alert" : null,
+              display_type: diffTotalSummary.error > 0 ? "alert" : "skip",
               properties: {
                 label: "Error",
                 value: diffTotalSummary.error,
+                // icon: "materialsymbols-solid:priority_high",
                 icon: "materialsymbols-solid:error",
+                // icon: "materialsymbols-outline:error",
               },
             }
           : null,
@@ -175,21 +187,25 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.info`,
         width: 2,
-        display_type: totalSummary.info > 0 ? "info" : null,
+        display_type: totalSummary.info > 0 ? "info" : "skip",
         properties: {
           label: "Info",
           value: totalSummary.info,
+          // icon: "materialsymbols-solid:info_i",
           icon: "materialsymbols-solid:info",
+          // icon: "materialsymbols-outline:info",
         },
         diff_panel: !!diffTotalSummary
           ? {
               name: `${props.definition.name}.container.summary.info.diff`,
               width: 2,
-              display_type: diffTotalSummary.info > 0 ? "info" : null,
+              display_type: diffTotalSummary.info > 0 ? "info" : "skip",
               properties: {
                 label: "Info",
                 value: diffTotalSummary.info,
+                // icon: "materialsymbols-solid:info_i",
                 icon: "materialsymbols-solid:info",
+                // icon: "materialsymbols-outline:info",
               },
             }
           : null,
@@ -197,19 +213,26 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.skip`,
         width: 2,
+        display_type: "skip",
         properties: {
           label: "Skipped",
           value: totalSummary.skip,
+          // icon: "materialsymbols-solid:arrow_right_alt",
           icon: "materialsymbols-solid:arrow_circle_right",
+          // icon: "materialsymbols-outline:arrow_circle_right",
         },
         diff_panel: !!diffTotalSummary
           ? {
               name: `${props.definition.name}.container.summary.skip.diff`,
               width: 2,
+              display_type: "skip",
               properties: {
                 label: "Skipped",
                 value: diffTotalSummary.skip,
+                // icon: "materialsymbols-solid:arrow_right_alt",
                 icon: "materialsymbols-solid:arrow_circle_right",
+                // icon: "materialsymbols-solid:arrow_circle_right",
+                // icon: "materialsymbols-outline:arrow_circle_right",
               },
             }
           : null,

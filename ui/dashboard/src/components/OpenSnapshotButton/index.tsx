@@ -1,6 +1,6 @@
-import { DashboardActions, DashboardDataModeCLISnapshot } from "../../types";
-import { SnapshotDataToExecutionCompleteSchemaMigrator } from "../../utils/schema";
-import { useDashboard } from "../../hooks/useDashboard";
+import { DashboardActions, DashboardDataModeCLISnapshot } from "types";
+import { SnapshotDataToExecutionCompleteSchemaMigrator } from "utils/schema";
+import { useDashboard } from "hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 
@@ -12,7 +12,7 @@ const OpenSnapshotButton = () => {
   return (
     <>
       <span
-        className="text-base text-foreground-lighter hover:text-foreground cursor-pointer"
+        className="hidden md:inline text-base text-foreground-lighter hover:text-foreground cursor-pointer"
         onClick={() => {
           fileInputRef.current?.click();
         }}

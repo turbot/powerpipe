@@ -5,14 +5,14 @@ const items = [
     title: "Find a Dashboard",
     description:
       "Steampipe Hub has hundreds of open source dashboards to get you started.",
-    href: "https://hub.steampipe.io/mods",
+    href: "https://hub.powerpipe.io/mods",
     withReferrer: true,
   },
   {
     title: "Build a Dashboard",
     description:
       "It's easy to create your own dashboard as code! Start with this tutorial.",
-    href: "https://steampipe.io/docs/mods/writing-dashboards",
+    href: "https://powerpipe.io/docs/mods/writing-dashboards",
     withReferrer: true,
   },
   {

@@ -12,13 +12,15 @@ import {
   NodesAndEdges,
 } from "./types";
 import { ChartProperties, ChartTransform, ChartType } from "../charts/types";
-import { DashboardRunState } from "../../../types";
+import { DashboardRunState } from "types";
 import { ExpandedNodes } from "../graphs/common/useGraph";
 import { FlowProperties, FlowType } from "../flows/types";
-import { getColumn } from "../../../utils/data";
+import { getColumn } from "utils/data";
 import { Graph, json } from "graphlib";
 import { GraphProperties, GraphType, NodeAndEdgeData } from "../graphs/types";
 import { HierarchyProperties, HierarchyType } from "../hierarchies/types";
+import { Theme } from "hooks/useTheme";
+import { ThemeNames } from "hooks/useStorybookTheme";
 
 export type Width = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
@@ -58,7 +60,7 @@ export type ColorOverride = "alert" | "info" | "ok" | string;
 export type EChartsType = "bar" | "line" | "pie" | "sankey" | "tree" | "graph";
 
 const toEChartsType = (
-  type: ChartType | FlowType | GraphType | HierarchyType
+  type: ChartType | FlowType | GraphType | HierarchyType,
 ): EChartsType => {
   // A column chart in chart.js is a bar chart with different options
   if (type === "column") {
@@ -173,7 +175,7 @@ const automaticDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
 
 const buildChartDataset = (
   data: LeafNodeData | undefined,
-  properties: ChartProperties | undefined
+  properties: ChartProperties | undefined,
 ): ChartDatasetResponse => {
   if (!data || !data.columns) {
     return { dataset: [], rowSeriesLabels: [], transform: "none" };
@@ -256,7 +258,7 @@ const recordEdge = (
   to_id: string,
   title: string | null = null,
   category: string | null = null,
-  row_data: LeafNodeDataRow | null = null
+  row_data: LeafNodeDataRow | null = null,
 ) => {
   let duplicate_edge = false;
   // Find any existing edge
@@ -294,7 +296,7 @@ const createNode = (
   depth: number | null = null,
   row_data: LeafNodeDataRow | null = null,
   categories: CategoryMap = {},
-  isFolded: boolean = false
+  isFolded: boolean = false,
 ) => {
   let symbol: string | null = null;
   let href: string | null = null;
@@ -341,7 +343,7 @@ const getCategoriesWithFold = (categories: CategoryMap): CategoryMap => {
 
 const foldNodesAndEdges = (
   nodesAndEdges: NodesAndEdges,
-  expandedNodes: ExpandedNodes = {}
+  expandedNodes: ExpandedNodes = {},
 ): NodesAndEdges => {
   const categoriesWithFold = getCategoriesWithFold(nodesAndEdges.categories);
 
@@ -435,7 +437,7 @@ const foldNodesAndEdges = (
         ([_, g]) =>
           g.threshold !== null &&
           g.threshold !== undefined &&
-          g.nodes.length >= g.threshold
+          g.nodes.length >= g.threshold,
       )) {
       const removedNodes: any[] = [];
 
@@ -510,10 +512,10 @@ const foldNodesAndEdges = (
 
         // We want to add the color and category if all edges to this node have a common color or category
         const deletedSourceEdgeCategoryKeys = Object.keys(
-          deletedSourceEdges.categories
+          deletedSourceEdges.categories,
         );
         const deletedSourceEdgeTitleKeys = Object.keys(
-          deletedSourceEdges.titles
+          deletedSourceEdges.titles,
         );
         const sourceEdgeCategory =
           deletedSourceEdgeCategoryKeys.length === 1 &&
@@ -543,10 +545,10 @@ const foldNodesAndEdges = (
 
         // We want to add the category and title if all edges from this node have a common category or title
         const deletedTargetEdgeCategoryKeys = Object.keys(
-          deletedTargetEdges.categories
+          deletedTargetEdges.categories,
         );
         const deletedTargetEdgeTitleKeys = Object.keys(
-          deletedTargetEdges.titles
+          deletedTargetEdges.titles,
         );
         const targetEdgeCategory =
           deletedTargetEdgeCategoryKeys.length === 1 &&
@@ -589,7 +591,7 @@ const buildNodesAndEdges = (
   rawData: NodeAndEdgeData | undefined,
   properties: FlowProperties | GraphProperties | HierarchyProperties = {},
   namedThemeColors = {},
-  defaultCategoryColor = true
+  defaultCategoryColor = true,
 ): NodesAndEdges => {
   if (!rawData || !rawData.columns || !rawData.rows) {
     return {
@@ -667,8 +669,8 @@ const buildNodesAndEdges = (
         categorySettings.color = overrideColor
           ? overrideColor
           : defaultCategoryColor
-          ? themeColors[colorIndex++]
-          : null;
+            ? namedThemeColors.charts[colorIndex++]
+            : null;
         if (has(overrides, "depth")) {
           categorySettings.depth = overrides.depth;
         }
@@ -687,7 +689,7 @@ const buildNodesAndEdges = (
       } else {
         // @ts-ignore
         categorySettings.color = defaultCategoryColor
-          ? themeColors[colorIndex++]
+          ? namedThemeColors.charts[colorIndex++]
           : null;
       }
       categories[category] = categorySettings;
@@ -709,8 +711,8 @@ const buildNodesAndEdges = (
     if (!allowedNodeAndEdgeMasks.includes(nodeAndEdgeMask)) {
       return new Error(
         `Encountered dataset row with no node or edge definition: ${JSON.stringify(
-          row
-        )}`
+          row,
+        )}`,
       );
     }
 
@@ -729,7 +731,7 @@ const buildNodesAndEdges = (
         category,
         depth,
         row,
-        categories
+        categories,
       );
 
       // Ensure that any existing references to this node are also updated
@@ -764,7 +766,7 @@ const buildNodesAndEdges = (
             null,
             null,
             null,
-            {}
+            {},
           );
           graph.setNode(from_id);
           nodes.push(node);
@@ -776,7 +778,7 @@ const buildNodesAndEdges = (
         const { edge, duplicate_edge } = recordEdge(
           edge_lookup,
           from_id,
-          node_id
+          node_id,
         );
         if (duplicate_edge) {
           contains_duplicate_edges = true;
@@ -799,7 +801,7 @@ const buildNodesAndEdges = (
             null,
             null,
             null,
-            {}
+            {},
           );
           graph.setNode(to_id);
           nodes.push(node);
@@ -808,7 +810,7 @@ const buildNodesAndEdges = (
         const { edge, duplicate_edge } = recordEdge(
           edge_lookup,
           node_id,
-          to_id
+          to_id,
         );
         if (duplicate_edge) {
           contains_duplicate_edges = true;
@@ -834,7 +836,7 @@ const buildNodesAndEdges = (
           null,
           null,
           null,
-          {}
+          {},
         );
         graph.setNode(from_id);
         nodes.push(node);
@@ -851,7 +853,7 @@ const buildNodesAndEdges = (
           null,
           null,
           null,
-          {}
+          {},
         );
         graph.setNode(to_id);
         nodes.push(node);
@@ -863,7 +865,7 @@ const buildNodesAndEdges = (
         to_id,
         title,
         category,
-        nodeAndEdgeMask === 6 ? row : null
+        nodeAndEdgeMask === 6 ? row : null,
       );
       if (duplicate_edge) {
         contains_duplicate_edges = true;
@@ -890,7 +892,10 @@ const buildNodesAndEdges = (
   };
 };
 
-const buildSankeyDataInputs = (nodesAndEdges: NodesAndEdges) => {
+const buildSankeyDataInputs = (
+  nodesAndEdges: NodesAndEdges,
+  namedThemeColors,
+) => {
   const data: any[] = [];
   const links: any[] = [];
   const nodeDepths = {};
@@ -934,13 +939,13 @@ const buildSankeyDataInputs = (nodesAndEdges: NodesAndEdges) => {
         node.depth !== null
           ? node.depth
           : has(categoryOverrides, "depth")
-          ? categoryOverrides.depth
-          : nodeDepths[node.id],
+            ? categoryOverrides.depth
+            : nodeDepths[node.id],
       itemStyle: {
         color:
           categoryOverrides && categoryOverrides.color
             ? categoryOverrides.color
-            : themeColors[
+            : namedThemeColors.charts[
                 has(nodesAndEdges, "next_color_index")
                   ? // @ts-ignore
                     nodesAndEdges.next_color_index++
@@ -966,7 +971,10 @@ type TreeItem = {
 };
 
 // Taken from https://github.com/philipstanislaus/performant-array-to-tree
-const nodesAndEdgesToTree = (nodesAndEdges: NodesAndEdges): TreeItem[] => {
+const nodesAndEdgesToTree = (
+  nodesAndEdges: NodesAndEdges,
+  namedThemeColors,
+): TreeItem[] => {
   // const rootParentIds = { "": true };
 
   // the resulting unflattened tree
@@ -996,7 +1004,7 @@ const nodesAndEdgesToTree = (nodesAndEdges: NodesAndEdges): TreeItem[] => {
         color = categoryOverrides.color;
         colorIndex++;
       } else {
-        color = themeColors[colorIndex++];
+        color = namedThemeColors.charts[colorIndex++];
       }
     }
 
@@ -1026,12 +1034,15 @@ const nodesAndEdgesToTree = (nodesAndEdges: NodesAndEdges): TreeItem[] => {
     lookup[parentId].children.push(childItem);
   }
   return Object.values(lookup).filter(
-    (node) => nodesAndEdges.root_nodes[node.id]
+    (node) => nodesAndEdges.root_nodes[node.id],
   );
 };
 
-const buildTreeDataInputs = (nodesAndEdges: NodesAndEdges) => {
-  const tree = nodesAndEdgesToTree(nodesAndEdges);
+const buildTreeDataInputs = (
+  nodesAndEdges: NodesAndEdges,
+  namedThemeColors,
+) => {
+  const tree = nodesAndEdgesToTree(nodesAndEdges, namedThemeColors);
   return {
     data: tree,
   };
@@ -1077,6 +1088,33 @@ const generateColors = () => {
   ];
 };
 
+// Taken from https://cloudscape.design/foundation/visual-foundation/data-vis-colors/
+const getChartColors = (theme: Theme) => {
+  if (theme.name === ThemeNames.STEAMPIPE_DARK) {
+    return [
+      "#486de8",
+      "#e07f9d",
+      "#018977",
+      "#b088f5",
+      "#c55305",
+      "#8ea9ff",
+      "#ffb0c8",
+      "#40bfa9",
+    ];
+  } else {
+    return [
+      "#688ae8",
+      "#c33d69",
+      "#2ea597",
+      "#8456ce",
+      "#e07941",
+      "#3759ce",
+      "#962249",
+      "#096f64",
+    ];
+  }
+};
+
 const themeColors = generateColors();
 
 const getColorOverride = (colorOverride, namedThemeColors) => {
@@ -1100,6 +1138,7 @@ export {
   buildSankeyDataInputs,
   buildTreeDataInputs,
   foldNodesAndEdges,
+  getChartColors,
   getColorOverride,
   isNumericCol,
   themeColors,
