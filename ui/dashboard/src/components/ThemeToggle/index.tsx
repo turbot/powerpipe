@@ -25,6 +25,11 @@ const ThemeToggle = () => {
             ? "materialsymbols-solid:light_mode"
             : "materialsymbols-solid:dark_mode"
         }
+        title={
+          theme.name === ThemeNames.STEAMPIPE_DARK
+            ? "Switch to light theme"
+            : "Switch to dark theme"
+        }
       />
     </button>
   );
