@@ -104,6 +104,7 @@ const getCommonBaseOptions = () => ({
     top: "10",
     textStyle: {
       fontSize: 11,
+      overflow: "truncate",
     },
   },
   textStyle: {
@@ -185,7 +186,7 @@ const getCommonBaseOptionsForChartType = (
             lineStyle: { color: themeColors.foregroundLightest },
           },
           axisTick: { show: true },
-          nameGap: 30,
+          nameGap: 25,
           nameLocation: "center",
           nameTextStyle: { color: themeColors.foreground },
           splitLine: { show: false },
@@ -195,12 +196,11 @@ const getCommonBaseOptionsForChartType = (
           type: "category",
           axisLabel: {
             color: themeColors.foreground,
-            width: 50,
             overflow: "truncate",
           },
           axisLine: { lineStyle: { color: themeColors.foregroundLightest } },
           axisTick: { show: false },
-          nameGap: width ? width + 42 : 50,
+          nameGap: 100,
           nameLocation: "center",
           nameTextStyle: { color: themeColors.foreground },
         },
@@ -373,22 +373,19 @@ const getOptionOverridesForChartType = (
       overrides = set(overrides, "legend.bottom", "auto");
     } else if (legendPosition === "right") {
       overrides = set(overrides, "legend.orient", "vertical");
-      overrides = set(overrides, "legend.left", "right");
+      overrides = set(overrides, "legend.left", 10);
       overrides = set(overrides, "legend.top", "middle");
       overrides = set(overrides, "legend.bottom", "auto");
-      overrides = set(overrides, "grid.right", "20%");
     } else if (legendPosition === "bottom") {
       overrides = set(overrides, "legend.orient", "horizontal");
       overrides = set(overrides, "legend.left", "center");
       overrides = set(overrides, "legend.top", "auto");
       overrides = set(overrides, "legend.bottom", 10);
-      overrides = set(overrides, "grid.top", 30);
     } else if (legendPosition === "left") {
       overrides = set(overrides, "legend.orient", "vertical");
-      overrides = set(overrides, "legend.left", "left");
+      overrides = set(overrides, "legend.left", 10);
       overrides = set(overrides, "legend.top", "middle");
       overrides = set(overrides, "legend.bottom", "auto");
-      overrides = set(overrides, "grid.left", "20%");
     }
   }
 
@@ -593,7 +590,7 @@ const getSeriesForChartType = (
         series.push({
           name: seriesName,
           type: "pie",
-          center: ["50%", "45%"],
+          center: ["50%", "50%"],
           radius: ["30%", "50%"],
           label: { color: themeColors.foreground, fontSize: 10 },
           itemStyle: {
@@ -662,6 +659,41 @@ const getSeriesForChartType = (
   return series;
 };
 
+const adjustGridConfig = (
+  config: EChartsOption,
+  properties: ChartProperties | undefined,
+) => {
+  let newConfig = { ...config };
+  if (!!newConfig?.xAxis?.name) {
+    newConfig = set(newConfig, "grid.containLabel", false);
+    newConfig = set(newConfig, "grid.bottom", "20%");
+  }
+  if (!!newConfig?.yAxis?.name) {
+    newConfig = set(newConfig, "grid.containLabel", false);
+    newConfig = set(newConfig, "grid.left", "25%");
+    newConfig = set(newConfig, "grid.bottom", "25%");
+  }
+  if (newConfig?.legend?.show) {
+    const configuredPosition = properties?.legend?.position || "top";
+    switch (configuredPosition) {
+      case "top":
+        newConfig = set(newConfig, "grid.top", "20%");
+        newConfig = set(newConfig, "grid.top", "20%");
+        break;
+      case "right":
+        newConfig = set(newConfig, "grid.right", "35%");
+        break;
+      case "bottom":
+        newConfig = set(newConfig, "grid.bottom", "25%");
+        break;
+      case "left":
+        newConfig = set(newConfig, "grid.left", "50%");
+        break;
+    }
+  }
+  return newConfig;
+};
+
 const buildChartOptions = (props: ChartProps, themeColors: any) => {
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
     props.data,
@@ -679,7 +711,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     treatAsTimeSeries,
     themeColors,
   );
-  return merge(
+  const config = merge(
     getCommonBaseOptions(),
     getCommonBaseOptionsForChartType(
       props.display_type || "column",
@@ -702,6 +734,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
       },
     },
   );
+  return adjustGridConfig(config, props.properties);
 };
 
 type ChartComponentProps = {
