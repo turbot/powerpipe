@@ -350,6 +350,16 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 				panic(fmt.Errorf("error building payload for get_metadata: %v", err))
 			}
 			_ = session.Write(payload)
+		case "get_dashboard_metadata_details":
+			dashboard := s.getResource(request.Payload.Dashboard.FullName)
+			if dashboard == nil {
+				return
+			}
+			payload, err := buildDashboardMetadataDetailsPayload(ctx, dashboard)
+			if err != nil {
+				panic(fmt.Errorf("error building payload for get_metadata_details: %v", err))
+			}
+			_ = session.Write(payload)
 		case "get_available_dashboards":
 			payload, err := buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
 			if err != nil {
@@ -361,7 +371,6 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			if dashboard == nil {
 				return
 			}
-
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 
 			// was a search path passed into the execute command?

@@ -158,6 +158,15 @@ type ModDashboardMetadata struct {
 	ShortName string `json:"short_name"`
 }
 
+type ModDashboardMetadataDetails struct {
+	OriginalSearchPath   []string `json:"original_search_path"`
+	ResolvedSearchPath   []string `json:"resolved_search_path"`
+	ConfiguredSearchPath []string `json:"configured_search_path"`
+	SearchPathPrefix     []string `json:"short_name"`
+
+	Database string `json:"database"`
+}
+
 type DashboardCLIMetadata struct {
 	Version string `json:"version,omitempty"`
 }
@@ -173,4 +182,8 @@ type DashboardMetadata struct {
 type DashboardMetadataPayload struct {
 	Action   string            `json:"action"`
 	Metadata DashboardMetadata `json:"metadata"`
+}
+type DashboardMetadataDetailsPayload struct {
+	Action   string                      `json:"action"`
+	Metadata ModDashboardMetadataDetails `json:"metadata"`
 }
