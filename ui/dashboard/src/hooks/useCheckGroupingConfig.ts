@@ -36,13 +36,11 @@ const useCheckGroupingConfig = () => {
 
         if (typeValueParts.length > 1) {
           groupings.push({
-            id: `${typeValueParts[0]}-${typeValueParts[1]}`,
             type: typeValueParts[0] as CheckDisplayGroupType,
             value: typeValueParts[1],
           });
         } else {
           groupings.push({
-            id: typeValueParts[0],
             type: typeValueParts[0] as CheckDisplayGroupType,
           });
         }

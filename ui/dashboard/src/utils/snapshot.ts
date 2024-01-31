@@ -5,6 +5,10 @@ import {
   EXECUTION_SCHEMA_VERSION_20240130,
 } from "constants/versions";
 import { PanelDefinition } from "types";
+import {
+  CheckDisplayGroup,
+  CheckDisplayGroupType,
+} from "components/dashboards/check/common";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {
@@ -58,4 +62,30 @@ const stripSnapshotDataForExport = (snapshot) => {
   }
 };
 
-export { stripSnapshotDataForExport };
+const groupingToSnapshotMetadata = (
+  grouping: CheckDisplayGroup[] | null | undefined,
+): CheckDisplayGroup[] => {
+  if (!grouping) {
+    return [];
+  }
+
+  return grouping
+    .filter((g) => {
+      return !((g.type === "dimension" || g.type === "tag") && !g.value);
+    })
+    .map((g) => {
+      const mapped: { type: CheckDisplayGroupType; value?: string } = {
+        type: g.type,
+      };
+      if (!!g.value) {
+        mapped.value = g.value;
+      }
+      return mapped;
+    });
+};
+
+const filterToSnapshotMetadata = (grouping: CheckDisplayGroup[]): object => {
+  return {};
+};
+
+export { groupingToSnapshotMetadata, stripSnapshotDataForExport };

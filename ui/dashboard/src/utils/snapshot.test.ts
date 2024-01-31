@@ -1,9 +1,16 @@
-import { DashboardExecutionEventWithSchema, PanelDefinition } from "../types";
+import { DashboardExecutionEventWithSchema, PanelDefinition } from "types";
 import {
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
-} from "../constants/versions";
-import { stripSnapshotDataForExport } from "./snapshot";
+} from "constants/versions";
+import {
+  groupingToSnapshotMetadata,
+  stripSnapshotDataForExport,
+} from "./snapshot";
+import {
+  CheckDisplayGroup,
+  CheckDisplayGroupType,
+} from "components/dashboards/check/common";
 
 describe("snapshot utils", () => {
   describe("stripSnapshotDataForExport", () => {
@@ -166,8 +173,78 @@ describe("snapshot utils", () => {
       };
 
       expect(() => stripSnapshotDataForExport(inputSnapshot)).toThrow(
-        `Unsupported dashboard event schema ${inputSnapshot.schema_version}`
+        `Unsupported dashboard event schema ${inputSnapshot.schema_version}`,
       );
+    });
+  });
+
+  describe("groupingToSnapshotMetadata", () => {
+    it("should return an empty array for empty input", () => {
+      const input: CheckDisplayGroup[] = [];
+      expect(groupingToSnapshotMetadata(input)).toEqual([]);
+    });
+
+    const types: CheckDisplayGroupType[] = [
+      "status",
+      "reason",
+      "resource",
+      "severity",
+      "benchmark",
+      "control",
+      "result",
+    ];
+    types.forEach((type) => {
+      it(`should handle type ${type} without value`, () => {
+        const input: CheckDisplayGroup[] = [{ type }];
+        const expected = [{ type }];
+        expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+      });
+    });
+
+    it("should omit dimension with no value", () => {
+      const input: CheckDisplayGroup[] = [{ type: "dimension" }];
+      const expected = [];
+      expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+    });
+
+    it("should handle dimension with value", () => {
+      const input: CheckDisplayGroup[] = [
+        { type: "dimension", value: "region" },
+      ];
+      const expected = [{ type: "dimension", value: "region" }];
+      expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+    });
+
+    it("should omit tag with no value", () => {
+      const input: CheckDisplayGroup[] = [{ type: "tag" }];
+      const expected = [];
+      expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+    });
+
+    it("should handle tag with value", () => {
+      const input: CheckDisplayGroup[] = [{ type: "tag", value: "category" }];
+      const expected = [{ type: "tag", value: "category" }];
+      expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+    });
+
+    it("should handle multiple groupings", () => {
+      const input: CheckDisplayGroup[] = [
+        { type: "status" },
+        { type: "dimension", value: "region" },
+      ];
+      const expected = [
+        { type: "status" },
+        { type: "dimension", value: "region" },
+      ];
+      expect(groupingToSnapshotMetadata(input)).toEqual(expected);
+    });
+
+    it("should handle null input gracefully", () => {
+      expect(groupingToSnapshotMetadata(null)).toEqual([]);
+    });
+
+    it("should handle undefined input gracefully", () => {
+      expect(groupingToSnapshotMetadata(undefined)).toEqual([]);
     });
   });
 });
