@@ -1,6 +1,6 @@
-import { LeafNodeData, Width } from "../components/dashboards/common";
+import { LeafNodeData, Width } from "components/dashboards/common";
 import { Ref } from "react";
-import { Theme } from "../hooks/useTheme";
+import { Theme } from "hooks/useTheme";
 
 export type IDashboardContext = {
   versionMismatchCheck: boolean;
@@ -151,16 +151,25 @@ export const DashboardActions: IActions = {
 type DashboardExecutionEventSchemaVersion =
   | "20220614"
   | "20220929"
-  | "20221222";
+  | "20221222"
+  | "20240130";
 
-type DashboardExecutionStartedEventSchemaVersion = "20220614" | "20221222";
+type DashboardExecutionStartedEventSchemaVersion =
+  | "20220614"
+  | "20221222"
+  | "20240130";
 
 type DashboardExecutionCompleteEventSchemaVersion =
   | "20220614"
   | "20220929"
-  | "20221222";
+  | "20221222"
+  | "20240130";
 
-type DashboardSnapshotSchemaVersion = "20220614" | "20220929" | "20221222";
+type DashboardSnapshotSchemaVersion =
+  | "20220614"
+  | "20220929"
+  | "20221222"
+  | "20240130";
 
 export type DashboardExecutionStartedEvent = {
   action: "execution_started";

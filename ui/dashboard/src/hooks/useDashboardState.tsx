@@ -7,12 +7,12 @@ import {
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,
   wrapDefinitionInArtificialDashboard,
-} from "../utils/state";
+} from "utils/state";
 import {
   controlsUpdatedEventHandler,
   leafNodesUpdatedEventHandler,
   migratePanelStatuses,
-} from "../utils/dashboardEventHandlers";
+} from "utils/dashboardEventHandlers";
 import {
   DashboardActions,
   DashboardDataModeCLISnapshot,
@@ -21,15 +21,15 @@ import {
   DashboardDataOptions,
   DashboardRenderOptions,
   IDashboardContext,
-} from "../types";
+} from "types";
 import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
-} from "../constants/versions";
+} from "constants/versions";
 import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,
-} from "../utils/schema";
+} from "utils/schema";
 import { useCallback, useReducer } from "react";
 
 const reducer = (state: IDashboardContext, action) => {
@@ -68,10 +68,10 @@ const reducer = (state: IDashboardContext, action) => {
           state.dataMode === DashboardDataModeCloudSnapshot
             ? state.dashboard
             : selectedDashboard &&
-              state.dashboard &&
-              state.dashboard.name === selectedDashboard.full_name
-            ? state.dashboard
-            : null,
+                state.dashboard &&
+                state.dashboard.name === selectedDashboard.full_name
+              ? state.dashboard
+              : null,
       };
     case DashboardActions.EXECUTION_STARTED: {
       const rootLayoutPanel = action.layout;
@@ -166,13 +166,13 @@ const reducer = (state: IDashboardContext, action) => {
         panelsLog: updatePanelsLogFromCompletedPanels(
           state.panelsLog,
           panels,
-          action.snapshot.end_time,
+          migratedEvent.snapshot.end_time,
         ),
         diff: null,
         panelsMap,
         dashboard,
         progress: 100,
-        snapshot: action.snapshot,
+        snapshot: migratedEvent.snapshot,
         state: "complete",
       };
     }

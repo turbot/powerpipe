@@ -14,9 +14,9 @@ import {
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
-} from "../types";
-import { buildComponentsMap } from "../components";
-import { buildSelectedDashboardInputsFromSearchParams } from "../utils/state";
+} from "types";
+import { buildComponentsMap } from "components";
+import { buildSelectedDashboardInputsFromSearchParams } from "utils/state";
 import {
   createContext,
   useCallback,
@@ -25,7 +25,7 @@ import {
   useState,
 } from "react";
 import { GlobalHotKeys } from "react-hotkeys";
-import { noop } from "../utils/func";
+import { noop } from "utils/func";
 import {
   useLocation,
   useNavigate,
@@ -82,13 +82,13 @@ const DashboardProvider = ({
   const { dashboard_name } = useParams();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
-    eventHooks
+    eventHooks,
   );
   const { ready: socketReady, send: sendSocketMessage } = useDashboardWebSocket(
     state.dataMode,
     dispatch,
     eventHandler,
-    socketUrlFactory
+    socketUrlFactory,
   );
   const {
     setMetadata: setAnalyticsMetadata,
@@ -170,7 +170,7 @@ const DashboardProvider = ({
     });
     if (
       JSON.stringify(
-        previousSelectedDashboardStates?.selectedDashboardInputs
+        previousSelectedDashboardStates?.selectedDashboardInputs,
       ) !== JSON.stringify(inputs)
     ) {
       dispatch({
@@ -287,7 +287,7 @@ const DashboardProvider = ({
       state.dataMode === DashboardDataModeLive
     ) {
       const dashboard = state.dashboards.find(
-        (dashboard) => dashboard.full_name === dashboard_name
+        (dashboard) => dashboard.full_name === dashboard_name,
       );
       dispatch({
         type: DashboardActions.SELECT_DASHBOARD,
@@ -303,7 +303,7 @@ const DashboardProvider = ({
       dashboard_name !== state.selectedDashboard.full_name
     ) {
       const dashboard = state.dashboards.find(
-        (dashboard) => dashboard.full_name === dashboard_name
+        (dashboard) => dashboard.full_name === dashboard_name,
       );
       dispatch({ type: DashboardActions.SELECT_DASHBOARD, dashboard });
       const value = buildSelectedDashboardInputsFromSearchParams(searchParams);
@@ -380,7 +380,7 @@ const DashboardProvider = ({
       previousSelectedDashboardStates.selectedDashboard &&
       !isEqual(
         previousSelectedDashboardStates.selectedDashboardInputs,
-        state.selectedDashboardInputs
+        state.selectedDashboardInputs,
       )
     ) {
       sendSocketMessage({
@@ -440,7 +440,7 @@ const DashboardProvider = ({
     if (
       isEqual(
         state.selectedDashboardInputs,
-        previousSelectedDashboardStates.selectedDashboardInputs
+        previousSelectedDashboardStates.selectedDashboardInputs,
       )
     ) {
       return;

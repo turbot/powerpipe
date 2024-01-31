@@ -2,8 +2,9 @@ import {
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
-} from "../constants/versions";
-import { PanelDefinition } from "../types";
+  EXECUTION_SCHEMA_VERSION_20240130,
+} from "constants/versions";
+import { PanelDefinition } from "types";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {
@@ -30,11 +31,12 @@ const stripSnapshotDataForExport = (snapshot) => {
     case EXECUTION_SCHEMA_VERSION_20220614:
     case EXECUTION_SCHEMA_VERSION_20220929:
     case EXECUTION_SCHEMA_VERSION_20221222:
+    case EXECUTION_SCHEMA_VERSION_20240130:
       const { panels, ...restSnapshot } = stripObjectProperties(snapshot);
       const newPanels = {};
       for (const [name, panel] of Object.entries(panels)) {
         const { properties, ...restPanel } = stripObjectProperties(
-          panel
+          panel,
         ) as PanelDefinition;
         const newPanel: PanelDefinition = {
           ...restPanel,
@@ -51,7 +53,7 @@ const stripSnapshotDataForExport = (snapshot) => {
       };
     default:
       throw new Error(
-        `Unsupported dashboard event schema ${snapshot.schema_version}`
+        `Unsupported dashboard event schema ${snapshot.schema_version}`,
       );
   }
 };

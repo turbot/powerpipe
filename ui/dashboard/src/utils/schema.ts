@@ -4,21 +4,22 @@ import {
   DashboardExecutionEventWithSchema,
   DashboardExecutionStartedEvent,
   DashboardSnapshot,
-} from "../types";
+} from "types";
 import {
   EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST,
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
+  EXECUTION_SCHEMA_VERSION_20240130,
   EXECUTION_STARTED_SCHEMA_VERSION_LATEST,
-} from "../constants/versions";
+} from "constants/versions";
 import { migratePanelStatuses } from "./dashboardEventHandlers";
 
 const executedStartedMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20220614,
     up: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionStartedEvent {
       const {
         action,
@@ -43,10 +44,13 @@ const executedStartedMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20221222,
     up: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionStartedEvent {
       // Nothing to do here as this event is already in the latest supported schema
-      return current as DashboardExecutionStartedEvent;
+      return {
+        ...(current as DashboardExecutionStartedEvent),
+        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+      };
     },
   },
 ];
@@ -55,7 +59,7 @@ const executedCompletedMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20220614,
     up: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       const {
         action,
@@ -88,7 +92,7 @@ const executedCompletedMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20220929,
     up: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       // The shape is already correct - just need to bump the version
       const {
@@ -98,13 +102,13 @@ const executedCompletedMigrations = [
       } = current;
       return {
         action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20221222,
+        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
         execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20221222,
+          schema_version: EXECUTION_SCHEMA_VERSION_20240130,
           panels: migratePanelStatuses(
             panels,
-            EXECUTION_SCHEMA_VERSION_20220929
+            EXECUTION_SCHEMA_VERSION_20220929,
           ),
           ...snapshotRest,
         },
@@ -114,7 +118,33 @@ const executedCompletedMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20221222,
     up: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      // The shape is already correct - just need to bump the version
+      const {
+        action,
+        execution_id,
+        snapshot: { schema_version, panels = {}, ...snapshotRest },
+      } = current;
+      return {
+        action,
+        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+        execution_id,
+        snapshot: {
+          schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+          panels: migratePanelStatuses(
+            panels,
+            EXECUTION_SCHEMA_VERSION_20221222,
+          ),
+          ...snapshotRest,
+        },
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240130,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       // Nothing to do here as this event is already in the latest supported schema
       return current as DashboardExecutionCompleteEvent;
@@ -126,7 +156,7 @@ const snapshotDataToExecutionCompleteMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20220614,
     toExecutionComplete: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       const {
         layout,
@@ -155,7 +185,7 @@ const snapshotDataToExecutionCompleteMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20220929,
     toExecutionComplete: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       const {
         layout,
@@ -186,7 +216,7 @@ const snapshotDataToExecutionCompleteMigrations = [
   {
     version: EXECUTION_SCHEMA_VERSION_20221222,
     toExecutionComplete: function (
-      current: DashboardExecutionEventWithSchema
+      current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
       const {
         layout,
@@ -214,6 +244,23 @@ const snapshotDataToExecutionCompleteMigrations = [
       };
     },
   },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240130,
+    toExecutionComplete: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      return {
+        ...current,
+        action: DashboardActions.EXECUTION_COMPLETE,
+        execution_id: "",
+        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+        snapshot: {
+          ...current.snapshot,
+          schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+        },
+      };
+    },
+  },
 ];
 
 const executionStartedVersionMigratorIndexLookup = {};
@@ -237,7 +284,7 @@ for (const [
 
 class ExecutionStartedSchemaMigrator {
   toLatest(
-    current: DashboardExecutionEventWithSchema
+    current: DashboardExecutionEventWithSchema,
   ): DashboardExecutionStartedEvent {
     if (current.schema_version === EXECUTION_STARTED_SCHEMA_VERSION_LATEST) {
       return current as DashboardExecutionStartedEvent;
@@ -246,7 +293,7 @@ class ExecutionStartedSchemaMigrator {
       executionStartedVersionMigratorIndexLookup[current.schema_version];
     if (startingIndex === undefined) {
       throw new Error(
-        `Unsupported dashboard event schema ${current.schema_version}`
+        `Unsupported dashboard event schema ${current.schema_version}`,
       );
     }
     let migrated = current;
@@ -264,7 +311,7 @@ class ExecutionStartedSchemaMigrator {
 
 class ExecutionCompleteSchemaMigrator {
   toLatest(
-    current: DashboardExecutionEventWithSchema
+    current: DashboardExecutionEventWithSchema,
   ): DashboardExecutionCompleteEvent {
     if (current.schema_version === EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST) {
       return current as DashboardExecutionCompleteEvent;
@@ -273,7 +320,7 @@ class ExecutionCompleteSchemaMigrator {
       executionCompleteVersionMigratorIndexLookup[current.schema_version];
     if (startingIndex === undefined) {
       throw new Error(
-        `Unsupported dashboard event schema ${current.schema_version}`
+        `Unsupported dashboard event schema ${current.schema_version}`,
       );
     }
     let migrated = current;
@@ -297,7 +344,7 @@ class SnapshotDataToExecutionCompleteSchemaMigrator {
       ];
     if (migratorIndex === undefined) {
       throw new Error(
-        `Unsupported dashboard event schema ${current.schema_version}`
+        `Unsupported dashboard event schema ${current.schema_version}`,
       );
     }
     const snapshotMigrator =
