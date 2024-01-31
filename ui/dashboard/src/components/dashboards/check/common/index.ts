@@ -130,21 +130,13 @@ export type CheckDisplayGroup = {
   value?: string | undefined;
 };
 
-export interface Filter {
-  type: CheckFilterType;
+export type CheckFilter = {
+  operator: "and" | "equal";
+  type?: CheckFilterType;
   key?: string;
   value?: string;
-}
-
-export interface OrFilter {
-  or?: Filter[];
-}
-
-export interface AndFilter {
-  and?: (Filter | OrFilter)[];
-}
-
-export type CheckFilter = AndFilter & OrFilter;
+  expressions?: CheckFilter[];
+};
 
 export type CheckFilterType = CheckDisplayGroupType;
 

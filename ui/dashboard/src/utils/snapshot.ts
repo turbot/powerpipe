@@ -8,6 +8,7 @@ import { PanelDefinition } from "types";
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
+  CheckFilter,
 } from "components/dashboards/check/common";
 
 const stripObjectProperties = (obj) => {
@@ -84,8 +85,12 @@ const groupingToSnapshotMetadata = (
     });
 };
 
-const filterToSnapshotMetadata = (grouping: CheckDisplayGroup[]): object => {
-  return {};
+const filterToSnapshotMetadata = (filter: CheckFilter): CheckFilter => {
+  return filter;
 };
 
-export { groupingToSnapshotMetadata, stripSnapshotDataForExport };
+export {
+  filterToSnapshotMetadata,
+  groupingToSnapshotMetadata,
+  stripSnapshotDataForExport,
+};

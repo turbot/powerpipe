@@ -1,3 +1,7 @@
+import {
+  CheckDisplayGroup,
+  CheckFilter,
+} from "components/dashboards/check/common";
 import { LeafNodeData, Width } from "components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "hooks/useTheme";
@@ -311,6 +315,18 @@ export type DashboardPanelType =
   | "text"
   | "with";
 
+export type DashboardSnapshotViewFilterByMetadata = CheckFilter;
+export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
+
+export type DashboardSnapshotViewMetadata = {
+  filter_by?: DashboardSnapshotViewFilterByMetadata;
+  group_by?: DashboardSnapshotViewGroupByMetadata;
+};
+
+export type DashboardSnapshotMetadata = {
+  view?: DashboardSnapshotViewMetadata;
+};
+
 export type DashboardSnapshot = {
   schema_version: DashboardSnapshotSchemaVersion;
   layout: DashboardLayoutNode;
@@ -320,6 +336,7 @@ export type DashboardSnapshot = {
   search_path: string[];
   start_time: string;
   end_time: string;
+  metadata?: DashboardSnapshotMetadata;
 };
 
 type AvailableDashboardTags = {

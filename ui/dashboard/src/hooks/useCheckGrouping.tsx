@@ -10,8 +10,8 @@ import useCheckFilterConfig from "./useCheckFilterConfig";
 import useCheckGroupingConfig from "./useCheckGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
-  AndFilter,
   CheckDisplayGroup,
+  CheckFilter,
   CheckNode,
   CheckResult,
   CheckResultDimension,
@@ -19,9 +19,7 @@ import {
   CheckSeverity,
   CheckSummary,
   CheckTags,
-  Filter,
   findDimension,
-  OrFilter,
 } from "components/dashboards/check/common";
 import {
   createContext,
@@ -646,19 +644,21 @@ const wildcardToRegex = (wildcard: string) => {
 
 const includeResult = (
   checkResult: CheckResult,
-  checkFilterConfig: AndFilter & OrFilter,
+  checkFilterConfig: CheckFilter,
 ): boolean => {
-  const andFilter = checkFilterConfig as AndFilter;
-  if (!andFilter || !andFilter.and || andFilter.and.length === 0) {
+  if (
+    !checkFilterConfig ||
+    !checkFilterConfig.expressions ||
+    checkFilterConfig.expressions.length === 0
+  ) {
     return true;
   }
   let matches: boolean[] = [];
-  for (const filter of andFilter.and) {
-    const f = filter as Filter;
+  for (const filter of checkFilterConfig.expressions) {
     // @ts-ignore
-    const valueRegex = new RegExp(`^${wildcardToRegex(f.value)}$`);
+    const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
 
-    switch (f.type) {
+    switch (filter.type) {
       case "benchmark": {
         let matchesTrunk = false;
         for (const benchmark of checkResult.benchmark_trunk || []) {
