@@ -20,14 +20,14 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *steampipeconfig.CloudMetadata) ([]byte, error) {
-	installedMods := make(map[string]ModDashboardMetadata)
+func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *steampipeconfig.CloudMetadata) ([]byte, error) {
+	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
 		if mod.FullName == workspaceResources.Mod.FullName {
 			continue
 		}
-		installedMods[mod.FullName] = ModDashboardMetadata{
+		installedMods[mod.FullName] = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.Title),
 			FullName:  mod.FullName,
 			ShortName: mod.ShortName,
@@ -48,9 +48,9 @@ func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, c
 		cliVersion = versionFile.Version
 	}
 
-	payload := DashboardMetadataPayload{
-		Action: "dashboard_metadata",
-		Metadata: DashboardMetadata{
+	payload := ServerMetadataPayload{
+		Action: "server_metadata",
+		Metadata: ServerMetadata{
 			CLI: DashboardCLIMetadata{
 				Version: cliVersion,
 			},
@@ -60,7 +60,7 @@ func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, c
 	}
 
 	if mod := workspaceResources.Mod; mod != nil {
-		payload.Metadata.Mod = &ModDashboardMetadata{
+		payload.Metadata.Mod = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.Title),
 			FullName:  mod.FullName,
 			ShortName: mod.ShortName,
@@ -74,7 +74,7 @@ func buildDashboardMetadataPayload(workspaceResources *modconfig.ResourceMaps, c
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataDetailsPayload(ctx context.Context, dashboard modconfig.ModTreeItem) ([]byte, error) {
+func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem) ([]byte, error) {
 	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, dashboard.GetMod(), defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
@@ -87,9 +87,9 @@ func buildDashboardMetadataDetailsPayload(ctx context.Context, dashboard modconf
 
 	}
 	defer client.Close(ctx)
-	payload := DashboardMetadataDetailsPayload{
-		Action: "dashboard_metadata_details",
-		Metadata: ModDashboardMetadataDetails{
+	payload := DashboardMetadataPayload{
+		Action: "dashboard_metadata",
+		Metadata: DashboardMetadata{
 			Database: database,
 		},
 	}

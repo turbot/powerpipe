@@ -12,8 +12,8 @@ import { useCallback, useEffect, useRef } from "react";
 export const SocketActions: IActions = {
   CLEAR_DASHBOARD: "clear_dashboard",
   GET_AVAILABLE_DASHBOARDS: "get_available_dashboards",
-  GET_DASHBOARD_METADATA: "get_dashboard_metadata",
-  GET_DASHBOARD_METADATA_DETAILS: "get_dashboard_metadata_details",
+  GET_DASHBOARD_METADATA: "get_server_metadata",
+  GET_DASHBOARD_METADATA_DETAILS: "get_dashboard_metadata",
   SELECT_DASHBOARD: "select_dashboard",
   SELECT_SNAPSHOT: "select_snapshot",
   INPUT_CHANGED: "input_changed",

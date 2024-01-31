@@ -204,7 +204,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			payload, payloadError = buildDashboardMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
+			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
 			if payloadError != nil {
 				return
 			}
@@ -344,18 +344,18 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		}
 
 		switch request.Action {
-		case "get_dashboard_metadata":
-			payload, err := buildDashboardMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
+		case "get_server_metadata":
+			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
 			if err != nil {
 				panic(fmt.Errorf("error building payload for get_metadata: %v", err))
 			}
 			_ = session.Write(payload)
-		case "get_dashboard_metadata_details":
+		case "get_dashboard_metadata":
 			dashboard := s.getResource(request.Payload.Dashboard.FullName)
 			if dashboard == nil {
 				return
 			}
-			payload, err := buildDashboardMetadataDetailsPayload(ctx, dashboard)
+			payload, err := buildDashboardMetadataPayload(ctx, dashboard)
 			if err != nil {
 				panic(fmt.Errorf("error building payload for get_metadata_details: %v", err))
 			}
