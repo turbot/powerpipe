@@ -2,6 +2,9 @@ package cmd
 
 import (
 	"context"
+	"os"
+	"os/signal"
+
 	"github.com/spf13/cobra"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -11,8 +14,6 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"gopkg.in/olahol/melody.v1"
-	"os"
-	"os/signal"
 )
 
 func serverCmd() *cobra.Command {
@@ -24,13 +25,16 @@ func serverCmd() *cobra.Command {
 		Long:  "Start Powerpipe dashboard server.",
 	}
 
-	// TODO KAI CHECK ARGS
+	// TODO KAI CHECK ARGS (https://github.com/turbot/powerpipe/issues/106)
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddIntFlag(constants.ArgDashboardPort, constants.DashboardServerDefaultPort, "Dashboard server port")
-
+		AddIntFlag(constants.ArgDashboardPort, constants.DashboardServerDefaultPort, "Web server port").
+		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
+		AddStringFlag(constants.ArgDashboardListen, "", "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
+		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
+		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.")
 	return cmd
 }
 
