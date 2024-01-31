@@ -346,6 +346,8 @@ const reducer = (state: IDashboardContext, action) => {
           keys: action.keys,
         },
       };
+    case DashboardActions.SET_SNAPSHOT_METADATA_LOADED:
+      return { ...state, snapshot_metadata_loaded: true };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
     default:

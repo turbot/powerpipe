@@ -121,6 +121,46 @@ const DashboardProvider = ({
 
   useEffect(() => {
     if (
+      state.snapshot_metadata_loaded ||
+      !state.snapshot ||
+      !state.snapshot.metadata ||
+      !state.snapshot.metadata.view ||
+      (!state.snapshot.metadata.view.group_by &&
+        !state.snapshot.metadata.view.filter_by)
+    ) {
+      return;
+    }
+    if (state.snapshot.metadata.view.group_by) {
+      searchParams.set(
+        "grouping",
+        state.snapshot.metadata.view.group_by
+          .map((c) =>
+            c.type === "dimension" || c.type === "tag"
+              ? `${c.type}|${c.value}`
+              : c.type,
+          )
+          .join(","),
+      );
+    }
+    if (state.snapshot.metadata.view.filter_by) {
+      searchParams.set(
+        "where",
+        JSON.stringify(state.snapshot.metadata.view.filter_by),
+      );
+    }
+    setSearchParams(searchParams, { replace: true });
+    dispatch({
+      type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,
+    });
+  }, [
+    searchParams,
+    setSearchParams,
+    state.snapshot_metadata_loaded,
+    state.snapshot,
+  ]);
+
+  useEffect(() => {
+    if (
       !!dashboard_name &&
       !location.pathname.startsWith("/snapshot/") &&
       state.dataMode === DashboardDataModeCLISnapshot

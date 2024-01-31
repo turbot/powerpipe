@@ -249,14 +249,30 @@ const snapshotDataToExecutionCompleteMigrations = [
     toExecutionComplete: function (
       current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
+      const {
+        layout,
+        panels,
+        inputs,
+        variables,
+        search_path,
+        start_time,
+        end_time,
+        metadata,
+      } = current;
       return {
-        ...current,
         action: DashboardActions.EXECUTION_COMPLETE,
         execution_id: "",
         schema_version: EXECUTION_SCHEMA_VERSION_20240130,
         snapshot: {
-          ...current.snapshot,
           schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+          layout,
+          panels,
+          inputs,
+          variables,
+          search_path,
+          start_time,
+          end_time,
+          metadata,
         },
       };
     },

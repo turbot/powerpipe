@@ -3,12 +3,13 @@ import {
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
-} from "../constants/versions";
-import { PanelDefinition, PanelsMap } from "../types";
+  EXECUTION_SCHEMA_VERSION_20240130,
+} from "constants/versions";
+import { PanelDefinition, PanelsMap } from "types";
 
 const migratePanelStatus = (
   panel: PanelDefinition,
-  currentSchemaVersion: string
+  currentSchemaVersion: string,
 ): PanelDefinition => {
   switch (currentSchemaVersion) {
     case "":
@@ -20,18 +21,19 @@ const migratePanelStatus = (
         status: panel.status === "ready" ? "running" : panel.status,
       };
     case EXECUTION_SCHEMA_VERSION_20221222:
+    case EXECUTION_SCHEMA_VERSION_20240130:
       // Nothing to do - already the latest statuses
       return panel;
     default:
       throw new Error(
-        `Unsupported dashboard event schema ${currentSchemaVersion}`
+        `Unsupported dashboard event schema ${currentSchemaVersion}`,
       );
   }
 };
 
 const migratePanelStatuses = (
   panelsMap: PanelsMap,
-  currentSchemaVersion: string
+  currentSchemaVersion: string,
 ): PanelsMap => {
   const newPanelsMap = {};
   for (const [name, panel] of Object.entries(panelsMap || {})) {
@@ -103,7 +105,7 @@ const leafNodesUpdatedEventHandler = (action, currentSchemaVersion, state) => {
     panelsLog = addUpdatedPanelLogs(panelsLog, dashboard_node, timestamp);
     panelsMap[dashboard_node.name] = migratePanelStatus(
       dashboard_node,
-      currentSchemaVersion
+      currentSchemaVersion,
     );
   }
 

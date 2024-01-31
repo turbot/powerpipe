@@ -53,6 +53,7 @@ export type IDashboardContext = {
 
   snapshot: DashboardSnapshot | null;
   snapshotFileName: string | null;
+  snapshot_metadata_loaded: boolean;
 
   diff?: {
     panelsMap: PanelsMap;
@@ -144,6 +145,7 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
+  SET_SNAPSHOT_METADATA_LOADED: "set_dashboard_metadata_loaded",
   SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
   SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
