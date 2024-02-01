@@ -693,7 +693,7 @@ const includeResult = (
       }
       case "dimension": {
         // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(f.key)}$`);
+        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesDimensions = false;
         for (const dimension of checkResult.dimensions || []) {
           if (
@@ -709,7 +709,7 @@ const includeResult = (
       }
       case "tag": {
         // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(f.key)}$`);
+        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
         for (const [tagKey, tagValue] of Object.entries(
           checkResult.tags || {},

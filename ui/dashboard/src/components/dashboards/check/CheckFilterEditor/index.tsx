@@ -15,6 +15,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
 import { useCallback, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
+import has from "lodash/has";
 
 type CheckFilterEditorProps = {
   config: CheckFilter;
@@ -207,11 +208,17 @@ const CheckFilterValueSelect = ({
           }))
       );
     }
-    return Object.entries(filterValues[type].value || {}).map(([k, v]) => ({
-      value: k,
-      label: k,
-      tags: { occurrences: v },
-    }));
+    return Object.entries(filterValues[type].value || {})
+      .filter(([, v]) => has(v, item.key as string))
+      .map(([k, v]) => {
+        console.log({ item, filterValues, type, k, v });
+        return {
+          value: k,
+          label: k,
+          // @ts-ignore
+          tags: { occurrences: v[item.key] },
+        };
+      });
   }, [filterValues, type]);
 
   const styles = useSelectInputStyles();
@@ -384,7 +391,7 @@ const CheckFilterEditor = ({
       )}
       <CheckEditorAddItem
         addLabel="Add filter"
-        clearLabel="Clear filter"
+        clearLabel="Clear filters"
         isValid={isValid}
         onAdd={() =>
           setConfig({
