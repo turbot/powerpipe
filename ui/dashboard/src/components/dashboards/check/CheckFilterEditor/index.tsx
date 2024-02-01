@@ -211,7 +211,6 @@ const CheckFilterValueSelect = ({
     return Object.entries(filterValues[type].value || {})
       .filter(([, v]) => has(v, item.key as string))
       .map(([k, v]) => {
-        console.log({ item, filterValues, type, k, v });
         return {
           value: k,
           label: k,
