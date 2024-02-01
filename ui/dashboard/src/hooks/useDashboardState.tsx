@@ -34,13 +34,29 @@ import { useCallback, useReducer } from "react";
 
 const reducer = (state: IDashboardContext, action) => {
   switch (action.type) {
-    case DashboardActions.DASHBOARD_METADATA:
+    case DashboardActions.SERVER_METADATA:
       return {
         ...state,
         metadata: {
           mod: {},
           ...action.metadata,
         },
+      };
+    case DashboardActions.DASHBOARD_METADATA:
+      if (!state.selectedDashboard?.full_name) {
+        return state;
+      }
+      return {
+        ...state,
+        dashboardsMetadata: {
+          ...state.dashboardsMetadata,
+          [state.selectedDashboard?.full_name]: action.metadata,
+        },
+      };
+    case DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH:
+      return {
+        ...state,
+        selectedDashboardSearchPath: action.search_path,
       };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
@@ -251,6 +267,7 @@ const reducer = (state: IDashboardContext, action) => {
         snapshotId: null,
         state: null,
         selectedDashboard: action.dashboard,
+        selectedDashboardSearchPath: [],
         selectedPanel: null,
         lastChangedInput: null,
       };
@@ -372,8 +389,10 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     panelsLog: {},
     panelsMap: {},
     dashboard: null,
+    dashboardsMetadata: {},
     selectedPanel: null,
     selectedDashboard: null,
+    selectedDashboardSearchPath: [],
     selectedDashboardInputs:
       buildSelectedDashboardInputsFromSearchParams(searchParams),
     snapshot: null,

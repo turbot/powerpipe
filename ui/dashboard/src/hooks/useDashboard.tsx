@@ -79,6 +79,7 @@ const DashboardProvider = ({
     stateDefaults,
     versionMismatchCheck,
   });
+  console.log(state);
   const { dashboard_name } = useParams();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
@@ -108,6 +109,7 @@ const DashboardProvider = ({
       searchParams,
       selectedDashboard: state.selectedDashboard,
       selectedDashboardInputs: state.selectedDashboardInputs,
+      selectedDashboardSearchPath: state.selectedDashboardSearchPath,
     });
 
   // Alert analytics
@@ -393,7 +395,9 @@ const DashboardProvider = ({
         state.selectedDashboard.full_name !==
           previousSelectedDashboardStates.selectedDashboard.full_name ||
         (!previousSelectedDashboardStates.refetchDashboard &&
-          state.refetchDashboard))
+          state.refetchDashboard) ||
+        previousSelectedDashboardStates.selectedDashboardSearchPath !==
+          state.selectedDashboardSearchPath)
     ) {
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
@@ -408,6 +412,17 @@ const DashboardProvider = ({
             full_name: state.selectedDashboard.full_name,
           },
           input_values: state.selectedDashboardInputs,
+          search_path: !!state.selectedDashboardSearchPath
+            ? state.selectedDashboardSearchPath
+            : null,
+        },
+      });
+      sendSocketMessage({
+        action: SocketActions.GET_DASHBOARD_METADATA,
+        payload: {
+          dashboard: {
+            full_name: state.selectedDashboard.full_name,
+          },
         },
       });
       return;
@@ -440,6 +455,7 @@ const DashboardProvider = ({
     socketReady,
     state.selectedDashboard,
     state.selectedDashboardInputs,
+    state.selectedDashboardSearchPath,
     state.lastChangedInput,
     state.dataMode,
     state.refetchDashboard,

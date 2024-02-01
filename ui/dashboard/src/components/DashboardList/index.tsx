@@ -7,14 +7,14 @@ import {
   AvailableDashboardsDictionary,
   DashboardAction,
   DashboardActions,
-  ModDashboardMetadata,
-} from "../../types";
-import { classNames } from "../../utils/styles";
+  ModServerMetadata,
+} from "types";
+import { classNames } from "utils/styles";
 import { default as lodashGroupBy } from "lodash/groupBy";
 import { Fragment, useEffect, useState } from "react";
 import { getComponent } from "../dashboards";
-import { stringToColor } from "../../utils/color";
-import { useDashboard } from "../../hooks/useDashboard";
+import { stringToColor } from "utils/color";
+import { useDashboard } from "hooks/useDashboard";
 import { useParams } from "react-router-dom";
 
 type DashboardListSection = {
@@ -23,7 +23,7 @@ type DashboardListSection = {
 };
 
 type AvailableDashboardWithMod = AvailableDashboard & {
-  mod?: ModDashboardMetadata;
+  mod?: ModServerMetadata;
 };
 
 type DashboardTagProps = {
@@ -49,7 +49,7 @@ const DashboardTag = ({
   <span
     className={classNames(
       "rounded-md text-xs",
-      dispatch ? "cursor-pointer" : null
+      dispatch ? "cursor-pointer" : null,
     )}
     onClick={
       dispatch
@@ -184,7 +184,7 @@ const useGroupedDashboards = (dashboards, group_by, metadata) => {
         return get(
           dashboard,
           `mod.title`,
-          get(dashboard, "mod.short_name", "Other")
+          get(dashboard, "mod.short_name", "Other"),
         );
       });
     }
@@ -205,7 +205,7 @@ const useGroupedDashboards = (dashboards, group_by, metadata) => {
             return 1;
           }
           return 0;
-        })
+        }),
     );
   }, [dashboards, group_by, metadata]);
 
@@ -214,7 +214,7 @@ const useGroupedDashboards = (dashboards, group_by, metadata) => {
 
 const searchAgainstDashboard = (
   dashboard: AvailableDashboardWithMod,
-  searchParts: string[]
+  searchParts: string[],
 ): boolean => {
   const joined = `${dashboard.mod?.title || dashboard.mod?.short_name || ""} ${
     dashboard.title || dashboard.short_name || ""
@@ -226,7 +226,7 @@ const searchAgainstDashboard = (
 
 const sortDashboardSearchResults = (
   dashboards: AvailableDashboard[] = [],
-  dashboardsMap: AvailableDashboardsDictionary
+  dashboardsMap: AvailableDashboardsDictionary,
 ) => {
   return sortBy(dashboards, [
     (d) => {
@@ -284,15 +284,15 @@ const DashboardList = () => {
     const newDashboardTagKeys: string[] = [];
     for (const dashboard of dashboards) {
       const dashboardMod = dashboard.mod_full_name;
-      let mod: ModDashboardMetadata;
+      let mod: ModServerMetadata;
       if (dashboardMod === metadata.mod.full_name) {
-        mod = get(metadata, "mod", {}) as ModDashboardMetadata;
+        mod = get(metadata, "mod", {}) as ModServerMetadata;
       } else {
         mod = get(
           metadata,
           `installed_mods["${dashboardMod}"]`,
-          {}
-        ) as ModDashboardMetadata;
+          {},
+        ) as ModServerMetadata;
       }
       let dashboardWithMod: AvailableDashboardWithMod;
       dashboardWithMod = { ...dashboard };
@@ -355,7 +355,7 @@ const DashboardList = () => {
   const sections = useGroupedDashboards(
     searchValue ? filteredDashboards : unfilteredTopLevelDashboards,
     searchGroupBy,
-    metadata
+    metadata,
   );
 
   return (
