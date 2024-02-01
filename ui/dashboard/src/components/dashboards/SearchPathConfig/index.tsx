@@ -7,13 +7,18 @@ import { useDashboard } from "hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
 
 const SearchPathConfig = () => {
-  const { dispatch } = useDashboard();
+  const { dispatch, dashboardsMetadata, selectedDashboardSearchPath } =
+    useDashboard();
   const [showEditor, setShowEditor] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
   const [_, setSearchParams] = useSearchParams();
   const searchPath = useDashboardSearchPath();
   const [modifiedSearchPath, setModifiedSearchPath] =
     useState<string[]>(searchPath);
+
+  useEffect(() => {
+    console.log({ dashboardsMetadata, selectedDashboardSearchPath });
+  }, [dashboardsMetadata, selectedDashboardSearchPath]);
 
   useEffect(() => {
     dispatch({
