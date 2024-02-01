@@ -66,7 +66,7 @@ const validateFilter = (filter: CheckFilter): boolean => {
 const CheckFilterConfig = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
-  const [_, setSearchParams] = useSearchParams();
+  const [, setSearchParams] = useSearchParams();
   const filterConfig = useCheckFilterConfig();
   const [modifiedConfig, setModifiedConfig] =
     useState<CheckFilter>(filterConfig);

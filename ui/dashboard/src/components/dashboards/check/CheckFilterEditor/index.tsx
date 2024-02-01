@@ -218,7 +218,7 @@ const CheckFilterValueSelect = ({
           tags: { occurrences: v[item.key] },
         };
       });
-  }, [filterValues, type]);
+  }, [filterValues, item.key, type]);
 
   const styles = useSelectInputStyles();
 

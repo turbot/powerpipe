@@ -154,6 +154,7 @@ const DashboardProvider = ({
       type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,
     });
   }, [
+    dispatch,
     searchParams,
     setSearchParams,
     state.snapshot_metadata_loaded,

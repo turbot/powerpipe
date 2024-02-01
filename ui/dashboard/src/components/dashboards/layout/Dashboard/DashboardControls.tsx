@@ -17,7 +17,7 @@ const DashboardControls = () => {
   return (
     <div className="grid p-4 gap-6 grid-cols-2 bg-dashboard-panel print:hidden">
       <div className="col-span-2 grid grid-cols-2 gap-6">
-        <div className="col-span-2 md:col-span-1 space-y-4">
+        <div className="col-span-2 space-y-4">
           {!!dashboard && <SearchPathConfig />}
         </div>
       </div>
