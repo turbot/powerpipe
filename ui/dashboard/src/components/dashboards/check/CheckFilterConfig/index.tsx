@@ -1,13 +1,22 @@
 import CheckFilterEditor from "../CheckFilterEditor";
-import get from "lodash/get";
 import Icon from "../../../Icon";
 import useCheckFilterConfig from "../../../../hooks/useCheckFilterConfig";
-import { AndFilter, CheckFilter, Filter, OrFilter } from "../common";
+import { CheckFilter } from "../common";
 import { Fragment, ReactNode, useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const filtersToText = (filter) => {
-  if ("type" in filter) {
+const filtersToText = (filter: CheckFilter) => {
+  if (filter.operator === "and") {
+    // And filter group
+    return filter.expressions?.map((item, index) => (
+      <Fragment key={index}>
+        {!!index && <span className="text-foreground-lighter">and</span>}
+        {filtersToText(item)}
+      </Fragment>
+    ));
+  }
+
+  if (filter.operator === "equal") {
     // Convert filter to text
     let textParts: ReactNode[] = [];
     if (filter.key) {
@@ -27,62 +36,36 @@ const filtersToText = (filter) => {
         ))}
       </span>
     );
-  } else if ("or" in filter) {
-    // Or filter group
-    return filter.or.map((item, index) => (
-      <Fragment key={index}>
-        {!!index && <span className="text-foreground-lighter">or</span>}
-        {filtersToText(item)}
-      </Fragment>
-    ));
-  } else if ("and" in filter) {
-    // And filter group
-    return filter.and.map((item, index) => (
-      <Fragment key={index}>
-        {!!index && <span className="text-foreground-lighter">and</span>}
-        {filtersToText(item)}
-      </Fragment>
-    ));
-    // return `(${filter.and.map(filtersToText).join(" AND ")})`;
   }
+
+  return "<unsupported>";
 };
 
-const validateFilter = (filter: Filter): boolean => {
-  return (
-    !!filter.type && (filter.key !== undefined || filter.value !== undefined)
-  );
-};
-
-const validateOrFilter = (orFilter: OrFilter): boolean => {
-  return Array.isArray(orFilter.or) && orFilter.or.every(validateFilter);
-};
-
-const validateAndFilter = (andFilter: AndFilter): boolean => {
-  return (
-    Array.isArray(andFilter.and) &&
-    andFilter.and.every((item) => {
-      if ("or" in item) {
-        return validateOrFilter(item);
-      } else {
-        return validateFilter(item as Filter);
-      }
-    })
-  );
-};
-
-const validateCheckFilter = (checkFilter: CheckFilter): boolean => {
-  if (checkFilter.and) {
-    return validateAndFilter(checkFilter);
-  } else if (checkFilter.or) {
-    return validateOrFilter(checkFilter);
-  } else {
-    throw new Error("Invalid check filter.");
+const validateFilter = (filter: CheckFilter): boolean => {
+  // Each and must have at least one expression
+  if (
+    filter.operator === "and" &&
+    (!filter.expressions || filter.expressions.length < 1)
+  ) {
+    return false;
   }
+  if (filter.operator === "and") {
+    // @ts-ignore can't reach here if filter.expressions is not truthy
+    return filter.expressions.every(validateFilter);
+  }
+
+  if (filter.operator === "equal") {
+    return (
+      !!filter.type && (filter.key !== undefined || filter.value !== undefined)
+    );
+  }
+
+  return false;
 };
 
 const CheckFilterConfig = () => {
   const [showEditor, setShowEditor] = useState(false);
-  const [isValid, setIsValid] = useState({value:false, reason: ""});
+  const [isValid, setIsValid] = useState({ value: false, reason: "" });
   const [_, setSearchParams] = useSearchParams();
   const filterConfig = useCheckFilterConfig();
   const [modifiedConfig, setModifiedConfig] =
@@ -90,33 +73,17 @@ const CheckFilterConfig = () => {
 
   useEffect(() => {
     if (!modifiedConfig) {
-      setIsValid({value:true, reason: ""});
+      setIsValid({ value: true, reason: "" });
       return;
     }
 
-    if (
-      // @ts-ignore
-      get(modifiedConfig, "and", []).every((f) => !f.type && !f.key && !f.value)
-    ) {
-      setIsValid({value:true, reason: ""});
-      return;
-    }
-
-    if (!!modifiedConfig.and) {
-      setIsValid({value:validateAndFilter(modifiedConfig), reason: ""});
-      return;
-    } else if (!!modifiedConfig.or) {
-      setIsValid({value: validateOrFilter(modifiedConfig), reason: ""});
-      return;
-    }
-    setIsValid({value:false, reason: ""});
+    setIsValid({ value: validateFilter(modifiedConfig), reason: "" });
   }, [modifiedConfig, setIsValid]);
 
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {
-      const filters = get(toSave, "and", []).filter((f) =>
-        validateFilter(f as Filter),
-      );
+      const filters =
+        toSave.expressions?.filter((f) => validateFilter(f)) || [];
       const newParams = new URLSearchParams(previous);
       if (filters.length === 0) {
         newParams.delete("where");
@@ -133,14 +100,14 @@ const CheckFilterConfig = () => {
     <>
       <div className="flex items-center space-x-3 shrink-0">
         <Icon className="h-5 w-5" icon="filter_list" />
-        {get(filterConfig, "and", []).filter((f) => validateFilter(f as Filter))
-          .length > 0 && (
-          <div className="space-x-2">{filtersToText(filterConfig)}</div>
-        )}
-        {get(filterConfig, "and", []).filter((f) => validateFilter(f as Filter))
-          .length === 0 &&
-          get(filterConfig, "or", []).filter((f) => validateFilter(f as Filter))
-            .length === 0 && (
+        {filterConfig.operator === "and" &&
+          !!filterConfig.expressions &&
+          filterConfig.expressions.length > 0 && (
+            <div className="space-x-2">{filtersToText(filterConfig)}</div>
+          )}
+        {filterConfig.operator === "and" &&
+          (!filterConfig.expressions ||
+            filterConfig.expressions.length === 0) && (
             <span className="text-foreground-lighter">No filters</span>
           )}
         {!showEditor && (
@@ -172,9 +139,4 @@ const CheckFilterConfig = () => {
 
 export default CheckFilterConfig;
 
-export {
-  validateCheckFilter,
-  validateFilter,
-  validateAndFilter,
-  validateOrFilter,
-};
+export { validateFilter };

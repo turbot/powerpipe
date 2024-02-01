@@ -1,13 +1,13 @@
-import { DashboardActions, ReceivedSocketMessagePayload } from "../types";
+import { DashboardActions, ReceivedSocketMessagePayload } from "types";
 import { useCallback, useEffect, useRef } from "react";
 
 const useDashboardWebSocketEventHandler = (dispatch, eventHooks) => {
   const controlEventBuffer = useRef<ReceivedSocketMessagePayload[]>([]);
   const leafNodesCompletedEventBuffer = useRef<ReceivedSocketMessagePayload[]>(
-    []
+    [],
   );
   const leafNodesUpdatedEventBuffer = useRef<ReceivedSocketMessagePayload[]>(
-    []
+    [],
   );
 
   const eventHandler = useCallback(
@@ -38,7 +38,7 @@ const useDashboardWebSocketEventHandler = (dispatch, eventHooks) => {
         hookHandler(event);
       }
     },
-    [dispatch, eventHooks]
+    [dispatch, eventHooks],
   );
 
   useEffect(() => {

@@ -1,6 +1,10 @@
-import { LeafNodeData, Width } from "../components/dashboards/common";
+import {
+  CheckDisplayGroup,
+  CheckFilter,
+} from "components/dashboards/check/common";
+import { LeafNodeData, Width } from "components/dashboards/common";
 import { Ref } from "react";
-import { Theme } from "../hooks/useTheme";
+import { Theme } from "hooks/useTheme";
 
 export type IDashboardContext = {
   versionMismatchCheck: boolean;
@@ -49,6 +53,7 @@ export type IDashboardContext = {
 
   snapshot: DashboardSnapshot | null;
   snapshotFileName: string | null;
+  snapshot_metadata_loaded: boolean;
 
   diff?: {
     panelsMap: PanelsMap;
@@ -140,6 +145,7 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
+  SET_SNAPSHOT_METADATA_LOADED: "set_dashboard_metadata_loaded",
   SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
   SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
@@ -151,16 +157,25 @@ export const DashboardActions: IActions = {
 type DashboardExecutionEventSchemaVersion =
   | "20220614"
   | "20220929"
-  | "20221222";
+  | "20221222"
+  | "20240130";
 
-type DashboardExecutionStartedEventSchemaVersion = "20220614" | "20221222";
+type DashboardExecutionStartedEventSchemaVersion =
+  | "20220614"
+  | "20221222"
+  | "20240130";
 
 type DashboardExecutionCompleteEventSchemaVersion =
   | "20220614"
   | "20220929"
-  | "20221222";
+  | "20221222"
+  | "20240130";
 
-type DashboardSnapshotSchemaVersion = "20220614" | "20220929" | "20221222";
+type DashboardSnapshotSchemaVersion =
+  | "20220614"
+  | "20220929"
+  | "20221222"
+  | "20240130";
 
 export type DashboardExecutionStartedEvent = {
   action: "execution_started";
@@ -302,6 +317,18 @@ export type DashboardPanelType =
   | "text"
   | "with";
 
+export type DashboardSnapshotViewFilterByMetadata = CheckFilter;
+export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
+
+export type DashboardSnapshotViewMetadata = {
+  filter_by?: DashboardSnapshotViewFilterByMetadata;
+  group_by?: DashboardSnapshotViewGroupByMetadata;
+};
+
+export type DashboardSnapshotMetadata = {
+  view?: DashboardSnapshotViewMetadata;
+};
+
 export type DashboardSnapshot = {
   schema_version: DashboardSnapshotSchemaVersion;
   layout: DashboardLayoutNode;
@@ -311,6 +338,7 @@ export type DashboardSnapshot = {
   search_path: string[];
   start_time: string;
   end_time: string;
+  metadata?: DashboardSnapshotMetadata;
 };
 
 type AvailableDashboardTags = {

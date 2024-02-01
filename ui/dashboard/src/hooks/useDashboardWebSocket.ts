@@ -6,7 +6,7 @@ import {
   DashboardDataModeLive,
   IActions,
   ReceivedSocketMessagePayload,
-} from "../types";
+} from "types";
 import { useCallback, useEffect, useRef } from "react";
 
 export const SocketActions: IActions = {
@@ -22,7 +22,7 @@ const useDashboardWebSocket = (
   dataMode: DashboardDataMode,
   dispatch: (action: any) => void,
   eventHandler: (event: ReceivedSocketMessagePayload) => void,
-  socketUrlFactory?: () => Promise<string>
+  socketUrlFactory?: () => Promise<string>,
 ) => {
   const didUnmount = useRef(false);
   // const [socketUrl, setSocketUrl] = useState<string | null>(
@@ -59,7 +59,7 @@ const useDashboardWebSocket = (
       reconnectInterval: 3000,
     },
     dataMode === DashboardDataModeLive ||
-      dataMode === DashboardDataModeCLISnapshot
+      dataMode === DashboardDataModeCLISnapshot,
   );
 
   useEffect(() => {

@@ -1,20 +1,24 @@
-import Icon from "../../../Icon";
-import { classNames } from "../../../../utils/styles";
-import { ThemeNames } from "../../../../hooks/useTheme";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import Icon from "components/Icon";
+import { classNames } from "utils/styles";
+import { ThemeNames } from "hooks/useTheme";
+import { useDashboard } from "hooks/useDashboard";
 
 interface CheckEditorAddItemProps {
-  label: string;
+  addLabel: string;
+  clearLabel?: string;
   isValid: { value: boolean; reason: string };
-  onClick: () => void;
+  onAdd: () => void;
+  onClear?: () => void;
   onCancel: () => void;
   onSave: () => void;
 }
 
 const CheckEditorAddItem = ({
-  label,
+  addLabel,
+  clearLabel,
   isValid,
-  onClick,
+  onAdd,
+  onClear,
   onCancel,
   onSave,
 }: CheckEditorAddItemProps) => {
@@ -22,21 +26,40 @@ const CheckEditorAddItem = ({
     themeContext: { theme },
   } = useDashboard();
   return (
-    <div className="flex items-center space-x-3">
-      <Icon className="block h-5 w-5 invisible" icon="drag_indicator" />
-      <span
-        className={classNames(
-          // "flex items-center cursor-pointer min-h-[38px] pl-[8px] border rounded-[4px] grow",
-          "flex items-center text-link cursor-pointer min-h-[38px] pl-[8px] grow",
-          theme.name === ThemeNames.STEAMPIPE_DARK
-            ? "border-[#444] hover:border-[#b3b3b3]"
-            : "border-[#d3d3d3] hover:border-[#b3b3b3]",
+    <div className="flex items-center justify-between space-x-3">
+      <div className="flex items-center space-x-3">
+        <div className="flex items-center">
+          <Icon className="block h-5 w-5 invisible" icon="drag_indicator" />
+          <span
+            className={classNames(
+              "flex items-center text-link cursor-pointer min-h-[38px] pl-[8px] grow",
+              theme.name === ThemeNames.STEAMPIPE_DARK
+                ? "border-[#444] hover:border-[#b3b3b3]"
+                : "border-[#d3d3d3] hover:border-[#b3b3b3]",
+            )}
+            onClick={onAdd}
+          >
+            <span className="block">{addLabel}</span>
+          </span>
+        </div>
+        {!!onClear && (
+          <div className="flex items-center">
+            <Icon className="block h-5 w-5 invisible" icon="drag_indicator" />
+            <span
+              className={classNames(
+                "flex items-center text-link cursor-pointer min-h-[38px] pl-[8px] grow",
+                theme.name === ThemeNames.STEAMPIPE_DARK
+                  ? "border-[#444] hover:border-[#b3b3b3]"
+                  : "border-[#d3d3d3] hover:border-[#b3b3b3]",
+              )}
+              onClick={onClear}
+            >
+              <span className="block">{clearLabel}</span>
+            </span>
+          </div>
         )}
-        onClick={onClick}
-      >
-        <span className="block">{label}</span>
-      </span>
-      <div className="flex items-center space-x-2 justify-end mr-8">
+      </div>
+      <div className="flex items-center justify-end space-x-2">
         <button
           type="button"
           className="rounded-md bg-dashboard-panel border border-gray-200 px-2.5 py-1.5 text-sm font-semibold text-foreground"
@@ -53,8 +76,8 @@ const CheckEditorAddItem = ({
         >
           Update
         </button>
+        <Icon className="block h-5 w-5 invisible" icon="trash" />
       </div>
-      <Icon className="block h-5 w-5 invisible" icon="trash" />
     </div>
   );
 };

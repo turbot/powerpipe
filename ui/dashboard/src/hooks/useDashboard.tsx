@@ -14,9 +14,9 @@ import {
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
-} from "../types";
-import { buildComponentsMap } from "../components";
-import { buildSelectedDashboardInputsFromSearchParams } from "../utils/state";
+} from "types";
+import { buildComponentsMap } from "components";
+import { buildSelectedDashboardInputsFromSearchParams } from "utils/state";
 import {
   createContext,
   useCallback,
@@ -25,7 +25,7 @@ import {
   useState,
 } from "react";
 import { GlobalHotKeys } from "react-hotkeys";
-import { noop } from "../utils/func";
+import { noop } from "utils/func";
 import {
   useLocation,
   useNavigate,
@@ -82,13 +82,13 @@ const DashboardProvider = ({
   const { dashboard_name } = useParams();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
-    eventHooks
+    eventHooks,
   );
   const { ready: socketReady, send: sendSocketMessage } = useDashboardWebSocket(
     state.dataMode,
     dispatch,
     eventHandler,
-    socketUrlFactory
+    socketUrlFactory,
   );
   const {
     setMetadata: setAnalyticsMetadata,
@@ -118,6 +118,46 @@ const DashboardProvider = ({
   useEffect(() => {
     setAnalyticsSelectedDashboard(state.selectedDashboard);
   }, [state.selectedDashboard, setAnalyticsSelectedDashboard]);
+
+  useEffect(() => {
+    if (
+      state.snapshot_metadata_loaded ||
+      !state.snapshot ||
+      !state.snapshot.metadata ||
+      !state.snapshot.metadata.view ||
+      (!state.snapshot.metadata.view.group_by &&
+        !state.snapshot.metadata.view.filter_by)
+    ) {
+      return;
+    }
+    if (state.snapshot.metadata.view.group_by) {
+      searchParams.set(
+        "grouping",
+        state.snapshot.metadata.view.group_by
+          .map((c) =>
+            c.type === "dimension" || c.type === "tag"
+              ? `${c.type}|${c.value}`
+              : c.type,
+          )
+          .join(","),
+      );
+    }
+    if (state.snapshot.metadata.view.filter_by) {
+      searchParams.set(
+        "where",
+        JSON.stringify(state.snapshot.metadata.view.filter_by),
+      );
+    }
+    setSearchParams(searchParams, { replace: true });
+    dispatch({
+      type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,
+    });
+  }, [
+    searchParams,
+    setSearchParams,
+    state.snapshot_metadata_loaded,
+    state.snapshot,
+  ]);
 
   useEffect(() => {
     if (
@@ -170,7 +210,7 @@ const DashboardProvider = ({
     });
     if (
       JSON.stringify(
-        previousSelectedDashboardStates?.selectedDashboardInputs
+        previousSelectedDashboardStates?.selectedDashboardInputs,
       ) !== JSON.stringify(inputs)
     ) {
       dispatch({
@@ -287,7 +327,7 @@ const DashboardProvider = ({
       state.dataMode === DashboardDataModeLive
     ) {
       const dashboard = state.dashboards.find(
-        (dashboard) => dashboard.full_name === dashboard_name
+        (dashboard) => dashboard.full_name === dashboard_name,
       );
       dispatch({
         type: DashboardActions.SELECT_DASHBOARD,
@@ -303,7 +343,7 @@ const DashboardProvider = ({
       dashboard_name !== state.selectedDashboard.full_name
     ) {
       const dashboard = state.dashboards.find(
-        (dashboard) => dashboard.full_name === dashboard_name
+        (dashboard) => dashboard.full_name === dashboard_name,
       );
       dispatch({ type: DashboardActions.SELECT_DASHBOARD, dashboard });
       const value = buildSelectedDashboardInputsFromSearchParams(searchParams);
@@ -380,7 +420,7 @@ const DashboardProvider = ({
       previousSelectedDashboardStates.selectedDashboard &&
       !isEqual(
         previousSelectedDashboardStates.selectedDashboardInputs,
-        state.selectedDashboardInputs
+        state.selectedDashboardInputs,
       )
     ) {
       sendSocketMessage({
@@ -440,7 +480,7 @@ const DashboardProvider = ({
     if (
       isEqual(
         state.selectedDashboardInputs,
-        previousSelectedDashboardStates.selectedDashboardInputs
+        previousSelectedDashboardStates.selectedDashboardInputs,
       )
     ) {
       return;

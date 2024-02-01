@@ -1,5 +1,5 @@
+import noop from "lodash/noop";
 import useDashboardIcons from "../../hooks/useDashboardIcons";
-import { noop } from "lodash";
 
 type IconProps = {
   className?: string;

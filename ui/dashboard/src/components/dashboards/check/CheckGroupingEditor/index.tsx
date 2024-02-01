@@ -1,19 +1,19 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
-import Icon from "../../../Icon";
+import Icon from "components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { CheckDisplayGroup, CheckDisplayGroupType } from "../common";
-import { classNames } from "../../../../utils/styles";
+import { classNames } from "utils/styles";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
   SingleValueWithTags,
-} from "../../inputs/common/Common";
+} from "components/dashboards/inputs/common/Common";
 import { Reorder, useDragControls } from "framer-motion";
-import { SelectOption } from "../../inputs/types";
+import { SelectOption } from "components/dashboards/inputs/types";
 import { useCallback, useMemo, useState } from "react";
-import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
+import { useDashboardControls } from "components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
@@ -59,7 +59,6 @@ const CheckGroupingTypeSelect = ({
   useDeepCompareEffect(() => {
     update(index, {
       ...item,
-      id: currentType,
       type: currentType,
       value: "",
     });
@@ -127,7 +126,6 @@ const CheckGroupingValueSelect = ({
   useDeepCompareEffect(() => {
     update(index, {
       ...item,
-      id: `${item.type}-${currentValue}`,
       value: currentValue,
     });
   }, [currentValue, index, item]);
@@ -277,10 +275,10 @@ const CheckGroupingEditor = ({
         ))}
       </Reorder.Group>
       <CheckEditorAddItem
-        label="Add grouping"
+        addLabel="Add grouping"
         isValid={isValid}
         // @ts-ignore
-        onClick={() => setConfig([...config, { id: "", type: "" }])}
+        onAdd={() => setConfig([...config, { type: "" }])}
         onCancel={onCancel}
         onSave={onSave}
       />

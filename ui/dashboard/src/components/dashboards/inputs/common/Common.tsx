@@ -1,5 +1,6 @@
-import { ColorGenerator } from "../../../../utils/color";
+import { ColorGenerator } from "utils/color";
 import { components, OptionProps, SingleValueProps } from "react-select";
+import isObject from "lodash/isObject";
 
 const stringColorMap = {};
 const colorGenerator = new ColorGenerator(24, 4);
@@ -28,9 +29,14 @@ const LabelTagWrapper = ({ label, tags }) => (
     {/*@ts-ignore*/}
     <span>{label}</span>
     {/*@ts-ignore*/}
-    {Object.entries(tags || {}).map(([tagKey, tagValue]) => (
-      <OptionTag key={tagKey} tagKey={tagKey} tagValue={tagValue} />
-    ))}
+    {Object.entries(tags || {}).map(([tagKey, tagValue]) => {
+      if (isObject(tagValue)) {
+        return Object.entries(tagValue || {}).map(([t, v]) => (
+          <OptionTag key={t} tagKey={tagKey} tagValue={v} />
+        ));
+      }
+      return <OptionTag key={tagKey} tagKey={tagKey} tagValue={tagValue} />;
+    })}
   </div>
 );
 
