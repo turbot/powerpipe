@@ -119,12 +119,13 @@ const SearchPathConfig = () => {
       {showEditor && (
         <>
           <SearchPathEditor
-            originalSearchPath={modifiedSearchPath}
+            searchPath={modifiedSearchPath}
+            setSearchPath={setModifiedSearchPath}
             isValid={isValid}
             onCancel={() => setShowEditor(false)}
-            onSave={(toSave) => {
+            onSave={() => {
               setShowEditor(false);
-              saveSearchPath(toSave);
+              saveSearchPath(modifiedSearchPath);
             }}
           />
         </>

@@ -2,13 +2,14 @@ import CheckEditorAddItem from "components/dashboards/check/common/CheckEditorAd
 import Icon from "components/Icon";
 import { classNames } from "utils/styles";
 import { Reorder, useDragControls } from "framer-motion";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 type SearchPathEditorProps = {
-  originalSearchPath: string[];
+  searchPath: string[];
   isValid: { value: boolean; reason: string };
   onCancel: () => void;
-  onSave: (newValue: string[]) => void;
+  onSave: () => void;
+  setSearchPath: (newValue: string[]) => void;
 };
 
 type SearchPathEditorItemProps = {
@@ -72,48 +73,47 @@ const SearchPathEditorItem = ({
 
 const SearchPathEditor = ({
   isValid,
-  originalSearchPath,
+  searchPath,
+  setSearchPath,
   onCancel,
   onSave,
 }: SearchPathEditorProps) => {
-  const [innerSearchPath, setInnerSearchPath] = useState(originalSearchPath);
-
   const remove = useCallback(
     (index: number) => {
       const removed = [
-        ...innerSearchPath.slice(0, index),
-        ...innerSearchPath.slice(index + 1),
+        ...searchPath.slice(0, index),
+        ...searchPath.slice(index + 1),
       ];
-      setInnerSearchPath(removed);
+      setSearchPath(removed);
     },
-    [innerSearchPath, setInnerSearchPath],
+    [searchPath, setSearchPath],
   );
 
   const update = useCallback(
     (index: number, updatedItem: string) => {
       const updated = [
-        ...innerSearchPath.slice(0, index),
+        ...searchPath.slice(0, index),
         updatedItem,
-        ...innerSearchPath.slice(index + 1),
+        ...searchPath.slice(index + 1),
       ];
-      setInnerSearchPath(updated);
+      setSearchPath(updated);
     },
-    [innerSearchPath, setInnerSearchPath],
+    [searchPath, setSearchPath],
   );
 
   return (
     <div className="flex flex-col space-y-4">
       <Reorder.Group
         axis="y"
-        values={innerSearchPath}
-        onReorder={setInnerSearchPath}
+        values={searchPath}
+        onReorder={setSearchPath}
         as="div"
         className="flex flex-col space-y-4"
       >
-        {innerSearchPath.map((connection, idx) => (
+        {searchPath.map((connection, idx) => (
           <SearchPathEditorItem
             key={connection}
-            searchPath={innerSearchPath}
+            searchPath={searchPath}
             item={connection}
             index={idx}
             remove={remove}
@@ -125,10 +125,13 @@ const SearchPathEditor = ({
         addLabel="Add connection"
         clearLabel="Reset"
         isValid={isValid}
-        onAdd={() => setInnerSearchPath([...innerSearchPath, ""])}
-        onClear={() => onSave([])}
+        onAdd={() => setSearchPath([...searchPath, ""])}
+        onClear={() => {
+          setSearchPath([]);
+          onSave();
+        }}
         onCancel={onCancel}
-        onSave={() => onSave(innerSearchPath)}
+        onSave={onSave}
       />
     </div>
   );

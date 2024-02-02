@@ -396,8 +396,10 @@ const DashboardProvider = ({
           previousSelectedDashboardStates.selectedDashboard.full_name ||
         (!previousSelectedDashboardStates.refetchDashboard &&
           state.refetchDashboard) ||
-        previousSelectedDashboardStates.selectedDashboardSearchPath !==
-          state.selectedDashboardSearchPath)
+        // has the search path changed
+        (
+          previousSelectedDashboardStates.selectedDashboardSearchPath || []
+        ).join(",") !== (state.selectedDashboardSearchPath || []).join(""))
     ) {
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
