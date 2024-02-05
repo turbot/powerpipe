@@ -384,6 +384,13 @@ const DashboardProvider = ({
       return;
     }
 
+    const previousSearchPath = (
+      previousSelectedDashboardStates.selectedDashboardSearchPath || []
+    ).join(",");
+    const currentSearchPath = (
+      state.selectedDashboardSearchPath.selectedDashboardSearchPath || []
+    ).join(",");
+
     // If we didn't previously have a dashboard selected in state (e.g. you've gone from home page
     // to a report, or it's first load), or the selected dashboard has been changed, select that
     // report over the socket
@@ -397,14 +404,12 @@ const DashboardProvider = ({
         (!previousSelectedDashboardStates.refetchDashboard &&
           state.refetchDashboard) ||
         // has the search path changed
-        (
-          previousSelectedDashboardStates.selectedDashboardSearchPath || []
-        ).join(",") !== (state.selectedDashboardSearchPath || []).join(""))
+        previousSearchPath !== currentSearchPath)
     ) {
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
       });
-      sendSocketMessage({
+      const selectDashboardMessage: any = {
         action:
           state.selectedDashboard.type === "snapshot"
             ? SocketActions.SELECT_SNAPSHOT
@@ -414,11 +419,15 @@ const DashboardProvider = ({
             full_name: state.selectedDashboard.full_name,
           },
           input_values: state.selectedDashboardInputs,
-          search_path: !!state.selectedDashboardSearchPath
-            ? state.selectedDashboardSearchPath
-            : null,
         },
-      });
+      };
+      if (
+        !!state.selectedDashboardSearchPath &&
+        state.selectedDashboardSearchPath.length > 0
+      ) {
+        selectDashboardMessage.search_path = state.selectedDashboardSearchPath;
+      }
+      sendSocketMessage(selectDashboardMessage);
       sendSocketMessage({
         action: SocketActions.GET_DASHBOARD_METADATA,
         payload: {
