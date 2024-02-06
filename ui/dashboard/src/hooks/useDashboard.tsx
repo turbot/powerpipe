@@ -387,9 +387,9 @@ const DashboardProvider = ({
     const previousSearchPath = (
       previousSelectedDashboardStates.selectedDashboardSearchPath || []
     ).join(",");
-    const currentSearchPath = (
-      state.selectedDashboardSearchPath.selectedDashboardSearchPath || []
-    ).join(",");
+    const currentSearchPath = (state.selectedDashboardSearchPath || []).join(
+      ",",
+    );
 
     // If we didn't previously have a dashboard selected in state (e.g. you've gone from home page
     // to a report, or it's first load), or the selected dashboard has been changed, select that
@@ -406,6 +406,11 @@ const DashboardProvider = ({
         // has the search path changed
         previousSearchPath !== currentSearchPath)
     ) {
+      console.log({
+        previousSearchPath,
+        currentSearchPath,
+        diff: previousSearchPath !== currentSearchPath,
+      });
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
       });
