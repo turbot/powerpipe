@@ -1,6 +1,5 @@
 import { createContext, useContext, useState } from "react";
-import { noop } from "../../../../utils/func";
-import { CheckGroupingContext } from "../../../../hooks/useCheckGrouping";
+import { noop } from "@powerpipe/utils/func";
 
 type IDashboardControlsContext = {
   context: any;

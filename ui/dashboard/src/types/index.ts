@@ -34,7 +34,7 @@ export type IDashboardContext = {
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
-  selectedDashboardSearchPath?: string[];
+  selectedDashboardSearchPathPrefix?: string[];
   lastChangedInput: string | null;
 
   dashboardTags: DashboardTags;
@@ -148,7 +148,8 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
-  SET_SELECTED_DASHBOARD_SEARCH_PATH: "set_selected_dashboard_search_path",
+  SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX:
+    "set_selected_dashboard_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
   SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
@@ -241,7 +242,7 @@ export type SelectedDashboardStates = {
   searchParams: URLSearchParams;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
-  selectedDashboardSearchPath: string[];
+  selectedDashboardSearchPathPrefix: string[];
 };
 
 export type DashboardInputs = {

@@ -1,6 +1,6 @@
 import Icon from "@powerpipe/components/Icon";
 import SearchPathEditor from "@powerpipe/components/dashboards/SearchPathEditor";
-import useDashboardSearchPath from "@powerpipe/hooks/useDashboardSearchPath";
+import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 import { DashboardActions } from "@powerpipe/types";
 import { ReactNode, useEffect, useMemo, useState } from "react";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -11,22 +11,23 @@ const SearchPathConfig = () => {
   const [showEditor, setShowEditor] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
   const [, setSearchParams] = useSearchParams();
-  const searchPath = useDashboardSearchPath();
+  const searchPathPrefix = useDashboardSearchPathPrefix();
 
   const configuredSearchPath = useMemo(() => {
-    if (!selectedDashboard || !dashboardsMetadata || !searchPath) {
+    if (!selectedDashboard || !dashboardsMetadata || !searchPathPrefix) {
       return [];
     }
-    if (!!searchPath.length) {
-      return searchPath;
+    if (!!searchPathPrefix.length) {
+      return searchPathPrefix;
     }
-    if (!dashboardsMetadata[selectedDashboard.full_name]) {
-      return [];
-    }
-    return (
-      dashboardsMetadata[selectedDashboard.full_name].original_search_path || []
-    );
-  }, [dashboardsMetadata, searchPath, selectedDashboard]);
+    return [];
+    // if (!dashboardsMetadata[selectedDashboard.full_name]) {
+    //   return [];
+    // }
+    // return (
+    //   dashboardsMetadata[selectedDashboard.full_name].original_search_path || []
+    // );
+  }, [dashboardsMetadata, searchPathPrefix, selectedDashboard]);
 
   const [modifiedSearchPath, setModifiedSearchPath] =
     useState<string[]>(configuredSearchPath);
@@ -38,10 +39,10 @@ const SearchPathConfig = () => {
 
   useEffect(() => {
     dispatch({
-      type: DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH,
-      search_path: searchPath,
+      type: DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX,
+      search_path_prefix: searchPathPrefix,
     });
-  }, [dispatch, searchPath]);
+  }, [dispatch, searchPathPrefix]);
 
   useEffect(() => {
     const isValid = modifiedSearchPath.every((c) => !!c);
@@ -55,9 +56,9 @@ const SearchPathConfig = () => {
     setSearchParams((previous) => {
       const newParams = new URLSearchParams(previous);
       if (!!toSave.length) {
-        newParams.set("search_path", toSave.join(","));
+        newParams.set("search_path_prefix", toSave.join(","));
       } else {
-        newParams.delete("search_path");
+        newParams.delete("search_path_prefix");
       }
       return newParams;
     });
@@ -85,7 +86,7 @@ const SearchPathConfig = () => {
                 ])}
             {modifiedSearchPath.length === 0 && (
               <span className="text-foreground-lighter">
-                No search path set
+                No search path prefix set
               </span>
             )}
           </div>
@@ -93,7 +94,7 @@ const SearchPathConfig = () => {
             className="h-5 w-5 cursor-pointer shrink-0"
             icon="edit_square"
             onClick={() => setShowEditor(true)}
-            title="Edit search path"
+            title="Edit search path prefix"
           />
         </div>
       )}
