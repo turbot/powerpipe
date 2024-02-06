@@ -10,6 +10,7 @@ interface CheckEditorAddItemProps {
   onAdd: () => void;
   onClear?: () => void;
   onCancel: () => void;
+  onApply: () => void;
   onSave: () => void;
 }
 
@@ -20,6 +21,7 @@ const CheckEditorAddItem = ({
   onAdd,
   onClear,
   onCancel,
+  onApply,
   onSave,
 }: CheckEditorAddItemProps) => {
   const {
@@ -71,10 +73,19 @@ const CheckEditorAddItem = ({
           type="button"
           className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isValid.value}
+          onClick={onApply}
+          title={isValid.reason}
+        >
+          Apply
+        </button>
+        <button
+          type="button"
+          className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!isValid.value}
           onClick={onSave}
           title={isValid.reason}
         >
-          Update
+          Save
         </button>
         <Icon className="block h-5 w-5 invisible" icon="trash" />
       </div>

@@ -1,10 +1,10 @@
 import CheckFilterConfig from "@powerpipe/components/dashboards/check/CheckFilterConfig";
 import CheckGroupingConfig from "@powerpipe/components/dashboards/check/CheckGroupingConfig";
 import DashboardControlsSummary from "@powerpipe/components/DashboardControlsSummary";
+import SearchPathConfig from "@powerpipe/components/dashboards/SearchPathConfig";
 import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
 import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
 import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
-import SearchPathConfig from "@powerpipe/components/dashboards/SearchPathConfig";
 import { DashboardDataModeCLISnapshot } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useState } from "react";
@@ -39,15 +39,15 @@ const DashboardControls = () => {
       {expandControls && (
         <div className="grid p-4 gap-6 grid-cols-3 bg-dashboard-panel print:hidden">
           <div className="col-span-3 md:col-span-1">
-            {!!dashboard && <SearchPathConfig />}
+            {!!dashboard && <SearchPathConfig onClose={toggleControls} />}
           </div>
           {isBenchmark && (
             <>
               <div className="col-span-3 md:col-span-1">
-                <CheckFilterConfig />
+                <CheckFilterConfig onClose={toggleControls} />
               </div>
               <div className="col-span-3 md:col-span-1">
-                <CheckGroupingConfig />
+                <CheckGroupingConfig onClose={toggleControls} />
               </div>
             </>
           )}

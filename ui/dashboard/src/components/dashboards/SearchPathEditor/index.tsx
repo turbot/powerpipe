@@ -2,18 +2,17 @@ import CheckEditorAddItem from "@powerpipe/components/dashboards/check/common/Ch
 import Icon from "@powerpipe/components/Icon";
 import { classNames } from "@powerpipe/utils/styles";
 import { Reorder, useDragControls } from "framer-motion";
-import { useCallback } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 type SearchPathEditorProps = {
-  searchPath: string[];
-  isValid: { value: boolean; reason: string };
+  searchPathPrefix: string[];
   onCancel: () => void;
-  onSave: () => void;
-  setSearchPath: (newValue: string[]) => void;
+  onApply: (newValue: string[]) => void;
+  onSave: (newValue: string[]) => void;
 };
 
 type SearchPathEditorItemProps = {
-  searchPath: string[];
+  searchPathPrefix: string[];
   item: string;
   index: number;
   remove: (index: number) => void;
@@ -21,7 +20,7 @@ type SearchPathEditorItemProps = {
 };
 
 const SearchPathEditorItem = ({
-  searchPath,
+  searchPathPrefix,
   index,
   item,
   remove,
@@ -54,13 +53,13 @@ const SearchPathEditorItem = ({
       </div>
       <span
         className={classNames(
-          searchPath.length > 1
+          searchPathPrefix.length > 1
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
             : "text-foreground-lightest",
         )}
-        onClick={searchPath.length > 1 ? () => remove(index) : undefined}
+        onClick={searchPathPrefix.length > 1 ? () => remove(index) : undefined}
         title={
-          searchPath.length > 1
+          searchPathPrefix.length > 1
             ? "Remove"
             : "Search path must contain at least one entry"
         }
@@ -72,48 +71,57 @@ const SearchPathEditorItem = ({
 };
 
 const SearchPathEditor = ({
-  isValid,
-  searchPath,
-  setSearchPath,
+  searchPathPrefix,
   onCancel,
+  onApply,
   onSave,
 }: SearchPathEditorProps) => {
+  const [innerSearchPathPrefix, setInnerSearchPathPrefix] =
+    useState<string[]>(searchPathPrefix);
+  const [isValid, setIsValid] = useState({ value: false, reason: "" });
+
+  useEffect(() => {
+    const isValid = innerSearchPathPrefix.every((c) => !!c);
+    setIsValid({
+      value: isValid,
+      reason: !isValid ? "Search path contains empty connection" : "",
+    });
+  }, [innerSearchPathPrefix, setIsValid]);
+
   const remove = useCallback(
     (index: number) => {
-      const removed = [
-        ...searchPath.slice(0, index),
-        ...searchPath.slice(index + 1),
-      ];
-      setSearchPath(removed);
+      setInnerSearchPathPrefix((existing) => [
+        ...existing.slice(0, index),
+        ...existing.slice(index + 1),
+      ]);
     },
-    [searchPath, setSearchPath],
+    [setInnerSearchPathPrefix],
   );
 
   const update = useCallback(
     (index: number, updatedItem: string) => {
-      const updated = [
-        ...searchPath.slice(0, index),
+      setInnerSearchPathPrefix((existing) => [
+        ...existing.slice(0, index),
         updatedItem,
-        ...searchPath.slice(index + 1),
-      ];
-      setSearchPath(updated);
+        ...existing.slice(index + 1),
+      ]);
     },
-    [searchPath, setSearchPath],
+    [setInnerSearchPathPrefix],
   );
 
   return (
     <div className="flex flex-col space-y-4">
       <Reorder.Group
         axis="y"
-        values={searchPath}
-        onReorder={setSearchPath}
+        values={innerSearchPathPrefix}
+        onReorder={setInnerSearchPathPrefix}
         as="div"
         className="flex flex-col space-y-4"
       >
-        {searchPath.map((connection, idx) => (
+        {innerSearchPathPrefix.map((connection, idx) => (
           <SearchPathEditorItem
             key={connection}
-            searchPath={searchPath}
+            searchPathPrefix={innerSearchPathPrefix}
             item={connection}
             index={idx}
             remove={remove}
@@ -125,13 +133,14 @@ const SearchPathEditor = ({
         addLabel="Add connection"
         clearLabel="Reset"
         isValid={isValid}
-        onAdd={() => setSearchPath([...searchPath, ""])}
+        onAdd={() => setInnerSearchPathPrefix((existing) => [...existing, ""])}
         onClear={() => {
-          setSearchPath([]);
-          onSave();
+          setInnerSearchPathPrefix([]);
+          onSave([]);
         }}
         onCancel={onCancel}
-        onSave={onSave}
+        onApply={() => onApply(innerSearchPathPrefix)}
+        onSave={() => onSave(innerSearchPathPrefix)}
       />
     </div>
   );

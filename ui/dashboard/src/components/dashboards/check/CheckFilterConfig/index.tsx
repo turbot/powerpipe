@@ -1,9 +1,13 @@
 import CheckFilterEditor from "../CheckFilterEditor";
-import Icon from "../../../Icon";
 import useCheckFilterConfig from "../../../../hooks/useCheckFilterConfig";
 import { CheckFilter } from "../common";
-import { Fragment, ReactNode, useEffect, useState } from "react";
+import { Fragment, ReactNode } from "react";
+import { Noop } from "types/func";
 import { useSearchParams } from "react-router-dom";
+
+type CheckFilterConfigProps = {
+  onClose: Noop;
+};
 
 const filtersToText = (filter: CheckFilter) => {
   if (filter.operator === "and") {
@@ -41,51 +45,14 @@ const filtersToText = (filter: CheckFilter) => {
   return "<unsupported>";
 };
 
-const validateFilter = (filter: CheckFilter): boolean => {
-  // Each and must have at least one expression
-  if (
-    filter.operator === "and" &&
-    (!filter.expressions || filter.expressions.length < 1)
-  ) {
-    return false;
-  }
-  if (filter.operator === "and") {
-    // @ts-ignore can't reach here if filter.expressions is not truthy
-    return filter.expressions.every(validateFilter);
-  }
-
-  if (filter.operator === "equal") {
-    return (
-      !!filter.type && (filter.key !== undefined || filter.value !== undefined)
-    );
-  }
-
-  return false;
-};
-
-const CheckFilterConfig = () => {
-  const [showEditor, setShowEditor] = useState(false);
-  const [isValid, setIsValid] = useState({ value: false, reason: "" });
+const CheckFilterConfig = ({ onClose }: CheckFilterConfigProps) => {
   const [, setSearchParams] = useSearchParams();
   const filterConfig = useCheckFilterConfig();
-  const [modifiedConfig, setModifiedConfig] =
-    useState<CheckFilter>(filterConfig);
-
-  useEffect(() => {
-    if (!modifiedConfig) {
-      setIsValid({ value: true, reason: "" });
-      return;
-    }
-
-    setIsValid({ value: validateFilter(modifiedConfig), reason: "" });
-  }, [modifiedConfig, setIsValid]);
 
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {
-      const filters =
-        toSave.expressions?.filter((f) => validateFilter(f)) || [];
       const newParams = new URLSearchParams(previous);
-      if (filters.length === 0) {
+      if ((toSave.expressions || []).length === 0) {
         newParams.delete("where");
         return newParams;
       } else {
@@ -97,46 +64,16 @@ const CheckFilterConfig = () => {
   };
 
   return (
-    <>
-      <div className="flex items-center space-x-3 shrink-0">
-        <Icon className="h-5 w-5" icon="filter_list" />
-        {filterConfig.operator === "and" &&
-          !!filterConfig.expressions &&
-          filterConfig.expressions.length > 0 && (
-            <div className="space-x-2">{filtersToText(filterConfig)}</div>
-          )}
-        {filterConfig.operator === "and" &&
-          (!filterConfig.expressions ||
-            filterConfig.expressions.length === 0) && (
-            <span className="text-foreground-lighter">No filters</span>
-          )}
-        {!showEditor && (
-          <Icon
-            className="h-5 w-5 cursor-pointer shrink-0"
-            icon="edit_square"
-            onClick={() => setShowEditor(true)}
-            title="Edit filter"
-          />
-        )}
-      </div>
-      {showEditor && (
-        <>
-          <CheckFilterEditor
-            config={modifiedConfig}
-            setConfig={setModifiedConfig}
-            isValid={isValid}
-            onCancel={() => setShowEditor(false)}
-            onSave={() => {
-              setShowEditor(false);
-              saveFilterConfig(modifiedConfig);
-            }}
-          />
-        </>
-      )}
-    </>
+    <CheckFilterEditor
+      filter={filterConfig}
+      onCancel={onClose}
+      onApply={saveFilterConfig}
+      onSave={(toSave) => {
+        saveFilterConfig(toSave);
+        onClose();
+      }}
+    />
   );
 };
 
 export default CheckFilterConfig;
-
-export { validateFilter };

@@ -663,6 +663,10 @@ const includeResult = (
   }
   let matches: boolean[] = [];
   for (const filter of checkFilterConfig.expressions) {
+    if (!filter.type) {
+      continue;
+    }
+
     // @ts-ignore
     const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
 
