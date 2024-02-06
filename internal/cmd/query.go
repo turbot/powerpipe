@@ -60,7 +60,6 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
 			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.QueryOutputModeIds), ", "))).
-		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddBoolFlag(constants.ArgProgress, true, "Display snapshot upload status").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a query session (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a query session (comma-separated)").
