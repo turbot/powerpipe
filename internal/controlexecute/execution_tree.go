@@ -45,7 +45,7 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 
 	// if backend supports search path, get it
 	if sp, ok := client.Backend.(backend.SearchPathProvider); ok {
-		executionTree.SearchPath = sp.SearchPath()
+		executionTree.SearchPath = sp.RequiredSearchPath()
 	}
 
 	// if a "--where" or "--tag" parameter was passed, build a map of control names used to filter the controls to run

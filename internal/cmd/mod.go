@@ -172,6 +172,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable output
 		fmt.Println("No mods installed.")
 		return
 	}
@@ -179,7 +180,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 	trimGitUrls(opts)
 	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
-
+	//nolint:forbidigo // acceptable
 	fmt.Println(modinstaller.BuildUninstallSummary(installData))
 }
 
@@ -225,6 +226,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable output
 		fmt.Println("No mods installed.")
 		return
 	}
@@ -234,6 +236,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
 
+	//nolint:forbidigo // acceptable
 	fmt.Println(modinstaller.BuildInstallSummary(installData))
 }
 

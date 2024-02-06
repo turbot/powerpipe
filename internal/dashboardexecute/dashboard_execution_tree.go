@@ -125,7 +125,7 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	}
 	var searchPath []string
 	if sp, ok := defaultClient.Backend.(backend.SearchPathProvider); ok {
-		searchPath = sp.SearchPath()
+		searchPath = sp.RequiredSearchPath()
 	}
 
 	// perform any necessary initialisation
