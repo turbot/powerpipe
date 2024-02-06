@@ -132,23 +132,12 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 	// set cloud metadata (may be nil)
 	i.Workspace.CloudMetadata = cloudMetadata
 
-	// TODO KAI RETHINK THIS <MOD VALIDATION>
-	// we are only validating the CLI version now - ok to do remotely?
-	// no need to validate local steampipe and plugin versions for when connecting to remote steampipe database
-	// ArgConnectionString is empty when connecting to local database
-	//if connectionString := viper.GetString(constants.ArgConnectionString); connectionString == "" {
-	// validate steampipe version
+	// validate mod requirements
+	// For now we only validate CLI version
+	// TODO add validation for required plugins for steampipe backend
 	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod)
 	i.Result.AddWarnings(validationWarnings...)
-	//}
 
-	statushooks.SetStatus(ctx, "Connecting to steampipe database")
-	slog.Info("Connecting to steampipe database")
-	connectionString := viper.GetString(constants.ArgConnectionString)
-	if connectionString == "" {
-		i.Result.Error = sperr.New("connection string is not set")
-		return
-	}
 }
 
 // resolve target resource, args and any target specific search path
@@ -185,9 +174,6 @@ func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
 
 	// validate dependent mods
 	for childDependencyName, childMod := range mod.ResourceMaps.Mods {
-		// TODO : The 'mod.DependencyName == childMod.DependencyName' check has to be done because
-		// of a bug in the resource loading code which also puts the mod itself into the resource map
-		// [https://github.com/turbot/steampipe/issues/3341]
 		if childDependencyName == "local" || mod.DependencyName == childMod.DependencyName {
 			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
 			continue

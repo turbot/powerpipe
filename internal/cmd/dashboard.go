@@ -12,6 +12,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -48,8 +49,8 @@ The current mod is the working directory, or the directory specified by the --mo
 
 	cmdconfig.OnCmd(cmd).
 		AddCloudFlags().
-		AddWorkspaceDatabaseFlag().
 		AddModLocationFlag().
+		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the dashboard").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").

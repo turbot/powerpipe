@@ -3,14 +3,14 @@ package cmdconfig
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
-
-	"strings"
 )
 
 func ValidateSnapshotArgs(ctx context.Context) error {

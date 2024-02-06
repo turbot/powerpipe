@@ -14,10 +14,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/task"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/logger"
@@ -113,7 +115,9 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 
 	// load workspace profile from the configured install dir
 	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]()
-	error_helpers.FailOnError(err)
+	if err != nil {
+		return error_helpers.NewErrorsAndWarning(err)
+	}
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
 
@@ -137,25 +141,49 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
 	// and we cannot get this until the other config has been resolved
-	// err = setCloudTokenDefault()
-	// if err != nil {
-	// 	loadConfigErrorsAndWarnings.Error = err
-	// 	return loadConfigErrorsAndWarnings
-	// }
+	err = setCloudTokenDefault(loader)
+	if err != nil {
+		return error_helpers.NewErrorsAndWarning(err)
+	}
 
 	// now validate all config values have appropriate values
-	ew := validateConfig()
-	error_helpers.FailOnErrorWithMessage(ew.Error, "failed to validate config")
+	return validateConfig()
+}
 
-	// loadConfigErrorsAndWarnings.Merge(ew)
+func setCloudTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]) error {
+	/*
+	   saved cloud token
+	   cloud_token in default workspace
+	   explicit env var (STEAMIPE_CLOUD_TOKEN ) wins over
+	   cloud_token in specific workspace
+	*/
+	// set viper defaults in order of increasing precedence
+	// 1) saved cloud token
+	savedToken, err := cloud.LoadToken()
+	if err != nil {
+		return err
+	}
+	if savedToken != "" {
+		viper.SetDefault(constants.ArgCloudToken, savedToken)
+	}
+	// 2) default profile cloud token
+	if loader.DefaultProfile.CloudToken != nil {
+		viper.SetDefault(constants.ArgCloudToken, *loader.DefaultProfile.CloudToken)
+	}
+	// 3) env var (STEAMIPE_CLOUD_TOKEN )
+	cmdconfig.SetDefaultFromEnv(app_specific.EnvCloudToken, constants.ArgCloudToken, cmdconfig.EnvVarTypeString)
 
-	return error_helpers.NewErrorsAndWarning(nil)
+	// 4) explicit workspace profile
+	if p := loader.ConfiguredProfile; p != nil && p.CloudToken != nil {
+		viper.SetDefault(constants.ArgCloudToken, *p.CloudToken)
+	}
+	return nil
 }
 
 // now validate  config values have appropriate values
 // (currently validates telemetry)
-func validateConfig() *error_helpers.ErrorAndWarnings {
-	var res = &error_helpers.ErrorAndWarnings{}
+func validateConfig() error_helpers.ErrorAndWarnings {
+	var res = error_helpers.ErrorAndWarnings{}
 	telemetry := viper.GetString(constants.ArgTelemetry)
 	if !helpers.StringSliceContains(constants.TelemetryLevels, telemetry) {
 		res.Error = sperr.New(`invalid value of 'telemetry' (%s), must be one of: %s`, telemetry, strings.Join(constants.TelemetryLevels, ", "))

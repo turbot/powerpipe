@@ -67,6 +67,7 @@ func runLoginCmd(cmd *cobra.Command, _ []string) {
 func getToken(ctx context.Context, id string) (loginToken string, err error) {
 	log.Printf("[TRACE] prompt for verification code")
 
+	//nolint:forbidigo // intentional
 	fmt.Println()
 	retries := 0
 	for {
@@ -103,17 +104,18 @@ func displayLoginMessage(ctx context.Context, token string) {
 	userName, err := cloud.GetUserName(ctx, token)
 	error_helpers.FailOnError(sperr.WrapWithMessage(err, "failed to read user name"))
 
-	fmt.Println()
-	fmt.Printf("Logged in as: %s\n", constants.Bold(userName))
-	fmt.Println()
+	//nolint:forbidigo // intentional
+	fmt.Printf("\nLogged in as: %s\n\n", constants.Bold(userName))
 }
 
 func promptUserForString(prompt string) (string, error) {
+	//nolint:forbidigo // intentional
 	fmt.Print(prompt)
 
 	scanner := bufio.NewScanner(os.Stdin)
 	if !scanner.Scan() {
 		// handle ctrl+d
+		//nolint:forbidigo // intentional
 		fmt.Println()
 		os.Exit(0)
 	}
