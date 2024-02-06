@@ -108,6 +108,7 @@ const DashboardProvider = ({
       searchParams,
       selectedDashboard: state.selectedDashboard,
       selectedDashboardInputs: state.selectedDashboardInputs,
+      selectedDashboardSearchPath: state.selectedDashboardSearchPath,
     });
 
   // Alert analytics
@@ -153,6 +154,7 @@ const DashboardProvider = ({
       type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,
     });
   }, [
+    dispatch,
     searchParams,
     setSearchParams,
     state.snapshot_metadata_loaded,
@@ -382,6 +384,13 @@ const DashboardProvider = ({
       return;
     }
 
+    const previousSearchPath = (
+      previousSelectedDashboardStates.selectedDashboardSearchPath || []
+    ).join(",");
+    const currentSearchPath = (state.selectedDashboardSearchPath || []).join(
+      ",",
+    );
+
     // If we didn't previously have a dashboard selected in state (e.g. you've gone from home page
     // to a report, or it's first load), or the selected dashboard has been changed, select that
     // report over the socket
@@ -393,12 +402,19 @@ const DashboardProvider = ({
         state.selectedDashboard.full_name !==
           previousSelectedDashboardStates.selectedDashboard.full_name ||
         (!previousSelectedDashboardStates.refetchDashboard &&
-          state.refetchDashboard))
+          state.refetchDashboard) ||
+        // has the search path changed
+        previousSearchPath !== currentSearchPath)
     ) {
+      console.log({
+        previousSearchPath,
+        currentSearchPath,
+        diff: previousSearchPath !== currentSearchPath,
+      });
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
       });
-      sendSocketMessage({
+      const selectDashboardMessage: any = {
         action:
           state.selectedDashboard.type === "snapshot"
             ? SocketActions.SELECT_SNAPSHOT
@@ -408,6 +424,21 @@ const DashboardProvider = ({
             full_name: state.selectedDashboard.full_name,
           },
           input_values: state.selectedDashboardInputs,
+        },
+      };
+      if (
+        !!state.selectedDashboardSearchPath &&
+        state.selectedDashboardSearchPath.length > 0
+      ) {
+        selectDashboardMessage.search_path = state.selectedDashboardSearchPath;
+      }
+      sendSocketMessage(selectDashboardMessage);
+      sendSocketMessage({
+        action: SocketActions.GET_DASHBOARD_METADATA,
+        payload: {
+          dashboard: {
+            full_name: state.selectedDashboard.full_name,
+          },
         },
       });
       return;
@@ -440,6 +471,7 @@ const DashboardProvider = ({
     socketReady,
     state.selectedDashboard,
     state.selectedDashboardInputs,
+    state.selectedDashboardSearchPath,
     state.lastChangedInput,
     state.dataMode,
     state.refetchDashboard,

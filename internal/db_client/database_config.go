@@ -26,8 +26,8 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		// if the mod requirement has a search path, prefix or database, set it in viper,
 		// overriding whatever value sth, use it
 		// TODO KAI  should we only respect overriden search path and search path prefix if the db is overriden?
-		//if modRequirement.SearchPath != nil {
-		//	searchPathConfig.SearchPath = modRequirement.SearchPath
+		//if modRequirement.OriginalSearchPath != nil {
+		//	searchPathConfig.OriginalSearchPath = modRequirement.OriginalSearchPath
 		//}
 		//if modRequirement.SearchPathPrefix != nil {
 		//	searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix

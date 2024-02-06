@@ -2,11 +2,11 @@ import get from "lodash/get";
 import usePrevious from "./usePrevious";
 import {
   AvailableDashboard,
-  CloudDashboardIdentityMetadata,
-  CloudDashboardWorkspaceMetadata,
-  DashboardMetadata,
-  ModDashboardMetadata,
-} from "../types";
+  CloudServerIdentityMetadata,
+  CloudServerWorkspaceMetadata,
+  ModServerMetadata,
+  ServerMetadata,
+} from "types";
 import {
   createContext,
   useCallback,
@@ -37,11 +37,12 @@ const AnalyticsContext = createContext<IAnalyticsContext>({
 const useAnalyticsProvider = () => {
   const { localStorageTheme, theme } = useTheme();
   const [enabled, setEnabled] = useState<boolean>(true);
-  const [identity, setIdentity] =
-    useState<CloudDashboardIdentityMetadata | null>(null);
+  const [identity, setIdentity] = useState<CloudServerIdentityMetadata | null>(
+    null,
+  );
   const [workspace, setWorkspace] =
-    useState<CloudDashboardWorkspaceMetadata | null>(null);
-  const [metadata, setMetadata] = useState<DashboardMetadata | null>(null);
+    useState<CloudServerWorkspaceMetadata | null>(null);
+  const [metadata, setMetadata] = useState<ServerMetadata | null>(null);
   const [selectedDashboard, setSelectedDashboard] =
     useState<AvailableDashboard | null>(null);
   const [initialised, setInitialised] = useState(false);
@@ -90,7 +91,7 @@ const useAnalyticsProvider = () => {
         window.heap.track(event, finalProperties);
       }
     },
-    [enabled, initialised, identity, workspace, localStorageTheme, theme.name]
+    [enabled, initialised, identity, workspace, localStorageTheme, theme.name],
   );
 
   useEffect(() => {
@@ -163,15 +164,15 @@ const useAnalyticsProvider = () => {
         previousSelectedDashboardStates.selectedDashboard.full_name !==
           selectedDashboard?.full_name)
     ) {
-      let mod: ModDashboardMetadata;
+      let mod: ModServerMetadata;
       if (selectedDashboard.mod_full_name === metadata.mod.full_name) {
-        mod = get(metadata, "mod", {}) as ModDashboardMetadata;
+        mod = get(metadata, "mod", {}) as ModServerMetadata;
       } else {
         mod = get(
           metadata,
           `installed_mods["${selectedDashboard.mod_full_name}"]`,
-          {}
-        ) as ModDashboardMetadata;
+          {},
+        ) as ModServerMetadata;
       }
       track("cli.ui.dashboard.select", {
         "mod.title": mod

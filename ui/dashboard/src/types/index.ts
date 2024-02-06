@@ -8,7 +8,7 @@ import { Theme } from "hooks/useTheme";
 
 export type IDashboardContext = {
   versionMismatchCheck: boolean;
-  metadata: DashboardMetadata | null;
+  metadata: ServerMetadata | null;
   availableDashboardsLoaded: boolean;
 
   closePanelDetail(): void;
@@ -28,11 +28,13 @@ export type IDashboardContext = {
 
   dashboards: AvailableDashboard[];
   dashboardsMap: AvailableDashboardsDictionary;
+  dashboardsMetadata: DashboardsMetadataDictionary;
   dashboard: DashboardDefinition | null;
 
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
+  selectedDashboardSearchPath?: string[];
   lastChangedInput: string | null;
 
   dashboardTags: DashboardTags;
@@ -129,6 +131,7 @@ export const DashboardActions: IActions = {
   CONTROL_COMPLETE: "control_complete",
   CONTROL_ERROR: "control_error",
   CONTROLS_UPDATED: "controls_updated",
+  SERVER_METADATA: "server_metadata",
   DASHBOARD_METADATA: "dashboard_metadata",
   DELETE_DASHBOARD_INPUT: "delete_dashboard_input",
   DIFF_SNAPSHOT: "diff_snapshot",
@@ -145,7 +148,8 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
-  SET_SNAPSHOT_METADATA_LOADED: "set_dashboard_metadata_loaded",
+  SET_SELECTED_DASHBOARD_SEARCH_PATH: "set_selected_dashboard_search_path",
+  SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
   SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
@@ -237,6 +241,7 @@ export type SelectedDashboardStates = {
   searchParams: URLSearchParams;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
+  selectedDashboardSearchPath: string[];
 };
 
 export type DashboardInputs = {
@@ -247,47 +252,47 @@ type DashboardVariables = {
   [name: string]: any;
 };
 
-export type ModDashboardMetadata = {
+export type ModServerMetadata = {
   title: string;
   full_name: string;
   short_name: string;
 };
 
-type InstalledModsDashboardMetadata = {
-  [key: string]: ModDashboardMetadata;
+type InstalledModsServerMetadata = {
+  [key: string]: ModServerMetadata;
 };
 
-type CliDashboardMetadata = {
+type CliServerMetadata = {
   version: string;
 };
 
-export type CloudDashboardActorMetadata = {
+export type CloudServerActorMetadata = {
   id: string;
   handle: string;
 };
 
-export type CloudDashboardIdentityMetadata = {
+export type CloudServerIdentityMetadata = {
   id: string;
   handle: string;
   type: "org" | "user";
 };
 
-export type CloudDashboardWorkspaceMetadata = {
+export type CloudServerWorkspaceMetadata = {
   id: string;
   handle: string;
 };
 
-type CloudDashboardMetadata = {
-  actor: CloudDashboardActorMetadata;
-  identity: CloudDashboardIdentityMetadata;
-  workspace: CloudDashboardWorkspaceMetadata;
+type CloudServerMetadata = {
+  actor: CloudServerActorMetadata;
+  identity: CloudServerIdentityMetadata;
+  workspace: CloudServerWorkspaceMetadata;
 };
 
-export type DashboardMetadata = {
-  mod: ModDashboardMetadata;
-  installed_mods?: InstalledModsDashboardMetadata;
-  cli?: CliDashboardMetadata;
-  cloud?: CloudDashboardMetadata;
+export type ServerMetadata = {
+  mod: ModServerMetadata;
+  installed_mods?: InstalledModsServerMetadata;
+  cli?: CliServerMetadata;
+  cloud?: CloudServerMetadata;
   telemetry: "info" | "none";
 };
 
@@ -361,6 +366,17 @@ export type AvailableDashboard = {
 
 export type AvailableDashboardsDictionary = {
   [key: string]: AvailableDashboard;
+};
+
+export type DashboardMetadata = {
+  configured_search_path?: string | null;
+  database?: string | null;
+  original_search_path?: string[];
+  resolved_search_path?: string[];
+};
+
+export type DashboardsMetadataDictionary = {
+  [key: string]: DashboardMetadata;
 };
 
 export type ContainerDefinition = {

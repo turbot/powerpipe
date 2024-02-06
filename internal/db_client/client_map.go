@@ -14,7 +14,6 @@ type ClientMap struct {
 }
 
 func NewClientMap() *ClientMap {
-
 	return &ClientMap{
 		clients: make(map[string]*DbClient),
 	}

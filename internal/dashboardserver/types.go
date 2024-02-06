@@ -152,24 +152,37 @@ type AvailableDashboardsPayload struct {
 	Snapshots  map[string]string                `json:"snapshots"`
 }
 
-type ModDashboardMetadata struct {
+type ModMetadata struct {
 	Title     string `json:"title,omitempty"`
 	FullName  string `json:"full_name"`
 	ShortName string `json:"short_name"`
+}
+
+type DashboardMetadata struct {
+	Database           string   `json:"database"`
+	ResolvedSearchPath []string `json:"resolved_search_path"`
+
+	OriginalSearchPath   []string `json:"original_search_path"`
+	ConfiguredSearchPath []string `json:"configured_search_path"`
+	SearchPathPrefix     []string `json:"short_name"`
 }
 
 type DashboardCLIMetadata struct {
 	Version string `json:"version,omitempty"`
 }
 
-type DashboardMetadata struct {
-	Mod           *ModDashboardMetadata           `json:"mod,omitempty"`
-	InstalledMods map[string]ModDashboardMetadata `json:"installed_mods,omitempty"`
-	CLI           DashboardCLIMetadata            `json:"cli"`
-	Cloud         *steampipeconfig.CloudMetadata  `json:"cloud,omitempty"`
-	Telemetry     string                          `json:"telemetry"`
+type ServerMetadata struct {
+	Mod           *ModMetadata                   `json:"mod,omitempty"`
+	InstalledMods map[string]*ModMetadata        `json:"installed_mods,omitempty"`
+	CLI           DashboardCLIMetadata           `json:"cli"`
+	Cloud         *steampipeconfig.CloudMetadata `json:"cloud,omitempty"`
+	Telemetry     string                         `json:"telemetry"`
 }
 
+type ServerMetadataPayload struct {
+	Action   string         `json:"action"`
+	Metadata ServerMetadata `json:"metadata"`
+}
 type DashboardMetadataPayload struct {
 	Action   string            `json:"action"`
 	Metadata DashboardMetadata `json:"metadata"`
