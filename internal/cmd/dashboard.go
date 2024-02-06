@@ -50,6 +50,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddCloudFlags().
 		AddWorkspaceDatabaseFlag().
 		AddModLocationFlag().
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the dashboard").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").
@@ -73,7 +74,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)")
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time")
 
 	return cmd
 }
