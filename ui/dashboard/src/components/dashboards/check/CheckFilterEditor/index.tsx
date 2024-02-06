@@ -457,11 +457,11 @@ const CheckFilterEditor = ({
           }))
         }
         onClear={() => {
-          setInnerFilter({
-            // @ts-ignore
-            expressions: [{ operator: "equal", type: "" }],
-          });
-          onSave(innerFilter);
+          const toSave: CheckFilter = {
+            operator: "equal",
+          };
+          setInnerFilter(toSave);
+          onSave(toSave);
         }}
         onCancel={onCancel}
         onApply={() => onApply(innerFilter)}

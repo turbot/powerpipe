@@ -64,14 +64,14 @@ const CheckEditorAddItem = ({
       <div className="flex items-center justify-end space-x-2">
         <button
           type="button"
-          className="rounded-md bg-dashboard-panel border border-gray-200 px-2.5 py-1.5 text-sm font-semibold text-foreground"
+          className="rounded-md bg-dashboard-panel border border-black-scale-3 px-2.5 py-1.5 text-sm font-semibold text-foreground"
           onClick={onCancel}
         >
           Cancel
         </button>
         <button
           type="button"
-          className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md border border-ok px-2.5 py-1.5 text-sm font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isValid.value}
           onClick={onApply}
           title={isValid.reason}
