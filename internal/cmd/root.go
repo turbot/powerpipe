@@ -45,7 +45,7 @@ func rootCommand() *cobra.Command {
 	cmdconfig.
 		OnCmd(rootCmd).
 		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
-		AddPersistentStringFlag(constants.ArgDatabase, app_specific.DefaultWorkspaceDatabase, "Path to the workspace database").
+		AddPersistentStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Path to the workspace database").
 		//// Define the CLI flag parameters for wrapped enum flag.
 		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
 		//	constants.ArgOutput,
@@ -55,6 +55,7 @@ func rootCommand() *cobra.Command {
 	rootCmd.AddCommand(
 		serverCmd(),
 		modCmd(),
+		loginCmd(),
 		resourceCmd[*modconfig.Benchmark](),
 		resourceCmd[*modconfig.Control](),
 		resourceCmd[*modconfig.Control](),

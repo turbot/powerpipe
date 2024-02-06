@@ -12,19 +12,21 @@ import (
 )
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
-	workspaceDatabase := viper.GetString(constants.ArgDatabase)
-	if workspaceDatabase == "local" {
+	database := viper.GetString(constants.ArgDatabase)
+	// TODO KAI is this relevant for powerpipe
+	if database == "local" {
 		// local database - nothing to do here
 		// (if steampipe is running locally, it will have ensured the service is running and set
 		// the connection string)
 		return nil, nil
 	}
-	connectionString := workspaceDatabase
+
+	connectionString := database
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
 
 	// so a backend was set - is it a connection string or a database name
-	workspaceDatabaseIsConnectionString := backend.HasBackend(workspaceDatabase)
+	workspaceDatabaseIsConnectionString := backend.HasBackend(database)
 	if !workspaceDatabaseIsConnectionString {
 		// it must be a database name - verify the cloud token was provided
 		cloudToken := viper.GetString(constants.ArgCloudToken)
@@ -34,7 +36,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 
 		// so we have a database and a token - build the connection string and set it in viper
 		var err error
-		if cloudMetadata, err = cloud.GetCloudMetadata(ctx, workspaceDatabase, cloudToken); err != nil {
+		if cloudMetadata, err = cloud.GetCloudMetadata(ctx, database, cloudToken); err != nil {
 			return nil, err
 		}
 		// read connection string out of cloudMetadata
@@ -42,7 +44,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	}
 
 	// now set the connection string in viper
-	viper.Set(constants.ArgConnectionString, connectionString)
+	viper.Set(constants.ArgDatabase, connectionString)
 
 	return cloudMetadata, nil
 }

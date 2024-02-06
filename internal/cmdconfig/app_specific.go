@@ -43,7 +43,7 @@ func SetAppSpecificConstants() {
 
 	app_specific.DefaultVarsFileName = "powerpipe.ppvars"
 	// default to local steampipe service
-	app_specific.DefaultWorkspaceDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
+	app_specific.DefaultDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
 
 	// extensions
 
