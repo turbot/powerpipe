@@ -1,4 +1,4 @@
-import { validateFilter, validateOrFilter, validateAndFilter } from "./"; // Replace with the actual module path
+import { validateFilter } from "./"; // Replace with the actual module path
 
 interface TestCase {
   name: string;
@@ -9,92 +9,86 @@ interface TestCase {
 const filterTestCases: TestCase[] = [
   {
     name: "valid filter with type and key",
-    input: { type: "resource", key: "name" },
+    input: { operator: "equal", type: "resource", key: "name" },
     expected: true,
   },
   {
     name: "valid filter with type and value",
-    input: { type: "tag", value: "production" },
+    input: { operator: "equal", type: "tag", value: "production" },
     expected: true,
   },
   {
+    name: "filter missing operator",
+    input: { type: "resource", value: "name" },
+    expected: false,
+  },
+  {
     name: "filter missing type",
-    input: { key: "name" },
+    input: { operator: "equal", key: "name" },
     expected: false,
   },
   {
     name: "filter missing both key and value",
-    input: { type: "resource" },
+    input: { operator: "equal", type: "resource" },
     expected: false,
   },
-];
-
-const orFilterTestCases: TestCase[] = [
-  {
-    name: "valid OR filter with valid filters",
-    input: {
-      or: [
-        { type: "resource", value: "*mybucket*" },
-        { type: "tag", key: "environment", value: "production" },
-      ],
-    },
-    expected: true,
-  },
-  {
-    name: "empty OR filter",
-    input: { or: [] },
-    expected: true,
-  },
-  {
-    name: "OR filter with an invalid filter",
-    input: {
-      or: [{ type: "resource", key: "name" }, { key: "name" }],
-    },
-    expected: false,
-  },
-  {
-    name: "OR filter with one invalid and one valid filter",
-    input: {
-      or: [{ type: "resource", value: "*mybucket*" }, { key: "name" }],
-    },
-    expected: false,
-  },
-];
-
-const andFilterTestCases: TestCase[] = [
   {
     name: "valid AND filter with valid filters",
     input: {
-      and: [
+      operator: "and",
+      expressions: [
+        { operator: "equal", type: "resource", value: "*mybucket*" },
         {
-          or: [
-            { type: "resource", value: "*mybucket*" },
-            { type: "tag", key: "environment", value: "production" },
-          ],
+          operator: "equal",
+          type: "tag",
+          key: "environment",
+          value: "production",
         },
-        { type: "dimension", key: "region", value: "us*" },
+        { operator: "equal", type: "dimension", key: "region", value: "us*" },
       ],
     },
-    expected: true,
-  },
-  {
-    name: "empty AND filter",
-    input: { and: [] },
     expected: true,
   },
   {
     name: "AND filter with an invalid filter",
     input: {
-      and: [
-        {
-          or: [{ type: "resource", key: "name" }, { key: "name" }],
-        },
-        { type: "dimension", key: "region", value: "us*" },
-      ],
+      and: [{ key: "name" }],
     },
     expected: false,
   },
 ];
+
+// const orFilterTestCases: TestCase[] = [
+//   {
+//     name: "valid OR filter with valid filters",
+//     input: {
+//       or: [
+//         { type: "resource", value: "*mybucket*" },
+//         { type: "tag", key: "environment", value: "production" },
+//       ],
+//     },
+//     expected: true,
+//   },
+//   {
+//     name: "empty OR filter",
+//     input: { or: [] },
+//     expected: true,
+//   },
+//   {
+//     name: "OR filter with an invalid filter",
+//     input: {
+//       or: [{ type: "resource", key: "name" }, { key: "name" }],
+//     },
+//     expected: false,
+//   },
+//   {
+//     name: "OR filter with one invalid and one valid filter",
+//     input: {
+//       or: [{ type: "resource", value: "*mybucket*" }, { key: "name" }],
+//     },
+//     expected: false,
+//   },
+// ];
 
 function runTestCases(
   testCases: TestCase[],
@@ -111,13 +105,5 @@ function runTestCases(
 describe("Check Filter Validation", () => {
   describe("validateFilter", () => {
     runTestCases(filterTestCases, validateFilter);
-  });
-
-  describe("validateOrFilter", () => {
-    runTestCases(orFilterTestCases, validateOrFilter);
-  });
-
-  describe("validateAndFilter", () => {
-    runTestCases(andFilterTestCases, validateAndFilter);
   });
 });

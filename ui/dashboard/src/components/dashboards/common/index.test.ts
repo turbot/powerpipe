@@ -4,10 +4,11 @@ import {
   adjustMaxValue,
   buildNodesAndEdges,
   foldNodesAndEdges,
-  themeColors,
+  getChartColors,
 } from "./index";
 import { Edge, Node } from "./types";
 import { Graph } from "graphlib";
+import { ThemeNames } from "hooks/useTheme";
 
 describe("common.adjustMinValue", () => {
   test("5", () => {
@@ -235,12 +236,17 @@ describe("common.buildNodesAndEdges", () => {
       symbol: null,
       isFolded: false,
     };
-    const nodesAndEdges = buildNodesAndEdges({}, rawData);
+    const nodesAndEdges = buildNodesAndEdges(
+      {},
+      rawData,
+      {},
+      { charts: getChartColors({ name: ThemeNames.STEAMPIPE_DEFAULT }) },
+    );
     delete nodesAndEdges.graph;
     expect(nodesAndEdges).toEqual({
       categories: {
         c1: {
-          color: themeColors[0],
+          color: "#688ae8",
         },
       },
       edgeMap: {},
