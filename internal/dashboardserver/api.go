@@ -42,9 +42,9 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 			c.File(path.Join(assetsDirectory, "index.html"))
 		})
 
-		dashboardServerPort := viper.GetInt(constants.ArgDashboardPort)
+		dashboardServerPort := viper.GetInt(constants.ArgPort)
 		dashboardServerListen := "localhost"
-		if viper.GetString(constants.ArgDashboardListen) == string(ListenTypeNetwork) {
+		if viper.GetString(constants.ArgListen) == string(ListenTypeNetwork) {
 			dashboardServerListen = ""
 		}
 
@@ -61,7 +61,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 			}
 		}()
 
-		outputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, viper.GetString(constants.ArgDashboardListen)))
+		outputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, viper.GetString(constants.ArgListen)))
 		OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", dashboardServerPort))
 		OutputMessage(ctx, "Press Ctrl+C to exit")
 		<-ctx.Done()
