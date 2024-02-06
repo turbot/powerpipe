@@ -30,9 +30,9 @@ func serverCmd() *cobra.Command {
 		OnCmd(cmd).
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddIntFlag(constants.ArgDashboardPort, constants.DashboardServerDefaultPort, "Web server port").
+		AddIntFlag(constants.ArgPort, constants.DashboardServerDefaultPort, "Web server port").
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
-		AddStringFlag(constants.ArgDashboardListen, "", "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
+		AddStringFlag(constants.ArgListen, "", "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.")
 	return cmd
