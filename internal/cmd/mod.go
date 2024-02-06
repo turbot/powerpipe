@@ -13,6 +13,7 @@ import (
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/utils"
+	"strings"
 )
 
 func modCmd() *cobra.Command {
@@ -155,7 +156,33 @@ Example:
 	return cmd
 }
 
-func runModUninstallCmd(cmd *cobra.Command, args []string) {}
+func runModUninstallCmd(cmd *cobra.Command, args []string) {
+	ctx := cmd.Context()
+	utils.LogTime("cmd.runModInstallCmd")
+	defer func() {
+		utils.LogTime("cmd.runModInstallCmd end")
+		if r := recover(); r != nil {
+			error_helpers.ShowError(ctx, helpers.ToError(r))
+			exitCode = constants.ExitCodeUnknownErrorPanic
+		}
+	}()
+
+	// try to load the workspace mod definition
+	// - if it does not exist, this will return a nil mod and a nil error
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
+	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable output
+		fmt.Println("No mods installed.")
+		return
+	}
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	trimGitUrls(opts)
+	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
+	error_helpers.FailOnError(err)
+	//nolint:forbidigo // acceptable
+	fmt.Println(modinstaller.BuildUninstallSummary(installData))
+}
 
 func modUpdateCmd() *cobra.Command {
 	var cmd = &cobra.Command{
@@ -183,7 +210,35 @@ Example:
 	return cmd
 }
 
-func runModUpdateCmd(cmd *cobra.Command, args []string) {}
+func runModUpdateCmd(cmd *cobra.Command, args []string) {
+	ctx := cmd.Context()
+	utils.LogTime("cmd.runModUpdateCmd")
+	defer func() {
+		utils.LogTime("cmd.runModUpdateCmd end")
+		if r := recover(); r != nil {
+			error_helpers.ShowError(ctx, helpers.ToError(r))
+			exitCode = constants.ExitCodeUnknownErrorPanic
+		}
+	}()
+
+	// try to load the workspace mod definition
+	// - if it does not exist, this will return a nil mod and a nil error
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
+	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable output
+		fmt.Println("No mods installed.")
+		return
+	}
+
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	trimGitUrls(opts)
+	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+	error_helpers.FailOnError(err)
+
+	//nolint:forbidigo // acceptable
+	fmt.Println(modinstaller.BuildInstallSummary(installData))
+}
 
 func modInitCmd() *cobra.Command {
 	var cmd = &cobra.Command{
@@ -244,4 +299,12 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 	}
 
 	return mod, nil
+}
+
+// Modifies(trims) the URL if contains http ot https in arguments
+func trimGitUrls(opts *modinstaller.InstallOpts) {
+	for i, url := range opts.ModArgs {
+		opts.ModArgs[i] = strings.TrimPrefix(url, "http://")
+		opts.ModArgs[i] = strings.TrimPrefix(url, "https://")
+	}
 }
