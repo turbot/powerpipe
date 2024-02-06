@@ -130,8 +130,10 @@ export type CheckDisplayGroup = {
   value?: string | undefined;
 };
 
+export type CheckFilterOperator = "and" | "equal";
+
 export type CheckFilter = {
-  operator: "and" | "equal";
+  operator: CheckFilterOperator;
   type?: CheckFilterType;
   key?: string;
   value?: string;

@@ -207,17 +207,26 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
+    } else if (type === "dimension") {
+      return Object.entries(filterValues[type].value || {})
+        .filter(([, v]) => has(v, item.key as string))
+        .map(([k, v]) => {
+          return {
+            value: k,
+            label: k,
+            // @ts-ignore
+            tags: { occurrences: v[item.key] },
+          };
+        });
     }
-    return Object.entries(filterValues[type].value || {})
-      .filter(([, v]) => has(v, item.key as string))
-      .map(([k, v]) => {
-        return {
-          value: k,
-          label: k,
-          // @ts-ignore
-          tags: { occurrences: v[item.key] },
-        };
-      });
+    return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+      return {
+        value: k,
+        label: k,
+        // @ts-ignore
+        tags: { occurrences: v },
+      };
+    });
   }, [filterValues, item.key, type]);
 
   const styles = useSelectInputStyles();
