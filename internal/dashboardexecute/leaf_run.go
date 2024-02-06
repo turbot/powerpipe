@@ -102,11 +102,17 @@ func (r *LeafRun) resolveDatabaseConfig() error {
 	if err != nil {
 		return err
 	}
-	// if the resource specifies a connection string, use that
-	// probably not what we want
-	if c, ok := r.resource.(modconfig.ConnectionStringItem); ok {
-		if resourceConnectionString := c.GetConnectionString(); resourceConnectionString != nil {
-			database = *resourceConnectionString
+	// if the resource specifies a database, use that
+	if c, ok := r.resource.(modconfig.DatabaseItem); ok {
+		// TODO kai should we add validation here?
+		if resourceDatabase := c.GetDatabase(); resourceDatabase != nil {
+			database = *resourceDatabase
+		}
+		if resourceSearchPath := c.GetSearchPath(); len(resourceSearchPath) > 0 {
+			searchPathConfig.SearchPath = resourceSearchPath
+		}
+		if resourceSearchPathPrefix := c.GetSearchPathPrefix(); len(resourceSearchPathPrefix) > 0 {
+			searchPathConfig.SearchPathPrefix = resourceSearchPathPrefix
 		}
 	}
 
