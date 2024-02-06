@@ -1,6 +1,6 @@
-import { PanelDefinition } from "../types";
+import { PanelDefinition } from "types";
 import { saveAs } from "file-saver";
-import { timestampForFilename } from "../utils/date";
+import { timestampForFilename } from "utils/date";
 import { useCallback, useState } from "react";
 import { useDashboard } from "./useDashboard";
 import { usePapaParse } from "react-papaparse";
@@ -45,8 +45,8 @@ const useDownloadPanelData = (definition: PanelDefinition) => {
         definition.dashboard ||
         ""
       ).replaceAll(".", "_")}_${definition.panel_type}_${timestampForFilename(
-        Date.now()
-      )}.csv`
+        Date.now(),
+      )}.csv`,
     );
     setProcessing(false);
   }, [definition, jsonToCSV, selectedDashboard]);

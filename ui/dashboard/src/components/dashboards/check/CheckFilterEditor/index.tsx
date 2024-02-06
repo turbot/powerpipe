@@ -472,3 +472,5 @@ const CheckFilterEditor = ({
 };
 
 export default CheckFilterEditor;
+
+export { validateFilter };

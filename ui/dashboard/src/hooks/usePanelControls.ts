@@ -1,7 +1,7 @@
 import useDownloadPanelData from "./useDownloadPanelData";
 import useSelectPanel from "./useSelectPanel";
-import { IPanelControl } from "../components/dashboards/layout/Panel/PanelControls";
-import { PanelDefinition } from "../types";
+import { IPanelControl } from "components/dashboards/layout/Panel/PanelControls";
+import { PanelDefinition } from "types";
 import { useCallback, useEffect, useState } from "react";
 
 const usePanelControls = (definition: PanelDefinition, show = false) => {
@@ -39,10 +39,22 @@ const usePanelControls = (definition: PanelDefinition, show = false) => {
   const [panelControls, setPanelControls] = useState(getBasePanelControls());
   const [customControls, setCustomControls] = useState<IPanelControl[]>([]);
 
-  useEffect(
-    () => setPanelControls([...customControls, ...getBasePanelControls()]),
-    [customControls, definition, getBasePanelControls, setPanelControls, show],
-  );
+  useEffect(() => {
+    console.log({
+      customControls,
+      definition,
+      getBasePanelControls,
+      setPanelControls,
+      show,
+    });
+    setPanelControls([...customControls, ...getBasePanelControls()]);
+  }, [
+    customControls,
+    definition,
+    getBasePanelControls,
+    setPanelControls,
+    show,
+  ]);
 
   return { panelControls, setCustomControls };
 };

@@ -4,6 +4,8 @@ import {
 } from "components/dashboards/check/common";
 import { Noop } from "types/func";
 import { ReactNode } from "react";
+import { classNames } from "utils/styles";
+import { validateFilter } from "components/dashboards/check/CheckFilterEditor";
 
 type DashboardControlsSummaryProps = {
   searchPathPrefix: string[];
@@ -12,21 +14,44 @@ type DashboardControlsSummaryProps = {
   toggleControls: Noop;
 };
 
+type DashboardFilterButtonCountProps = {
+  count: number;
+};
+
 type DashboardFilterButtonProps = {
   children: ReactNode;
+  className?: string;
   onClick: Noop;
+};
+
+const DashboardFilterButtonCount = ({
+  count,
+}: DashboardFilterButtonCountProps) => {
+  if (!count) {
+    return null;
+  }
+
+  return (
+    <span className="bg-info bg-opacity-20 text-info text-sm px-1.5 py-0.5 rounded-md">
+      {count}
+    </span>
+  );
 };
 
 const DashboardFilterButton = ({
   children,
+  className,
   onClick,
 }: DashboardFilterButtonProps) => (
-  <div
-    className="border border-black-scale-3 px-2 py-1 rounded-md cursor-pointer hover:bg-dashboard"
+  <button
+    className={classNames(
+      "border border-black-scale-3 px-2.5 py-1.5 rounded-md cursor-pointer hover:bg-dashboard",
+      className,
+    )}
     onClick={onClick}
   >
     {children}
-  </div>
+  </button>
 );
 
 const DashboardSearchPathPrefixControlButton = ({
@@ -72,6 +97,9 @@ const DashboardSearchPathPrefixControlButton = ({
 };
 
 const DashboardFilterControlButton = ({ filterConfig, toggleControls }) => {
+  const filterCount = filterConfig?.expressions?.length
+    ? filterConfig.expressions.filter(validateFilter).length
+    : 0;
   // <div className="flex items-center space-x-3 shrink-0">
   //   <Icon className="h-5 w-5" icon="filter_list" />
   //   {filterConfig.operator === "and" &&
@@ -95,8 +123,8 @@ const DashboardFilterControlButton = ({ filterConfig, toggleControls }) => {
   // </div>
 
   return (
-    <DashboardFilterButton onClick={toggleControls}>
-      Filters
+    <DashboardFilterButton className="block space-x-1" onClick={toggleControls}>
+      <DashboardFilterButtonCount count={filterCount} /> <span>Filters</span>
     </DashboardFilterButton>
   );
 };
