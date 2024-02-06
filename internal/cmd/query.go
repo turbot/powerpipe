@@ -48,22 +48,32 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddCloudFlags().
 		AddWorkspaceDatabaseFlag().
 		AddModLocationFlag().
+		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
+		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
+		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
+		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a query session (comma-separated)").
-		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a query session (comma-separated)").
-		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
-		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
-		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
-		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
+		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
 			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.QueryOutputModeIds), ", "))).
-		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
+		AddBoolFlag(constants.ArgProgress, true, "Display snapshot upload status").
+		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a query session (comma-separated)").
+		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a query session (comma-separated)").
+		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
+		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
+		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
+		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
+		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
+		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
+		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
-		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
-		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot")
+		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
+		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values")
 
 	return cmd
 }

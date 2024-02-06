@@ -45,26 +45,26 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
-		AddStringFlag(constants.ArgOutput, constants.OutputFormatText, "Output format: brief, csv, html, json, md, text, snapshot or none").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
-		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
-		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
+		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
+		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
-		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
+		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
+		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
+		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV,
 		// where args passed to StringArrayFlag are not parsed and used raw
-		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
-		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
-		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
-		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
+		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
+		AddStringArrayFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
+		AddStringFlag(constants.ArgOutput, constants.OutputFormatText, "Output format: brief, csv, html, json, md, text, snapshot or none").
+		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
-		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot")
+		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
+		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
+		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)")
 
 	// for control command, add --arg
 	switch typeName {
