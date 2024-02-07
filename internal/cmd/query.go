@@ -16,6 +16,7 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -142,6 +143,16 @@ func queryRun(cmd *cobra.Command, args []string) {
 	//	snap.FileNameRoot = "query"
 	//}
 
+	// register the query exporters if necessary
+	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
+		err := initData.RegisterExporters(queryExporters()...)
+		error_helpers.FailOnError(err)
+
+		// validate required export formats
+		err = initData.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport))
+		error_helpers.FailOnError(err)
+	}
+
 	// display the result
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:
@@ -198,6 +209,10 @@ func validateQueryArgs(ctx context.Context) error {
 	}
 
 	return nil
+}
+
+func queryExporters() []export.Exporter {
+	return []export.Exporter{&export.SnapshotExporter{}}
 }
 
 func setExitCodeForQueryError(err error) {
