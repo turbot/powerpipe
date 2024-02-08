@@ -3,6 +3,7 @@ package display
 import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/printers"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
@@ -24,7 +25,7 @@ func ListResources[T modconfig.HclResource](cmd *cobra.Command) {
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
-	printer, err := GetPrinter[T](cmd)
+	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
@@ -62,7 +63,7 @@ func ShowResource[T modconfig.HclResource](cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(sperr.New("expected a single target, got %d", len(targets)))
 	}
 
-	printer, err := GetPrinter[T](cmd)
+	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
