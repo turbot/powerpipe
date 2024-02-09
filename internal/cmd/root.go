@@ -47,7 +47,7 @@ func rootCommand() *cobra.Command {
 		OnCmd(rootCmd).
 		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
 		AddPersistentStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Path to the workspace database").
-		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "The workspace profile to use"). // workspace profile profile is a global flag since install-dir(global) can be set through the workspace profile
+		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "The workspace profile to use").
 		//// Define the CLI flag parameters for wrapped enum flag.
 		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
 		//	constants.ArgOutput,
