@@ -21,8 +21,13 @@ func (p PrintableHclResource[T]) GetItems() []T {
 
 func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 	var rows []printers.TableRow
+	var columns []string
 	for _, item := range p.Items {
-		row := item.GetListData()
+		listData := item.GetListData()
+		row := listData.GetRow()
+		if len(columns) == 0 {
+			columns = listData.Columns
+		}
 		cleanRow(*row)
 		rows = append(rows, *row)
 
@@ -30,7 +35,7 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 	if len(rows) == 0 {
 		return printers.NewTable(), nil
 	}
-	columns := rows[0].Columns
+
 	t := printers.NewTable().WithData(rows, columns)
 	return t, nil
 }

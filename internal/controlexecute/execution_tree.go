@@ -32,7 +32,7 @@ type ExecutionTree struct {
 	Workspace  *workspace.Workspace `json:"-"`
 	client     *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
-	controlNameFilterMap map[string]bool
+	controlNameFilterMap map[string]struct{}
 }
 
 func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, target modconfig.ModTreeItem) (*ExecutionTree, error) {
@@ -75,7 +75,7 @@ func (*ExecutionTree) IsExportSourceData() {}
 // if so, creates a ControlRun, which is added to the parent group
 func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
-	if e.ShouldIncludeControl(control.ShortName) {
+	if e.ShouldIncludeControl(control.Name()) {
 		// create new ControlRun with treeItem as the parent
 		controlRun, err := NewControlRun(control, group, e)
 		if err != nil {
@@ -162,47 +162,18 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 
 // Get a map of control names from the introspection table steampipe_control
 // This is used to implement the 'where' control filtering
-func (e *ExecutionTree) getControlMapFromWhereClause(ctx context.Context, whereClause string) (map[string]bool, error) {
-	//// query may either be a 'where' clause, or a named query
-	//resolvedQuery, _, err := e.Workspace.ResolveQueryAndArgsFromSQLString(whereClause)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//// did we in fact resolve a named query, or just return the 'name' as the query
-	//isNamedQuery := resolvedQuery.ExecuteSQL != whereClause
-	//
-	//// if the query is NOT a named query, we need to construct a full query by adding a select
-	//if !isNamedQuery {
-	//	resolvedQuery.ExecuteSQL = fmt.Sprintf("select resource_name from %s where %s", localconstants.IntrospectionTableControl, whereClause)
-	//}
-	//
-	//res, err := e.client.ExecuteSync(ctx, resolvedQuery.ExecuteSQL, resolvedQuery.Args...)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	////
-	//// find the "resource_name" column index
-	//resourceNameColumnIndex := -1
-	//
-	//for i, c := range res.Cols {
-	//	if c.Name == "resource_name" {
-	//		resourceNameColumnIndex = i
-	//	}
-	//}
-	//if resourceNameColumnIndex == -1 {
-	//	return nil, fmt.Errorf("the named query passed in the 'where' argument must return the 'resource_name' column")
-	//}
-	//
-	//var controlNames = make(map[string]bool)
-	//for _, row := range res.Rows {
-	//	rowResult := row.(*queryresult.RowResult)
-	//	controlName := rowResult.Data[resourceNameColumnIndex].(string)
-	//	controlNames[controlName] = true
-	//}
-	//return controlNames, nil
-	// TODO KAI not supported yet
-	return nil, nil
+func (e *ExecutionTree) getControlMapFromWhereClause(ctx context.Context, whereClause string) (map[string]struct{}, error) {
+	var res = make(map[string]struct{})
+	controls, err := workspace.FilterWorkspaceResourcesOfType[*modconfig.Control](e.Workspace, whereClause)
+	if err != nil {
+		return nil, err
+	}
+
+	for _, control := range controls {
+		res[control.Name()] = struct{}{}
+	}
+
+	return res, nil
 }
 
 func (e *ExecutionTree) GetAllTags() []string {
