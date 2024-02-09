@@ -566,10 +566,16 @@ const getSeriesForChartType = (
             ? {}
             : { stack: "total" }),
           itemStyle: {
-            borderRadius: [5, 5, 0, 0],
+            borderRadius:
+              // Only round the last series and take into account bar vs chart e.g. orientation
+              seriesIndex + 1 === seriesLength
+                ? type === "bar"
+                  ? [0, 5, 5, 0]
+                  : [5, 5, 0, 0]
+                : undefined,
             color: seriesColor,
             borderColor: themeColors.dashboardPanel,
-            borderWidth: 2,
+            borderWidth: 1,
           },
           emphasis: {
             itemStyle: {
