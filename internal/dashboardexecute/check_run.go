@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/workspace"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -78,7 +79,6 @@ func (r *CheckRun) resolveDatabaseConfig() error {
 // Initialise implements DashboardTreeRun
 func (r *CheckRun) Initialise(ctx context.Context) {
 	// build control execution tree during init, rather than in Execute, so that it is populated when the ExecutionStarted event is sent
-	controlFilterWhereClause := ""
 
 	// retrieve the client for the default database
 	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
@@ -87,7 +87,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 		r.SetError(ctx, err)
 		return
 	}
-	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, controlFilterWhereClause, r.resource)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, workspace.ResourceFilter{}, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)

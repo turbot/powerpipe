@@ -246,7 +246,7 @@ func getExecutionTree(ctx context.Context, initData *controlinit.InitData) (*nam
 	}
 
 	target := initData.Target
-	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilter, target)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 	}

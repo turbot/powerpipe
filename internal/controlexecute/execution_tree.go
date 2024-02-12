@@ -10,7 +10,6 @@ import (
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -35,7 +34,7 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]struct{}
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilterWhereClause string, target modconfig.ModTreeItem) (*ExecutionTree, error) {
+func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, target modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
@@ -49,9 +48,7 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	}
 
 	// if a "--where" or "--tag" parameter was passed, build a map of control names used to filter the controls to run
-	// create a context with status hooks disabled
-	noStatusCtx := statushooks.DisableStatusHooks(ctx)
-	err := executionTree.populateControlFilterMap(noStatusCtx, controlFilterWhereClause)
+	err := executionTree.populateControlFilterMap(controlFilter)
 	if err != nil {
 		return nil, err
 	}
@@ -138,15 +135,17 @@ func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, paralle
 	return parallelismLock.Acquire(waitCtx, maxParallelGoRoutines)
 }
 
-func (e *ExecutionTree) populateControlFilterMap(ctx context.Context, controlFilterWhereClause string) error {
+func (e *ExecutionTree) populateControlFilterMap(controlFilter workspace.ResourceFilter) error {
 	// if we derived or were passed a where clause, run the filter
-	if len(controlFilterWhereClause) > 0 {
-		slog.Debug("filtering controls with", "controlFilterWhereClause", controlFilterWhereClause)
-		var err error
-		e.controlNameFilterMap, err = e.getControlMapFromWhereClause(ctx, controlFilterWhereClause)
-		if err != nil {
-			return err
-		}
+	if controlFilter.Empty() {
+		return nil
+	}
+
+	slog.Debug("filtering controls with", "controlFilter", controlFilter)
+	var err error
+	e.controlNameFilterMap, err = e.getControlMapFromFilter(controlFilter)
+	if err != nil {
+		return err
 	}
 
 	return nil
@@ -162,9 +161,9 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 
 // Get a map of control names from the introspection table steampipe_control
 // This is used to implement the 'where' control filtering
-func (e *ExecutionTree) getControlMapFromWhereClause(ctx context.Context, whereClause string) (map[string]struct{}, error) {
+func (e *ExecutionTree) getControlMapFromFilter(controlFilter workspace.ResourceFilter) (map[string]struct{}, error) {
 	var res = make(map[string]struct{})
-	controls, err := workspace.FilterWorkspaceResourcesOfType[*modconfig.Control](e.Workspace, whereClause)
+	controls, err := workspace.FilterWorkspaceResourcesOfType[*modconfig.Control](e.Workspace, controlFilter)
 	if err != nil {
 		return nil, err
 	}
