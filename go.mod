@@ -6,7 +6,6 @@ toolchain go1.21.3
 
 replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
-
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
