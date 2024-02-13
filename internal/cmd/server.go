@@ -9,6 +9,8 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/initialisation"
@@ -42,6 +44,12 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
+
+	// if diagnostic mode is set, print out config and return
+	if _, ok := os.LookupEnv(localconstants.EnvConfigDump); ok {
+		localcmdconfig.DisplayConfig()
+		return
+	}
 
 	// initialise the workspace
 	modInitData := initialisation.NewInitData(ctx, "dashboard")

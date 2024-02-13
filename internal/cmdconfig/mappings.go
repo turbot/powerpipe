@@ -4,7 +4,7 @@ import (
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
-	pp_constants "github.com/turbot/powerpipe/internal/constants"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 )
 
 func configDefaults() map[string]any {
@@ -66,7 +66,7 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		constants.EnvPipesToken:    {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvCloudToken: {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
 		// powerpipe specific constants
-		pp_constants.EnvListen: {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
-		pp_constants.EnvPort:   {ConfigVar: []string{constants.ArgPort}, VarType: cmdconfig.EnvVarTypeInt},
+		localconstants.EnvListen: {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
+		localconstants.EnvPort:   {ConfigVar: []string{constants.ArgPort}, VarType: cmdconfig.EnvVarTypeInt},
 	}
 }
