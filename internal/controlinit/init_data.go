@@ -3,9 +3,6 @@ package controlinit
 import (
 	"context"
 	"fmt"
-	"net/url"
-	"strings"
-
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
@@ -25,9 +22,9 @@ type CheckTarget interface {
 
 type InitData struct {
 	initialisation.InitData
-	OutputFormatter          controldisplay.Formatter
-	ControlFilterWhereClause string
-	Client                   *db_client.DbClient
+	OutputFormatter controldisplay.Formatter
+	ControlFilter   workspace.ResourceFilter
+	Client          *db_client.DbClient
 }
 
 // NewInitData returns a new InitData object
@@ -94,7 +91,7 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	}
 	i.OutputFormatter = formatter
 
-	i.setControlFilterClause()
+	i.setControlFilter()
 
 	// set the default database and search patch config, based on the target resource
 	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
@@ -120,51 +117,18 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	return i
 }
 
-func (i *InitData) setControlFilterClause() {
+func (i *InitData) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
-		i.ControlFilterWhereClause = generateWhereClauseFromTags(tags)
+		i.ControlFilter = workspace.ResourceFilterFromTags(tags)
 	} else if viper.IsSet(constants.ArgWhere) {
 		// if a 'where' arg was used, execute this sql to get a list of  control names
 		// use this list to build a name map used to determine whether to run a particular control
-		i.ControlFilterWhereClause = viper.GetString(constants.ArgWhere)
-	}
-
-	// if we derived or were passed a where clause, run the filter
-	if len(i.ControlFilterWhereClause) > 0 {
-		// if we have a control filter where clause, we must create the control introspection tables
-		viper.Set(constants.ArgIntrospection, constants.IntrospectionControl)
-	}
-}
-
-func generateWhereClauseFromTags(tags []string) string {
-	whereMap := map[string][]string{}
-
-	// 'tags' should be KV Pairs of the form: 'benchmark=pic' or 'cis_level=1'
-	for _, tag := range tags {
-		value, _ := url.ParseQuery(tag)
-		for k, v := range value {
-			if _, found := whereMap[k]; !found {
-				whereMap[k] = []string{}
-			}
-			whereMap[k] = append(whereMap[k], v...)
+		i.ControlFilter = workspace.ResourceFilter{
+			Where: viper.GetString(constants.ArgWhere),
 		}
 	}
-	var whereComponents []string
-	for key, values := range whereMap {
-		thisComponent := []string{}
-		for _, x := range values {
-			if len(x) == 0 {
-				// ignore
-				continue
-			}
-			thisComponent = append(thisComponent, fmt.Sprintf("tags->>'%s'='%s'", key, x))
-		}
-		whereComponents = append(whereComponents, fmt.Sprintf("(%s)", strings.Join(thisComponent, " OR ")))
-	}
-
-	return strings.Join(whereComponents, " AND ")
 }
 
 // register exporters for each of the supported check formats

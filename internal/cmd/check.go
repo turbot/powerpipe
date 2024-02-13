@@ -54,8 +54,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
-		// Cobra will interpret values passed to a StringSliceFlag as CSV,
-		// where args passed to StringArrayFlag are not parsed and used raw
+		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
 		AddStringArrayFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
@@ -149,6 +148,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
+	// now filter the target
 	// get the execution trees
 	namedTree, err := getExecutionTree(ctx, initData)
 	error_helpers.FailOnError(err)
@@ -246,7 +246,7 @@ func getExecutionTree(ctx context.Context, initData *controlinit.InitData) (*nam
 	}
 
 	target := initData.Target
-	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilterWhereClause, target)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.Client, initData.ControlFilter, target)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 	}

@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/printers"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -24,7 +25,7 @@ func ListResources[T modconfig.HclResource](cmd *cobra.Command) {
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
-	printer, err := GetPrinter[T](cmd)
+	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
@@ -62,7 +63,7 @@ func ShowResource[T modconfig.HclResource](cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(sperr.New("expected a single target, got %d", len(targets)))
 	}
 
-	printer, err := GetPrinter[T](cmd)
+	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
 		return
