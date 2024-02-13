@@ -2,16 +2,15 @@ package cmd
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"os"
 
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
@@ -44,13 +43,13 @@ func rootCommand() *cobra.Command {
 
 	cmdconfig.
 		OnCmd(rootCmd).
-		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
-		AddPersistentStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Path to the workspace database").
+		AddPersistentStringFlag(constants.ArgConfigPath, "", "Colon separated list of paths to search for workspace files, in order of decreasing precedence").
+		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "Sets the Powerpipe workspace profile").
 		//// Define the CLI flag parameters for wrapped enum flag.
 		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
 		//	constants.ArgOutput,
 		//	"Output format; one of: pretty, plain, yaml, json").
-		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the mod")
+		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the workspace working directory")
 
 	rootCmd.AddCommand(
 		serverCmd(),
