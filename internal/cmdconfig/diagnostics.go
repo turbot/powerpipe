@@ -3,11 +3,12 @@ package cmdconfig
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/powerpipe/internal/constants"
 	"os"
 	"sort"
 	"strings"
+
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/powerpipe/internal/constants"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -23,7 +24,7 @@ func DisplayConfig() {
 	diagnostics = strings.ToLower(diagnostics)
 	configFormats := []string{"config", "config_json"}
 	if !helpers.StringSliceContains(configFormats, diagnostics) {
-		error_helpers.ShowWarning("invalid value for STEAMPIPE_CONFIG_DUMP, expected values: config,config_json")
+		error_helpers.ShowWarning("invalid value for POWERPIPE_CONFIG_DUMP, expected values: config,config_json")
 		return
 	}
 
