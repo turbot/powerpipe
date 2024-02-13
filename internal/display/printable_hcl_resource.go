@@ -23,11 +23,11 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 	var rows []printers.TableRow
 	var columns []string
 	for _, item := range p.Items {
-		listData := item.GetListData()
-		row := listData.GetRow()
+		row := item.GetListData().GetRow()
 		if len(columns) == 0 {
-			columns = listData.Columns
+			columns = row.Columns
 		}
+
 		cleanRow(*row)
 		rows = append(rows, *row)
 
@@ -36,7 +36,9 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 		return printers.NewTable(), nil
 	}
 
-	t := printers.NewTable().WithData(rows, columns)
+	// TODO KAI SORT???
+
+	t := printers.NewTable().WithData(rows, columns) // .SortBy("NAME")
 	return t, nil
 }
 

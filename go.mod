@@ -6,6 +6,7 @@ toolchain go1.21.3
 
 replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
+
 require (
 	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
@@ -26,7 +27,7 @@ require (
 	github.com/spf13/viper v1.18.2
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/thediveo/enumflag/v2 v2.0.4
-	github.com/turbot/go-kit v0.9.0-rc.3
+	github.com/turbot/go-kit v0.10.0-rc.0
 	// pp branch
 	github.com/turbot/pipe-fittings v0.2.0-beta.5.0.20240103132957-10776726162b
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
