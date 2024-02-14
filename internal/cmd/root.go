@@ -7,6 +7,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -45,6 +46,7 @@ func rootCommand() *cobra.Command {
 		OnCmd(rootCmd).
 		AddPersistentStringFlag(constants.ArgConfigPath, "", "Colon separated list of paths to search for workspace files, in order of decreasing precedence").
 		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "Sets the Powerpipe workspace profile").
+		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
 		//// Define the CLI flag parameters for wrapped enum flag.
 		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
 		//	constants.ArgOutput,
