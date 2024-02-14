@@ -138,6 +138,13 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// ENV takes precedence over any default configuration
 	cmdconfig.SetDefaultsFromEnv(envMappings())
 
+	// if an explicit workspace profile was set, add to viper as highest precedence default
+	// NOTE: if install_dir/mod_location are set these will already have been passed to viper by BootstrapViper
+	// since the "ConfiguredProfile" is passed in through a cmdline flag, it will always take precedence
+	if loader.ConfiguredProfile != nil {
+		cmdconfig.SetDefaultsFromConfig(loader.ConfiguredProfile.ConfigMap(cmd))
+	}
+
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
 	// and we cannot get this until the other config has been resolved
