@@ -108,10 +108,10 @@ local
 # +--------+----------+--------+
 # | reason | resource | status |
 # +--------+----------+--------+
-# | 4      | 4        | alarm  |
+# | 4.0    | 4.0      | alarm  |
 # +--------+----------+--------+
   assert_output 'group_id,title,description,control_id,control_title,control_description,reason,resource,status,severity
-top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod 1,,dependency_1.control.version,,,4,4,alarm,'
+top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod 1,,dependency_1.control.version,,,4.0,4.0,alarm,'
 }
 
 @test "complex mod dependency resolution - test benchmark and controls resolution 2" {
@@ -123,10 +123,10 @@ top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod
 # +--------+----------+--------+
 # | reason | resource | status |
 # +--------+----------+--------+
-# | 3      | 3        | ok     |
+# | 3.0    | 3.0      | ok     |
 # +--------+----------+--------+
   assert_output 'group_id,title,description,control_id,control_title,control_description,reason,resource,status,severity
-top_level.benchmark.bm_version_dependency_mod_2,Benchmark version dependency mod 2,,dependency_2.control.version,,,3,3,ok,'
+top_level.benchmark.bm_version_dependency_mod_2,Benchmark version dependency mod 2,,dependency_2.control.version,,,3.0,3.0,ok,'
 }
 
 function teardown() {
