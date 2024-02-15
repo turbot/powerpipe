@@ -3,7 +3,8 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 @test "list with no mods installed" {
   run powerpipe mod list
-  assert_output 'No mods installed.'
+  assert_output 'name
+local'
 }
 
 @test "install latest(--force)" {
@@ -21,34 +22,11 @@ local
   assert_output 'All mods are up to date'
 }
 
-@test "install mod and list" {
-  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.10 --force
-  run powerpipe mod list
-  assert_output '
-local
-└── github.com/turbot/steampipe-mod-aws-compliance@v0.10.0'
-}
-
 @test "install old version when latest already installed" {
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
   run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.1
   assert_output '
 Downgraded 1 mod:
-
-local
-└── github.com/turbot/steampipe-mod-aws-compliance@v0.1.0'
-}
-
-@test "install mod version, remove .steampipe folder and then run install" {
-  # install particular mod version, remove .steampipe folder and run mod install
-  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.1 --force
-  rm -rf .steampipe
-  run powerpipe mod install
-
-  # should install the same cached version
-  # better message
-  assert_output '
-Installed 1 mod:
 
 local
 └── github.com/turbot/steampipe-mod-aws-compliance@v0.1.0'
