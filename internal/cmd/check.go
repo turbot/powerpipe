@@ -6,9 +6,11 @@ import (
 	"io"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
@@ -26,6 +28,9 @@ import (
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
+
+// variable used to assign the output mode flag
+var checkOutputMode = localconstants.CheckOutputModeText
 
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
@@ -51,14 +56,17 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the query timer").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
 		AddStringArrayFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
-		AddStringFlag(constants.ArgOutput, constants.OutputFormatText, "Output format: brief, csv, html, json, md, text, snapshot or none").
+		// Define the CLI flag parameters for wrapped enum flag.
+		AddVarFlag(enumflag.New(&checkOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
 		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
@@ -100,6 +108,8 @@ You may specify one or more benchmarks to run, separated by a space.`, typeName)
 
 func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	utils.LogTime("runCheckCmd start")
+
+	startTime := time.Now()
 
 	// setup a cancel context and start cancel handler
 	ctx, cancel := context.WithCancel(cmd.Context())
@@ -180,7 +190,9 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		return
 	}
 
-	printTiming(namedTree.tree)
+	if shouldPrintCheckTiming() {
+		printTiming(startTime)
+	}
 
 	err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))
 	if err != nil {
@@ -320,41 +332,12 @@ func validateCheckArgs(ctx context.Context) error {
 	return nil
 }
 
-func printTiming(tree *controlexecute.ExecutionTree) {
-	// TODO KAI
-	//if !shouldPrintTiming() {
-	//	return
-	//}
-	//headers := []string{"", "Duration"}
-	//var rows [][]string
-	//
-	//for _, rg := range tree.Root.Groups {
-	//	if rg.GroupItem.GetUnqualifiedName() == "benchmark.root" {
-	//		// this is the created root benchmark
-	//		// adds the children
-	//		for _, g := range rg.Groups {
-	//			rows = append(rows, []string{g.GroupItem.GetUnqualifiedName(), rg.Duration.String()})
-	//		}
-	//		continue
-	//	}
-	//	rows = append(rows, []string{rg.GroupItem.GetUnqualifiedName(), rg.Duration.String()})
-	//}
-	//for _, c := range tree.Root.ControlRuns {
-	//	rows = append(rows, []string{c.Control.GetUnqualifiedName(), c.Duration.String()})
-	//}
-	//// blank line after renderer output
-	//fmt.Println()
-	//fmt.Println("Timing:")
-	//display.ShowWrappedTable(headers, rows, &display.ShowWrappedTableOptions{AutoMerge: false})
-}
+func shouldPrintCheckTiming() bool {
+	outputFormat := viper.GetString(constants.ArgOutput)
 
-//
-//func shouldPrintTiming() bool {
-//	outputFormat := viper.GetString(constants.ArgOutput)
-//
-//	return (viper.GetBool(constants.ArgTiming) && !viper.GetBool(constants.ArgDryRun)) &&
-//		(outputFormat == constants.OutputFormatText || outputFormat == constants.OutputFormatBrief)
-//}
+	return (viper.GetBool(constants.ArgTiming) && !viper.GetBool(constants.ArgDryRun)) &&
+		(outputFormat == constants.OutputFormatText || outputFormat == constants.OutputFormatBrief)
+}
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)

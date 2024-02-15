@@ -45,13 +45,9 @@ func rootCommand() *cobra.Command {
 	cmdconfig.
 		OnCmd(rootCmd).
 		AddPersistentStringFlag(constants.ArgConfigPath, "", "Colon separated list of paths to search for workspace files, in order of decreasing precedence").
-		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "Sets the Powerpipe workspace profile").
 		AddPersistentStringFlag(constants.ArgInstallDir, app_specific.DefaultInstallDir, "Path to the installation directory").
-		//// Define the CLI flag parameters for wrapped enum flag.
-		//AddPersistentVarFlag(enumflag.New(&outputMode, constants.ArgOutput, types.OutputModeIds, enumflag.EnumCaseInsensitive),
-		//	constants.ArgOutput,
-		//	"Output format; one of: pretty, plain, yaml, json").
-		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the workspace working directory")
+		AddPersistentStringFlag(constants.ArgModLocation, wd, "Path to the workspace working directory").
+		AddPersistentStringFlag(constants.ArgWorkspaceProfile, "default", "Sets the Powerpipe workspace profile")
 
 	rootCmd.AddCommand(
 		serverCmd(),

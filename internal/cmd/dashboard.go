@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -50,32 +51,31 @@ The current mod is the working directory, or the directory specified by the --mo
 	cmdconfig.OnCmd(cmd).
 		AddCloudFlags().
 		AddModLocationFlag().
+		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)").
 		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the dashboard").
-		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").
-		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a dashboard session (comma-separated)").
-		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
-		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
-		AddBoolFlag(constants.ArgProgress, true, "Display dashboard execution progress respected when a dashboard name argument is passed").
-		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
-		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
-		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		// Define the CLI flag parameters for wrapped enum flag.
+		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
+		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the dashboard").
 		AddVarFlag(enumflag.New(&dashboardOutputMode, constants.ArgOutput, localconstants.DashboardOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
 			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
+		AddBoolFlag(constants.ArgProgress, true, "Display dashboard execution progress respected when a dashboard name argument is passed").
+		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").
+		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a dashboard session (comma-separated)").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
-		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
 		// NOTE: use StringArrayFlag for ArgDashboardInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
-		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time")
+		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the query timer").
+		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
+		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
+		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
+		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values")
 
 	return cmd
 }
@@ -85,6 +85,8 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 
 	// there can only be a single arg - cobra will validate
 	dashboardName := args[0]
+
+	startTime := time.Now()
 
 	var err error
 	logging.LogTime("dashboardRun start")
@@ -157,7 +159,9 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 		//nolint:forbidigo // Intentional UI output
 		fmt.Printf("\n%s\n", strings.Join(exportMsg, "\n"))
 	}
-
+	if viper.GetBool(constants.ArgTiming) {
+		printTiming(startTime)
+	}
 }
 
 // validate the args and extract a dashboard name, if provided
