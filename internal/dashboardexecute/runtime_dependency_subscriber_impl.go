@@ -393,7 +393,7 @@ func (s *RuntimeDependencySubscriberImpl) buildRuntimeDependencyArgs() (*modconf
 	// now set the arg values
 	for _, dep := range argRuntimeDependencies {
 		if dep.Dependency.TargetPropertyName != nil {
-			err := res.SetNamedArgVal(dep.Value, *dep.Dependency.TargetPropertyName)
+			err := res.SetNamedArgVal(*dep.Dependency.TargetPropertyName, dep.Value)
 			if err != nil {
 				return nil, err
 			}

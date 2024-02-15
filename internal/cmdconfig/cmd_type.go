@@ -67,10 +67,13 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 
 	// now check if any args were specified on the command line using the --arg flag
 	// if so verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
-	commandLineArgs := getCommandLineQueryArgs()
+	commandLineQueryArgs, err := getCommandLineQueryArgs()
+	if err != nil {
+		return nil, nil, err
+	}
 
 	// so args were passed using --arg
-	if !commandLineArgs.Empty() {
+	if !commandLineQueryArgs.Empty() {
 		// verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
 		if len(queryArgsMap) > 0 {
 			return nil, nil, sperr.New("both command line args and query invocation args are set")
@@ -81,7 +84,7 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 			return nil, nil, sperr.New("'--arg' can only be used with a single target")
 		}
 
-		queryArgsMap[targets[0].GetUnqualifiedName()] = commandLineArgs
+		queryArgsMap[targets[0].GetUnqualifiedName()] = commandLineQueryArgs
 	}
 
 	return targets, queryArgsMap, nil
@@ -111,25 +114,39 @@ func ensureSnapshotQueryResource(queryString string, w *workspace.Workspace) (*m
 }
 
 // build a QueryArgs from any args passed using the --args flag
-func getCommandLineQueryArgs() *modconfig.QueryArgs {
+func getCommandLineQueryArgs() (*modconfig.QueryArgs, error) {
 	argTuples := viper.GetStringSlice(constants.ArgArg)
 	var res = modconfig.NewQueryArgs()
 
 	if argTuples == nil {
-		return res
+		return res, nil
 	}
 
 	for _, argTuple := range argTuples {
 		parts := strings.Split(argTuple, "=")
-		if len(parts) != 2 {
-			// TODO KAI error
-			return nil
+		switch len(parts) {
+		case 1:
+			// if there is no '=' this must be a positional arg
+			if err := res.AddPositionalArgVal(parts[0]); err != nil {
+				return nil, err
+			}
+
+		case 2:
+			argName := parts[0]
+			argValue := parts[1]
+
+			if err := res.SetNamedArgVal(argName, argValue); err != nil {
+				return nil, err
+			}
+		default:
+			return nil, sperr.New("invalid arg format: %s", argTuple)
 		}
-		argName := parts[0]
-		argValue := parts[1]
-		res.ArgMap[argName] = argValue
 	}
-	return res
+	// we should not have both positional and named args
+	if len(res.ArgMap) > 0 && len(res.ArgList) > 0 {
+		return nil, sperr.New("cannot mix positional and named args")
+	}
+	return res, nil
 
 }
 
