@@ -71,7 +71,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the timer which reports run time").
+		AddBoolFlag(constants.ArgTiming, false, "Turn on the query timer").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
