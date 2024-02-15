@@ -198,8 +198,10 @@ func queryRun(cmd *cobra.Command, args []string) {
 }
 
 func printTiming(startTime time.Time) {
-	// round duration down to ms
-	duration := (time.Since(startTime) / time.Millisecond) * time.Millisecond
+	// Calculate duration since startTime and round down to the nearest millisecond
+	durationInMS := time.Since(startTime) / time.Millisecond
+	//nolint:durationcheck // we want to print the duration in milliseconds
+	duration := durationInMS * time.Millisecond
 
 	durationString := duration.String()
 	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
