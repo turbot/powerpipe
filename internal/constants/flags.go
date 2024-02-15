@@ -57,6 +57,32 @@ var DashboardOutputModeIds = map[DashboardOutputMode][]string{
 	DashboardOutputModeNone:          {constants.OutputFormatNone},
 }
 
+type CheckOutputMode enumflag.Flag
+
+const (
+	CheckOutputModeText  CheckOutputMode = iota
+	CheckOutputModeBrief CheckOutputMode = iota
+	CheckOutputModeCsv
+	CheckOutputModeHTM
+	CheckOutputModeJSON
+	CheckOutputModeMd
+	CheckOutputModeTest
+	CheckOutputModeSnapshot
+	CheckOutputModeNone
+)
+
+var CheckOutputModeIds = map[CheckOutputMode][]string{
+	CheckOutputModeText:     {constants.OutputFormatText},
+	CheckOutputModeBrief:    {constants.OutputFormatBrief},
+	CheckOutputModeCsv:      {constants.OutputFormatCSV},
+	CheckOutputModeHTM:      {constants.OutputFormatHTML},
+	CheckOutputModeJSON:     {constants.OutputFormatJSON},
+	CheckOutputModeMd:       {constants.OutputFormatMD},
+	CheckOutputModeTest:     {constants.OutputFormatText},
+	CheckOutputModeSnapshot: {constants.OutputFormatSnapshot},
+	CheckOutputModeNone:     {constants.OutputFormatNone},
+}
+
 func FlagValues[T comparable](mappings map[T][]string) []string {
 	var res = make([]string, 0, len(mappings))
 	for _, v := range mappings {

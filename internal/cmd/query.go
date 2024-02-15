@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -51,12 +52,12 @@ The current mod is the working directory, or the directory specified by the --mo
 		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
+		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
-		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
@@ -81,6 +82,8 @@ The current mod is the working directory, or the directory specified by the --mo
 
 func queryRun(cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
+
+	startTime := time.Now()
 
 	var err error
 	logging.LogTime("queryRun start")
@@ -188,6 +191,18 @@ func queryRun(cmd *cobra.Command, args []string) {
 		fmt.Println(strings.Join(exportMsg, "\n")) //nolint:forbidigo // intentional use of fmt
 		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
 	}
+
+	if viper.GetBool(constants.ArgTiming) {
+		printTiming(startTime)
+	}
+}
+
+func printTiming(startTime time.Time) {
+	// round duration down to ms
+	duration := (time.Since(startTime) / time.Millisecond) * time.Millisecond
+
+	durationString := duration.String()
+	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
 }
 
 // validate the args and extract a query name, if provided

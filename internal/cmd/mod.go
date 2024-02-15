@@ -87,10 +87,10 @@ Examples:
 	}
 
 	cmdconfig.OnCmd(cmd).
-		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
 		AddModLocationFlag()
 
 	return cmd
