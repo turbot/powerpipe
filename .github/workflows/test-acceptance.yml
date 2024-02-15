@@ -71,6 +71,7 @@ jobs:
         test_block:
           - "check"
           - "dashboard"
+          - "mod_install"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
