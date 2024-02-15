@@ -6,6 +6,7 @@ import (
 	"os/signal"
 
 	"github.com/spf13/cobra"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -36,7 +37,8 @@ func serverCmd() *cobra.Command {
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
 		AddStringFlag(constants.ArgListen, "", "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
-		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.")
+		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
+		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database")
 	return cmd
 }
 
