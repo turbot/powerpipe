@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"github.com/thediveo/enumflag/v2"
-	"github.com/turbot/powerpipe/internal/display"
 	"io"
 	"os"
 	"strings"
@@ -331,33 +330,6 @@ func validateCheckArgs(ctx context.Context) error {
 	}
 
 	return nil
-}
-
-func printCheckTiming(tree *controlexecute.ExecutionTree) {
-	if !shouldPrintCheckTiming() {
-		return
-	}
-	headers := []string{"", "Duration"}
-	var rows [][]string
-
-	for _, rg := range tree.Root.Groups {
-		if rg.GroupItem.GetUnqualifiedName() == "benchmark.root" {
-			// this is the created root benchmark
-			// adds the children
-			for _, g := range rg.Groups {
-				rows = append(rows, []string{g.GroupItem.GetUnqualifiedName(), rg.Duration.String()})
-			}
-			continue
-		}
-		rows = append(rows, []string{rg.GroupItem.GetUnqualifiedName(), rg.Duration.String()})
-	}
-	for _, c := range tree.Root.ControlRuns {
-		rows = append(rows, []string{c.Control.GetUnqualifiedName(), c.Duration.String()})
-	}
-	// blank line after renderer output
-	fmt.Println()
-	fmt.Println("Timing:")
-	display.ShowWrappedTable(headers, rows, &display.ShowWrappedTableOptions{AutoMerge: false})
 }
 
 func shouldPrintCheckTiming() bool {
