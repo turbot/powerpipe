@@ -142,6 +142,8 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 
 // resolve target resource, args and any target specific search path
 func (i *InitData) resolveTarget(args []string, targetType string) {
+
+
 	// resolve target resources
 	targets, queryArgs, err := cmdconfig.ResolveTargets(args, targetType, i.Workspace)
 	if err != nil {

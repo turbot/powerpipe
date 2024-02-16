@@ -32,6 +32,8 @@ func ResolveTargets(cmdArgs []string, commandTargetType string, w *workspace.Wor
 	var targets []modconfig.ModTreeItem
 	var queryArgsMap = map[string]*modconfig.QueryArgs{}
 
+	resolvedQueries, err := w.GetQueriesFromArgs(cmdArgs)
+
 	for _, targetName := range cmdArgs {
 		// try to parse args out of the invocation (only query supported at present - control too?)
 		// for example:
