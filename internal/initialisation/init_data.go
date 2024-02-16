@@ -29,7 +29,7 @@ type InitData struct {
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
 	Target            modconfig.ModTreeItem
-	Args              map[string]*modconfig.QueryArgs
+	QueryArgs         map[string]*modconfig.QueryArgs
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -148,7 +148,7 @@ func (i *InitData) resolveTarget(args []string, targetType string) {
 		i.Result.Error = err
 		return
 	}
-	i.Args = queryArgs
+	i.QueryArgs = queryArgs
 
 	if len(targets) == 0 {
 		// no targets found

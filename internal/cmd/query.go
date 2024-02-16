@@ -125,8 +125,8 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// if there are args, put them into viper for retrieval by the dashboard execution
-	if len(initData.Args) > 0 {
-		queryArgs, ok := initData.Args[initData.Target.GetUnqualifiedName()]
+	if len(initData.QueryArgs) > 0 {
+		queryArgs, ok := initData.QueryArgs[initData.Target.GetUnqualifiedName()]
 		if !ok {
 			// not expected
 			error_helpers.FailOnError(sperr.New("arguments have been provided but none found for the query"))
