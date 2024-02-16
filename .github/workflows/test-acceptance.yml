@@ -72,6 +72,7 @@ jobs:
           - "check"
           - "dashboard"
           - "mod_install"
+          - "sp_files"
           - "dashboard_parsing_validation"
     runs-on: ${{ matrix.platform }}
     steps:
