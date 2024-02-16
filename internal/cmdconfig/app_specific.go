@@ -46,12 +46,12 @@ func SetAppSpecificConstants() {
 
 	// extensions
 
-	app_specific.ModDataExtensions = []string{".sp", ".pp"}
-
-	app_specific.ConfigExtension = ".ppc"
+	// NOTE: where we support multiple extensions, ensure the default is the FIRST in the list
+	app_specific.ModDataExtensions = []string{".pp", ".sp"}
 	app_specific.VariablesExtensions = []string{".ppvars", ".spvars"}
 	app_specific.AutoVariablesExtensions = []string{".auto.ppvars", ".auto.spvars"}
 
+	app_specific.ConfigExtension = ".ppc"
 	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
 	app_specific.WorkspaceDataDir = ".powerpipe"
 	// EnvInputVarPrefix is the prefix for environment variables that represent values for input variables.
