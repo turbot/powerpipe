@@ -23,7 +23,6 @@ func SetAppSpecificConstants() {
 	// version
 	versionString := viper.GetString("main.version")
 	app_specific.AppVersion = semver.MustParse(versionString)
-	app_specific.AutoVariablesExtension = ".auto.ppvars"
 
 	// set the default install dir
 	defaultInstallDir, err := files.Tildefy("~/.powerpipe")
@@ -48,9 +47,10 @@ func SetAppSpecificConstants() {
 	// extensions
 
 	app_specific.ModDataExtensions = []string{".sp", ".pp"}
-	app_specific.ModFileName = "mod.sp"
+
 	app_specific.ConfigExtension = ".ppc"
-	app_specific.VariablesExtension = ".ppvars"
+	app_specific.VariablesExtensions = []string{".ppvars", ".spvars"}
+	app_specific.AutoVariablesExtensions = []string{".auto.ppvars", ".auto.spvars"}
 
 	app_specific.WorkspaceIgnoreFile = ".powerpipeignore"
 	app_specific.WorkspaceDataDir = ".powerpipe"
