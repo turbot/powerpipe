@@ -20,10 +20,21 @@ env:
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
-  # TODO Acceptance test job before build and release
+
+  trigger_test_acceptance:
+    name: Run acceptance tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Run Acceptance Test Workflow
+        uses: peter-evans/repository-dispatch@v1
+        with:
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          repository: turbot/powerpipe
+          event-type: start-test-acceptance
 
   build_assets:
     name: Build and Release Dashboard Assets
+    needs: [trigger_test_acceptance]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
