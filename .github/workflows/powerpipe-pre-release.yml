@@ -22,7 +22,8 @@ env:
 jobs:
 
   acceptance_tests:
-    uses: turbot/powerpipe/.github/workflows/test-acceptance.yml@run-tests-in-release-wf
+    name: Run Acceptance Tests
+    uses: turbot/powerpipe/.github/workflows/test-acceptance.yml@main
 
   build_assets:
     name: Build and Release Dashboard Assets
