@@ -1,7 +1,6 @@
 name: Test - Acceptance
 on:
-  repository_dispatch:
-    types: [start-test-acceptance]
+  workflow_call:
   push:
     tags:
       - v*

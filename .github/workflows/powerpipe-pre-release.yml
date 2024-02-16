@@ -21,20 +21,12 @@ env:
 
 jobs:
 
-  trigger_test_acceptance:
-    name: Run acceptance tests
-    runs-on: ubuntu-latest
-    steps:
-      - name: Run Acceptance Test Workflow
-        uses: peter-evans/repository-dispatch@v1
-        with:
-          token: ${{ secrets.GH_ACCESS_TOKEN }}
-          repository: turbot/powerpipe
-          event-type: start-test-acceptance
+  acceptance_tests:
+    uses: turbot/powerpipe/.github/workflows/test-acceptance.yml@main
 
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: [trigger_test_acceptance]
+    needs: [acceptance_tests]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
