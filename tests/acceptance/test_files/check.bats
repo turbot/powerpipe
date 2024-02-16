@@ -162,7 +162,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "steampipe check - export md" {
+@test "powerpipe control run - export md" {
   cd $CONTROL_RENDERING_TEST_MOD
   run powerpipe control run control.sample_control_mixed_results_1 --export test.md --progress=false
   
@@ -179,7 +179,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "steampipe check - export nunit3" {
+@test "powerpipe control run - export nunit3" {
   cd $CONTROL_RENDERING_TEST_MOD
   run powerpipe control run control.sample_control_mixed_results_1 --export test.xml --progress=false
 
@@ -196,7 +196,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
-@test "steampipe check - export snapshot" {
+@test "powerpipe control run - export snapshot" {
   cd $CONTROL_RENDERING_TEST_MOD
   run powerpipe control run control.sample_control_mixed_results_1 --export test.sps --progress=false
 
