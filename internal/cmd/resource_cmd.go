@@ -2,6 +2,8 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/pipe-fittings/cmdconfig"
@@ -12,7 +14,6 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
-	"strings"
 )
 
 // variable used to assign the output mode flag
@@ -154,12 +155,56 @@ func showCommandUse(typeName string) string {
 }
 
 func resourceCommandShortDescription(typeName string) string {
-	// TODO
-	return fmt.Sprintf("%s commands", typeName)
+	switch typeName {
+	case schema.BlockTypeQuery:
+		return "List, view, and run Powerpipe queries"
+
+	case schema.BlockTypeControl:
+		return "List, view, and run Powerpipe controls"
+
+	case schema.BlockTypeBenchmark:
+		return "List, view, and run Powerpipe benchmarks"
+
+	case schema.BlockTypeDashboard:
+		return "List, view, and run Powerpipe dashboards in batch mode"
+
+	case schema.BlockTypeVariable:
+		return "Manage Powerpipe variables in the current mod and its direct dependents"
+
+	default:
+		return fmt.Sprintf("%s commands", typeName)
+	}
 }
+
 func resourceCommandLongDescription(typeName string) string {
-	// TODO
-	return fmt.Sprintf("%s commands", typeName)
+	switch typeName {
+	case schema.BlockTypeQuery:
+		return "List, view, and run Powerpipe queries. You can run named queries or any arbitrary SQL."
+
+	case schema.BlockTypeControl:
+		return `List, view, and run Powerpipe controls and its direct dependents.
+
+Run a control from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a control from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	case schema.BlockTypeBenchmark:
+		return `List, view, and run Powerpipe benchmarks and its direct dependents.
+		
+Run a benchmark from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a benchmark from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	case schema.BlockTypeDashboard:
+		return `List, view, and run Powerpipe dashboards in batch mode. 
+		
+To run dashboards interactively, run powerpipe server.`
+
+	case schema.BlockTypeVariable:
+		return `List variables from the current mod and its direct dependents or show details of a variable
+from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	default:
+		return fmt.Sprintf("%s commands", typeName)
+	}
 }
 
 func listCommandShortDescription(typeName string) string {
