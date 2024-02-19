@@ -21,34 +21,34 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
 
-type InitData struct {
+type InitData[T modconfig.ModTreeItem] struct {
 	Workspace       *workspace.Workspace
 	WorkspaceEvents *dashboardworkspace.WorkspaceEvents
 	Result          *InitResult
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
-	Target            modconfig.ModTreeItem
-	QueryArgs         map[string]*modconfig.QueryArgs
+	Target            T
+	QueryArgs         *modconfig.QueryArgs
 }
 
-func NewErrorInitData(err error) *InitData {
-	return &InitData{
+func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
+	return &InitData[T]{
 		Result: &InitResult{
 			ErrorAndWarnings: error_helpers.NewErrorsAndWarning(err),
 		},
 	}
 }
 
-func NewInitData(ctx context.Context, targetType string, targetNames ...string) *InitData {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetType string, targetNames ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
 	if errAndWarnings.GetError() != nil {
-		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
 
-	i := &InitData{
+	i := &InitData[T]{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
@@ -62,7 +62,7 @@ func NewInitData(ctx context.Context, targetType string, targetNames ...string) 
 	return i
 }
 
-func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
+func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
 	for _, e := range exporters {
 		if err := i.ExportManager.Register(e); err != nil {
 			return err
@@ -72,7 +72,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData) Init(ctx context.Context, targetType string, args ...string) {
+func (i *InitData[T]) Init(ctx context.Context, targetType string, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -141,29 +141,24 @@ func (i *InitData) Init(ctx context.Context, targetType string, args ...string) 
 }
 
 // resolve target resource, args and any target specific search path
-func (i *InitData) resolveTarget(args []string, targetType string) {
-
+func (i *InitData[T]) resolveTarget(args []string, targetType string) {
 
 	// resolve target resources
-	targets, queryArgs, err := cmdconfig.ResolveTargets(args, targetType, i.Workspace)
+	target, err := cmdconfig.ResolveTarget[T](args, targetType, i.Workspace)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
-	i.QueryArgs = queryArgs
 
-	if len(targets) == 0 {
-		// no targets found
+	if target == nil {
+		i.Result.Error = sperr.New("no target found")
 		return
 	}
 
 	// we only expect a single target - this should be enforced by Cobra
-	if len(targets) > 1 {
-		i.Result.Error = sperr.New("expected a single execution target, got %d", len(targets))
-		return
-	}
-	i.Target = targets[0]
 
+	i.Target = target
+	//i.QueryArgs = queryArgs[targets[0].GetUnqualifiedName()]
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
@@ -187,7 +182,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
 	return validationErrors
 }
 
-func (i *InitData) Cleanup(ctx context.Context) {
+func (i *InitData[T]) Cleanup(ctx context.Context) {
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}

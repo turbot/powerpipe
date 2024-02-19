@@ -125,13 +125,8 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// if there are args, put them into viper for retrieval by the dashboard execution
-	if len(initData.QueryArgs) > 0 {
-		queryArgs, ok := initData.QueryArgs[initData.Target.GetUnqualifiedName()]
-		if !ok {
-			// not expected
-			error_helpers.FailOnError(sperr.New("arguments have been provided but none found for the query"))
-		}
-		viper.Set(constants.ConfigKeyQueryArgs, queryArgs)
+	if initData.QueryArgs != nil {
+		viper.Set(constants.ConfigKeyQueryArgs, initData.QueryArgs)
 	}
 	// execute query as a snapshot
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData, nil)
