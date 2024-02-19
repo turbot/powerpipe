@@ -6,6 +6,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/app_specific"
 	cmdconfig "github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -282,13 +283,17 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 		return nil, fmt.Errorf("mod %s cancelled", cmd.Name())
 	}
 
-	if parse.ModfileExists(workspacePath) {
+	if _, exists := parse.ModFileExists(workspacePath); exists {
 		error_helpers.ShowWarning("Working folder already contains a mod definition file")
 		return nil, nil
 	}
 	mod := modconfig.CreateDefaultMod(workspacePath)
 	if err := mod.Save(); err != nil {
 		return nil, err
+	}
+	// only print message for mod init (not for mod install)
+	if cmd.Name() == "init" {
+		fmt.Printf("Created mod definition file '%s'\n", app_specific.DefaultModFilePath(workspacePath))
 	}
 
 	// load up the written mod file so that we get the updated
