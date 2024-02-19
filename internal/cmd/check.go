@@ -3,6 +3,8 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/display"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"io"
 	"os"
 	"strings"
@@ -189,9 +191,10 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		totalErrors++
 		return
 	}
-
 	if shouldPrintCheckTiming() {
-		printTiming(startTime)
+		display.PrintTiming(&localqueryresult.TimingMetadata{
+			Duration: time.Since(startTime),
+		})
 	}
 
 	err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))

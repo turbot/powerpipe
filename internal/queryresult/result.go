@@ -5,33 +5,26 @@ import (
 	"time"
 )
 
-type TimingMetadata struct {
-	RowsFetched       int64
-	CachedRowsFetched int64
-	HydrateCalls      int64
-}
-
-type TimingResult struct {
-	Duration time.Duration
-	Metadata *TimingMetadata
-}
 type RowResult struct {
 	Data  []interface{}
 	Error error
 }
+type TimingMetadata struct {
+	Duration time.Duration
+}
+
 type Result struct {
-	RowChan      *chan *RowResult
-	Cols         []*queryresult.ColumnDef
-	TimingResult chan *TimingResult
+	RowChan *chan *RowResult
+	Cols    []*queryresult.ColumnDef
+	Timing  *TimingMetadata
 }
 
 func NewResult(cols []*queryresult.ColumnDef) *Result {
 
 	rowChan := make(chan *RowResult)
 	return &Result{
-		RowChan:      &rowChan,
-		Cols:         cols,
-		TimingResult: make(chan *TimingResult, 1),
+		RowChan: &rowChan,
+		Cols:    cols,
 	}
 }
 
@@ -51,7 +44,6 @@ func (r *Result) StreamError(err error) {
 }
 
 type SyncQueryResult struct {
-	Rows         []interface{}
-	Cols         []*queryresult.ColumnDef
-	TimingResult *TimingResult
+	Rows []interface{}
+	Cols []*queryresult.ColumnDef
 }

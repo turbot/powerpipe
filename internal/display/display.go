@@ -10,10 +10,9 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/powerpipe/internal/queryresult"
-	"golang.org/x/text/language"
-	"golang.org/x/text/message"
 	"os"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -25,13 +24,9 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 )
 
-// ShowOutput displays the output using the proper formatter as applicable
-func ShowOutput(ctx context.Context, result *queryresult.Result, opts ...DisplayOption) int {
+// ShowQueryOutput displays the output using the proper formatter as applicable
+func ShowQueryOutput(ctx context.Context, result *queryresult.Result) int {
 	rowErrors := 0
-	config := NewDisplayConfiguration()
-	for _, o := range opts {
-		o(config)
-	}
 
 	switch cmdconfig.Viper().GetString(constants.ArgOutput) {
 	case constants.OutputFormatJSON:
@@ -44,8 +39,8 @@ func ShowOutput(ctx context.Context, result *queryresult.Result, opts ...Display
 		rowErrors = displayTable(ctx, result)
 	}
 
-	if config.timing {
-		fmt.Println(buildTimingString(result)) //nolint:forbidigo // intentional use of fmt
+	if shouldShowQueryTiming() {
+		PrintTiming(result.Timing)
 	}
 	// return the number of rows that returned errors
 	return rowErrors
@@ -228,9 +223,22 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 	return rowErrors
 }
 
+type resultMetadata struct {
+	RowsFetched int    `json:"rows_fetched"`
+	Duration    string `json:"duration"`
+}
+type jsonOutput struct {
+	Rows     []map[string]interface{} `json:"rows"`
+	Metadata resultMetadata           `json:"metadata"`
+}
+
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
 	rowErrors := 0
-	jsonOutput := make([]map[string]interface{}, 0)
+	var op = jsonOutput{
+		Metadata: resultMetadata{
+			Duration: getDurationString(result.Timing.Duration),
+		},
+	}
 
 	// define function to add each row to the JSON output
 	rowFunc := func(row []interface{}, result *queryresult.Result) {
@@ -239,7 +247,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 			value, _ := ParseJSONOutputColumnValue(row[idx], col)
 			record[col.Name] = value
 		}
-		jsonOutput = append(jsonOutput, record)
+		op.Rows = append(op.Rows, record)
 	}
 
 	// call this function for each row
@@ -248,11 +256,13 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		rowErrors++
 		return rowErrors
 	}
+	op.Metadata.RowsFetched = len(op.Rows)
+
 	// display the JSON
 	encoder := json.NewEncoder(os.Stdout)
 	encoder.SetIndent("", " ")
 	encoder.SetEscapeHTML(false)
-	if err := encoder.Encode(jsonOutput); err != nil {
+	if err := encoder.Encode(op); err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "Error displaying result as JSON")
 		return 0
 	}
@@ -370,42 +380,22 @@ func iterateResults(result *queryresult.Result, displayResult displayResultsFunc
 	return nil
 }
 
-func buildTimingString(result *queryresult.Result) string {
-	timingResult := <-result.TimingResult
-	if timingResult == nil {
-		return ""
-	}
-	var sb strings.Builder
-	// large numbers should be formatted with commas
-	p := message.NewPrinter(language.English)
+func shouldShowQueryTiming() bool {
+	outputFormat := viper.GetString(constants.ArgOutput)
+	return viper.GetBool(constants.ArgTiming) && outputFormat == constants.OutputFormatTable
+}
 
-	milliseconds := float64(timingResult.Duration.Microseconds()) / 1000
-	seconds := timingResult.Duration.Seconds()
-	if seconds < 0.5 {
-		sb.WriteString(p.Sprintf("\nTime: %dms.", int64(milliseconds)))
-	} else {
-		sb.WriteString(p.Sprintf("\nTime: %.1fs.", seconds))
-	}
+func PrintTiming(timingMetadata *queryresult.TimingMetadata) {
+	durationString := getDurationString(timingMetadata.Duration)
+	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
+}
 
-	if timingMetadata := timingResult.Metadata; timingMetadata != nil {
-		totalRows := timingMetadata.RowsFetched + timingMetadata.CachedRowsFetched
-		sb.WriteString(" Rows fetched: ")
-		if totalRows == 0 {
-			sb.WriteString("0")
-		} else {
-			if totalRows > 0 {
-				sb.WriteString(p.Sprintf("%d", timingMetadata.RowsFetched+timingMetadata.CachedRowsFetched))
-			}
-			if timingMetadata.CachedRowsFetched > 0 {
-				if timingMetadata.RowsFetched == 0 {
-					sb.WriteString(" (cached)")
-				} else {
-					sb.WriteString(p.Sprintf(" (%d cached)", timingMetadata.CachedRowsFetched))
-				}
-			}
-		}
-		sb.WriteString(p.Sprintf(". Hydrate calls: %d.", timingMetadata.HydrateCalls))
-	}
+func getDurationString(duration time.Duration) string {
+	// Calculate duration since startTime and round down to the nearest millisecond
+	durationInMS := duration / time.Millisecond
+	//nolint:durationcheck // we want to print the duration in milliseconds
+	duration = durationInMS * time.Millisecond
 
-	return sb.String()
+	durationString := duration.String()
+	return durationString
 }
