@@ -19,8 +19,7 @@ import { getColumn } from "@powerpipe/utils/data";
 import { Graph, json } from "graphlib";
 import { GraphProperties, GraphType, NodeAndEdgeData } from "../graphs/types";
 import { HierarchyProperties, HierarchyType } from "../hierarchies/types";
-import { Theme } from "@powerpipe/hooks/useTheme";
-import { ThemeNames } from "@powerpipe/hooks/useStorybookTheme";
+import { Theme, ThemeNames } from "@powerpipe/hooks/useTheme";
 
 export type Width = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
