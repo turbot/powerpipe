@@ -22,6 +22,9 @@ load "$LIB_BATS_SUPPORT/load.bash"
 #   cd -
 # }
 
+# TODO: Implement STEAMPIPE_DISPLAY_WIDTH in powerpipe to test the below tests
+# https://github.com/turbot/powerpipe/issues/154
+
 # @test "powerpipe check long control title" {
 #   cd $CONTROL_RENDERING_TEST_MOD
 #   export STEAMPIPE_DISPLAY_WIDTH=100
@@ -125,4 +128,101 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_equal "$(cat test.csv)" "$(cat $TEST_DATA_DIR/expected_check_csv_sorted_tags.csv)"
   rm -f test.csv
   cd -
+}
+
+@test "powerpipe control run - export json" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.json --progress=false
+  output=""
+  run jd "$TEST_DATA_DIR/expected_check_json.json" test.json
+  echo $output
+  assert_success
+  rm -f test.json
+  cd -
+}
+
+@test "powerpipe control run - export html" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.html --progress=false
+  
+  # checking for OS type, since sed command is different for linux and OSX
+  # removing the 642nd line, since it contains file locations and timestamps
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    run sed -i ".html" "642d" test.html
+    run sed -i ".html" "642d" test.html
+    run sed -i ".html" "642d" test.html
+  else
+    run sed -i "642d" test.html
+    run sed -i "642d" test.html
+    run sed -i "642d" test.html
+  fi
+
+  assert_equal "$(cat test.html)" "$(cat $TEST_DATA_DIR/expected_check_html.html)"
+  rm -rf test.html*
+  cd -
+}
+
+@test "powerpipe control run - export md" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.md --progress=false
+  
+  # checking for OS type, since sed command is different for linux and OSX
+  # removing the 42nd line, since it contains file locations and timestamps
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    run sed -i ".md" "42d" test.md
+  else
+    run sed -i "42d" test.md
+  fi
+
+  assert_equal "$(cat test.md)" "$(cat $TEST_DATA_DIR/expected_check_markdown.md)"
+  rm -rf test.md*
+  cd -
+}
+
+@test "powerpipe control run - export nunit3" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.xml --progress=false
+
+  # checking for OS type, since sed command is different for linux and OSX
+  # removing the 6th line, since it contains duration, and duration will be different in each run
+  if [[ "$OSTYPE" == "darwin"* ]]; then
+    run sed -i ".xml" "6d" test.xml
+  else
+    run sed -i "6d" test.xml
+  fi
+
+  assert_equal "$(cat test.xml)" "$(cat $TEST_DATA_DIR/expected_check_nunit3.xml)"
+  rm -f test.xml*
+  cd -
+}
+
+@test "powerpipe control run - export snapshot" {
+  cd $CONTROL_RENDERING_TEST_MOD
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.sps --progress=false
+
+  # get the patch diff between the two snapshots
+  run jd -f patch $TEST_DATA_DIR/expected_check_snapshot.sps test.sps
+
+  # run the script to evaluate the patch
+  # returns nothing if there is no diff(except start_time, end_time & search_path)
+  diff=$($FILE_PATH/json_patch.sh $output)
+  echo $diff
+  rm -f test.sps
+
+  # check if there is no diff returned by the script
+  assert_equal "$diff" ""
+  cd -
+}
+
+# testing the check summary output feature in powerpipe
+@test "benchmark run summary output" {
+  cd $FUNCTIONALITY_TEST_MOD
+  run powerpipe benchmark run benchmark.control_summary_benchmark
+
+  echo $output
+
+  # TODO: Find a way to store the output in a file and match it with the 
+  # expected file. For now the work-around is to check whether the output
+  # contains `summary`
+  assert_output --partial 'Summary'
 }
