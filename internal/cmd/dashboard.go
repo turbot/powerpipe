@@ -116,7 +116,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData(ctx, "dashboard", dashboardName)
+	initData := initialisation.NewInitData[*modconfig.Dashboard](ctx, "dashboard", dashboardName)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(dashboardExporters()...)
@@ -137,7 +137,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	initData.Result.DisplayMessages()
 
 	// so a dashboard name was specified - just call GenerateSnapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData, inputs)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, inputs)
 	error_helpers.FailOnError(err)
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)

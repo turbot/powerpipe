@@ -40,7 +40,7 @@ func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
 	}
 }
 
-func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetType string, targetNames ...string) *InitData[T] {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetNames ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
@@ -57,7 +57,7 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetType string
 	i.Result.Warnings = errAndWarnings.Warnings
 
 	// now do the actual initialisation
-	i.Init(ctx, targetType, targetNames...)
+	i.Init(ctx, targetNames...)
 
 	return i
 }
@@ -72,7 +72,7 @@ func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData[T]) Init(ctx context.Context, targetType string, args ...string) {
+func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -91,7 +91,7 @@ func (i *InitData[T]) Init(ctx context.Context, targetType string, args ...strin
 		return
 	}
 
-	i.resolveTarget(args, targetType)
+	i.resolveTarget(args)
 	if i.Result.Error != nil {
 		return
 	}
@@ -141,16 +141,17 @@ func (i *InitData[T]) Init(ctx context.Context, targetType string, args ...strin
 }
 
 // resolve target resource, args and any target specific search path
-func (i *InitData[T]) resolveTarget(args []string, targetType string) {
+func (i *InitData[T]) resolveTarget(args []string) {
 
 	// resolve target resources
-	target, err := cmdconfig.ResolveTarget[T](args, targetType, i.Workspace)
+	target, err := cmdconfig.ResolveTarget[T](args, i.Workspace)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
-	if target == nil {
+	// TODO KAI CHECK THIS
+	if target.Name() == "" {
 		i.Result.Error = sperr.New("no target found")
 		return
 	}

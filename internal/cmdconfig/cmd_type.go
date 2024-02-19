@@ -2,6 +2,8 @@ package cmdconfig
 
 import (
 	"fmt"
+	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/utils"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -11,14 +13,6 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-// GetGenericTypeName returns lower case form of type unqualified name
-func GetGenericTypeName[T any]() string {
-	longName := fmt.Sprintf("%T", *new(T))
-	split := strings.Split(longName, ".")
-	return strings.ToLower(split[len(split)-1])
-}
-
-// TODO MAKE TYPESAFE
 // ResolveTarget	extracts a list of targets and (if present) query args from the command line parameters
 //   - if no resource type is specified in the name, it is added from the command type
 //   - validate the resource type specified in the name matches the command type
@@ -27,15 +21,15 @@ func GetGenericTypeName[T any]() string {
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
 func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) (T, error) {
 	var targets []modconfig.ModTreeItem
-	//
-	//typeName := localcmdconfig.GetGenericTypeName[T]()
-	//// special case for variable
-	//if typeName == schema.BlockTypeVariable {
-	//	// variables are named var.xxxx, not variable.xxxx
-	//	typeName = schema.AttributeVar
-	//}
 
-	targets, argsMap, err := w.GetResourcesFromArgs[T](cmdArgs)
+	typeName := utils.GetGenericTypeName[T]()
+	// special case for variable
+	if typeName == schema.BlockTypeVariable {
+		// variables are named var.xxxx, not variable.xxxx
+		typeName = schema.AttributeVar
+	}
+
+	targets, argsMap, err := workspace.GetResourcesFromArgs[T](cmdArgs, w)
 
 	var empty T
 	// we only support a single target - should be enforced by cobra
@@ -45,7 +39,7 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 
 	target, ok := targets[0].(T)
 	if !ok {
-		return empty, sperr.New("target '%s' is not of the expected type %s")
+		return empty, sperr.New("target '%s' is not of the expected type '%s'", targets[0].GetUnqualifiedName(), typeName)
 
 	}
 	queryArgs := argsMap[target.GetUnqualifiedName()]
@@ -70,7 +64,7 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 	}
 
 	if queryArgs != nil {
-		if qp, ok := target.(modconfig.QueryProvider); ok {
+		if qp, ok := any(target).(modconfig.QueryProvider); ok {
 			qp.SetArgs(queryArgs)
 		} else {
 			// args provided but target is not a query provider

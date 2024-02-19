@@ -34,7 +34,7 @@ var checkOutputMode = localconstants.CheckOutputModeText
 
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+	typeName := utils.GetGenericTypeName[T]()
 	cmd := &cobra.Command{
 		Use:              checkCmdUse(typeName),
 		TraverseChildren: true,
@@ -160,7 +160,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	// now filter the target
 	// get the execution trees
-	namedTree, err := getExecutionTree(ctx, initData)
+	namedTree, err := getExecutionTree[T](ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// execute controls synchronously (execute returns the number of alarms and errors)
@@ -202,7 +202,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 }
 
 // exportExecutionTree relies on the fact that the given tree is already executed
-func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData, exportArgs []string) error {
+func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData[T], exportArgs []string) error {
 	statushooks.Show(ctx)
 	defer statushooks.Done(ctx)
 
@@ -224,7 +224,7 @@ func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, ini
 }
 
 // executeTree executes and displays the (table) results of an execution
-func executeTree(ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData) error {
+func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData[T]) error {
 	// create a context with check status hooks
 	checkCtx := createCheckContext(ctx)
 	err := tree.Execute(checkCtx)
@@ -251,7 +251,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTree(ctx context.Context, initData *controlinit.InitData) (*namedExecutionTree, error) {
+func getExecutionTree[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) (*namedExecutionTree, error) {
 	// todo kai needed???
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()

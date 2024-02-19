@@ -106,7 +106,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData(ctx, "query", args...)
+	initData := initialisation.NewInitData[*modconfig.Query](ctx, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
@@ -129,7 +129,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		viper.Set(constants.ConfigKeyQueryArgs, initData.QueryArgs)
 	}
 	// execute query as a snapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData, nil)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, nil)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)
