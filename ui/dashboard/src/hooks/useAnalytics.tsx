@@ -6,7 +6,7 @@ import {
   CloudServerWorkspaceMetadata,
   ModServerMetadata,
   ServerMetadata,
-} from "types";
+} from "@powerpipe/types";
 import {
   createContext,
   useCallback,

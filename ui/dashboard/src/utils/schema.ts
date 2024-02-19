@@ -4,7 +4,7 @@ import {
   DashboardExecutionEventWithSchema,
   DashboardExecutionStartedEvent,
   DashboardSnapshot,
-} from "types";
+} from "@powerpipe/types";
 import {
   EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST,
   EXECUTION_SCHEMA_VERSION_20220614,
@@ -12,7 +12,7 @@ import {
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
   EXECUTION_STARTED_SCHEMA_VERSION_LATEST,
-} from "constants/versions";
+} from "@powerpipe/constants/versions";
 import { migratePanelStatuses } from "./dashboardEventHandlers";
 
 const executedStartedMigrations = [

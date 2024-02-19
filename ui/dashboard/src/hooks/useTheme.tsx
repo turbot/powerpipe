@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useState } from "react";
 import useLocalStorage from "./useLocalStorage";
 import useMediaQuery from "./useMediaQuery";
-import { classNames } from "utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 export type Theme = {
   name: string;

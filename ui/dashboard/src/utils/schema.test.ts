@@ -2,14 +2,14 @@ import {
   DashboardActions,
   DashboardExecutionEventWithSchema,
   DashboardSnapshot,
-} from "types";
+} from "@powerpipe/types";
 import {
   EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST,
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
-} from "constants/versions";
+} from "@powerpipe/constants/versions";
 import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,

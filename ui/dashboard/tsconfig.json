@@ -1,9 +1,5 @@
 {
-  "extends": "@tsconfig/create-react-app/tsconfig.json",
+  "extends": "./tsconfig.compiler-options.json",
   "include": ["src/**/*"],
-  "compilerOptions": {
-    "baseUrl": "src",
-    "noImplicitAny": false
-  },
   "exclude": ["node_modules"]
 }

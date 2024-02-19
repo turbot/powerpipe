@@ -13,7 +13,7 @@ import { FlowProperties, FlowProps, FlowType } from "../types";
 import { getFlowComponent } from "..";
 import { NodesAndEdges } from "../../common/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({
   animation: false,

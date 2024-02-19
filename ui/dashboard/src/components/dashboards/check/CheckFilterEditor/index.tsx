@@ -1,11 +1,11 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
-import Icon from "components/Icon";
+import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { CheckFilter, CheckFilterType } from "../common";
-import { classNames } from "utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,

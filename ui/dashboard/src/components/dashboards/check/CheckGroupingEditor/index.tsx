@@ -1,19 +1,19 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
-import Icon from "components/Icon";
+import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { CheckDisplayGroup, CheckDisplayGroupType } from "../common";
-import { classNames } from "utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
   SingleValueWithTags,
-} from "components/dashboards/inputs/common/Common";
+} from "@powerpipe/components/dashboards/inputs/common/Common";
 import { Reorder, useDragControls } from "framer-motion";
-import { SelectOption } from "components/dashboards/inputs/types";
+import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
 import { useCallback, useMemo, useState } from "react";
-import { useDashboardControls } from "components/dashboards/layout/Dashboard/DashboardControlsProvider";
+import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];

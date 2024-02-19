@@ -1,8 +1,11 @@
-import { DashboardExecutionEventWithSchema, PanelDefinition } from "types";
+import {
+  DashboardExecutionEventWithSchema,
+  PanelDefinition,
+} from "@powerpipe/types";
 import {
   EXECUTION_SCHEMA_VERSION_20220614,
   EXECUTION_SCHEMA_VERSION_20220929,
-} from "constants/versions";
+} from "@powerpipe/constants/versions";
 import {
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
@@ -10,7 +13,7 @@ import {
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-} from "components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/check/common";
 
 describe("snapshot utils", () => {
   describe("stripSnapshotDataForExport", () => {

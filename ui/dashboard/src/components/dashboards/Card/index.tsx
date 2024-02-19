@@ -12,10 +12,14 @@ import {
   CardDiffState,
   CardType,
 } from "../data/CardDataProcessor";
-import { classNames } from "utils/styles";
-import { PanelDefinition, PanelProperties } from "types";
+import { classNames } from "@powerpipe/utils/styles";
+import { PanelDefinition, PanelProperties } from "@powerpipe/types";
 import { getComponent, registerComponent } from "../index";
-import { getIconClasses, getIconStyles, getWrapperClasses } from "utils/card";
+import {
+  getIconClasses,
+  getIconStyles,
+  getWrapperClasses,
+} from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
 import { useEffect, useState } from "react";
 

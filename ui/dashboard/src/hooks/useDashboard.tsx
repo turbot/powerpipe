@@ -14,9 +14,9 @@ import {
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
-} from "types";
-import { buildComponentsMap } from "components";
-import { buildSelectedDashboardInputsFromSearchParams } from "utils/state";
+} from "@powerpipe/types";
+import { buildComponentsMap } from "@powerpipe/components";
+import { buildSelectedDashboardInputsFromSearchParams } from "@powerpipe/utils/state";
 import {
   createContext,
   useCallback,
@@ -25,7 +25,7 @@ import {
   useState,
 } from "react";
 import { GlobalHotKeys } from "react-hotkeys";
-import { noop } from "utils/func";
+import { noop } from "@powerpipe/utils/func";
 import {
   useLocation,
   useNavigate,
@@ -406,11 +406,6 @@ const DashboardProvider = ({
         // has the search path changed
         previousSearchPath !== currentSearchPath)
     ) {
-      console.log({
-        previousSearchPath,
-        currentSearchPath,
-        diff: previousSearchPath !== currentSearchPath,
-      });
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
       });

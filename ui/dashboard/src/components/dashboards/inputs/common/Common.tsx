@@ -1,4 +1,4 @@
-import { ColorGenerator } from "utils/color";
+import { ColorGenerator } from "@powerpipe/utils/color";
 import { components, OptionProps, SingleValueProps } from "react-select";
 import isObject from "lodash/isObject";
 

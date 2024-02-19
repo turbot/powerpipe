@@ -3,13 +3,13 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
-} from "constants/versions";
-import { PanelDefinition } from "types";
+} from "@powerpipe/constants/versions";
+import { PanelDefinition } from "@powerpipe/types";
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
   CheckFilter,
-} from "components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/check/common";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {

@@ -4,7 +4,7 @@ import OpenSnapshotButton from "../OpenSnapshotButton";
 import PowerpipeLogo from "./PowerpipeLogo";
 import SaveSnapshotButton from "../SaveSnapshotButton";
 import ThemeToggle from "../ThemeToggle";
-import { classNames } from "utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "../dashboards";
 
 const DashboardHeader = () => {

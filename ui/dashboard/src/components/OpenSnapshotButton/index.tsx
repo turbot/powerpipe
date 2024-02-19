@@ -1,6 +1,9 @@
-import { DashboardActions, DashboardDataModeCLISnapshot } from "types";
-import { SnapshotDataToExecutionCompleteSchemaMigrator } from "utils/schema";
-import { useDashboard } from "hooks/useDashboard";
+import {
+  DashboardActions,
+  DashboardDataModeCLISnapshot,
+} from "@powerpipe/types";
+import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 

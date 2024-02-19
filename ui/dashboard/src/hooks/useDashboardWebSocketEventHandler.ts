@@ -1,4 +1,7 @@
-import { DashboardActions, ReceivedSocketMessagePayload } from "types";
+import {
+  DashboardActions,
+  ReceivedSocketMessagePayload,
+} from "@powerpipe/types";
 import { useCallback, useEffect, useRef } from "react";
 
 const useDashboardWebSocketEventHandler = (dispatch, eventHooks) => {

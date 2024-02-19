@@ -1,10 +1,10 @@
 import {
   CheckDisplayGroup,
   CheckFilter,
-} from "components/dashboards/check/common";
-import { LeafNodeData, Width } from "components/dashboards/common";
+} from "@powerpipe/components/dashboards/check/common";
+import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
-import { Theme } from "hooks/useTheme";
+import { Theme } from "@powerpipe/hooks/useTheme";
 
 export type IDashboardContext = {
   versionMismatchCheck: boolean;

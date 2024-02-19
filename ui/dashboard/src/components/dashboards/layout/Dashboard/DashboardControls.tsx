@@ -1,8 +1,8 @@
 import CheckFilterConfig from "../../check/CheckFilterConfig";
 import CheckGroupingConfig from "../../check/CheckGroupingConfig";
-// import SearchPathConfig from "components/dashboards/SearchPathConfig";
-import { DashboardDataModeCLISnapshot } from "types";
-import { useDashboard } from "hooks/useDashboard";
+// import SearchPathConfig from "@powerpipe/components/dashboards/SearchPathConfig";
+import { DashboardDataModeCLISnapshot } from "@powerpipe/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardControls = () => {
   const {

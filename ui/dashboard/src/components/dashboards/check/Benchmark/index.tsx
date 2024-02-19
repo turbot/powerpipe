@@ -1,29 +1,32 @@
-import Card, { CardProps } from "components/dashboards/Card";
+import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
-import ContainerTitle from "components/dashboards/titles/ContainerTitle";
-import Error from "components/dashboards/Error";
-import Grid from "components/dashboards/layout/Grid";
-import Panel from "components/dashboards/layout/Panel";
-import PanelControls from "components/dashboards/layout/Panel/PanelControls";
-import usePanelControls from "hooks/usePanelControls";
+import ContainerTitle from "@powerpipe/components/dashboards/titles/ContainerTitle";
+import Error from "@powerpipe/components/dashboards/Error";
+import Grid from "@powerpipe/components/dashboards/layout/Grid";
+import Panel from "@powerpipe/components/dashboards/layout/Panel";
+import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
   CheckNode,
   CheckSummary,
 } from "../common";
-import { CardType } from "components/dashboards/data/CardDataProcessor";
+import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
 import {
   CheckGroupingProvider,
   useCheckGrouping,
-} from "hooks/useCheckGrouping";
+} from "@powerpipe/hooks/useCheckGrouping";
 import { default as BenchmarkType } from "../common/Benchmark";
-import { getComponent, registerComponent } from "components/dashboards";
-import { noop } from "utils/func";
-import { PanelDefinition, PanelsMap } from "types";
-import { useDashboard } from "hooks/useDashboard";
+import {
+  getComponent,
+  registerComponent,
+} from "@powerpipe/components/dashboards";
+import { noop } from "@powerpipe/utils/func";
+import { PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo, useState } from "react";
-import { Width } from "components/dashboards/common";
+import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
 

@@ -1,13 +1,17 @@
 const CircularDependencyPlugin = require("circular-dependency-plugin");
+const path = require("path");
 const set = require("lodash/set");
 const webpack = require("webpack");
 
 module.exports = {
   webpack: {
+    alias: {
+      "@powerpipe": path.resolve(__dirname, "src"),
+    },
     configure: (webpackConfig) => {
       const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
         ({ constructor }) =>
-          constructor && constructor.name === "ModuleScopePlugin"
+          constructor && constructor.name === "ModuleScopePlugin",
       );
 
       webpackConfig.resolve.plugins.splice(scopePluginIndex, 1);
@@ -15,17 +19,17 @@ module.exports = {
       webpackConfig = set(
         webpackConfig,
         "resolve.fallback.crypto",
-        require.resolve("crypto-browserify")
+        require.resolve("crypto-browserify"),
       );
       webpackConfig = set(
         webpackConfig,
         "resolve.fallback.path",
-        require.resolve("path-browserify")
+        require.resolve("path-browserify"),
       );
       webpackConfig = set(
         webpackConfig,
         "resolve.fallback.stream",
-        require.resolve("stream-browserify")
+        require.resolve("stream-browserify"),
       );
       webpackConfig = set(webpackConfig, "resolve.fallback.fs", false);
       webpackConfig = set(webpackConfig, "experiments.asyncWebAssembly", true);

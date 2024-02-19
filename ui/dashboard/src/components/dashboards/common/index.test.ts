@@ -8,7 +8,7 @@ import {
 } from "./index";
 import { Edge, Node } from "./types";
 import { Graph } from "graphlib";
-import { ThemeNames } from "hooks/useTheme";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
 
 describe("common.adjustMinValue", () => {
   test("5", () => {

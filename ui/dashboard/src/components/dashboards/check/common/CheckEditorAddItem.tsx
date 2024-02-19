@@ -1,7 +1,7 @@
-import Icon from "components/Icon";
-import { classNames } from "utils/styles";
-import { ThemeNames } from "hooks/useTheme";
-import { useDashboard } from "hooks/useDashboard";
+import Icon from "@powerpipe/components/Icon";
+import { classNames } from "@powerpipe/utils/styles";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 interface CheckEditorAddItemProps {
   addLabel: string;

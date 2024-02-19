@@ -7,12 +7,12 @@ import {
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,
   wrapDefinitionInArtificialDashboard,
-} from "utils/state";
+} from "@powerpipe/utils/state";
 import {
   controlsUpdatedEventHandler,
   leafNodesUpdatedEventHandler,
   migratePanelStatuses,
-} from "utils/dashboardEventHandlers";
+} from "@powerpipe/utils/dashboardEventHandlers";
 import {
   DashboardActions,
   DashboardDataModeCLISnapshot,
@@ -21,15 +21,15 @@ import {
   DashboardDataOptions,
   DashboardRenderOptions,
   IDashboardContext,
-} from "types";
+} from "@powerpipe/types";
 import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
-} from "constants/versions";
+} from "@powerpipe/constants/versions";
 import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,
-} from "utils/schema";
+} from "@powerpipe/utils/schema";
 import { useCallback, useReducer } from "react";
 
 const reducer = (state: IDashboardContext, action) => {

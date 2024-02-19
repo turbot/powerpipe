@@ -41,7 +41,7 @@ import {
   NodeStatus,
   WithStatus,
 } from "../types";
-import { DashboardRunState } from "types";
+import { DashboardRunState } from "@powerpipe/types";
 import { ExpandedNodes, GraphProvider, useGraph } from "../common/useGraph";
 import { getGraphComponent } from "..";
 import { registerComponent } from "../../index";
@@ -50,10 +50,10 @@ import {
   ZoomIcon,
   ZoomInIcon,
   ZoomOutIcon,
-} from "constants/icons";
-import { useDashboard } from "hooks/useDashboard";
+} from "@powerpipe/constants/icons";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo } from "react";
-import { usePanel } from "hooks/usePanel";
+import { usePanel } from "@powerpipe/hooks/usePanel";
 import "reactflow/dist/style.css";
 
 const nodeWidth = 100;

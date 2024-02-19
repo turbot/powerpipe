@@ -1,6 +1,6 @@
-import CheckEditorAddItem from "components/dashboards/check/common/CheckEditorAddItem";
-import Icon from "components/Icon";
-import { classNames } from "utils/styles";
+import CheckEditorAddItem from "@powerpipe/components/dashboards/check/common/CheckEditorAddItem";
+import Icon from "@powerpipe/components/Icon";
+import { classNames } from "@powerpipe/utils/styles";
 import { Reorder, useDragControls } from "framer-motion";
 import { useCallback } from "react";
 

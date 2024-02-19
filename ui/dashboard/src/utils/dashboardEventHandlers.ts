@@ -4,8 +4,8 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
-} from "constants/versions";
-import { PanelDefinition, PanelsMap } from "types";
+} from "@powerpipe/constants/versions";
+import { PanelDefinition, PanelsMap } from "@powerpipe/types";
 
 const migratePanelStatus = (
   panel: PanelDefinition,

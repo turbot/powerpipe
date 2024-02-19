@@ -1,9 +1,9 @@
-import Icon from "components/Icon";
-import SearchPathEditor from "components/dashboards/SearchPathEditor";
-import useDashboardSearchPath from "hooks/useDashboardSearchPath";
-import { DashboardActions } from "types";
+import Icon from "@powerpipe/components/Icon";
+import SearchPathEditor from "@powerpipe/components/dashboards/SearchPathEditor";
+import useDashboardSearchPath from "@powerpipe/hooks/useDashboardSearchPath";
+import { DashboardActions } from "@powerpipe/types";
 import { ReactNode, useEffect, useMemo, useState } from "react";
-import { useDashboard } from "hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
 
 const SearchPathConfig = () => {

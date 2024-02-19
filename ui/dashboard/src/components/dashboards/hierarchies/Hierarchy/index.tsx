@@ -1,6 +1,6 @@
 import ErrorPanel from "../../Error";
 import merge from "lodash/merge";
-import useChartThemeColors from "hooks/useChartThemeColors";
+import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
 import useNodeAndEdgeData from "../../common/useNodeAndEdgeData";
 import {
   buildNodesAndEdges,
@@ -12,7 +12,7 @@ import { getHierarchyComponent } from "..";
 import { HierarchyProperties, HierarchyProps, HierarchyType } from "../types";
 import { NodesAndEdges } from "../../common/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({
   animation: false,

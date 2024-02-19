@@ -4,7 +4,7 @@ import {
   ExecutablePrimitiveProps,
   LeafNodeData,
 } from "../../common";
-import { DashboardRunState } from "types";
+import { DashboardRunState } from "@powerpipe/types";
 
 export type CheckNodeType =
   | "benchmark"

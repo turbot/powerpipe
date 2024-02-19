@@ -1,4 +1,4 @@
-import { CheckFilter } from "components/dashboards/check/common";
+import { CheckFilter } from "@powerpipe/components/dashboards/check/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 

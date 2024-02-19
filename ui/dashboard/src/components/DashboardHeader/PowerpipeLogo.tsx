@@ -7,8 +7,8 @@ import { ReactComponent as LogoDarkmode } from "./logos/powerpipe-logo-darkmode.
 import { ReactComponent as LogoWordmark } from "./logos/powerpipe-logo-wordmark.svg";
 // @ts-ignore
 import { ReactComponent as LogoWordmarkDarkmode } from "./logos/powerpipe-logo-wordmark-darkmode.svg";
-import { ThemeNames } from "hooks/useTheme";
-import { useDashboard } from "hooks/useDashboard";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const PowerpipeLogo = () => {
   const {

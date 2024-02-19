@@ -8,13 +8,13 @@ import {
   DashboardAction,
   DashboardActions,
   ModServerMetadata,
-} from "types";
-import { classNames } from "utils/styles";
+} from "@powerpipe/types";
+import { classNames } from "@powerpipe/utils/styles";
 import { default as lodashGroupBy } from "lodash/groupBy";
 import { Fragment, useEffect, useState } from "react";
 import { getComponent } from "../dashboards";
-import { stringToColor } from "utils/color";
-import { useDashboard } from "hooks/useDashboard";
+import { stringToColor } from "@powerpipe/utils/color";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useParams } from "react-router-dom";
 
 type DashboardListSection = {

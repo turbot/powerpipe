@@ -1,8 +1,8 @@
-import Icon from "components/Icon";
-import { classNames } from "utils/styles";
-import { DashboardDataModeCLISnapshot } from "types";
-import { registerComponent } from "components/dashboards";
-import { useDashboard } from "hooks/useDashboard";
+import Icon from "@powerpipe/components/Icon";
+import { classNames } from "@powerpipe/utils/styles";
+import { DashboardDataModeCLISnapshot } from "@powerpipe/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const SnapshotHeader = () => {
   const { dataMode, snapshotFileName } = useDashboard();

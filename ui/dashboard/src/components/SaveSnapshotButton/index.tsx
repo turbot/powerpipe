@@ -1,16 +1,19 @@
-import Icon from "components/Icon";
-import NeutralButton from "components/forms/NeutralButton";
-import useCheckFilterConfig from "hooks/useCheckFilterConfig";
-import useCheckGroupingConfig from "hooks/useCheckGroupingConfig";
-import { DashboardDataModeCLISnapshot, DashboardSnapshotMetadata } from "types";
+import Icon from "@powerpipe/components/Icon";
+import NeutralButton from "@powerpipe/components/forms/NeutralButton";
+import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
+import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
+import {
+  DashboardDataModeCLISnapshot,
+  DashboardSnapshotMetadata,
+} from "@powerpipe/types";
 import {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
-} from "utils/snapshot";
+} from "@powerpipe/utils/snapshot";
 import { saveAs } from "file-saver";
-import { timestampForFilename } from "utils/date";
-import { useDashboard } from "hooks/useDashboard";
+import { timestampForFilename } from "@powerpipe/utils/date";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();

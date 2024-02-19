@@ -1,5 +1,5 @@
-import { getChartColors } from "components/dashboards/common";
-import { KeyValuePairs } from "components/dashboards/common/types";
+import { getChartColors } from "@powerpipe/components/dashboards/common";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useDashboard } from "./useDashboard";
 import { useCallback, useEffect, useState } from "react";
 

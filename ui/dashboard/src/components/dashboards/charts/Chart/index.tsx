@@ -5,9 +5,9 @@ import Placeholder from "../../Placeholder";
 import React, { useEffect, useRef, useState } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import set from "lodash/set";
-import useChartThemeColors from "hooks/useChartThemeColors";
-import useMediaMode from "hooks/useMediaMode";
-import useTemplateRender from "hooks/useTemplateRender";
+import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
+import useMediaMode from "@powerpipe/hooks/useMediaMode";
+import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   buildChartDataset,
   getColorOverride,
@@ -28,7 +28,7 @@ import { getChartComponent } from "..";
 import { GraphType } from "../../graphs/types";
 import { HierarchyType } from "../../hierarchies/types";
 import { registerComponent } from "../../index";
-import { useDashboard } from "hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 
 const getThemeColorsWithPointOverrides = (

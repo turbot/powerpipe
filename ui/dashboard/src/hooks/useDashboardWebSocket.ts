@@ -6,7 +6,7 @@ import {
   DashboardDataModeLive,
   IActions,
   ReceivedSocketMessagePayload,
-} from "types";
+} from "@powerpipe/types";
 import { useCallback, useEffect, useRef } from "react";
 
 export const SocketActions: IActions = {

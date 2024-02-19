@@ -12,15 +12,15 @@ import {
   NodesAndEdges,
 } from "./types";
 import { ChartProperties, ChartTransform, ChartType } from "../charts/types";
-import { DashboardRunState } from "types";
+import { DashboardRunState } from "@powerpipe/types";
 import { ExpandedNodes } from "../graphs/common/useGraph";
 import { FlowProperties, FlowType } from "../flows/types";
-import { getColumn } from "utils/data";
+import { getColumn } from "@powerpipe/utils/data";
 import { Graph, json } from "graphlib";
 import { GraphProperties, GraphType, NodeAndEdgeData } from "../graphs/types";
 import { HierarchyProperties, HierarchyType } from "../hierarchies/types";
-import { Theme } from "hooks/useTheme";
-import { ThemeNames } from "hooks/useStorybookTheme";
+import { Theme } from "@powerpipe/hooks/useTheme";
+import { ThemeNames } from "@powerpipe/hooks/useStorybookTheme";
 
 export type Width = 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 | 11 | 12;
 
