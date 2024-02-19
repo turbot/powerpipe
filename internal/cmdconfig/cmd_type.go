@@ -59,7 +59,7 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 
 	// so args were passed using --arg
 	if !commandLineQueryArgs.Empty() {
-		// verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
+		// verify no args were passed in the resource invocation, e.g. query.my_query("val1","val2")
 		if queryArgs != nil {
 			return empty, sperr.New("both command line args and query invocation args are set")
 		}
@@ -68,13 +68,12 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 	}
 
 	if queryArgs != nil {
+		// if the target is a query provider set the args
+		// (if the target is a dashboard, which i snot a query provider,
+		// we read the args from viper separately and use to populate the inputs)
 		if qp, ok := any(target).(modconfig.QueryProvider); ok {
 			qp.SetArgs(queryArgs)
-		} else {
-			// args provided but target is not a query provider
-			return empty, sperr.New("args provided but target is not a query provider")
 		}
-
 	}
 	return target, nil
 }
