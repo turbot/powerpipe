@@ -198,6 +198,11 @@ func parseResourceName(targetName string, commandTargetType string) (*modconfig.
 	if parsed.ItemType == "" {
 		parsed.ItemType = commandTargetType
 	}
+	// special case for dashboard resources - they are specified as dashboardXXX(eg: dashboardcard, dashboardtext, etc.)
+	if commandTargetType != "dashboard" && strings.Contains(commandTargetType, "dashboard") {
+		parts := strings.Split(commandTargetType, "dashboard")
+		commandTargetType = parts[len(parts)-1]
+	}
 	if parsed.ItemType != commandTargetType {
 		return nil, sperr.New(fmt.Sprintf("invalid resource type %s - expected %s", parsed.ItemType, commandTargetType))
 	}
