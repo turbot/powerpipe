@@ -29,9 +29,14 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 		typeName = schema.AttributeVar
 	}
 
-	targets, argsMap, err := workspace.GetResourcesFromArgs[T](cmdArgs, w)
-
 	var empty T
+	targets, argsMap, err := workspace.GetResourcesFromArgs[T](cmdArgs, w)
+	if err != nil {
+		return empty, err
+	}
+	if len(targets) == 0 {
+		return empty, sperr.New("could not resolve %s '%s'", utils.GetGenericTypeName[T](), cmdArgs[0])
+	}
 	// we only support a single target - should be enforced by cobra
 	if len(targets) != 1 {
 		return empty, sperr.New("only a single target is supported")
