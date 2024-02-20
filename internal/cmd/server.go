@@ -29,7 +29,9 @@ func serverCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run:   runServerCmd,
 		Short: "Start Powerpipe dashboard server",
-		Long:  "Start Powerpipe dashboard server.",
+		Long: `Run the Powerpipe server, including the dashbaord server and the API. 
+		
+Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 	}
 
 	// TODO KAI CHECK ARGS (https://github.com/turbot/powerpipe/issues/106)
