@@ -165,7 +165,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	default:
 		// otherwise convert the snapshot into a query result
 		result, err := snapshotToQueryResult(snap)
-		error_helpers.FailOnErrorWithMessage(err, "failed to display result as snapshot")
+		error_helpers.FailOnError(err)
 		display.ShowOutput(ctx, result, display.WithTimingDisabled())
 	}
 

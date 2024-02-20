@@ -19,7 +19,6 @@ import (
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
 func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) (T, error) {
-	var targets []modconfig.ModTreeItem
 
 	typeName := utils.GetGenericTypeName[T]()
 	// special case for variable
@@ -29,24 +28,13 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 	}
 
 	var empty T
-	targets, argsMap, err := workspace.GetResourcesFromArgs[T](cmdArgs, w)
+	if len(cmdArgs) > 1 {
+		return empty, sperr.New("only a single target is supported")
+	}
+	target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArgs[0], w)
 	if err != nil {
 		return empty, err
 	}
-	if len(targets) == 0 {
-		return empty, sperr.New("could not resolve %s '%s'", utils.GetGenericTypeName[T](), cmdArgs[0])
-	}
-	// we only support a single target - should be enforced by cobra
-	if len(targets) != 1 {
-		return empty, sperr.New("only a single target is supported")
-	}
-
-	target, ok := targets[0].(T)
-	if !ok {
-		return empty, sperr.New("target '%s' is not of the expected type '%s'", targets[0].GetUnqualifiedName(), typeName)
-
-	}
-	queryArgs := argsMap[target.GetUnqualifiedName()]
 
 	// if the command type is 'query', the target may be a query string rather than a resource name
 
