@@ -17,17 +17,20 @@ import (
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
 func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) (T, error) {
-
 	var empty T
+	if len(cmdArgs) == 0 {
+		return empty, nil
+	}
 	if len(cmdArgs) > 1 {
 		return empty, sperr.New("only a single target is supported")
 	}
+	// now try to resolve
 	target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArgs[0], w)
 	if err != nil {
 		return empty, err
 	}
 
-	// if the command type is 'query', the target may be a query string rather than a resource name
+	// ok we managed to resolve
 
 	// now check if any args were specified on the command line using the --arg flag
 	// if so verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"

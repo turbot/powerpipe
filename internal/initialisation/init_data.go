@@ -29,7 +29,6 @@ type InitData[T modconfig.ModTreeItem] struct {
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
 	Target            T
-	QueryArgs         *modconfig.QueryArgs
 }
 
 func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
@@ -150,16 +149,9 @@ func (i *InitData[T]) resolveTarget(args []string) {
 		return
 	}
 
-	// TODO KAI CHECK THIS
-	if target.Name() == "" {
-		i.Result.Error = sperr.New("no target found")
-		return
-	}
-
-	// we only expect a single target - this should be enforced by Cobra
-
+	// we only expect zero or one target (depending on command)  - this should be enforced by Cobra
 	i.Target = target
-	//i.QueryArgs = queryArgs[targets[0].GetUnqualifiedName()]
+
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod) []string {

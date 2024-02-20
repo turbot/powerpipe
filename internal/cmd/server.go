@@ -55,7 +55,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx, "dashboard")
+	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets
