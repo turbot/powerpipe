@@ -116,7 +116,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData[*modconfig.Dashboard](ctx, "dashboard", dashboardName)
+	initData := initialisation.NewInitData[*modconfig.Dashboard](ctx, dashboardName)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(dashboardExporters()...)

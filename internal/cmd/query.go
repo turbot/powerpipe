@@ -124,10 +124,6 @@ func queryRun(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	// if there are args, put them into viper for retrieval by the dashboard execution
-	if initData.QueryArgs != nil {
-		viper.Set(constants.ConfigKeyQueryArgs, initData.QueryArgs)
-	}
 	// execute query as a snapshot
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, nil)
 	if err != nil {
@@ -165,7 +161,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	default:
 		// otherwise convert the snapshot into a query result
 		result, err := snapshotToQueryResult(snap)
-		error_helpers.FailOnErrorWithMessage(err, "failed to display result as snapshot")
+		error_helpers.FailOnError(err)
 		display.ShowOutput(ctx, result, display.WithTimingDisabled())
 	}
 
