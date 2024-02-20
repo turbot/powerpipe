@@ -2,11 +2,14 @@ package cmd
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"os"
 	"os/signal"
 
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
+
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -34,9 +37,9 @@ func serverCmd() *cobra.Command {
 		OnCmd(cmd).
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddIntFlag(constants.ArgPort, constants.DashboardServerDefaultPort, "Web server port").
+		AddIntFlag(constants.ArgPort, dashboardserver.DashboardServerDefaultPort, "Web server port").
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
-		AddStringFlag(constants.ArgListen, "", "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
+		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
 		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database")
@@ -54,6 +57,22 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
+	// retrieve server params
+	serverPort := dashboardserver.ListenPort(viper.GetInt(constants.ArgPort))
+	error_helpers.FailOnError(serverPort.IsValid())
+
+	serverListen := dashboardserver.ListenType(viper.GetString(constants.ArgListen))
+	error_helpers.FailOnError(serverListen.IsValid())
+
+	serverHost := ""
+	if serverListen == dashboardserver.ListenTypeLocal {
+		serverHost = "127.0.0.1"
+	}
+	if err := utils.IsPortBindable(serverHost, int(serverPort)); err != nil {
+		exitCode = constants.ExitCodeBindPortUnavailable
+		error_helpers.FailOnError(err)
+	}
+
 	// initialise the workspace
 	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx)
 	error_helpers.FailOnError(modInitData.Result.Error)
@@ -69,7 +88,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server
-	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace))
+	powerpipeService, err := api.NewAPIService(ctx, api.WithWebSocket(webSocket), api.WithWorkspace(modInitData.Workspace), api.WithHttpPort(serverPort))
 	if err != nil {
 		error_helpers.FailOnError(err)
 	}

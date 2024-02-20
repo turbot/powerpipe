@@ -28,7 +28,7 @@ USER powerpipe:0
 WORKDIR /workspace
 
 # expose dashboard service default port
-EXPOSE 9194
+EXPOSE 9033
 
 COPY docker-entrypoint.sh /usr/local/bin
 ENTRYPOINT [ "docker-entrypoint.sh" ]

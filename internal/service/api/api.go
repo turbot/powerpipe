@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	"gopkg.in/olahol/melody.v1"
 )
@@ -90,13 +91,19 @@ func WithWorkspace(workspace *workspace.Workspace) APIServiceOption {
 	}
 }
 
+func WithHttpPort(port dashboardserver.ListenPort) APIServiceOption {
+	return func(api *APIService) error {
+		api.HTTPPort = fmt.Sprintf("%d", port)
+		return nil
+	}
+}
+
 // NewAPIService creates a new APIService.
 func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, error) {
 	// Defaults
 	api := &APIService{
-		ctx:      ctx,
-		Status:   "initialized",
-		HTTPPort: fmt.Sprintf("%d", 9194),
+		ctx:    ctx,
+		Status: "initialized",
 	}
 
 	// Set options
