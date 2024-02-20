@@ -4,6 +4,13 @@ const set = require("lodash/set");
 const webpack = require("webpack");
 
 module.exports = {
+  jest: {
+    configure: {
+      moduleNameMapper: {
+        "^@powerpipe/(.*)$": "<rootDir>/src/$1",
+      },
+    },
+  },
   webpack: {
     alias: {
       "@powerpipe": path.resolve(__dirname, "src"),
