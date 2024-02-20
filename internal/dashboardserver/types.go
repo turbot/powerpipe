@@ -12,8 +12,9 @@ import (
 type ListenType string
 
 const (
-	ListenTypeLocal   ListenType = "local"
-	ListenTypeNetwork ListenType = "network"
+	ListenTypeLocal            ListenType = "local"
+	ListenTypeNetwork          ListenType = "network"
+	DashboardServerDefaultPort int        = 9033
 )
 
 // IsValid is a validator for ListenType known values
@@ -22,7 +23,7 @@ func (lt ListenType) IsValid() error {
 	case ListenTypeNetwork, ListenTypeLocal:
 		return nil
 	}
-	return fmt.Errorf("invalid listen type. Must be one of '%v' or '%v'", ListenTypeNetwork, ListenTypeLocal)
+	return fmt.Errorf("invalid listen type: %v. Must be one of '%v' or '%v'", lt, ListenTypeNetwork, ListenTypeLocal)
 }
 
 type ListenPort int
