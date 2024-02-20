@@ -160,9 +160,9 @@ func queryRun(cmd *cobra.Command, args []string) {
 		fmt.Println(string(jsonOutput)) //nolint:forbidigo // intentional use of fmt
 	default:
 		// otherwise convert the snapshot into a query result
-		result, err := snapshotToQueryResult(snap)
+		result, err := snapshotToQueryResult(snap, startTime)
 		error_helpers.FailOnError(err)
-		display.ShowOutput(ctx, result, display.WithTimingDisabled())
+		display.ShowQueryOutput(ctx, result)
 	}
 
 	// share the snapshot if necessary
@@ -183,19 +183,6 @@ func queryRun(cmd *cobra.Command, args []string) {
 		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
 	}
 
-	if viper.GetBool(constants.ArgTiming) {
-		printTiming(startTime)
-	}
-}
-
-func printTiming(startTime time.Time) {
-	// Calculate duration since startTime and round down to the nearest millisecond
-	durationInMS := time.Since(startTime) / time.Millisecond
-	//nolint:durationcheck // we want to print the duration in milliseconds
-	duration := durationInMS * time.Millisecond
-
-	durationString := duration.String()
-	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
 }
 
 // validate the args and extract a query name, if provided
@@ -236,7 +223,7 @@ func setExitCodeForQueryError(err error) {
 	}
 }
 
-func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot) (*queryresult.Result, error) {
+func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime time.Time) (*queryresult.Result, error) {
 	// the table of a snapshot query has a fixed name
 	tablePanel, ok := snap.Panels[modconfig.SnapshotQueryTableName]
 	if !ok {
@@ -265,9 +252,11 @@ func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot) (*queryresul
 			}
 			res.StreamRow(rowVals)
 		}
-		res.TimingResult <- chartRun.TimingResult
 		res.Close()
 	}()
 
+	res.Timing = &queryresult.TimingMetadata{
+		Duration: time.Since(startTime),
+	}
 	return res, nil
 }

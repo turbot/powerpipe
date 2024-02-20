@@ -5,10 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"os"
-	"strings"
-	"time"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
@@ -31,6 +27,8 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
+	"os"
+	"strings"
 )
 
 // variable used to assign the output mode flag
@@ -71,7 +69,6 @@ The current mod is the working directory, or the directory specified by the --mo
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
-		AddBoolFlag(constants.ArgTiming, false, "Turn on the query timer").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
@@ -85,8 +82,6 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 
 	// there can only be a single arg - cobra will validate
 	dashboardName := args[0]
-
-	startTime := time.Now()
 
 	var err error
 	logging.LogTime("dashboardRun start")
@@ -158,9 +153,6 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
 		//nolint:forbidigo // Intentional UI output
 		fmt.Printf("\n%s\n", strings.Join(exportMsg, "\n"))
-	}
-	if viper.GetBool(constants.ArgTiming) {
-		printTiming(startTime)
 	}
 }
 

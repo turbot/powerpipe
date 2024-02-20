@@ -14,7 +14,6 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
-	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/snapshot"
 )
 
@@ -25,9 +24,8 @@ type LeafRun struct {
 
 	Resource modconfig.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties   map[string]any                 `json:"properties,omitempty"`
-	Data         *dashboardtypes.LeafData       `json:"data,omitempty"`
-	TimingResult *localqueryresult.TimingResult `json:"-"`
+	Properties map[string]any           `json:"properties,omitempty"`
+	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete       func()
@@ -238,7 +236,7 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 	slog.Debug("LeafRun complete", "name", r.resource.Name())
 
 	r.Data = dashboardtypes.NewLeafData(queryResult)
-	r.TimingResult = queryResult.TimingResult
+
 	return nil
 }
 
