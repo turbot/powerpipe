@@ -6,8 +6,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -19,13 +17,6 @@ import (
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
 func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) (T, error) {
-
-	typeName := utils.GetGenericTypeName[T]()
-	// special case for variable
-	if typeName == schema.BlockTypeVariable {
-		// variables are named var.xxxx, not variable.xxxx
-		typeName = schema.AttributeVar
-	}
 
 	var empty T
 	if len(cmdArgs) > 1 {
