@@ -3,7 +3,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 @test "list with no mods installed" {
   run powerpipe mod list
-  assert_output 'name
+  assert_output 'NAME
 local'
 }
 
