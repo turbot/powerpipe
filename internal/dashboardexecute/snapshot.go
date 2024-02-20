@@ -3,14 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
-	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 )
 
-func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
-	w := initData.WorkspaceEvents
-
+func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)
@@ -23,7 +22,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	defer w.UnregisterDashboardEventHandlers()
 
 	// pull out the target resource
-	rootResource := initData.Target
+
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
 
@@ -37,7 +36,7 @@ func GenerateSnapshot(ctx context.Context, initData *initialisation.InitData, in
 	case snapshot = <-resultChannel:
 		// set the filename root of the snapshot
 		// TODO KAI CHECK THIS
-		fileRootName := initData.Target.Name()
+		fileRootName := rootResource.Name()
 
 		snapshot.FileNameRoot = fileRootName
 		//  return the context error (if any) to ensure we respect cancellation

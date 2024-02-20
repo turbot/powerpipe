@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"os"
 	"os/signal"
 
@@ -54,7 +55,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData(ctx, "dashboard")
+	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx, "dashboard")
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets

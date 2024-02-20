@@ -106,7 +106,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData(ctx, "query", args...)
+	initData := initialisation.NewInitData[*modconfig.Query](ctx, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
@@ -125,16 +125,11 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// if there are args, put them into viper for retrieval by the dashboard execution
-	if len(initData.QueryArgs) > 0 {
-		queryArgs, ok := initData.QueryArgs[initData.Target.GetUnqualifiedName()]
-		if !ok {
-			// not expected
-			error_helpers.FailOnError(sperr.New("arguments have been provided but none found for the query"))
-		}
-		viper.Set(constants.ConfigKeyQueryArgs, queryArgs)
+	if initData.QueryArgs != nil {
+		viper.Set(constants.ConfigKeyQueryArgs, initData.QueryArgs)
 	}
 	// execute query as a snapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData, nil)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, nil)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)

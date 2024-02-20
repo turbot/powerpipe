@@ -10,18 +10,18 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
-	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
 type CheckTarget interface {
+	modconfig.ModTreeItem
 	*modconfig.Benchmark | *modconfig.Control
 }
 
-type InitData struct {
-	initialisation.InitData
+type InitData[T CheckTarget] struct {
+	initialisation.InitData[T]
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
 	Client          *db_client.DbClient
@@ -30,15 +30,14 @@ type InitData struct {
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData[T] {
 
 	statushooks.SetStatus(ctx, "Loading workspace")
 
-	initData := initialisation.NewInitData(ctx, typeName, args...)
+	initData := initialisation.NewInitData[T](ctx, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData{
+	i := &InitData[T]{
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {
@@ -117,7 +116,7 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData {
 	return i
 }
 
-func (i *InitData) setControlFilter() {
+func (i *InitData[T]) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
@@ -132,7 +131,7 @@ func (i *InitData) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData) registerCheckExporters() error {
+func (i *InitData[T]) registerCheckExporters() error {
 	exporters, err := controldisplay.GetExporters()
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 

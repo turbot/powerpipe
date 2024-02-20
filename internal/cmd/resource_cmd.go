@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
-	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
 	"strings"
@@ -24,8 +24,8 @@ type ResourceCommandConfig struct {
 	cmd string
 }
 
-func newResourceCommandConfig[T modconfig.HclResource]() *ResourceCommandConfig {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+func newResourceCommandConfig[T modconfig.ModTreeItem]() *ResourceCommandConfig {
+	typeName := utils.GetGenericTypeName[T]()
 	return &ResourceCommandConfig{
 		cmd: typeName,
 	}
@@ -37,7 +37,7 @@ func withCmdName(name string) ResourceCommandOption {
 	}
 }
 
-func resourceCmd[T modconfig.HclResource](opts ...ResourceCommandOption) *cobra.Command {
+func resourceCmd[T modconfig.ModTreeItem](opts ...ResourceCommandOption) *cobra.Command {
 	cfg := newResourceCommandConfig[T]()
 	for _, o := range opts {
 		o(cfg)
@@ -60,8 +60,8 @@ func resourceCmd[T modconfig.HclResource](opts ...ResourceCommandOption) *cobra.
 	return cmd
 }
 
-func listCmd[T modconfig.HclResource]() *cobra.Command {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
+	typeName := utils.GetGenericTypeName[T]()
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Args:  cobra.NoArgs,
@@ -77,8 +77,8 @@ func listCmd[T modconfig.HclResource]() *cobra.Command {
 	return cmd
 }
 
-func showCmd[T modconfig.HclResource]() *cobra.Command {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
+	typeName := utils.GetGenericTypeName[T]()
 
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
@@ -97,8 +97,8 @@ func showCmd[T modconfig.HclResource]() *cobra.Command {
 }
 
 // determine which resource commands apply to this resource
-func getResourceCommands[T modconfig.HclResource]() []*cobra.Command {
-	typeName := localcmdconfig.GetGenericTypeName[T]()
+func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
+	typeName := utils.GetGenericTypeName[T]()
 
 	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
 

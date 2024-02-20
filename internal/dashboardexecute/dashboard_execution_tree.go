@@ -8,9 +8,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -90,13 +88,9 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 	case *modconfig.Benchmark:
 		return NewCheckRun(r, e, e)
 	case *modconfig.Query, *modconfig.Control:
-		// look in viper for args
-		var queryArgs *modconfig.QueryArgs
-		if viper.IsSet(constants.ConfigKeyQueryArgs) {
-			queryArgs = viper.Get(constants.ConfigKeyQueryArgs).(*modconfig.QueryArgs)
-		}
+
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r.(modconfig.QueryProvider), queryArgs)
+		dashboard, err := modconfig.NewQueryDashboard(r.(modconfig.QueryProvider))
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		// TODO KAI query only???
 		e.dashboardName = dashboard.Name()

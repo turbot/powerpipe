@@ -293,7 +293,7 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 	}
 	// only print message for mod init (not for mod install)
 	if cmd.Name() == "init" {
-		fmt.Printf("Created mod definition file '%s'\n", app_specific.DefaultModFilePath(workspacePath))
+		fmt.Printf("Created mod definition file '%s'\n", app_specific.DefaultModFilePath(workspacePath)) //nolint:forbidigo // acceptable
 	}
 
 	// load up the written mod file so that we get the updated
