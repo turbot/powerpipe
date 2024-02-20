@@ -110,7 +110,7 @@ top_level.benchmark.bm_version_dependency_mod_2,Benchmark version dependency mod
 function teardown() {
   rm -rf .powerpipe/
   rm -rf .mod.cache.json
-  rm -rf mod.sp
+  rm -rf mod.pp
 }
 
 function setup() {
