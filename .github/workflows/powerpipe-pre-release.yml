@@ -20,10 +20,14 @@ env:
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
 jobs:
-  # TODO Acceptance test job before build and release
+
+  acceptance_tests:
+    name: Run Acceptance Tests
+    uses: turbot/powerpipe/.github/workflows/test-acceptance.yml@main
 
   build_assets:
     name: Build and Release Dashboard Assets
+    needs: [acceptance_tests]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}

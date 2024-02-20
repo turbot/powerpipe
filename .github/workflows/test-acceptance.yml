@@ -1,5 +1,6 @@
 name: Test - Acceptance
 on:
+  workflow_call:
   push:
     tags:
       - v*
