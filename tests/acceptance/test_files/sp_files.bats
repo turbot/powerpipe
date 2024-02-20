@@ -71,7 +71,7 @@ v5.0.0,v5.0.0,ok'
   run powerpipe query run query.query_params_with_all_defaults --output json
 
   # store the reason field in `content`
-  content=$(echo $output | jq '.[].reason')
+  content=$(echo $output | jq '.rows[0].reason')
 
   assert_equal "$content" '"default_parameter_1 default_parameter_2 default_parameter_3"'
 }
