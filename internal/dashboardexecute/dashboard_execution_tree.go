@@ -43,12 +43,12 @@ type DashboardExecutionTree struct {
 	searchPathConfig backend.SearchPathConfig
 }
 
-func NewDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClient *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName: rootResource.Name(),
 		sessionId:     sessionId,
-		clients:       db_client.NewClientMap(),
+		clients:       defaultClient.Clone(), // make a copy of the default client map
 		runs:          make(map[string]dashboardtypes.DashboardTreeRun),
 		workspace:     workspace,
 		runComplete:   make(chan dashboardtypes.DashboardTreeRun, 1),

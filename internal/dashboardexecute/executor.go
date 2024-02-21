@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"os"
 	"strings"
 	"sync"
@@ -26,17 +27,21 @@ type DashboardExecutor struct {
 	// i.e. inputs may be specified _after_ execution starts
 	// false when running a single dashboard in batch mode
 	interactive bool
+	// store the default client which is created during initData creation
+	// - this is to avoid	creating a new client for each dashboard execution if the database/search path is NOT overridden
+	defaultClient *db_client.ClientMap
 }
 
-func newDashboardExecutor() *DashboardExecutor {
+func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor {
 	return &DashboardExecutor{
 		executions: make(map[string]*DashboardExecutionTree),
 		// default to interactive execution
-		interactive: true,
+		interactive:   true,
+		defaultClient: defaultClient,
 	}
 }
 
-var Executor = newDashboardExecutor()
+var Executor *DashboardExecutor
 
 func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
@@ -59,7 +64,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.CancelExecutionForSession(ctx, sessionId)
 
 	// now create a new execution
-	executionTree, err = NewDashboardExecutionTree(rootResource, sessionId, workspace, opts...)
+	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, e.defaultClient, opts...)
 	if err != nil {
 		return err
 	}

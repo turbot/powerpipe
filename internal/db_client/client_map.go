@@ -19,6 +19,17 @@ func NewClientMap() *ClientMap {
 	}
 }
 
+// Clone returns a shallow copy of the client map
+func (e *ClientMap) Clone() *ClientMap {
+	clients := make(map[string]*DbClient)
+	for k, v := range e.clients {
+		clients[k] = v
+	}
+	return &ClientMap{
+		clients: clients,
+	}
+}
+
 func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathConfig) *ClientMap {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()

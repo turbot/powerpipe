@@ -3,15 +3,14 @@ package controlinit
 import (
 	"context"
 	"fmt"
+
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controldisplay"
-	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/initialisation"
 )
 
@@ -24,7 +23,6 @@ type InitData[T CheckTarget] struct {
 	initialisation.InitData[T]
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
-	Client          *db_client.DbClient
 }
 
 // NewInitData returns a new InitData object
@@ -91,27 +89,6 @@ func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData[T]
 	i.OutputFormatter = formatter
 
 	i.setControlFilter()
-
-	// set the default database and search patch config, based on the target resource
-	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(initData.Target, initData.Workspace.Mod, defaultDatabase, defaultSearchPathConfig)
-	if err != nil {
-		i.Result.Error = err
-		return i
-	}
-
-	// create client
-	var opts []backend.ConnectOption
-	if !searchPathConfig.Empty() {
-		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
-	}
-	client, err := db_client.NewDbClient(ctx, database, opts...)
-	if err != nil {
-		i.Result.Error = err
-		return i
-	}
-
-	i.Client = client
 
 	return i
 }

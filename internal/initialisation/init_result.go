@@ -41,13 +41,13 @@ func (r *InitResult) DisplayMessages() {
 			error_helpers.ShowWarning(w)
 		}
 	}
+	for _, w := range r.Warnings {
+		r.DisplayWarning(context.Background(), w)
+	}
 	// do not display message in json or csv output mode
 	output := viper.Get(constants.ArgOutput)
 	if output == constants.OutputFormatJSON || output == constants.OutputFormatCSV {
 		return
-	}
-	for _, w := range r.Warnings {
-		r.DisplayWarning(context.Background(), w)
 	}
 	for _, m := range r.Messages {
 		r.DisplayMessage(context.Background(), m)
