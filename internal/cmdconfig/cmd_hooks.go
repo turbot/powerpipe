@@ -146,9 +146,9 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	}
 
 	// NOTE: we need to resolve the token separately
-	// - that is because we need the resolved value of ArgCloudHost in order to load any saved token
+	// - that is because we need the resolved value of ArgPipesHost in order to load any saved token
 	// and we cannot get this until the other config has been resolved
-	err = setCloudTokenDefault(loader)
+	err = setPipesTokenDefault(loader)
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
@@ -157,12 +157,12 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	return validateConfig()
 }
 
-func setCloudTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]) error {
+func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]) error {
 	/*
 	   saved cloud token
-	   cloud_token in default workspace
-	   explicit env var (STEAMIPE_CLOUD_TOKEN ) wins over
-	   cloud_token in specific workspace
+	   pipes_token in default workspace
+	   explicit env var (PIPES_TOKEN ) wins over
+	   pipes_token in specific workspace
 	*/
 	// set viper defaults in order of increasing precedence
 	// 1) saved cloud token
@@ -171,18 +171,18 @@ func setCloudTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modcon
 		return err
 	}
 	if savedToken != "" {
-		viper.SetDefault(constants.ArgCloudToken, savedToken)
+		viper.SetDefault(constants.ArgPipesToken, savedToken)
 	}
 	// 2) default profile cloud token
 	if loader.DefaultProfile.CloudToken != nil {
-		viper.SetDefault(constants.ArgCloudToken, *loader.DefaultProfile.CloudToken)
+		viper.SetDefault(constants.ArgPipesToken, *loader.DefaultProfile.CloudToken)
 	}
-	// 3) env var (STEAMIPE_CLOUD_TOKEN )
-	cmdconfig.SetDefaultFromEnv(app_specific.EnvCloudToken, constants.ArgCloudToken, cmdconfig.EnvVarTypeString)
+	// 3) env var (PIPES_TOKEN )
+	cmdconfig.SetDefaultFromEnv(constants.EnvPipesToken, constants.ArgPipesToken, cmdconfig.EnvVarTypeString)
 
 	// 4) explicit workspace profile
 	if p := loader.ConfiguredProfile; p != nil && p.CloudToken != nil {
-		viper.SetDefault(constants.ArgCloudToken, *p.CloudToken)
+		viper.SetDefault(constants.ArgPipesToken, *p.CloudToken)
 	}
 	return nil
 }

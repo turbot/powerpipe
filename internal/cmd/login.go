@@ -39,7 +39,7 @@ and obtaining a temporary (30 day) token. The token is written to ~/.powerpipe/i
 func runLoginCmd(cmd *cobra.Command, _ []string) {
 	ctx := cmd.Context()
 
-	log.Printf("[TRACE] login, cloud host %s", viper.Get(constants.ArgCloudHost))
+	log.Printf("[TRACE] login, cloud host %s", viper.Get(constants.ArgPipesHost))
 	log.Printf("[TRACE] opening login web page")
 	// start login flow - this will open a web page prompting user to login, and will give the user a code to enter
 	var id, err = cloud.WebLogin(ctx)

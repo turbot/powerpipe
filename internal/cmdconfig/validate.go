@@ -44,7 +44,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 	}
 
 	// should never happen as there is a default set
-	if viper.GetString(constants.ArgCloudHost) == "" {
+	if viper.GetString(constants.ArgPipesHost) == "" {
 		return fmt.Errorf("to share snapshots, cloud host must be set")
 	}
 
