@@ -20,7 +20,6 @@ type DbClient struct {
 	// the Backend
 	Backend backend.Backend
 
-	// TODO KAI new hook <TIMING>
 	BeforeExecuteHook func(context.Context, *sql.Conn) error
 }
 

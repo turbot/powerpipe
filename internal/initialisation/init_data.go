@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
@@ -16,7 +17,9 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
@@ -29,6 +32,7 @@ type InitData[T modconfig.ModTreeItem] struct {
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
 	Target            T
+	DefaultClient     *db_client.DbClient
 }
 
 func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
@@ -131,12 +135,33 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	// set cloud metadata (may be nil)
 	i.Workspace.CloudMetadata = cloudMetadata
 
+	// create default client
+	// set the dashboard database and search patch config
+	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(i.Target, i.Workspace.Mod, defaultDatabase, defaultSearchPathConfig)
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	// create client
+	var opts []backend.ConnectOption
+	if !searchPathConfig.Empty() {
+		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
+	}
+	client, err := db_client.NewDbClient(ctx, database, opts...)
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	i.DefaultClient = client
+
 	// validate mod requirements
-	// For now we only validate CLI version
-	// TODO add validation for required plugins for steampipe backend
-	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod)
+	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
 	i.Result.AddWarnings(validationWarnings...)
 
+	// create the dashboard executor, passing the default client inside a client map
+	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
+	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap)
 }
 
 // resolve target resource, args and any target specific search path
@@ -154,11 +179,19 @@ func (i *InitData[T]) resolveTarget(args []string) {
 
 }
 
-func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
+func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
+	var pluginVersionMap = modconfig.PluginVersionMap{
+		Database: client.Backend.ConnectionString(),
+		Backend:  client.Backend.Name(),
+	}
+	// if the backend is steampipe, populate the available plugins
+	if steampipeBackend, ok := client.Backend.(*backend.SteampipeBackend); ok {
+		pluginVersionMap.AvailablePlugins = steampipeBackend.PluginVersions
+	}
 	// validate this mod
-	for _, err := range mod.ValidateRequirements() {
+	for _, err := range mod.ValidateRequirements(pluginVersionMap) {
 		validationErrors = append(validationErrors, err.Error())
 	}
 
@@ -168,7 +201,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod) []string {
 			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
 			continue
 		}
-		childValidationErrors := validateModRequirementsRecursively(childMod)
+		childValidationErrors := validateModRequirementsRecursively(childMod, client)
 		validationErrors = append(validationErrors, childValidationErrors...)
 	}
 

@@ -3,10 +3,13 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"strings"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/backend"
 	cmdconfig "github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -14,7 +17,7 @@ import (
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/utils"
-	"strings"
+	"github.com/turbot/powerpipe/internal/db_client"
 )
 
 func modCmd() *cobra.Command {
@@ -89,6 +92,7 @@ Examples:
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
+		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
@@ -123,16 +127,36 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// if any mod names were passed as args, convert into formed mod names
-	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	opts.ModArgs = utils.TrimGitUrls(opts.ModArgs)
+	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	installOpts.ModArgs = utils.TrimGitUrls(installOpts.ModArgs)
+	installOpts.PluginVersions = getPluginVersions(ctx)
 
-	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
 	if err != nil {
 		// exitCode = constants.ExitCodeModInstallFailed
 		error_helpers.FailOnError(err)
 	}
 
 	fmt.Println(modinstaller.BuildInstallSummary(installData)) //nolint:forbidigo // intended output
+}
+
+func getPluginVersions(ctx context.Context) modconfig.PluginVersionMap {
+	_, defaultDatabase := db_client.GetDefaultDatabaseConfig()
+
+	var pluginVersions = modconfig.NewPluginVersionMap()
+	client, err := db_client.NewDbClient(ctx, defaultDatabase)
+	if err != nil {
+		error_helpers.ShowWarning(fmt.Sprintf("Failed to connect to database: %s - plugin validation will not be peformed", err.Error()))
+	}
+	// ignore error - we will just not validate plugin versions
+	if client != nil {
+		pluginVersions.Backend = client.Backend.Name()
+		pluginVersions.Database = client.Backend.ConnectionString()
+		if steampipeBackend, ok := client.Backend.(*backend.SteampipeBackend); ok {
+			pluginVersions.AvailablePlugins = steampipeBackend.PluginVersions
+		}
+	}
+	return pluginVersions
 }
 
 func modUninstallCmd() *cobra.Command {
