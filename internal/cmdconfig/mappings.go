@@ -4,14 +4,16 @@ import (
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/filepaths"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 )
 
 func configDefaults() map[string]any {
 	return map[string]any{
 		// global general options
-		constants.ArgTelemetry:   constants.TelemetryInfo,
-		constants.ArgUpdateCheck: true,
+		constants.ArgTelemetry:       constants.TelemetryInfo,
+		constants.ArgUpdateCheck:     true,
+		constants.ArgPipesInstallDir: filepaths.DefaultPipesInstallDir,
 
 		// from global database options
 		// TODO KAI NEEDED???
@@ -57,14 +59,10 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		app_specific.EnvMemoryMaxMb:       {ConfigVar: []string{constants.ArgMemoryMaxMb}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvMemoryMaxMbPlugin: {ConfigVar: []string{constants.ArgMemoryMaxMbPlugin}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvCacheEnabled:      {ConfigVar: []string{constants.ArgClientCacheEnabled, constants.ArgServiceCacheEnabled}, VarType: cmdconfig.EnvVarTypeBool},
-		// EnvPipesHost needs to be defined before EnvCloudHost,
-		// so that if EnvCloudHost is defined, it can override EnvPipesHost
-		constants.EnvPipesHost:    {ConfigVar: []string{constants.ArgCloudHost}, VarType: cmdconfig.EnvVarTypeString},
-		app_specific.EnvCloudHost: {ConfigVar: []string{constants.ArgCloudHost}, VarType: cmdconfig.EnvVarTypeString},
-		// EnvPipesToken needs to be defined before EnvCloudToken,
-		// so that if EnvCloudToken is defined, it can override EnvPipesToken
-		constants.EnvPipesToken:    {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
-		app_specific.EnvCloudToken: {ConfigVar: []string{constants.ArgCloudToken}, VarType: cmdconfig.EnvVarTypeString},
+		// common pipes env vars
+		constants.EnvPipesInstallDir: {ConfigVar: []string{constants.ArgPipesInstallDir}, VarType: cmdconfig.EnvVarTypeString},
+		constants.EnvPipesHost:       {ConfigVar: []string{constants.ArgPipesHost}, VarType: cmdconfig.EnvVarTypeString},
+		constants.EnvPipesToken:      {ConfigVar: []string{constants.ArgPipesToken}, VarType: cmdconfig.EnvVarTypeString},
 		// powerpipe specific constants
 		localconstants.EnvListen: {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
 		localconstants.EnvPort:   {ConfigVar: []string{constants.ArgPort}, VarType: cmdconfig.EnvVarTypeInt},

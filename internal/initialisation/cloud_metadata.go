@@ -13,14 +13,6 @@ import (
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
 	database := viper.GetString(constants.ArgDatabase)
-	// TODO KAI is this relevant for powerpipe
-	if database == "local" {
-		// local database - nothing to do here
-		// (if steampipe is running locally, it will have ensured the service is running and set
-		// the connection string)
-		return nil, nil
-	}
-
 	connectionString := database
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
@@ -29,7 +21,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	workspaceDatabaseIsConnectionString := backend.HasBackend(database)
 	if !workspaceDatabaseIsConnectionString {
 		// it must be a database name - verify the cloud token was provided
-		cloudToken := viper.GetString(constants.ArgCloudToken)
+		cloudToken := viper.GetString(constants.ArgPipesToken)
 		if cloudToken == "" {
 			return nil, error_helpers.MissingCloudTokenError
 		}
