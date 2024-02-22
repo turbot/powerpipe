@@ -137,11 +137,14 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 	// create default client
 	// set the dashboard database and search patch config
-	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(i.Target, i.Workspace.Mod, defaultDatabase, defaultSearchPathConfig)
-	if err != nil {
-		i.Result.Error = err
-		return
+	database, searchPathConfig := db_client.GetDefaultDatabaseConfig()
+	// if there is a target, this may change the default database and search path - if it is in a dependency mod
+	if !helpers.IsNil(modconfig.ModTreeItem(i.Target)) {
+		database, searchPathConfig, err = db_client.GetDatabaseConfigForResource(i.Target, i.Workspace.Mod, database, searchPathConfig)
+		if err != nil {
+			i.Result.Error = err
+			return
+		}
 	}
 	// create client
 	var opts []backend.ConnectOption
