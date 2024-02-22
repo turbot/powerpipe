@@ -24,7 +24,7 @@ func Initialize() {
 	// this will also write out the Execution ID - enabling easy filtering of logs for a single execution
 	// we need to do this since all instances will log to a single file and logs will be interleaved
 	slog.Info("********************************************************\n")
-	slog.Info(fmt.Sprintf("Steampipe [%s]", runtime.ExecutionID))
+	slog.Info(fmt.Sprintf("Powerpipe [%s]", runtime.ExecutionID))
 	slog.Info("********************************************************\n")
 	slog.Info(fmt.Sprintf("AppVersion:   v%s\n", viper.GetString("main.version")))
 	slog.Info(fmt.Sprintf("Log level: %s\n", os.Getenv(app_specific.EnvLogLevel)))
