@@ -4,14 +4,16 @@ import (
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/filepaths"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 )
 
 func configDefaults() map[string]any {
 	return map[string]any{
 		// global general options
-		constants.ArgTelemetry:   constants.TelemetryInfo,
-		constants.ArgUpdateCheck: true,
+		constants.ArgTelemetry:       constants.TelemetryInfo,
+		constants.ArgUpdateCheck:     true,
+		constants.ArgPipesInstallDir: filepaths.DefaultPipesInstallDir,
 
 		// from global database options
 		// TODO KAI NEEDED???

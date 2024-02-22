@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
@@ -28,6 +29,9 @@ func SetAppSpecificConstants() {
 	defaultInstallDir, err := files.Tildefy("~/.powerpipe")
 	error_helpers.FailOnError(err)
 	app_specific.DefaultInstallDir = defaultInstallDir
+	defaultPipesInstallDir, err := files.Tildefy("~/.pipes")
+	filepaths.DefaultPipesInstallDir = defaultPipesInstallDir
+	error_helpers.FailOnError(err)
 
 	// set the default config path
 	globalConfigPath := filepath.Join(defaultInstallDir, "config")
