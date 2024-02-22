@@ -46,7 +46,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 
 // GetDefaultDatabaseConfig builds the default database and searchPathConfig for the dashboard execution tree
 // NOTE: if the dashboardUI has overridden the search path, opts wil be passed in to set the overridden value
-func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (backend.SearchPathConfig, string) {
+func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.SearchPathConfig) {
 	var cfg backend.ConnectConfig
 	for _, opt := range opts {
 		opt(&cfg)
@@ -62,5 +62,5 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (backend.SearchPath
 		defaultSearchPathConfig = cfg.SearchPathConfig
 	}
 	defaultDatabase := viper.GetString(constants.ArgDatabase)
-	return defaultSearchPathConfig, defaultDatabase
+	return defaultDatabase, defaultSearchPathConfig
 }

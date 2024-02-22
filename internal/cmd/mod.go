@@ -141,7 +141,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 }
 
 func getPluginVersions(ctx context.Context) modconfig.PluginVersionMap {
-	_, defaultDatabase := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
 
 	var pluginVersions = modconfig.NewPluginVersionMap()
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)

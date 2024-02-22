@@ -75,7 +75,7 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 }
 
 func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem) ([]byte, error) {
-	defaultSearchPathConfig, defaultDatabase := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig()
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, dashboard.GetMod(), defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
