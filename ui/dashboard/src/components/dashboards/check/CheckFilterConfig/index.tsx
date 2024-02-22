@@ -24,7 +24,7 @@ const filtersToText = (filter: CheckFilter) => {
     } else {
       textParts.push(<span className="capitalize">{filter.type}</span>);
     }
-    textParts.push(<span>{filter.value}</span>);
+    textParts.push(<span>{filter.title || filter.value}</span>);
 
     return (
       <span className="space-x-1">

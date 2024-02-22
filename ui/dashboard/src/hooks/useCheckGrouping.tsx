@@ -572,16 +572,19 @@ function recordFilterValues(
   // Record the benchmark of this check result to allow assisted filtering later
   if (!!checkResult.benchmark_trunk && checkResult.benchmark_trunk.length > 0) {
     for (const benchmark of checkResult.benchmark_trunk) {
-      filterValues.benchmark.value[benchmark.name] =
-        filterValues.benchmark.value[benchmark.name] || 0;
-      filterValues.benchmark.value[benchmark.name] += 1;
+      filterValues.benchmark.value[benchmark.name] = filterValues.benchmark
+        .value[benchmark.name] || { title: benchmark.title, count: 0 };
+      filterValues.benchmark.value[benchmark.name].count += 1;
     }
   }
 
   // Record the control of this check result to allow assisted filtering later
-  filterValues.control.value[checkResult.control.name] =
-    filterValues.control.value[checkResult.control.name] || 0;
-  filterValues.control.value[checkResult.control.name] += 1;
+  filterValues.control.value[checkResult.control.name] = filterValues.control
+    .value[checkResult.control.name] || {
+    title: checkResult.control.title,
+    count: 0,
+  };
+  filterValues.control.value[checkResult.control.name].count += 1;
 
   // Record the status of this check result to allow assisted filtering later
   filterValues.status[checkResult.status] =

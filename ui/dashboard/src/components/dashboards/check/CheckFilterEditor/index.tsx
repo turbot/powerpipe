@@ -182,15 +182,11 @@ const CheckFilterValueSelect = ({
   value,
   update,
 }: CheckFilterValueSelectProps) => {
-  const [currentValue, setCurrentValue] = useState(value);
+  const [currentValue, setCurrentValue] = useState<{
+    value: any;
+    title?: string;
+  }>({ value, title: item.title });
   const { context: filterValues } = useDashboardControls();
-
-  useDeepCompareEffect(() => {
-    update(index, {
-      ...item,
-      value: currentValue,
-    });
-  }, [currentValue, index, item]);
 
   const values = useMemo(() => {
     if (!type) {
@@ -218,6 +214,16 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v[item.key] },
           };
         });
+    } else if (type === "benchmark" || type === "control") {
+      return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+        return {
+          value: k,
+          // @ts-ignore
+          label: v.title || k,
+          // @ts-ignore
+          tags: { occurrences: v.count },
+        };
+      });
     }
     return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
       return {
@@ -228,6 +234,14 @@ const CheckFilterValueSelect = ({
       };
     });
   }, [filterValues, item.key, type]);
+
+  useDeepCompareEffect(() => {
+    update(index, {
+      ...item,
+      value: currentValue.value,
+      title: currentValue.title,
+    });
+  }, [currentValue, index, item]);
 
   const styles = useSelectInputStyles();
 
@@ -247,7 +261,12 @@ const CheckFilterValueSelect = ({
       formatCreateLabel={(inputValue) => `Use "${inputValue}"`}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) => setCurrentValue((t as SelectOption).value)}
+      onChange={(t) =>
+        setCurrentValue({
+          value: (t as SelectOption).value,
+          title: (t as SelectOption).label,
+        })
+      }
       options={values}
       inputId={`${type}.input`}
       placeholder="Choose a value…"

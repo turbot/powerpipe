@@ -137,6 +137,7 @@ export type CheckFilter = {
   type?: CheckFilterType;
   key?: string;
   value?: string;
+  title?: string;
   expressions?: CheckFilter[];
 };
 

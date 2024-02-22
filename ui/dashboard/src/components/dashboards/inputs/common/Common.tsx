@@ -25,9 +25,9 @@ const OptionTag = ({ tagKey, tagValue }) => (
 );
 
 const LabelTagWrapper = ({ label, tags }) => (
-  <div className="space-x-2">
+  <div className="space-x-2 truncate">
     {/*@ts-ignore*/}
-    <span>{label}</span>
+    <span title={label}>{label}</span>
     {/*@ts-ignore*/}
     {Object.entries(tags || {}).map(([tagKey, tagValue]) => {
       if (isObject(tagValue)) {
