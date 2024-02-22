@@ -18,6 +18,7 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/task"
@@ -132,7 +133,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	}
 
 	// set global containing the configured install dir (create directory if needed)
-	ensureInstallDir(viper.GetString(constants.ArgInstallDir))
+	ensureInstallDirs()
 
 	// set the rest of the defaults from ENV
 	// ENV takes precedence over any default configuration
@@ -174,15 +175,15 @@ func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modcon
 		viper.SetDefault(constants.ArgPipesToken, savedToken)
 	}
 	// 2) default profile cloud token
-	if loader.DefaultProfile.CloudToken != nil {
-		viper.SetDefault(constants.ArgPipesToken, *loader.DefaultProfile.CloudToken)
+	if loader.DefaultProfile.PipesToken != nil {
+		viper.SetDefault(constants.ArgPipesToken, *loader.DefaultProfile.PipesToken)
 	}
 	// 3) env var (PIPES_TOKEN )
 	cmdconfig.SetDefaultFromEnv(constants.EnvPipesToken, constants.ArgPipesToken, cmdconfig.EnvVarTypeString)
 
 	// 4) explicit workspace profile
-	if p := loader.ConfiguredProfile; p != nil && p.CloudToken != nil {
-		viper.SetDefault(constants.ArgPipesToken, *p.CloudToken)
+	if p := loader.ConfiguredProfile; p != nil && p.PipesToken != nil {
+		viper.SetDefault(constants.ArgPipesToken, *p.PipesToken)
 	}
 	return nil
 }
@@ -204,14 +205,23 @@ func validateConfig() error_helpers.ErrorAndWarnings {
 	return res
 }
 
-func ensureInstallDir(installDir string) {
-	slog.Debug("ensureInstallDir", "installDir", installDir)
+func ensureInstallDirs() {
+	installDir := viper.GetString(constants.ArgInstallDir)
+	pipesInstallDir := viper.GetString(constants.ArgPipesInstallDir)
+
+	slog.Debug("ensureInstallDir", "installDir", installDir, "pipesInstallDir", pipesInstallDir)
 	if _, err := os.Stat(installDir); os.IsNotExist(err) {
 		slog.Debug("creating install dir")
 		err = os.MkdirAll(installDir, 0755)
 		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create installation directory: %s", installDir))
 	}
+	if _, err := os.Stat(pipesInstallDir); os.IsNotExist(err) {
+		slog.Debug("creating pipes install dir")
+		err = os.MkdirAll(pipesInstallDir, 0755)
+		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create pipes installation directory: %s", installDir))
+	}
 
 	// store as InstallDir
 	app_specific.InstallDir = installDir
+	filepaths.PipesInstallDir = installDir
 }

@@ -57,8 +57,10 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		app_specific.EnvMemoryMaxMb:       {ConfigVar: []string{constants.ArgMemoryMaxMb}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvMemoryMaxMbPlugin: {ConfigVar: []string{constants.ArgMemoryMaxMbPlugin}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvCacheEnabled:      {ConfigVar: []string{constants.ArgClientCacheEnabled, constants.ArgServiceCacheEnabled}, VarType: cmdconfig.EnvVarTypeBool},
-		constants.EnvPipesHost:            {ConfigVar: []string{constants.ArgPipesHost}, VarType: cmdconfig.EnvVarTypeString},
-		constants.EnvPipesToken:           {ConfigVar: []string{constants.ArgPipesToken}, VarType: cmdconfig.EnvVarTypeString},
+		// common pipes env vars
+		constants.EnvPipesInstallDir: {ConfigVar: []string{constants.ArgPipesInstallDir}, VarType: cmdconfig.EnvVarTypeString},
+		constants.EnvPipesHost:       {ConfigVar: []string{constants.ArgPipesHost}, VarType: cmdconfig.EnvVarTypeString},
+		constants.EnvPipesToken:      {ConfigVar: []string{constants.ArgPipesToken}, VarType: cmdconfig.EnvVarTypeString},
 		// powerpipe specific constants
 		localconstants.EnvListen: {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
 		localconstants.EnvPort:   {ConfigVar: []string{constants.ArgPort}, VarType: cmdconfig.EnvVarTypeInt},

@@ -26,7 +26,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 		return nil
 	}
 
-	token := viper.GetString(constants.ArgCloudToken)
+	token := viper.GetString(constants.ArgPipesToken)
 
 	// determine whether snapshot location is a cloud workspace or a file location
 	// if a file location, check it exists
