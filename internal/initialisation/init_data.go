@@ -185,7 +185,7 @@ func (i *InitData[T]) resolveTarget(args []string) {
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
-	var pluginVersionMap = modconfig.PluginVersionMap{
+	var pluginVersionMap = &modconfig.PluginVersionMap{
 		Database: client.Backend.ConnectionString(),
 		Backend:  client.Backend.Name(),
 	}

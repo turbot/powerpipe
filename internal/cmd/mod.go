@@ -140,23 +140,27 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	fmt.Println(modinstaller.BuildInstallSummary(installData)) //nolint:forbidigo // intended output
 }
 
-func getPluginVersions(ctx context.Context) modconfig.PluginVersionMap {
+func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
 
-	var pluginVersions = modconfig.NewPluginVersionMap()
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
 	if err != nil {
-		error_helpers.ShowWarning(fmt.Sprintf("Failed to connect to database: %s - plugin validation will not be peformed", err.Error()))
-	}
-	// ignore error - we will just not validate plugin versions
-	if client != nil {
-		pluginVersions.Backend = client.Backend.Name()
-		pluginVersions.Database = client.Backend.ConnectionString()
-		if steampipeBackend, ok := client.Backend.(*backend.SteampipeBackend); ok {
-			pluginVersions.AvailablePlugins = steampipeBackend.PluginVersions
+		// do not show warning if --force is set
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning(fmt.Sprintf("Could not connect to database '%s' - plugin validation will not be performed", defaultDatabase))
 		}
+		return nil
 	}
-	return pluginVersions
+
+	steampipeBackend, isSteampipe := client.Backend.(*backend.SteampipeBackend)
+	if !isSteampipe {
+		// do not show warning if --force is set
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning(fmt.Sprintf("Backend '%s' does not support Steampipe plugins so plugin requirements cannot be validated", client.Backend.Name()))
+		}
+		return nil
+	}
+	return modconfig.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
 }
 
 func modUninstallCmd() *cobra.Command {
