@@ -2,7 +2,7 @@ import CheckFilterEditor from "../CheckFilterEditor";
 import useCheckFilterConfig from "../../../../hooks/useCheckFilterConfig";
 import { CheckFilter } from "../common";
 import { Fragment, ReactNode } from "react";
-import { Noop } from "types/func";
+import { Noop } from "@powerpipe/types/func";
 import { useSearchParams } from "react-router-dom";
 
 type CheckFilterConfigProps = {
