@@ -10,7 +10,7 @@ Powerpipe is **dashboards and benchmarks as code**. Use it to visualize any data
 
 **Dashboards**. Powerpipe runs dashboards that present data in visual and interactive ways.
 
-**Benchmarks**. Powerpipe can also run benchmarks, which are packages of controls to check your infrastucture against compliance standards.
+**Benchmarks**. Powerpipe can also run benchmarks, which are packages of controls to check your infrastructure against compliance standards.
 
 **Modularity and customization**. Dashboards and benchmarks are built with [HCL and SQL](https://steampipe.io/blog/dashboards-as-code), and are available for [remixing and reuse](https://steampipe.io/blog/remixing-dashboards). 
 
@@ -20,7 +20,7 @@ Powerpipe is **dashboards and benchmarks as code**. Use it to visualize any data
 
 [![Powerpipe demo](https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png)](https://www.youtube.com/watch?v=TBD)
 
-## Getting Started
+## Install Powerpipe
 
 The <a href="https://powerpipe.io/downloads?utm_id=gfpreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">downloads</a> page shows you how, but tl;dr:
 
@@ -37,98 +37,49 @@ brew tap turbot/tap
 brew install powerpipe
 ```
 
-## Powerpipe: Dashboards and benchmarks
+## Run a dashboard
 
-Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) which are sets of **dashboards** that visualize your resources and **benchmarks** that check your cloud resources for compliance.
-
-<table>
-  <tr>
-   <td><b>Compliance</b></td>
-   <td>Check AWS, Azure, GCP, etc for compliance with HIPAA, PCI, etc
-  </tr>
-  <tr>
-   <td><b>Cost</b></td>
-   <td>Review what AWS, Azure, GCP, and other clouds are costing you</td>
-  </tr>
-  <tr>
-   <td><b>Insights</b></td>
-   <td>Visualize cloud resources with charts, tables, and interactive widgets</td>
-  </tr>
-  <tr>
-   <td><b>Security</b></td>
-   <td>Use CIS, NIST, FedRAMP etc to assess the security of AWS, Azure, GCP, etc</td>
-  </tr>
-  <tr>
-   <td><b>Tags</b></td>
-   <td>Verify the consistency of tags applied to AWS, Azure, and GCP resources</td>
-  </tr>
-  <tr>
-   <td><b>Your mod</b></td>
-   <td>Build your own <a href="https://powerpoint.io/docs/build?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">benchmarks and dashboards</a></td>
-  </tr>
- </table>
+Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/docs/powerpipe-hcl?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#dashboards">widgets</a> to help you explore and visualize your resources. For example, the <a href="RNAcentral">RNAcentrals</a> mod visualizes a dataset of RNA types. To run the RNACentral dashboard:
 
 
-Dashboards and benchmarks use SQL to gather data and HCL to flow the data into [dashboard widgets](https://steampipe.io/blog/dashboards-as-code?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) and [benchmark controls](https://steampipe.io/blog/release-0-11-0?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#composable-mods). You can use the existing suites of benchmarks and dashboards, or build derivative versions, or create your own. 
+1. git clone https://github.com/turbot/powerpipe-mod-rnacentral
 
-### Get started with dashboards and benchmarks
+1. cd powerpipe-mod-central
 
-<details>
-<summary>Install the Net Insights mod</summary>
-<br/>
-The <a href="https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">Net Insights</a> mod works with the Net plugin shown above. To run it, first clone its repo and change to that directory.
+1. powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
 
-```sh
-git clone https://github.com/turbot/powerpipe-mod-net-insights
-cd powerpipe-mod-net-insights
-```
-</details>
+That's it! Here's the dashboard.
 
-<details>
-<br/>
-<summary>Run benchmarks in the CLI</summary>
+![rnacentral](./images/rnacentral.png)
 
-All the benchmarks:
 
-```sh
-powerpipe benchmark run all
-```
+## Run a benchmark
 
-A single benchmark:
+Many Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) includes **benchmarks** that check your cloud resources for compliance. The [Net Insights](https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) mod provides configuration, compliance and security controls to validate security best practices for DNS records. To run the [SSL/TLS Best Practices](https://hub.powerpipe.io/mods/turbot/net_insights/controls/benchmark.ssl_best_practices):
 
-```sh
-powerpipe benchmark run benchmark.dns_best_practices
-```
+1. git clone https://github.com/turbot/powerpipe-mod-net-insights
 
-A single control:
+1. cd powerpipe-mod-net-insights
+``
+1. powerpipe benchmark run benchmark.ssl_certificate_best_practices --output=brief
 
-```sh
-powerpipe control  run control.dns_ns_name_valid
-```
- 
-Available <a href="docs/reference/cli/benchmark#powerpipe-benchmark-run">formats</a> include JSON, CSV, HTML, and ASFF. 
+Here's the console ouput.
 
-You can use <a href="https://steampipe.io/docs/develop/writing-control-output-templates?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">custom output templates</a> to create new output formats.
-</details>
+![net insights console](./images/net_insights_console.png)
 
-<details>
-<summary>Run benchmarks as dashboards</summary>
-<br/>
-Launch the dashboard server: `powerpipe server`, then open `http://localhost:9033` in your browser. 
+You can run benchmarks as dashboards too!
 
-The home page lists available dashboards. Click `DNS Best Practices` to view that dashboard.
+1. same
 
-Note that the default domains are `microsoft.com` and `github.com`. You can <a href="https://hub.steampipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#configuration">change those defaults</a> to check other domains.
-</details>
+2. same
 
-<details>
-<summary>Use dashboards to explore your resources</summary>
-<br/>
-Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/docs/powerpipe-hcl?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#dashboards">widgets</a> to help you explore and visualize your resources. 
+3. powerpipe server
 
-The <a href="https://hub.powerpipe.io/mods/turbot/aws_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">AWS Insights</a> mod, for example, provides dozens of dashboards that exercise the full set of widgets. To use these dashboards, first install the <a href="https://hub.powerpipe.io/plugins/turbot/aws?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">AWS plugin</a> and <a href="https://hub.powerpipe.io/plugins/turbot/aws?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#configuration">authenticate</a>. Then clone `AWS Insights`, change to its directory, launch `steampipe dashboard`, and open `localhost:9033`.
-</details>
+4. visit localhost:9033 in a browser
 
+Here's the same benchmark as an interactive dashboard.
+
+![net insights dashboard](./images/net_insights_dashboard.png)
 
 ## Developing
 
