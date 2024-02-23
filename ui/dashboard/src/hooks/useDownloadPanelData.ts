@@ -1,6 +1,6 @@
-import { PanelDefinition } from "types";
+import { PanelDefinition } from "@powerpipe/types";
 import { saveAs } from "file-saver";
-import { timestampForFilename } from "utils/date";
+import { timestampForFilename } from "@powerpipe/utils/date";
 import { useCallback, useState } from "react";
 import { useDashboard } from "./useDashboard";
 import { usePapaParse } from "react-papaparse";
