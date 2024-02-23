@@ -145,7 +145,7 @@ func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
 	if err != nil {
-		// do nto show warning if --force is set
+		// do not show warning if --force is set
 		if !viper.GetBool(constants.ArgForce) {
 			error_helpers.ShowWarning(fmt.Sprintf("Could not connect to database '%s' - plugin validation will not be performed", defaultDatabase))
 		}
