@@ -67,26 +67,26 @@ const CheckEditorAddItem = ({
           className="rounded-md bg-dashboard-panel border border-black-scale-3 px-2.5 py-1.5 text-sm font-semibold text-foreground"
           onClick={onCancel}
         >
-          Cancel
+          Reset
         </button>
         <button
           type="button"
-          className="rounded-md border border-ok px-2.5 py-1.5 text-sm font-semibold text-foreground focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
           disabled={!isValid.value}
           onClick={onApply}
           title={isValid.reason}
         >
           Apply
         </button>
-        <button
-          type="button"
-          className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isValid.value}
-          onClick={onSave}
-          title={isValid.reason}
-        >
-          Save
-        </button>
+        {/*<button*/}
+        {/*  type="button"*/}
+        {/*  className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"*/}
+        {/*  disabled={!isValid.value}*/}
+        {/*  onClick={onSave}*/}
+        {/*  title={isValid.reason}*/}
+        {/*>*/}
+        {/*  Save*/}
+        {/*</button>*/}
         <Icon className="block h-5 w-5 invisible" icon="trash" />
       </div>
     </div>

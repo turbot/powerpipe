@@ -142,7 +142,7 @@ const Benchmark = (props: InnerCheckProps) => {
         properties: {
           label: "Alarm",
           value: totalSummary.alarm,
-          icon: "materialsymbols-solid:notifications",
+          icon: "materialsymbols-solid:circle_notifications",
           // icon: "materialsymbols-solid:circle_notifications",
           // icon: "materialsymbols-outline:circle_notifications",
         },
@@ -154,7 +154,7 @@ const Benchmark = (props: InnerCheckProps) => {
               properties: {
                 label: "Alarm",
                 value: diffTotalSummary.alarm,
-                icon: "materialsymbols-solid:notifications",
+                icon: "materialsymbols-solid:circle_notifications",
                 // icon: "materialsymbols-solid:circle_notifications",
                 // icon: "materialsymbols-outline:circle_notifications",
               },
