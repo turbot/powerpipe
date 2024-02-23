@@ -39,7 +39,7 @@ const useDashboardWebSocket = (
     // therefore we have no idea what host + port the dashboard server
     // is on, so assume it's the default
     if (process.env.NODE_ENV === "development") {
-      return "ws://localhost:9194/ws";
+      return "ws://localhost:9033/ws";
     }
     // Otherwise, it's a production build, so use the URL details
     const url = new URL(window.location.toString());
