@@ -1,8 +1,11 @@
 package display
 
 import (
+	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/utils"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
@@ -47,6 +50,10 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 
 	target, err := localcmdconfig.ResolveTarget[T](args, w)
 	error_helpers.FailOnError(err)
+	if helpers.IsNil(target) {
+		error_helpers.FailOnError(fmt.Errorf("%s '%s' not found", utils.GetGenericTypeName[T](), args[0]))
+		return
+	}
 
 	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {

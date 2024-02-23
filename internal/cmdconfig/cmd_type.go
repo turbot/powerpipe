@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-// ResolveTarget	extracts a list of targets and (if present) query args from the command line parameters
+// ResolveTarget extracts a of target and (if present) query args from the command line parameters
 //   - if no resource type is specified in the name, it is added from the command type
 //   - validate the resource type specified in the name matches the command type
 //   - verify the resource exists in the workspace
