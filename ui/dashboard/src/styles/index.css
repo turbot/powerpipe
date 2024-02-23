@@ -42,7 +42,7 @@
   --color-secondary: var(--color-black-scale-5);
 
   /* General colors */
-  --color-divide: theme("colors.gray.100");
+  --color-divide: theme("colors.gray.200");
   --color-nav: #fafbfc;
   --color-nav-border: #dee2e6;
 
@@ -96,7 +96,7 @@
   --color-secondary: var(--color-black-scale-5);
 
   /* General colors */
-  --color-divide: var(--color-black-scale-2);
+  --color-divide: var(--color-black-scale-3);
   --color-nav: var(--color-dashboard);
   --color-nav-border: #333;
 

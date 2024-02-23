@@ -37,18 +37,25 @@ const DashboardControls = () => {
         />
       </div>
       {expandControls && (
-        <div className="grid p-4 gap-6 grid-cols-3 bg-dashboard-panel print:hidden">
-          <div className="col-span-3 md:col-span-1">
-            {!!dashboard && <SearchPathConfig onClose={toggleControls} />}
-          </div>
-          {isBenchmark && (
+        <div className="grid grid-cols-3 border-t border-divide divide-y md:divide-y-0 md:divide-x divide-divide bg-dashboard-panel print:hidden">
+          {!!dashboard && (
             <>
-              <div className="col-span-3 md:col-span-1">
-                <CheckFilterConfig onClose={toggleControls} />
+              <div className="p-4 col-span-3 md:col-span-1 space-y-3">
+                <span className="font-semibold">Search Path</span>
+                <SearchPathConfig onClose={toggleControls} />
               </div>
-              <div className="col-span-3 md:col-span-1">
-                <CheckGroupingConfig onClose={toggleControls} />
-              </div>
+              {isBenchmark && (
+                <>
+                  <div className="p-4 col-span-3 md:col-span-1 space-y-3">
+                    <span className="font-semibold">Filters</span>
+                    <CheckFilterConfig onClose={toggleControls} />
+                  </div>
+                  <div className="p-4 col-span-3 md:col-span-1 space-y-3">
+                    <span className="font-semibold">Grouping</span>
+                    <CheckGroupingConfig onClose={toggleControls} />
+                  </div>
+                </>
+              )}
             </>
           )}
         </div>
