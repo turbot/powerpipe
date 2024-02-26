@@ -216,24 +216,6 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		}
 	}()
 
-	// get a db connection
-	// TODO KAI why do we need to manually acquire a session??? <SESSION>
-	//sessionResult := r.acquireSession(ctx, client)
-	//if sessionResult.Error != nil {
-	//	if !error_helpers.IsCancelledError(sessionResult.Error) {
-	//		slog.Debug("controlRun %s execute failed to acquire session: %s", r.ControlId, sessionResult.Error)
-	//		sessionResult.Error = fmt.Errorf("error acquiring database connection, %s", sessionResult.Error.Error())
-	//		r.setError(ctx, sessionResult.Error)
-	//	}
-	//	return
-	//}
-	//
-	//dbSession := sessionResult.Session
-	//defer func() {
-	//	// do this in a closure, otherwise the argument will not get evaluated during calltime
-	//	dbSession.Close(error_helpers.IsContextCanceled(ctx))
-	//}()
-
 	// set our status
 	r.RunStatus = dashboardtypes.RunRunning
 

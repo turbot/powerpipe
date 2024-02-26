@@ -81,12 +81,14 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 		return nil, err
 	}
 
-	client, err := db_client.NewClientMap().Get(ctx, database, searchPathConfig)
+	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)
 	if err != nil {
 		return nil, err
 
 	}
+	//  close the client after we are done
 	defer client.Close(ctx)
+
 	payload := DashboardMetadataPayload{
 		Action: "dashboard_metadata",
 		Metadata: DashboardMetadata{

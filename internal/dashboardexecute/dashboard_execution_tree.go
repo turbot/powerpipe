@@ -25,14 +25,15 @@ type DashboardExecutionTree struct {
 
 	dashboardName string
 	sessionId     string
-	// map of clients, keyed by connection string
-	clients *db_client.ClientMap
-
+	// map of clients, keyed by connection string - we will close this at end of execution
+	clientMap *db_client.ClientMap
+	// map of server-managed clients, keyed by connection string - we will NOT close this
+	defaultClientMap *db_client.ClientMap
 	// map of executing runs, keyed by full name
-	runs        map[string]dashboardtypes.DashboardTreeRun
-	workspace   *dashboardworkspace.WorkspaceEvents
-	runComplete chan dashboardtypes.DashboardTreeRun
+	runs      map[string]dashboardtypes.DashboardTreeRun
+	workspace *dashboardworkspace.WorkspaceEvents
 
+	runComplete chan dashboardtypes.DashboardTreeRun
 	// map of subscribers to notify when an input value changes
 	cancel      context.CancelFunc
 	inputLock   sync.Mutex
@@ -43,16 +44,17 @@ type DashboardExecutionTree struct {
 	searchPathConfig backend.SearchPathConfig
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClient *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
-		dashboardName: rootResource.Name(),
-		sessionId:     sessionId,
-		clients:       defaultClient.Clone(), // make a copy of the default client map
-		runs:          make(map[string]dashboardtypes.DashboardTreeRun),
-		workspace:     workspace,
-		runComplete:   make(chan dashboardtypes.DashboardTreeRun, 1),
-		inputValues:   make(map[string]any),
+		dashboardName:    rootResource.Name(),
+		sessionId:        sessionId,
+		defaultClientMap: defaultClientMap,
+		clientMap:        db_client.NewClientMap(),
+		runs:             make(map[string]dashboardtypes.DashboardTreeRun),
+		workspace:        workspace,
+		runComplete:      make(chan dashboardtypes.DashboardTreeRun, 1),
+		inputValues:      make(map[string]any),
 	}
 	executionTree.id = fmt.Sprintf("%p", executionTree)
 
@@ -66,7 +68,7 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 	executionTree.database = database
 	executionTree.searchPathConfig = searchPathConfig
 	// add a client for the active database and search path
-	_, err = executionTree.clients.Get(context.Background(), database, searchPathConfig)
+	_, err = executionTree.getClient(context.Background(), database, searchPathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -112,7 +114,7 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	workspace := e.workspace
 
 	// if the default database backend supports search path, retrieve it
-	defaultClient, err := e.clients.Get(ctx, e.database, e.searchPathConfig)
+	defaultClient, err := e.getClient(ctx, e.database, e.searchPathConfig)
 	if err != nil {
 		e.SetError(ctx, err)
 		return
@@ -176,8 +178,8 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	// execute synchronously
 	e.Root.Execute(cancelCtx)
 
-	// now close clients
-	e.clients.Close(ctx)
+	// now close any clients created just for this run
+	e.clientMap.Close(ctx)
 }
 
 // GetRunStatus returns the stats of the Root run
@@ -328,4 +330,20 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 
 func (*DashboardExecutionTree) GetResource() modconfig.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
+}
+
+// function to get a client from one of the client maps
+func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
+	// if the default map already contains a client for this connection string, use that
+	if client := e.defaultClientMap.Get(connectionString, searchPathConfig); client != nil {
+		return client, nil
+	}
+
+	// otherwise get or create one
+	client, err := e.clientMap.GetOrCreate(ctx, connectionString, searchPathConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	return client, nil
 }

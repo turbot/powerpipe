@@ -47,8 +47,7 @@ func NewServer(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, webSo
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 
-	// TODO KAI client <MISC>
-	err := w.SetupWatcher(ctx /*,dbClient*/, func(c context.Context, e error) {})
+	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
 	OutputMessage(ctx, "WorkspaceEvents loaded")
 
 	return server, err

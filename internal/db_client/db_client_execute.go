@@ -17,7 +17,7 @@ import (
 	"golang.org/x/text/message"
 )
 
-// execute the query in the given Context
+// Execute executes the query in the given Context
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
 func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*localqueryresult.Result, error) {
 	// acquire a connection
@@ -26,28 +26,12 @@ func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*loc
 		return nil, err
 	}
 
-	// TODO KAI REMOVED <SESSION>
-	//sessionResult := c.AcquireSession(ctx)
-	//if sessionResult.Error != nil {
-	//	return nil, sessionResult.Error
-	//}
-
-	// TODO KAI steampipe only <TIMING>
-	//// disable statushooks when timing is enabled, because setShouldShowTiming internally calls the readRows funcs which
-	//// calls the statushooks.Done, which hides the `Executing query…` spinner, when timing is enabled.
-	//timingCtx := statushooks.DisableStatusHooks(ctx)
-	//// re-read ArgTiming from viper (in case the .timing command has been run)
-	//// (this will refetch ScanMetadataMaxId if timing has just been enabled)
-	//c.setShouldShowTiming(timingCtx, sessionResult.Session)
-
 	// define callback to close session when the async execution is complete
-	// TODO KAI session close  waited for pg shutdown <SESSION>
-
 	closeSessionCallback := func() { _ = databaseConnection.Close() }
 	return c.executeOnConnection(ctx, databaseConnection, closeSessionCallback, query, args...)
 }
 
-// execute a query against this client and wait for the result
+// ExecuteSync executes a query against this client and wait for the result
 func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*localqueryresult.SyncQueryResult, error) {
 	// acquire a connection
 	dbConn, err := c.db.Conn(ctx)
@@ -61,17 +45,6 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 		}
 	}
 	defer func() {
-
-		// TODO KAI we do this in session close - move to steampipe from Session.Close <SESSION>
-		//if error_helpers.IsContextCanceled(ctx) {
-		//	slog.Debug("DatabaseSession.Close wait for connection cleanup")
-		//	select {
-		//	case <-time.After(5 * time.Second):
-		//		slog.Debug("DatabaseSession.Close timed out waiting for connection cleanup")
-		//		// case <-s.Connection.Conn().PgConn().CleanupDone():
-		//		// 	slog.Debug("DatabaseSession.Close connection cleanup complete")
-		//	}
-		//}
 		dbConn.Close()
 
 	}()
@@ -101,11 +74,6 @@ func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn
 			syncResult.Rows = append(syncResult.Rows, row)
 		}
 	}
-	// TODO KAI STEAMPIPE ONLY <TIMING>
-	//if c.shouldShowTiming() {
-	//	syncResult.TimingResult = <-result.TimingResult
-	//}
-
 	return syncResult, err
 }
 
@@ -123,9 +91,6 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 			return nil, err
 		}
 	}
-	// TODO KAI steampipe only <TIMING>
-	//startTime := time.Now()
-
 	// get a context with a timeout for the query to execute within
 	// we don't use the cancelFn from this timeout context, since usage will lead to 'pgx'
 	// prematurely closing the database connection that this query executed in
@@ -166,16 +131,8 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 
 	// read the rows in a go routine
 	go func() {
-		// TODO KAI do in steampipe <TIMING>
-		//// define a callback which fetches the timing information
-		//// this will be invoked after reading rows is complete but BEFORE closing the rows object (which closes the connection)
-		//timingCallback := func() {
-		//	c.getQueryTiming(ctxExecute, startTime, session, result.TimingResult)
-		//}
-
 		// read in the rows and stream to the query result object
-		// TODO kai make callbacks options <TIMING>
-		c.readRows(ctxExecute, rows, result, nil, nil)
+		c.readRows(ctxExecute, rows, result)
 
 		// call the completion callback - if one was provided
 		if onComplete != nil {
@@ -219,16 +176,11 @@ func (c *DbClient) StartQuery(ctx context.Context, dbConn *sql.Conn, query strin
 	return
 }
 
-func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqueryresult.Result, onRow, onComplete func()) {
+func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqueryresult.Result) {
 	// defer this, so that these get cleaned up even if there is an unforeseen error
 	defer func() {
 		// we are done fetching results. time for display. clear the status indication
 		statushooks.Done(ctx)
-		// TODO KAI STEAMPIPE should pass timingCallback as onComplete <TIMING>
-		// call the timing callback BEFORE closing the rows
-		if onComplete != nil {
-			onComplete()
-		}
 		// close the sql rows object
 		rows.Close()
 		if err := rows.Err(); err != nil {
@@ -252,19 +204,6 @@ Loop:
 				// the error will be streamed in the defer
 				break Loop
 			}
-
-			// TODO KAI STEAMPIPE should pass this as onRow <MISC>
-			/*
-				// TACTICAL
-					// determine whether to stop the spinner as soon as we stream a row or to wait for completion
-				if isStreamingOutput() {
-				 				statushooks.Done(ctx)
-							}
-			*/
-			if onRow != nil {
-				onRow()
-			}
-			// add hook?
 
 			if isStreamingOutput() {
 				statushooks.Done(ctx)
