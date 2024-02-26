@@ -218,4 +218,8 @@ func (i *InitData[T]) Cleanup(ctx context.Context) {
 	if i.Workspace != nil {
 		i.Workspace.Close()
 	}
+	if i.DefaultClient != nil {
+		i.DefaultClient.Close(ctx)
+	}
+
 }

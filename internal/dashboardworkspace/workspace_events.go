@@ -68,25 +68,6 @@ func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
 	}
 }
 
-// TODO KAI STEAMPIPE workspaces should not know about introspection data - STEAMPIPE will need a hook here <INTROSPECTION>
-// maybe workspace could provide a file changed hook which Steampipe uses
-//func (w *WorkspaceEvents) onNewIntrospectionData(ctx context.Context, client *db_client.DbClient) {
-//	if viper.GetString(constants.ArgIntrospection) == constants.IntrospectionNone {
-//		// nothing to do here
-//		return
-//	}
-//	client.ResetPools(ctx)
-//	res := client.AcquireSession(ctx)
-//	if res.Session != nil {
-//		res.Session.Close(error_helpers.IsContextCanceled(ctx))
-//	}
-//	if res != nil {
-//		fmt.Println()
-//		error_helpers.ShowErrorWithMessage(ctx, res.Error, "error when refreshing session data")
-//		error_helpers.ShowWarning(strings.Join(res.Warnings, "\n"))
-//	}
-//}
-
 func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *modconfig.ResourceMaps) {
 	event := &dashboardevents.DashboardChanged{}
 

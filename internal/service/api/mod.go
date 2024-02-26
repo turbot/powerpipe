@@ -67,15 +67,6 @@ func (api *APIService) installModHandler(c *gin.Context) {
 
 	mod := api.workspace.Mod
 
-	// TODO KAI CHECK
-	//if !parse.ModfileExists(api.workspace.Path) {
-	//	m, err := workspace.CreateWorkspaceMod(c, api.workspace.Path)
-	//	if err != nil {
-	//		error_helpers.FailOnError(err)
-	//	}
-	//	mod = m
-	//}
-
 	installData, err := modinstaller.InstallWorkspaceDependencies(c.Request.Context(), &modinstaller.InstallOpts{
 		WorkspaceMod: mod,
 		ModArgs:      input.Names,

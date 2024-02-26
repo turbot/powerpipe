@@ -19,17 +19,6 @@ func NewClientMap() *ClientMap {
 	}
 }
 
-// Clone returns a shallow copy of the client map
-func (e *ClientMap) Clone() *ClientMap {
-	clients := make(map[string]*DbClient)
-	for k, v := range e.clients {
-		clients[k] = v
-	}
-	return &ClientMap{
-		clients: clients,
-	}
-}
-
 func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathConfig) *ClientMap {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()
@@ -46,18 +35,33 @@ func (e *ClientMap) Close(ctx context.Context) error {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()
 
-	for _, client := range e.clients {
+	for name, client := range e.clients {
 		if err := client.Close(ctx); err != nil {
 			return err
 		}
+		delete(e.clients, name)
 	}
+
 	return nil
 }
 
-// Get returns a db client for the given connection string
+// Get returns an existing db client for the given connection string
+// if no client is stored for the string, it returns null
+func (e *ClientMap) Get(connectionString string, searchPathConfig backend.SearchPathConfig) *DbClient {
+	key := buildClientMapKey(connectionString, searchPathConfig)
+
+	// get read lock
+	e.clientsMut.RLock()
+	client := e.clients[key]
+	e.clientsMut.RUnlock()
+
+	return client
+}
+
+// GetOrCreate returns a db client for the given connection string
 // if clients map already contains a client for this connection string, use that
 // otherwise create a new client and add to the map
-func (e *ClientMap) Get(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*DbClient, error) {
+func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*DbClient, error) {
 	key := buildClientMapKey(connectionString, searchPathConfig)
 
 	// get read lock

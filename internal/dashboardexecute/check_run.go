@@ -81,7 +81,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	// build control execution tree during init, rather than in Execute, so that it is populated when the ExecutionStarted event is sent
 
 	// retrieve the client for the default database
-	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
+	client, err := r.executionTree.getClient(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)

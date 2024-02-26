@@ -28,7 +28,7 @@ type DashboardExecutor struct {
 	// false when running a single dashboard in batch mode
 	interactive bool
 	// store the default client which is created during initData creation
-	// - this is to avoid	creating a new client for each dashboard execution if the database/search path is NOT overridden
+	// - this is to avoid creating a new client for each dashboard execution if the database/search path is NOT overridden
 	defaultClient *db_client.ClientMap
 }
 

@@ -223,7 +223,7 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 
 	// get the client for this leaf run
 	// (we have already resolved the database and search path config)
-	client, err := r.executionTree.clients.Get(ctx, r.database, r.searchPathConfig)
+	client, err := r.executionTree.getClient(ctx, r.database, r.searchPathConfig)
 	if err != nil {
 		return err
 	}
