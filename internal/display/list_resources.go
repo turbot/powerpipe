@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/utils"
 	"golang.org/x/exp/maps"
 
@@ -20,8 +21,9 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	ctx := cmd.Context()
 
 	modLocation := viper.GetString(constants.ArgModLocation)
-
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
+	// build options to specify which blocks we need to load (based on type T
+	opts := getLoadWorkspaceOptsForResourceType[T]()
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
@@ -40,12 +42,28 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	}
 }
 
+// build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
+func getLoadWorkspaceOptsForResourceType[T modconfig.ModTreeItem]() []workspace.LoadWorkspaceOption {
+	var empty T
+	var opts []workspace.LoadWorkspaceOption
+	switch any(empty).(type) {
+	case *modconfig.Mod:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
+	case *modconfig.Control:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl}))
+	case *modconfig.Benchmark:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl, schema.BlockTypeBenchmark}))
+	}
+	return opts
+}
+
 func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 	ctx := cmd.Context()
 
 	modLocation := viper.GetString(constants.ArgModLocation)
-
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
+	// build options to specify which blocks we need to load (based on type T
+	opts := getLoadWorkspaceOptsForResourceType[T]()
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	target, err := localcmdconfig.ResolveTarget[T](args, w)
