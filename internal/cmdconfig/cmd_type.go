@@ -2,10 +2,10 @@ package cmdconfig
 
 import (
 	"fmt"
-	"github.com/turbot/go-kit/helpers"
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
