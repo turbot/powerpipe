@@ -1,9 +1,11 @@
 package cmdconfig
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -28,6 +30,9 @@ func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Works
 	target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArgs[0], w)
 	if err != nil {
 		return empty, err
+	}
+	if helpers.IsNil(target) {
+		return empty, fmt.Errorf("'%s' not found in %s (%s)", cmdArgs[0], w.Mod.Name(), w.Path)
 	}
 
 	// ok we managed to resolve
