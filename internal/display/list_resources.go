@@ -5,6 +5,7 @@ import (
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/utils"
 	"golang.org/x/exp/maps"
 
@@ -19,9 +20,19 @@ import (
 func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	ctx := cmd.Context()
 
+	var empty T
+	var opts []workspace.LoadWorkspaceOption
+	switch any(empty).(type) {
+	case *modconfig.Mod:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
+	case *modconfig.Control:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl}))
+	case *modconfig.Benchmark:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl, schema.BlockTypeBenchmark}))
+	}
 	modLocation := viper.GetString(constants.ArgModLocation)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
