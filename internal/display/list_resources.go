@@ -42,6 +42,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	}
 }
 
+// build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
 func getLoadWorkspaceOptsForResourceType[T modconfig.ModTreeItem]() []workspace.LoadWorkspaceOption {
 	var empty T
 	var opts []workspace.LoadWorkspaceOption
