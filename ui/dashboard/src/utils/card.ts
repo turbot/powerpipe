@@ -11,15 +11,15 @@ const getIconForType = (type, icon) => {
 
   switch (type) {
     case "alert":
-      return "materialsymbols-solid:error";
+      return "materialsymbols-solid:circle_notifications";
     case "ok":
-      return "materialsymbols-solid:check";
+      return "materialsymbols-solid:check_circle";
     case "info":
-      return "materialsymbols-solid:info_i";
+      return "materialsymbols-solid:info";
     case "severity":
       return "materialsymbols-solid:warning";
     case "skip":
-      return "materialsymbols-solid:arrow_right_alt";
+      return "materialsymbols-solid:arrow_circle_right";
     default:
       return null;
   }
