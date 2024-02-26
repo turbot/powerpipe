@@ -44,7 +44,7 @@ Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/doc
 
 1. git clone https://github.com/turbot/powerpipe-mod-rnacentral
 
-1. cd powerpipe-mod-central
+1. cd powerpipe-mod-rnacentral
 
 1. powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
 
