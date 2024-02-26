@@ -1,6 +1,12 @@
 query "total_albums" {
   sql = <<-EOQ
-    SELECT COUNT(*) AS "Total Albums", CONCAT($1::text, ' ', $2::text, ' ', $3::text) as "Params" FROM albums;
+    SELECT COUNT(*) AS "Total Albums" FROM albums;
+  EOQ
+}
+
+query "params_only" {
+  sql = <<-EOQ
+    SELECT CONCAT($1::text, ' ', $2::text, ' ', $3::text) as "Params" FROM albums;
   EOQ
   param "p1"{
     description = "First parameter"
@@ -13,5 +19,21 @@ query "total_albums" {
   param "p3"{
     description = "Third parameter"
     default = "default_parameter_3"
+  }
+}
+
+dashboard "testing_card_blocks" {
+  title = "Testing card blocks"
+
+  container {
+    card "card1" {
+      query = query.total_albums
+      width = 2
+    }
+
+    card "card2" {
+      query = query.params_only
+      width = 2
+    }
   }
 }
