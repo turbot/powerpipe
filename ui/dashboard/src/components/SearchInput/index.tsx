@@ -1,8 +1,8 @@
-import { classNames } from "../../utils/styles";
-import { ClearIcon, SearchIcon } from "../../constants/icons";
+import { classNames } from "@powerpipe/utils/styles";
+import { ClearIcon, SearchIcon } from "@powerpipe/constants/icons";
 import { forwardRef } from "react";
-import { ThemeNames } from "../../hooks/useTheme";
-import { useDashboard } from "../../hooks/useDashboard";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const SearchInput = forwardRef(
   (
@@ -14,7 +14,7 @@ const SearchInput = forwardRef(
       setValue,
       value,
     },
-    ref
+    ref,
   ) => {
     const {
       themeContext: { theme },
@@ -30,7 +30,7 @@ const SearchInput = forwardRef(
             "flex-1 block w-full bg-dashboard-panel rounded-md border px-8 overflow-x-auto text-sm md:text-base disabled:bg-black-scale-1 focus:ring-0",
             theme.name === ThemeNames.STEAMPIPE_DARK
               ? "border-gray-700"
-              : "border-[#e7e9ed]"
+              : "border-[#e7e9ed]",
           )}
           disabled={disabled}
           onChange={(e) => setValue(e.target.value)}
@@ -50,7 +50,7 @@ const SearchInput = forwardRef(
         )}
       </div>
     );
-  }
+  },
 );
 
 export default SearchInput;

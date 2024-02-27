@@ -2,7 +2,7 @@ import {
   controlsUpdatedEventHandler,
   leafNodesUpdatedEventHandler,
 } from "./dashboardEventHandlers";
-import { EXECUTION_SCHEMA_VERSION_20221222 } from "../constants/versions";
+import { EXECUTION_SCHEMA_VERSION_20221222 } from "@powerpipe/constants/versions";
 
 describe("dashboard event handlers", () => {
   describe("controlsUpdatedEventHandler", () => {
@@ -14,14 +14,14 @@ describe("dashboard event handlers", () => {
     test("no event controls", () => {
       const state = { state: "running" };
       expect(controlsUpdatedEventHandler({ controls: null }, state)).toEqual(
-        state
+        state,
       );
     });
 
     test("empty event controls", () => {
       const state = { state: "running" };
       expect(controlsUpdatedEventHandler({ controls: [] }, state)).toEqual(
-        state
+        state,
       );
     });
 
@@ -35,8 +35,8 @@ describe("dashboard event handlers", () => {
       expect(
         controlsUpdatedEventHandler(
           { controls: [{ execution_id: "2" }] },
-          state
-        )
+          state,
+        ),
       ).toEqual(state);
     });
 
@@ -73,8 +73,8 @@ describe("dashboard event handlers", () => {
               },
             ],
           },
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsMap: {
@@ -118,8 +118,8 @@ describe("dashboard event handlers", () => {
               },
             ],
           },
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsMap: {
@@ -191,8 +191,8 @@ describe("dashboard event handlers", () => {
               },
             ],
           },
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsMap: {
@@ -213,8 +213,8 @@ describe("dashboard event handlers", () => {
         leafNodesUpdatedEventHandler(
           null,
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual(state);
     });
 
@@ -224,8 +224,8 @@ describe("dashboard event handlers", () => {
         leafNodesUpdatedEventHandler(
           { nodes: null },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual(state);
     });
 
@@ -235,8 +235,8 @@ describe("dashboard event handlers", () => {
         leafNodesUpdatedEventHandler(
           { nodes: [] },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual(state);
     });
 
@@ -252,8 +252,8 @@ describe("dashboard event handlers", () => {
         leafNodesUpdatedEventHandler(
           { nodes: [{ execution_id: "2" }] },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual(state);
     });
 
@@ -296,8 +296,8 @@ describe("dashboard event handlers", () => {
             ],
           },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsLog: {
@@ -361,8 +361,8 @@ describe("dashboard event handlers", () => {
             ],
           },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsLog: {
@@ -424,8 +424,8 @@ describe("dashboard event handlers", () => {
             ],
           },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsLog: {
@@ -487,8 +487,8 @@ describe("dashboard event handlers", () => {
             ],
           },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsLog: {
@@ -594,8 +594,8 @@ describe("dashboard event handlers", () => {
             ],
           },
           EXECUTION_SCHEMA_VERSION_20221222,
-          state
-        )
+          state,
+        ),
       ).toEqual({
         ...state,
         panelsLog: {

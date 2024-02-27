@@ -1,6 +1,10 @@
 import LineChart from "./index";
-import { PanelStoryDecorator } from "../../../../utils/storybook";
-import { MultiTimeSeriesDefaults, SingleTimeSeriesDefaults, MultiTimeSeriesCrosstabDefaults } from "../Chart/index.stories";
+import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
+import {
+  MultiTimeSeriesDefaults,
+  SingleTimeSeriesDefaults,
+  MultiTimeSeriesCrosstabDefaults,
+} from "../Chart/index.stories";
 
 const story = {
   title: "Charts/Line",

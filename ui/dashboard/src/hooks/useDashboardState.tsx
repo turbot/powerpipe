@@ -53,10 +53,10 @@ const reducer = (state: IDashboardContext, action) => {
           [state.selectedDashboard?.full_name]: action.metadata,
         },
       };
-    case DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH:
+    case DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX:
       return {
         ...state,
-        selectedDashboardSearchPath: action.search_path,
+        selectedDashboardSearchPathPrefix: action.search_path_prefix,
       };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
@@ -267,7 +267,7 @@ const reducer = (state: IDashboardContext, action) => {
         snapshotId: null,
         state: null,
         selectedDashboard: action.dashboard,
-        selectedDashboardSearchPath: [],
+        selectedDashboardSearchPathPrefix: [],
         selectedPanel: null,
         lastChangedInput: null,
       };
@@ -367,6 +367,16 @@ const reducer = (state: IDashboardContext, action) => {
       return { ...state, snapshot_metadata_loaded: true };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
+    case DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL:
+      return {
+        ...state,
+        showCustomizeBenchmarkPanel: true,
+      };
+    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL:
+      return {
+        ...state,
+        showCustomizeBenchmarkPanel: false,
+      };
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
@@ -392,7 +402,7 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     dashboardsMetadata: {},
     selectedPanel: null,
     selectedDashboard: null,
-    selectedDashboardSearchPath: [],
+    selectedDashboardSearchPathPrefix: [],
     selectedDashboardInputs:
       buildSelectedDashboardInputsFromSearchParams(searchParams),
     snapshot: null,
@@ -413,6 +423,8 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     execution_id: null,
 
     progress: 0,
+
+    showCustomizeBenchmarkPanel: false,
   };
 };
 

@@ -1,6 +1,6 @@
 import React from "react";
 import SnapshotRenderComplete from "./index.tsx";
-import { DashboardContext } from "../../../hooks/useDashboard";
+import { DashboardContext } from "@powerpipe/hooks/useDashboard";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
@@ -11,7 +11,7 @@ test("return null when should not render snapshot complete div", async () => {
       value={{ render: { snapshotCompleteDiv: false } }}
     >
       <SnapshotRenderComplete />
-    </DashboardContext.Provider>
+    </DashboardContext.Provider>,
   );
 
   // ASSERT
@@ -25,7 +25,7 @@ test("return null when should not render snapshot complete div", async () => {
       value={{ render: { snapshotCompleteDiv: true } }}
     >
       <SnapshotRenderComplete />
-    </DashboardContext.Provider>
+    </DashboardContext.Provider>,
   );
 
   // ASSERT

@@ -1,14 +1,18 @@
 import Children from "../Children";
 import DashboardControls from "./DashboardControls";
 import DashboardProgress from "./DashboardProgress";
-import DashboardTitle from "../../titles/DashboardTitle";
+import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
-import SnapshotRenderComplete from "../../../snapshot/SnapshotRenderComplete";
+import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
-import { DashboardDataModeLive, DashboardDefinition } from "../../../../types";
-import { registerComponent } from "../../index";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import {
+  DashboardDataModeCLISnapshot,
+  DashboardDataModeLive,
+  DashboardDefinition,
+} from "@powerpipe/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type DashboardProps = {
   definition: DashboardDefinition;
@@ -21,15 +25,21 @@ type DashboardWrapperProps = {
   showPanelControls?: boolean;
 };
 
-// TODO allow full-screen of a panel
 const Dashboard = ({
   definition,
   isRoot = true,
   showPanelControls = true,
 }: DashboardProps) => {
+  const {
+    components: { SnapshotHeader },
+    dataMode,
+    showCustomizeBenchmarkPanel,
+  } = useDashboard();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
-      {isRoot && <DashboardTitle title={definition.title} />}
+      {isRoot && !definition.artificial && (
+        <DashboardTitle title={definition.title} />
+      )}
       <Children
         children={definition.children}
         parentType="dashboard"
@@ -39,9 +49,22 @@ const Dashboard = ({
   );
   return (
     <DashboardControlsProvider>
-      <DashboardControls />
-      {isRoot ? <DashboardProgress /> : null}
-      {isRoot ? <div className="h-full overflow-y-auto p-4">{grid}</div> : grid}
+      {dataMode === DashboardDataModeCLISnapshot && (
+        <div className="p-4">
+          <SnapshotHeader />
+        </div>
+      )}
+      <div className="flex flex-col md:flex-row w-full md:w-auto h-full">
+        <div className="w-full">
+          {isRoot ? <DashboardProgress /> : null}
+          {isRoot ? (
+            <div className="h-full overflow-y-auto p-4">{grid}</div>
+          ) : (
+            grid
+          )}
+        </div>
+        {showCustomizeBenchmarkPanel && <DashboardControls />}
+      </div>
     </DashboardControlsProvider>
   );
 };

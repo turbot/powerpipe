@@ -1,7 +1,13 @@
-import { ColorOverride, LeafNodeDataRow } from "./index";
-import { DashboardRunState, PanelDefinition } from "../../../types";
+import {
+  ColorOverride,
+  LeafNodeDataRow,
+} from "@powerpipe/components/dashboards/common";
+import { DashboardRunState, PanelDefinition } from "@powerpipe/types";
 import { Graph } from "graphlib";
-import { TableColumnDisplay, TableColumnWrap } from "../Table";
+import {
+  TableColumnDisplay,
+  TableColumnWrap,
+} from "@powerpipe/components/dashboards/Table";
 
 export type CategoryProperties = {
   [name: string]: CategoryProperty;

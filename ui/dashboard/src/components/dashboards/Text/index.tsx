@@ -1,9 +1,12 @@
 import Error from "../Error";
 import gfm from "remark-gfm"; // Support for strikethrough, tables, tasklists and URLs
 import ReactMarkdown from "react-markdown";
-import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
-import { classNames } from "../../../utils/styles";
-import { PanelDefinition } from "../../../types";
+import {
+  BasePrimitiveProps,
+  ExecutablePrimitiveProps,
+} from "@powerpipe/components/dashboards/common";
+import { classNames } from "@powerpipe/utils/styles";
+import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "../index";
 
 const getLongPanelClasses = () => {
@@ -52,7 +55,7 @@ const Markdown = ({ value }) => {
           <div
             className={classNames(
               "p-2 sm:p-1 prose prose-sm max-w-none break-keep",
-              proseHeadings
+              proseHeadings,
             )}
           >
             <ReactMarkdown remarkPlugins={[gfm]}>{value}</ReactMarkdown>
@@ -90,7 +93,7 @@ const renderText = (type, value) => {
 const Text = (props: TextProps) =>
   renderText(
     props.display_type || "markdown",
-    props.properties ? props.properties.value : null
+    props.properties ? props.properties.value : null,
   );
 
 registerComponent("text", Text);

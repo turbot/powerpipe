@@ -1,13 +1,10 @@
 import Children from "../Children";
 import ContainerTitle from "../../titles/ContainerTitle";
 import Grid from "../Grid";
-import { ContainerDefinition } from "../../../../types";
-import {
-  ContainerProvider,
-  useContainer,
-} from "../../../../hooks/useContainer";
+import { ContainerDefinition } from "@powerpipe/types";
+import { ContainerProvider, useContainer } from "@powerpipe/hooks/useContainer";
 import { registerComponent } from "../../index";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ContainerProps = {
   layoutDefinition?: ContainerDefinition;
@@ -34,8 +31,8 @@ const ContainerWrapper = (props: ContainerProps) => {
   const panelDefinition = props.definition
     ? props.definition
     : props.layoutDefinition && panelsMap[props.layoutDefinition.name]
-    ? panelsMap[props.layoutDefinition.name]
-    : props.layoutDefinition;
+      ? panelsMap[props.layoutDefinition.name]
+      : props.layoutDefinition;
 
   if (!panelDefinition) {
     return null;
@@ -49,8 +46,8 @@ const ContainerWrapper = (props: ContainerProps) => {
           children: props.definition
             ? props.definition.children
             : props.layoutDefinition
-            ? props.layoutDefinition.children
-            : [],
+              ? props.layoutDefinition.children
+              : [],
         }}
       />
     </ContainerProvider>

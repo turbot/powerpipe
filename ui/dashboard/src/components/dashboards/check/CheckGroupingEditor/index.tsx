@@ -12,15 +12,13 @@ import {
 } from "@powerpipe/components/dashboards/inputs/common/Common";
 import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
-  isValid: { value: boolean; reason: string };
   onCancel: () => void;
-  onSave: () => void;
-  setConfig: (newValue: CheckDisplayGroup[]) => void;
+  onApply: (newValue: CheckDisplayGroup[]) => void;
 };
 
 type CheckGroupingEditorItemProps = {
@@ -227,46 +225,82 @@ const CheckGroupingEditorItem = ({
   );
 };
 
-const CheckGroupingEditor = ({
-  config,
-  isValid,
-  setConfig,
-  onCancel,
-  onSave,
-}: CheckGroupingEditorProps) => {
+const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
+  const [innerConfig, setInnerConfig] = useState<CheckDisplayGroup[]>(config);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isValid, setIsValid] = useState({ value: false, reason: "" });
+
+  useEffect(() => {
+    setInnerConfig(config);
+  }, [config, setInnerConfig]);
+
+  useEffect(() => {
+    let reason: string = "";
+    const isValid = innerConfig.every((c) => {
+      switch (c.type) {
+        case "benchmark":
+        case "control":
+        case "reason":
+        case "resource":
+        case "severity":
+        case "status":
+          return !c.value;
+        case "dimension":
+        case "tag":
+          return !!c.value;
+        case "result":
+          return true;
+        default:
+          return false;
+      }
+    });
+    setIsValid({ value: isValid, reason });
+
+    const removeEmpty = innerConfig.map((c) => {
+      const noEmpty = {};
+      for (const [k, v] of Object.entries(c)) {
+        if (!v) {
+          continue;
+        }
+        noEmpty[k] = v;
+      }
+      return noEmpty;
+    });
+    setIsDirty(JSON.stringify(config) !== JSON.stringify(removeEmpty));
+  }, [config, innerConfig, setIsDirty, setIsValid]);
+
   const remove = useCallback(
-    (index: number) => {
-      const removed = [...config.slice(0, index), ...config.slice(index + 1)];
-      setConfig(removed);
-    },
-    [config, setConfig],
+    (index: number) =>
+      setInnerConfig((existing) => [
+        ...existing.slice(0, index),
+        ...existing.slice(index + 1),
+      ]),
+    [setInnerConfig],
   );
 
   const update = useCallback(
-    (index: number, updatedItem: CheckDisplayGroup) => {
-      const updated = [
-        ...config.slice(0, index),
+    (index: number, updatedItem: CheckDisplayGroup) =>
+      setInnerConfig((existing) => [
+        ...existing.slice(0, index),
         updatedItem,
-        ...config.slice(index + 1),
-      ];
-      setConfig(updated);
-    },
-    [config, setConfig],
+        ...existing.slice(index + 1),
+      ]),
+    [setInnerConfig],
   );
 
   return (
     <div className="flex flex-col space-y-4">
       <Reorder.Group
         axis="y"
-        values={config}
-        onReorder={setConfig}
+        values={innerConfig}
+        onReorder={setInnerConfig}
         as="div"
         className="flex flex-col space-y-4"
       >
-        {config.map((c, idx) => (
+        {innerConfig.map((c, idx) => (
           <CheckGroupingEditorItem
             key={`${c.type}-${c.value}`}
-            config={config}
+            config={innerConfig}
             item={c}
             index={idx}
             remove={remove}
@@ -275,12 +309,13 @@ const CheckGroupingEditor = ({
         ))}
       </Reorder.Group>
       <CheckEditorAddItem
-        addLabel="Add grouping"
+        isDirty={isDirty}
         isValid={isValid}
         // @ts-ignore
-        onAdd={() => setConfig([...config, { type: "" }])}
-        onCancel={onCancel}
-        onSave={onSave}
+        onAdd={() => setInnerConfig((existing) => [...existing, { type: "" }])}
+        onApply={() => onApply(innerConfig)}
+        onClear={() => onApply([])}
+        addLabel="Add grouping"
       />
     </div>
   );

@@ -1,6 +1,9 @@
-import Chart from "../Chart";
-import { ChartProps, IChart } from "../types";
-import { registerChartComponent } from "../index";
+import Chart from "@powerpipe/components/dashboards/charts/Chart";
+import {
+  ChartProps,
+  IChart,
+} from "@powerpipe/components/dashboards/charts/types";
+import { registerChartComponent } from "@powerpipe/components/dashboards/charts";
 
 const AreaChart = (props: ChartProps) => {
   return <Chart {...props} />;

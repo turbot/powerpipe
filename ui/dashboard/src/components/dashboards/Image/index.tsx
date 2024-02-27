@@ -6,7 +6,7 @@ import {
   LeafNodeData,
 } from "../common";
 import { getComponent, registerComponent } from "../index";
-import { PanelDefinition } from "../../../types";
+import { PanelDefinition } from "@powerpipe/types";
 import { useEffect, useState } from "react";
 const Table = getComponent("table");
 

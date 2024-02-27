@@ -1,6 +1,9 @@
-import Graph from "../Graph";
-import { GraphProps, IGraph } from "../types";
-import { registerGraphComponent } from "../index";
+import Graph from "@powerpipe/components/dashboards/graphs/Graph";
+import {
+  GraphProps,
+  IGraph,
+} from "@powerpipe/components/dashboards/graphs/types";
+import { registerGraphComponent } from "@powerpipe/components/dashboards/graphs";
 
 const ForceDirectedGraph = (props: GraphProps) => <Graph {...props} />;
 

@@ -1,11 +1,11 @@
 import sortBy from "lodash/sortBy";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
-import { classNames } from "../../utils/styles";
-import { DashboardActions } from "../../types";
+import { classNames } from "@powerpipe/utils/styles";
+import { DashboardActions } from "@powerpipe/types";
 import { Fragment, useCallback, useMemo, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
-import { useDashboard } from "../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useParams } from "react-router-dom";
 
 const DashboardTagGroupSelect = () => {

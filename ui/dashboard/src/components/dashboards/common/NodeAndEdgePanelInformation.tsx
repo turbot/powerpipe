@@ -1,8 +1,12 @@
-import ErrorMessage from "../../ErrorMessage";
-import Icon from "../../Icon";
-import LoadingIndicator from "../LoadingIndicator";
-import { DashboardRunState } from "../../../types";
-import { EdgeStatus, GraphStatuses, NodeStatus } from "../graphs/types";
+import ErrorMessage from "@powerpipe/components/ErrorMessage";
+import Icon from "@powerpipe/components/Icon";
+import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
+import { DashboardRunState } from "@powerpipe/types";
+import {
+  EdgeStatus,
+  GraphStatuses,
+  NodeStatus,
+} from "@powerpipe/components/dashboards/graphs/types";
 import { Node } from "reactflow";
 
 type NodeAndEdgePanelInformationProps = {

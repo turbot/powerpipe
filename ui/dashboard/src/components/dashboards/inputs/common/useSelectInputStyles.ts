@@ -1,4 +1,4 @@
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 const useSelectInputStyles = () => {
@@ -73,6 +73,12 @@ const useSelectInputStyles = () => {
         ...provided,
         backgroundColor: state.isFocused ? background : "none",
         color: foreground,
+      };
+    },
+    placeholder: (provided) => {
+      return {
+        ...provided,
+        whiteSpace: "nowrap",
       };
     },
   };

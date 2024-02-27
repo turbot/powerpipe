@@ -2,25 +2,25 @@ import PanelStatus from "./PanelStatus";
 import PanelControls from "./PanelControls";
 import PanelInformation from "./PanelInformation";
 import PanelProgress from "./PanelProgress";
-import PanelTitle from "../../titles/PanelTitle";
-import Placeholder from "../../Placeholder";
-import { BaseChartProps } from "../../charts/types";
-import { CardProps } from "../../Card";
-import { classNames } from "../../../../utils/styles";
-import { DashboardPanelType, PanelDefinition } from "../../../../types";
-import { FlowProps } from "../../flows/types";
-import { getResponsivePanelWidthClass } from "../../../../utils/layout";
-import { GraphProps } from "../../graphs/types";
-import { HierarchyProps } from "../../hierarchies/types";
-import { ImageProps } from "../../Image";
-import { InputProps } from "../../inputs/types";
+import PanelTitle from "@powerpipe/components/dashboards/titles/PanelTitle";
+import Placeholder from "@powerpipe/components/dashboards/Placeholder";
+import { BaseChartProps } from "@powerpipe/components/dashboards/charts/types";
+import { CardProps } from "@powerpipe/components/dashboards/Card";
+import { classNames } from "@powerpipe/utils/styles";
+import { DashboardPanelType, PanelDefinition } from "@powerpipe/types";
+import { FlowProps } from "@powerpipe/components/dashboards/flows/types";
+import { getResponsivePanelWidthClass } from "@powerpipe/utils/layout";
+import { GraphProps } from "@powerpipe/components/dashboards/graphs/types";
+import { HierarchyProps } from "@powerpipe/components/dashboards/hierarchies/types";
+import { ImageProps } from "@powerpipe/components/dashboards/Image";
+import { InputProps } from "@powerpipe/components/dashboards/inputs/types";
 import { memo, useState } from "react";
-import { PanelProvider, usePanel } from "../../../../hooks/usePanel";
+import { PanelProvider, usePanel } from "@powerpipe/hooks/usePanel";
 import { ReactNode } from "react";
-import { registerComponent } from "../../index";
-import { TableProps } from "../../Table";
-import { TextProps } from "../../Text";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { registerComponent } from "@powerpipe/components/dashboards";
+import { TableProps } from "@powerpipe/components/dashboards/Table";
+import { TextProps } from "@powerpipe/components/dashboards/Text";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type PanelProps = {
   children: ReactNode;
@@ -63,7 +63,7 @@ const Panel = ({
   const baseStyles = classNames(
     "relative col-span-12",
     getResponsivePanelWidthClass(definition.width),
-    "overflow-auto"
+    "overflow-auto",
   );
 
   if (inputPanelsAwaitingValue.length > 0) {
@@ -105,13 +105,14 @@ const Panel = ({
               definition.panel_type === "input") &&
               definition.display_type === "table")
             ? "bg-dashboard-panel print:bg-white shadow-sm rounded-md"
-            : null
+            : null,
         )}
       >
         {showPanelControls && (
           <PanelControls
             referenceElement={referenceElement}
             controls={panelControls}
+            withOffset
           />
         )}
         {definition.title && (
@@ -121,7 +122,7 @@ const Panel = ({
                 definition.display_type !== "table" &&
                 !forceBackground
                 ? "pl-0 pr-2 sm:pr-4 py-2"
-                : "px-4 py-4"
+                : "px-4 py-4",
             )}
           >
             <PanelTitle name={definition.name} title={definition.title} />
@@ -147,7 +148,7 @@ const Panel = ({
               definition.display_type === "table"
               ? "overflow-x-auto"
               : "overflow-x-hidden",
-            className
+            className,
           )}
         >
           <PanelProgress className={definition.title ? null : "rounded-t-md"} />

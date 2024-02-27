@@ -6,11 +6,20 @@ import {
   CheckResult,
   CheckSeveritySummary,
 } from "../index";
+import HierarchyNode from "@powerpipe/components/dashboards/check/common/node/HierarchyNode";
 
-class ControlResultNode implements CheckNode {
+class ControlResultNode extends HierarchyNode {
   private readonly _result: CheckResult;
 
-  constructor(result: CheckResult) {
+  constructor(
+    result: CheckResult,
+    sort: string,
+    type: CheckNodeType,
+    key: string,
+    value: string,
+    children?: CheckNode[],
+  ) {
+    super(type, `${key}=${value}`, value, sort, children || []);
     this._result = result;
   }
 

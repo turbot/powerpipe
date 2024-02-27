@@ -1,8 +1,8 @@
 import AssetNode from "./AssetNode";
 import dagre from "dagre";
-import ErrorPanel from "../../Error";
+import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import FloatingEdge from "./FloatingEdge";
-import NodeAndEdgePanelInformation from "../../common/NodeAndEdgePanelInformation";
+import NodeAndEdgePanelInformation from "@powerpipe/components/dashboards/common/NodeAndEdgePanelInformation";
 import ReactFlow, {
   ControlButton,
   Controls,
@@ -16,19 +16,19 @@ import ReactFlow, {
   useReactFlow,
 } from "reactflow";
 import sortBy from "lodash/sortBy";
-import useChartThemeColors from "../../../../hooks/useChartThemeColors";
-import useNodeAndEdgeData from "../../common/useNodeAndEdgeData";
+import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
+import useNodeAndEdgeData from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import {
   buildNodesAndEdges,
   foldNodesAndEdges,
   LeafNodeData,
-} from "../../common";
+} from "@powerpipe/components/dashboards/common";
 import {
   Category,
   CategoryMap,
   Edge as EdgeType,
   Node as NodeType,
-} from "../../common/types";
+} from "@powerpipe/components/dashboards/common/types";
 import {
   DagreRankDir,
   EdgeStatus,
@@ -40,11 +40,15 @@ import {
   NodeAndEdgeStatus,
   NodeStatus,
   WithStatus,
-} from "../types";
+} from "@powerpipe/components/dashboards/graphs/types";
 import { DashboardRunState } from "@powerpipe/types";
-import { ExpandedNodes, GraphProvider, useGraph } from "../common/useGraph";
-import { getGraphComponent } from "..";
-import { registerComponent } from "../../index";
+import {
+  ExpandedNodes,
+  GraphProvider,
+  useGraph,
+} from "@powerpipe/components/dashboards/graphs/common/useGraph";
+import { getGraphComponent } from "@powerpipe/components/dashboards/graphs";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import {
   ResetLayoutIcon,
   ZoomIcon,

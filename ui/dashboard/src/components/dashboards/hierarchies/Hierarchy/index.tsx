@@ -1,17 +1,21 @@
-import ErrorPanel from "../../Error";
+import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import merge from "lodash/merge";
 import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
-import useNodeAndEdgeData from "../../common/useNodeAndEdgeData";
+import useNodeAndEdgeData from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import {
   buildNodesAndEdges,
   buildTreeDataInputs,
   LeafNodeData,
-} from "../../common";
-import { Chart } from "../../charts/Chart";
-import { getHierarchyComponent } from "..";
-import { HierarchyProperties, HierarchyProps, HierarchyType } from "../types";
-import { NodesAndEdges } from "../../common/types";
-import { registerComponent } from "../../index";
+} from "@powerpipe/components/dashboards/common";
+import { Chart } from "@powerpipe/components/dashboards/charts/Chart";
+import { getHierarchyComponent } from "@powerpipe/components/dashboards/hierarchies";
+import {
+  HierarchyProperties,
+  HierarchyProps,
+  HierarchyType,
+} from "@powerpipe/components/dashboards/hierarchies/types";
+import { NodesAndEdges } from "@powerpipe/components/dashboards/common/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({

@@ -1,6 +1,9 @@
-import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
+import {
+  BasePrimitiveProps,
+  ExecutablePrimitiveProps,
+} from "@powerpipe/components/dashboards/common";
 import { ComponentType } from "react";
-import { PanelDefinition } from "../../../types";
+import { PanelDefinition } from "@powerpipe/types";
 
 export type BaseInputProps = PanelDefinition &
   BasePrimitiveProps &

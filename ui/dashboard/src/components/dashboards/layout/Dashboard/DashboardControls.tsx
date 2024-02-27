@@ -1,37 +1,33 @@
-import CheckFilterConfig from "../../check/CheckFilterConfig";
-import CheckGroupingConfig from "../../check/CheckGroupingConfig";
-// import SearchPathConfig from "@powerpipe/components/dashboards/SearchPathConfig";
-import { DashboardDataModeCLISnapshot } from "@powerpipe/types";
+import CheckFilterConfig from "@powerpipe/components/dashboards/check/CheckFilterConfig";
+import CheckGroupingConfig from "@powerpipe/components/dashboards/check/CheckGroupingConfig";
+import Icon from "@powerpipe/components/Icon";
+import { DashboardActions } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardControls = () => {
-  const {
-    components: { SnapshotHeader },
-    dataMode,
-    dashboard,
-  } = useDashboard();
-
-  const isBenchmark =
-    dashboard?.children && dashboard.children[0].panel_type === "benchmark";
+  const { dispatch } = useDashboard();
+  const hideControls = () =>
+    dispatch({ type: DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL });
 
   return (
-    <div className="grid p-4 gap-6 grid-cols-2 bg-dashboard-panel print:hidden">
-      {/*<div className="col-span-2 grid grid-cols-2 gap-6">*/}
-      {/*  <div className="col-span-2 space-y-4">*/}
-      {/*    {!!dashboard && <SearchPathConfig />}*/}
-      {/*  </div>*/}
-      {/*</div>*/}
-      {dataMode === DashboardDataModeCLISnapshot && <SnapshotHeader />}
-      {isBenchmark && (
-        <div className="col-span-2 grid grid-cols-2 gap-6">
-          <div className="col-span-2 md:col-span-1 space-y-4">
-            <CheckGroupingConfig />
-          </div>
-          <div className="col-span-2 md:col-span-1 space-y-4">
-            <CheckFilterConfig />
-          </div>
-        </div>
-      )}
+    <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden">
+      <div className="flex items-center justify-between p-4">
+        <h3>Customize view</h3>
+        <Icon
+          className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
+          icon="close"
+          onClick={hideControls}
+          title="Close customize view"
+        />
+      </div>
+      <div className="p-4 space-y-3">
+        <span className="font-semibold">Filters</span>
+        <CheckFilterConfig onClose={hideControls} />
+      </div>
+      <div className="p-4 space-y-3">
+        <span className="font-semibold">Grouping</span>
+        <CheckGroupingConfig onClose={hideControls} />
+      </div>
     </div>
   );
 };

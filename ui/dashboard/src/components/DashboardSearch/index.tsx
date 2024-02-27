@@ -1,7 +1,7 @@
 import SearchInput from "../SearchInput";
-import { DashboardActions } from "../../types";
+import { DashboardActions } from "@powerpipe/types";
 import { useCallback } from "react";
-import { useDashboard } from "../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardSearch = () => {
   const {
@@ -15,7 +15,7 @@ const DashboardSearch = () => {
   const updateSearchValue = useCallback(
     (value) =>
       dispatch({ type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE, value }),
-    [dispatch]
+    [dispatch],
   );
 
   return (

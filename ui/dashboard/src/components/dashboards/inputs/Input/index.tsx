@@ -1,8 +1,8 @@
-import ErrorPanel from "../../Error";
-import { getInputComponent } from "../index";
-import { InputProperties } from "../types";
-import { PanelDefinition } from "../../../../types";
-import { registerComponent } from "../../index";
+import ErrorPanel from "@powerpipe/components/dashboards/Error";
+import { getInputComponent } from "@powerpipe/components/dashboards/inputs";
+import { InputProperties } from "@powerpipe/components/dashboards/inputs/types";
+import { PanelDefinition } from "@powerpipe/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
 
 export type InputDefinition = PanelDefinition & {
   properties: InputProperties;

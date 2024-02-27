@@ -1,6 +1,6 @@
-import Flow from "../Flow";
-import { FlowProps, IFlow } from "../types";
-import { registerFlowComponent } from "../index";
+import Flow from "@powerpipe/components/dashboards/flows/Flow";
+import { FlowProps, IFlow } from "@powerpipe/components/dashboards/flows/types";
+import { registerFlowComponent } from "@powerpipe/components/dashboards/flows";
 
 const Sankey = (props: FlowProps) => <Flow {...props} />;
 

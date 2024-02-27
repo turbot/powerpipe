@@ -1,10 +1,15 @@
 import Chart from "./index";
-import { PanelStoryDecorator } from "../../../../utils/storybook";
+import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
 
 const story = {
   title: "Charts/Chart",
   component: Chart,
-  excludeStories: ["SingleTimeSeriesDefaults", "MultiTimeSeriesDefaults", "MultiTimeSeriesGroupedDefaults", "MultiTimeSeriesCrosstabDefaults"]
+  excludeStories: [
+    "SingleTimeSeriesDefaults",
+    "MultiTimeSeriesDefaults",
+    "MultiTimeSeriesGroupedDefaults",
+    "MultiTimeSeriesCrosstabDefaults",
+  ],
 };
 
 export default story;
@@ -68,20 +73,20 @@ const MultiTimeSeriesCrosstabDataSample = {
     { name: "value", data_type: "INT8" },
   ],
   rows: [
-    { time: "2023-01-01", series_name: "Income", value: 20},
-    { time: "2023-01-01", series_name: "Spending", value: 0},
-    { time: "2023-02-01", series_name: "Income", value: 18},
-    { time: "2023-02-01", series_name: "Spending", value: 32},
-    { time: "2023-04-01", series_name: "Income", value: 15},
-    { time: "2023-04-01", series_name: "Spending", value: 3},
-    { time: "2023-05-01", series_name: "Income", value: 18},
-    { time: "2023-05-01", series_name: "Spending", value: 15},
-    { time: "2023-06-01", series_name: "Income", value: 0},
-    { time: "2023-06-01", series_name: "Spending", value: 9},
-    { time: "2023-09-01", series_name: "Income", value: 7},
-    { time: "2023-09-01", series_name: "Spending", value: 26},
-    { time: "2023-12-01", series_name: "Income", value: 8},
-    { time: "2023-12-01", series_name: "Spending", value: 3},
+    { time: "2023-01-01", series_name: "Income", value: 20 },
+    { time: "2023-01-01", series_name: "Spending", value: 0 },
+    { time: "2023-02-01", series_name: "Income", value: 18 },
+    { time: "2023-02-01", series_name: "Spending", value: 32 },
+    { time: "2023-04-01", series_name: "Income", value: 15 },
+    { time: "2023-04-01", series_name: "Spending", value: 3 },
+    { time: "2023-05-01", series_name: "Income", value: 18 },
+    { time: "2023-05-01", series_name: "Spending", value: 15 },
+    { time: "2023-06-01", series_name: "Income", value: 0 },
+    { time: "2023-06-01", series_name: "Spending", value: 9 },
+    { time: "2023-09-01", series_name: "Income", value: 7 },
+    { time: "2023-09-01", series_name: "Spending", value: 26 },
+    { time: "2023-12-01", series_name: "Income", value: 8 },
+    { time: "2023-12-01", series_name: "Spending", value: 3 },
   ],
 };
 
@@ -90,12 +95,12 @@ export const MultiTimeSeriesDefaults = {
   properties: {
     series: {
       Income: {
-        color: "green"
+        color: "green",
       },
       Spending: {
-        color: "red"
+        color: "red",
       },
-    }
+    },
   },
 };
 
@@ -107,7 +112,7 @@ export const MultiTimeSeriesCrosstabDefaults = {
 export const MultiTimeSeriesGroupedDefaults = {
   data: MultiTimeSeriesDataSample,
   properties: {
-    ...(MultiTimeSeriesDefaults.properties),
+    ...MultiTimeSeriesDefaults.properties,
     grouping: "compare",
   },
 };

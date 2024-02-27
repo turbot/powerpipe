@@ -1,4 +1,4 @@
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 type LoadingIndicatorProps = {
   className?: string;

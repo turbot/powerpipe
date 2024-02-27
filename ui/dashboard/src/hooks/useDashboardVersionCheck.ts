@@ -1,4 +1,4 @@
-import { IDashboardContext } from "../types";
+import { IDashboardContext } from "@powerpipe/types";
 import { useEffect } from "react";
 
 const useDashboardVersionCheck = (state: IDashboardContext) => {

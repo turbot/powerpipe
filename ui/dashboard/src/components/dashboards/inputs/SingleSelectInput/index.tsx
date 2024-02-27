@@ -1,6 +1,9 @@
-import SelectInput from "../SelectInput";
-import { IInput, InputProps } from "../types";
-import { registerInputComponent } from "../index";
+import SelectInput from "@powerpipe/components/dashboards/inputs/SelectInput";
+import {
+  IInput,
+  InputProps,
+} from "@powerpipe/components/dashboards/inputs/types";
+import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 
 const SingleSelectInput = (props: InputProps) => {
   return <SelectInput {...props} />;

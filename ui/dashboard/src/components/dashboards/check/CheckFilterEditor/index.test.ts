@@ -1,4 +1,4 @@
-import { validateFilter } from "./"; // Replace with the actual module path
+import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor"; // Replace with the actual module path
 
 interface TestCase {
   name: string;

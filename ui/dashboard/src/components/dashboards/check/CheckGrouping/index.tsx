@@ -4,7 +4,7 @@ import {
   CheckGroupNodeStates,
   CheckGroupingActions,
   useCheckGrouping,
-} from "../../../../hooks/useCheckGrouping";
+} from "@powerpipe/hooks/useCheckGrouping";
 import { CheckNode } from "../common";
 import { useCallback, useEffect, useState } from "react";
 

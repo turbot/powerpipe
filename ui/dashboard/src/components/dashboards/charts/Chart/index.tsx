@@ -1,7 +1,7 @@
-import ErrorPanel from "../../Error";
+import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import has from "lodash/has";
 import merge from "lodash/merge";
-import Placeholder from "../../Placeholder";
+import Placeholder from "@powerpipe/components/dashboards/Placeholder";
 import React, { useEffect, useRef, useState } from "react";
 import ReactEChartsCore from "echarts-for-react/lib/core";
 import set from "lodash/set";
@@ -13,7 +13,7 @@ import {
   getColorOverride,
   LeafNodeData,
   Width,
-} from "../../common";
+} from "@powerpipe/components/dashboards/common";
 import { EChartsOption } from "echarts-for-react/src/types";
 import {
   ChartProperties,
@@ -22,12 +22,12 @@ import {
   ChartSeriesOptions,
   ChartTransform,
   ChartType,
-} from "../types";
-import { FlowType } from "../../flows/types";
-import { getChartComponent } from "..";
-import { GraphType } from "../../graphs/types";
-import { HierarchyType } from "../../hierarchies/types";
-import { registerComponent } from "../../index";
+} from "@powerpipe/components/dashboards/charts/types";
+import { FlowType } from "@powerpipe/components/dashboards/flows/types";
+import { getChartComponent } from "@powerpipe/components/dashboards/charts";
+import { GraphType } from "@powerpipe/components/dashboards/graphs/types";
+import { HierarchyType } from "@powerpipe/components/dashboards/hierarchies/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
 

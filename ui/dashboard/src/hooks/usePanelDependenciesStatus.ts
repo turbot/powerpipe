@@ -1,5 +1,5 @@
-import { PanelDefinition } from "../types";
-import { PanelDependencyStatuses } from "../components/dashboards/common/types";
+import { PanelDefinition } from "@powerpipe/types";
+import { PanelDependencyStatuses } from "@powerpipe/components/dashboards/common/types";
 import { useMemo } from "react";
 import { usePanel } from "./usePanel";
 

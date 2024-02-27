@@ -2,7 +2,7 @@ import {
   KeyValuePairs,
   RowRenderResult,
   TemplatesMap,
-} from "../components/dashboards/common/types";
+} from "@powerpipe/components/dashboards/common/types";
 
 const replaceSingleQuotesWithDoubleQuotes = (str) => {
   if (!str) {
@@ -37,7 +37,7 @@ export const buildJQFilter = (template) => {
 
       // Replace any single quotes with jq-compatible double quotes
       const doubleQuotedString = replaceSingleQuotesWithDoubleQuotes(
-        newInterpolatedTemplate
+        newInterpolatedTemplate,
       );
 
       newTemplateParts.push(doubleQuotedString);
@@ -73,7 +73,7 @@ const buildCombinedJQFilter = (templates: TemplatesMap) => {
 const renderInterpolatedTemplates = async (
   templates: TemplatesMap,
   data: KeyValuePairs[],
-  jq: any
+  jq: any,
 ): Promise<RowRenderResult[]> => {
   try {
     const finalFilter = buildCombinedJQFilter(templates);

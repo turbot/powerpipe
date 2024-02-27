@@ -1,9 +1,9 @@
 import copy from "copy-to-clipboard";
-import { classNames } from "../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   CopyToClipboardIcon,
   CopyToClipboardSuccessIcon,
-} from "../../constants/icons";
+} from "@powerpipe/constants/icons";
 import {
   createContext,
   useCallback,
@@ -18,7 +18,7 @@ type ICopyToClipboardContext = {
 };
 
 const CopyToClipboardContext = createContext<ICopyToClipboardContext | null>(
-  null
+  null,
 );
 
 const CopyToClipboardProvider = ({ children }) => {
@@ -51,7 +51,7 @@ const CopyToClipboard = ({
         setCopySuccess(true);
       }
     },
-    [data, setCopySuccess, stopPropagation]
+    [data, setCopySuccess, stopPropagation],
   );
 
   useEffect(() => {

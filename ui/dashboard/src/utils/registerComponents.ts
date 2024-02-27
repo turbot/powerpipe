@@ -1,51 +1,51 @@
 // Layout
-import "../components/dashboards/layout/Panel";
-import "../components/dashboards/layout/Container";
+import "@powerpipe/components/dashboards/layout/Panel";
+import "@powerpipe/components/dashboards/layout/Container";
 
 // General
-import "../components/ExternalLink";
-import "../components/dashboards/Error";
-import "../components/dashboards/Table";
-import "../components/dashboards/Text";
-import "../components/SnapshotHeader";
+import "@powerpipe/components/ExternalLink";
+import "@powerpipe/components/dashboards/Error";
+import "@powerpipe/components/dashboards/Table";
+import "@powerpipe/components/dashboards/Text";
+import "@powerpipe/components/SnapshotHeader";
 
 // Charts
-import "../components/dashboards/charts/AreaChart";
-import "../components/dashboards/charts/BarChart";
-import "../components/dashboards/charts/ColumnChart";
-import "../components/dashboards/charts/DonutChart";
-import "../components/dashboards/charts/LineChart";
-import "../components/dashboards/charts/PieChart";
-import "../components/dashboards/charts/Chart";
+import "@powerpipe/components/dashboards/charts/AreaChart";
+import "@powerpipe/components/dashboards/charts/BarChart";
+import "@powerpipe/components/dashboards/charts/ColumnChart";
+import "@powerpipe/components/dashboards/charts/DonutChart";
+import "@powerpipe/components/dashboards/charts/LineChart";
+import "@powerpipe/components/dashboards/charts/PieChart";
+import "@powerpipe/components/dashboards/charts/Chart";
 
 // Flows
-import "../components/dashboards/flows/Sankey";
-import "../components/dashboards/flows/Flow";
+import "@powerpipe/components/dashboards/flows/Sankey";
+import "@powerpipe/components/dashboards/flows/Flow";
 
 // Graphs
-import "../components/dashboards/graphs/ForceDirectedGraph";
-import "../components/dashboards/graphs/Graph";
+import "@powerpipe/components/dashboards/graphs/ForceDirectedGraph";
+import "@powerpipe/components/dashboards/graphs/Graph";
 
 // Hierarchies
-import "../components/dashboards/hierarchies/Tree";
-import "../components/dashboards/hierarchies/Hierarchy";
+import "@powerpipe/components/dashboards/hierarchies/Tree";
+import "@powerpipe/components/dashboards/hierarchies/Hierarchy";
 
 // Inputs
-import "../components/dashboards/inputs/MultiComboInput";
-import "../components/dashboards/inputs/MultiSelectInput";
-import "../components/dashboards/inputs/SingleComboInput";
-import "../components/dashboards/inputs/SingleSelectInput";
-import "../components/dashboards/inputs/TextInput";
-import "../components/dashboards/inputs/Input";
+import "@powerpipe/components/dashboards/inputs/MultiComboInput";
+import "@powerpipe/components/dashboards/inputs/MultiSelectInput";
+import "@powerpipe/components/dashboards/inputs/SingleComboInput";
+import "@powerpipe/components/dashboards/inputs/SingleSelectInput";
+import "@powerpipe/components/dashboards/inputs/TextInput";
+import "@powerpipe/components/dashboards/inputs/Input";
 
 // Check
-import "../components/dashboards/check/Benchmark";
+import "@powerpipe/components/dashboards/check/Benchmark";
 
 // Dashboard
-import "../components/dashboards/layout/Dashboard";
+import "@powerpipe/components/dashboards/layout/Dashboard";
 
 // Image
-import "../components/dashboards/Image";
+import "@powerpipe/components/dashboards/Image";
 
 // Card
-import "../components/dashboards/Card";
+import "@powerpipe/components/dashboards/Card";

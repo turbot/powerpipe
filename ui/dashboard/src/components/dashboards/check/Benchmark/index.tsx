@@ -1,6 +1,7 @@
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
-import ContainerTitle from "@powerpipe/components/dashboards/titles/ContainerTitle";
+import CustomizeViewSummary from "../CustomizeViewSummary";
+import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
@@ -23,9 +24,9 @@ import {
   registerComponent,
 } from "@powerpipe/components/dashboards";
 import { noop } from "@powerpipe/utils/func";
-import { PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -49,7 +50,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { dashboard, diff } = useDashboard();
+  const { dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -68,10 +69,19 @@ const Benchmark = (props: InnerCheckProps) => {
       data: benchmarkDataTable,
     };
   }, [benchmarkDataTable, props.definition]);
-  const { panelControls: benchmarkControls } = usePanelControls(
-    definitionWithData,
-    props.showControls,
-  );
+  const { panelControls: benchmarkControls, setCustomControls } =
+    usePanelControls(definitionWithData, props.showControls);
+
+  useEffect(() => {
+    setCustomControls([
+      {
+        action: async () =>
+          dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
+        component: <CustomizeViewSummary />,
+        title: "Customize view",
+      },
+    ]);
+  }, [dispatch, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
@@ -142,7 +152,7 @@ const Benchmark = (props: InnerCheckProps) => {
         properties: {
           label: "Alarm",
           value: totalSummary.alarm,
-          icon: "materialsymbols-solid:notifications",
+          icon: "materialsymbols-solid:circle_notifications",
           // icon: "materialsymbols-solid:circle_notifications",
           // icon: "materialsymbols-outline:circle_notifications",
         },
@@ -154,7 +164,7 @@ const Benchmark = (props: InnerCheckProps) => {
               properties: {
                 label: "Alarm",
                 value: diffTotalSummary.alarm,
-                icon: "materialsymbols-solid:notifications",
+                icon: "materialsymbols-solid:circle_notifications",
                 // icon: "materialsymbols-solid:circle_notifications",
                 // icon: "materialsymbols-outline:circle_notifications",
               },
@@ -310,13 +320,18 @@ const Benchmark = (props: InnerCheckProps) => {
       }}
       setRef={setReferenceElement}
     >
-      {!dashboard?.artificial && (
-        <ContainerTitle title={props.benchmark.title} />
-      )}
-      {showBenchmarkControls && (
-        <PanelControls
-          referenceElement={referenceElement}
-          controls={benchmarkControls}
+      {/*Don't show when in panel detail view*/}
+      {!selectedPanel && (
+        <DashboardTitle
+          title={props.definition.title}
+          controls={
+            showBenchmarkControls ? (
+              <PanelControls
+                referenceElement={referenceElement}
+                controls={benchmarkControls}
+              />
+            ) : null
+          }
         />
       )}
       <Grid name={`${props.definition.name}.container.summary`}>
@@ -337,6 +352,7 @@ const Benchmark = (props: InnerCheckProps) => {
               parentType="benchmark"
               showControls={false}
             >
+              {/*@ts-ignore*/}
               <Card {...cardProps} diff_panel={summaryCard.diff_panel} />
             </Panel>
           );

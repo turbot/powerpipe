@@ -1,11 +1,11 @@
 import DashboardIcon, {
   useDashboardIconType,
-} from "../../common/DashboardIcon";
-import Icon from "../../../Icon";
-import IntegerDisplay from "../../../IntegerDisplay";
+} from "@powerpipe/components/dashboards/common/DashboardIcon";
+import Icon from "@powerpipe/components/Icon";
+import IntegerDisplay from "@powerpipe/components/IntegerDisplay";
 import RowProperties, { RowPropertiesTitle } from "./RowProperties";
 import Tooltip from "./Tooltip";
-import usePaginatedList from "../../../../hooks/usePaginatedList";
+import usePaginatedList from "@powerpipe/hooks/usePaginatedList";
 import { buildLabelTextShadow } from "./utils";
 import {
   Category,
@@ -14,10 +14,10 @@ import {
   FoldedNode,
   KeyValuePairs,
   KeyValueStringPairs,
-} from "../../common/types";
-import { classNames } from "../../../../utils/styles";
+} from "@powerpipe/components/dashboards/common/types";
+import { classNames } from "@powerpipe/utils/styles";
 import { ExpandedNodeInfo, useGraph } from "../common/useGraph";
-import { getComponent } from "../../index";
+import { getComponent } from "@powerpipe/components/dashboards";
 import { Handle } from "reactflow";
 import { memo, ReactNode, useEffect, useMemo, useState } from "react";
 
@@ -262,7 +262,7 @@ const AssetNode = ({
 
   const isExpandedNode = useMemo(
     () => !!expandedNodes[id],
-    [id, expandedNodes]
+    [id, expandedNodes],
   );
 
   const textIconStringLength =
@@ -272,7 +272,7 @@ const AssetNode = ({
     <div
       className={classNames(
         iconType === "text" ? "p-1" : "p-3 leading-[50px]",
-        "flex items-center justify-center rounded-full w-[50px] h-[50px] my-0 mx-auto border"
+        "flex items-center justify-center rounded-full w-[50px] h-[50px] my-0 mx-auto border",
       )}
       style={{
         borderColor: color ? color : themeColors.blackScale3,
@@ -294,7 +294,7 @@ const AssetNode = ({
             : null,
           // @ts-ignore
           iconType === "text" && textIconStringLength <= 2 ? "text-2xl" : null,
-          iconType === "icon" && !color ? "text-foreground-lighter" : null
+          iconType === "icon" && !color ? "text-foreground-lighter" : null,
         )}
         style={{
           color: color ? color : undefined,
@@ -332,7 +332,7 @@ const AssetNode = ({
     <div
       className={classNames(
         renderedHref ? "text-link" : null,
-        "absolute truncate bottom-0 px-1 text-sm mt-1 text-foreground whitespace-nowrap max-w-[150px]"
+        "absolute truncate bottom-0 px-1 text-sm mt-1 text-foreground whitespace-nowrap max-w-[150px]",
       )}
     >
       {!isFolded && (
@@ -374,7 +374,7 @@ const AssetNode = ({
     <div
       className={classNames(
         "group relative h-[72px] flex flex-col items-center",
-        renderedHref || isFolded ? "cursor-pointer" : "cursor-auto"
+        renderedHref || isFolded ? "cursor-pointer" : "cursor-auto",
       )}
       onClick={
         isFolded && foldedNodes

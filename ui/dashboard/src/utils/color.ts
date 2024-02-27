@@ -1,5 +1,5 @@
 import colorConvert from "color-convert";
-import { getColorOverride } from "../components/dashboards/common";
+import { getColorOverride } from "@powerpipe/components/dashboards/common";
 
 const minColumn = 16;
 const maxColumn = 51;

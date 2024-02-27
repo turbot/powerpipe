@@ -1,6 +1,6 @@
 import has from "lodash/has";
 import isNumber from "lodash/isNumber";
-import useChartThemeColors from "../../../hooks/useChartThemeColors";
+import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
 import {
   Category,
   CategoryMap,
@@ -13,7 +13,7 @@ import {
   DashboardRunState,
   DependencyPanelProperties,
   PanelsMap,
-} from "../../../types";
+} from "@powerpipe/types";
 import { getColorOverride } from "./index";
 import {
   NodeAndEdgeData,
@@ -22,8 +22,8 @@ import {
   NodeAndEdgeDataRow,
   NodeAndEdgeStatus,
   WithStatusMap,
-} from "../graphs/types";
-import { useDashboard } from "../../../hooks/useDashboard";
+} from "@powerpipe/components/dashboards/graphs/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo } from "react";
 
 // Categories may be sourced from a node, an edge, a flow, a graph or a hierarchy
@@ -31,7 +31,7 @@ import { useMemo } from "react";
 // Any node/edge/flow/graph/hierarchy data row can define a category - in that event, the category must come from the category map for the composing resource
 
 const getNodeAndEdgeDataFormat = (
-  properties: NodeAndEdgeProperties | undefined
+  properties: NodeAndEdgeProperties | undefined,
 ): NodeAndEdgeDataFormat => {
   if (!properties) {
     return "LEGACY";
@@ -53,7 +53,7 @@ const getNodeAndEdgeDataFormat = (
 
 const addColumnsForResource = (
   columns: NodeAndEdgeDataColumn[],
-  data: NodeAndEdgeData
+  data: NodeAndEdgeData,
 ): NodeAndEdgeDataColumn[] => {
   // Get a union of all the columns across all nodes
   const newColumns = [...columns];
@@ -68,7 +68,7 @@ const addColumnsForResource = (
 
 const populateCategoryWithDefaults = (
   category: Category,
-  themeColors: KeyValueStringPairs
+  themeColors: KeyValueStringPairs,
 ): Category => {
   return {
     name: category.name,
@@ -95,7 +95,7 @@ const addPanelWithsStatus = (
   panelsMap: PanelsMap,
   dependencies: string[] | undefined,
   withLookup: KeyValueStringPairs,
-  withStatuses: WithStatusMap
+  withStatuses: WithStatusMap,
 ) => {
   for (const dependency of dependencies || []) {
     // If we've already logged the status of this with, carry on
@@ -126,7 +126,7 @@ const addPanelWithsStatus = (
 const useNodeAndEdgeData = (
   data: NodeAndEdgeData | undefined,
   properties: NodeAndEdgeProperties | undefined,
-  status: DashboardRunState
+  status: DashboardRunState,
 ) => {
   const { panelsMap } = useDashboard();
   const themeColors = useChartThemeColors();
@@ -145,11 +145,11 @@ const useNodeAndEdgeData = (
 
         // Set defaults on categories
         for (const [name, category] of Object.entries(
-          properties?.categories || {}
+          properties?.categories || {},
         )) {
           categories[name] = populateCategoryWithDefaults(
             category,
-            themeColors
+            themeColors,
           );
         }
 
@@ -168,7 +168,7 @@ const useNodeAndEdgeData = (
 
     // Add flow/graph/hierarchy level categories
     for (const [name, category] of Object.entries(
-      properties?.categories || {}
+      properties?.categories || {},
     )) {
       categories[name] = populateCategoryWithDefaults(category, themeColors);
     }
@@ -197,7 +197,7 @@ const useNodeAndEdgeData = (
         panels,
         panel.dependencies,
         withNameLookup,
-        nodeAndEdgeStatus.withs
+        nodeAndEdgeStatus.withs,
       );
 
       const typedPanelData = (panel.data || {}) as NodeAndEdgeData;
@@ -220,7 +220,7 @@ const useNodeAndEdgeData = (
       if (nodeProperties.category) {
         nodeCategory = populateCategoryWithDefaults(
           nodeProperties.category,
-          themeColors
+          themeColors,
         );
         nodeCategoryId = `node.${nodePanelName}.${nodeCategory.name}`;
         categories[nodeCategoryId] = nodeCategory;
@@ -273,7 +273,7 @@ const useNodeAndEdgeData = (
         panels,
         panel.dependencies,
         withNameLookup,
-        nodeAndEdgeStatus.withs
+        nodeAndEdgeStatus.withs,
       );
 
       const typedPanelData = (panel.data || {}) as NodeAndEdgeData;
@@ -295,7 +295,7 @@ const useNodeAndEdgeData = (
       if (edgeProperties.category) {
         edgeCategory = populateCategoryWithDefaults(
           edgeProperties.category,
-          themeColors
+          themeColors,
         );
         edgeCategoryId = `edge.${edgePanelName}.${edgeCategory.name}`;
         categories[edgeCategoryId] = edgeCategory;

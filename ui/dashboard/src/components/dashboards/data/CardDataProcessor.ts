@@ -1,15 +1,21 @@
 import get from "lodash/get";
 import isNumber from "lodash/isNumber";
-import { CardProperties } from "../Card";
+import { CardProperties } from "@powerpipe/components/dashboards/Card";
 import {
   DashboardPanelType,
   DashboardRunState,
   PanelDefinition,
-} from "../../../types";
-import { getColumn, hasData } from "../../../utils/data";
-import { getIconForType } from "../../../utils/card";
-import { IDiffProperties, IPanelDiff } from "./types";
-import { isNumericCol, LeafNodeData } from "../common";
+} from "@powerpipe/types";
+import { getColumn, hasData } from "@powerpipe/utils/data";
+import { getIconForType } from "@powerpipe/utils/card";
+import {
+  IDiffProperties,
+  IPanelDiff,
+} from "@powerpipe/components/dashboards/data/types";
+import {
+  isNumericCol,
+  LeafNodeData,
+} from "@powerpipe/components/dashboards/common";
 
 export interface CardDiffState extends IPanelDiff {
   value?: number;
@@ -156,8 +162,8 @@ export class CardDataProcessor {
       state.value_number > previous_state.value_number
         ? "up"
         : state.value_number === previous_state.value_number
-        ? "none"
-        : "down";
+          ? "none"
+          : "down";
 
     let value: number;
     let value_percent: "infinity" | number;
@@ -168,20 +174,20 @@ export class CardDataProcessor {
         state.type === "alert"
           ? "alert"
           : state.type === "ok"
-          ? "ok"
-          : state.type === "severity"
-          ? "severity"
-          : null;
+            ? "ok"
+            : state.type === "severity"
+              ? "severity"
+              : null;
     } else if (direction === "down") {
       value = previous_state.value_number - state.value_number;
       status =
         state.type === "alert"
           ? "ok"
           : state.type === "ok"
-          ? "alert"
-          : state.type === "severity"
-          ? "ok"
-          : null;
+            ? "alert"
+            : state.type === "severity"
+              ? "ok"
+              : null;
     } else {
       value = 0;
     }

@@ -1,14 +1,14 @@
-import Grid from "../Grid";
-import NeutralButton from "../../../forms/NeutralButton";
+import Grid from "@powerpipe/components/dashboards/layout/Grid";
+import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import PanelDetailData from "./PanelDetailData";
 import PanelDetailDataDownloadButton from "./PanelDetailDataDownloadButton";
 import PanelDetailDefinition from "./PanelDetailDefinition";
 import PanelDetailLog from "./PanelDetailLog";
 import PanelDetailPreview from "./PanelDetailPreview";
 import PanelDetailQuery from "./PanelDetailQuery";
-import { classNames } from "../../../../utils/styles";
-import { DashboardDataModeLive, PanelDefinition } from "../../../../types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { classNames } from "@powerpipe/utils/styles";
+import { DashboardDataModeLive, PanelDefinition } from "@powerpipe/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo, useState } from "react";
 
 export type PanelDetailProps = {
@@ -127,7 +127,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
             onChange={(e) =>
               setSelectedTab(
                 availableTabs.find((tab) => tab.name === e.target.value) ||
-                  availableTabs[0]
+                  availableTabs[0],
               )
             }
           >
@@ -148,7 +148,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
                     tab.selected
                       ? "border-black-scale-4 text-foreground cursor-pointer"
                       : "border-transparent text-foreground-lighter hover:text-foreground cursor-pointer",
-                    "whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm"
+                    "whitespace-nowrap py-3 px-1 border-b-2 font-medium text-sm",
                   )}
                   onClick={() => setSelectedTab(tab)}
                 >

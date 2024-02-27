@@ -1,7 +1,7 @@
 import {
   LeafNodeData,
   LeafNodeDataColumn,
-} from "../components/dashboards/common";
+} from "@powerpipe/components/dashboards/common";
 
 const hasData = (data: LeafNodeData | undefined) => {
   return (

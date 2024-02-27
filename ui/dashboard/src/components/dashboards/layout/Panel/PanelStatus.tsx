@@ -1,11 +1,11 @@
 import ErrorMessage from "../../../ErrorMessage";
 import Icon from "../../../Icon";
-import LoadingIndicator from "../../LoadingIndicator";
-import usePanelDependenciesStatus from "../../../../hooks/usePanelDependenciesStatus";
-import { classNames } from "../../../../utils/styles";
+import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
+import usePanelDependenciesStatus from "@powerpipe/hooks/usePanelDependenciesStatus";
+import { classNames } from "@powerpipe/utils/styles";
 import { HashLink } from "react-router-hash-link";
 import { InputProperties } from "../../inputs/types";
-import { PanelDefinition } from "../../../../types";
+import { PanelDefinition } from "@powerpipe/types";
 import { ReactNode } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -33,7 +33,7 @@ const BasePanelStatus = ({
     className={classNames(
       className,
       "w-full h-full p-4 break-keep rounded-md",
-      !!definition.title ? "rounded-t-none" : null
+      !!definition.title ? "rounded-t-none" : null,
     )}
   >
     {children}

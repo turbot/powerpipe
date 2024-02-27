@@ -1,5 +1,6 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
+import has from "lodash/has";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
@@ -13,20 +14,18 @@ import {
 } from "../../inputs/common/Common";
 import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
-import { useCallback, useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
-import has from "lodash/has";
 
 type CheckFilterEditorProps = {
-  config: CheckFilter;
-  isValid: { value: boolean; reason: string };
+  filter: CheckFilter;
   onCancel: () => void;
-  onSave: () => void;
-  setConfig: (newValue: CheckFilter) => void;
+  onApply: (newValue: CheckFilter) => void;
+  onSave: (newValue: CheckFilter) => void;
 };
 
 type CheckFilterEditorItemProps = {
-  config: CheckFilter;
+  filter: CheckFilter;
   item: CheckFilter;
   index: number;
   remove: (index: number) => void;
@@ -34,7 +33,8 @@ type CheckFilterEditorItemProps = {
 };
 
 type CheckFilterTypeSelectProps = {
-  config: CheckFilter;
+  className?: string;
+  filter: CheckFilter;
   index: number;
   item: CheckFilter;
   type: CheckFilterType;
@@ -50,6 +50,7 @@ type CheckFilterKeySelectProps = {
 };
 
 type CheckFilterValueSelectProps = {
+  className?: string;
   index: number;
   item: CheckFilter;
   type: CheckFilterType;
@@ -57,8 +58,31 @@ type CheckFilterValueSelectProps = {
   value: string | undefined;
 };
 
+const validateFilter = (filter: CheckFilter): boolean => {
+  // Each and must have at least one expression
+  if (
+    filter.operator === "and" &&
+    (!filter.expressions || filter.expressions.length < 1)
+  ) {
+    return false;
+  }
+  if (filter.operator === "and") {
+    // @ts-ignore can't reach here if filter.expressions is not truthy
+    return filter.expressions.every(validateFilter);
+  }
+
+  if (filter.operator === "equal") {
+    return (
+      !!filter.type && (filter.key !== undefined || filter.value !== undefined)
+    );
+  }
+
+  return false;
+};
+
 const CheckFilterTypeSelect = ({
-  config,
+  className,
+  filter,
   index,
   item,
   type,
@@ -76,7 +100,7 @@ const CheckFilterTypeSelect = ({
 
   const types = useMemo(() => {
     // @ts-ignore
-    const existingTypes = config.expressions
+    const existingTypes = filter.expressions
       ?.map((c) => c.type?.toString())
       .filter((t) => !!t);
     const allTypes: SelectOption[] = [
@@ -97,13 +121,13 @@ const CheckFilterTypeSelect = ({
         // @ts-ignore
         !existingTypes.includes(t.value),
     );
-  }, [config, type]);
+  }, [filter, type]);
 
   const styles = useSelectInputStyles();
 
   return (
     <Select
-      className="basic-single"
+      className={classNames("basic-single", className)}
       classNamePrefix="select"
       components={{
         // @ts-ignore
@@ -143,10 +167,12 @@ const CheckFilterKeySelect = ({
   }, [currentKey, index, item]);
 
   const keys = useMemo(() => {
-    return Object.keys(filterValues[type].key || {}).map((k) => ({
-      value: k,
-      label: k,
-    }));
+    return Object.keys(filterValues ? filterValues[type].key || {} : {}).map(
+      (k) => ({
+        value: k,
+        label: k,
+      }),
+    );
   }, [filterValues, type]);
 
   const styles = useSelectInputStyles();
@@ -176,6 +202,7 @@ const CheckFilterKeySelect = ({
 };
 
 const CheckFilterValueSelect = ({
+  className,
   index,
   item,
   type,
@@ -194,7 +221,7 @@ const CheckFilterValueSelect = ({
     }
     if (type === "status") {
       return (
-        Object.entries(filterValues[type] || {})
+        Object.entries(filterValues ? filterValues[type] || {} : {})
           // @ts-ignore
           .filter(([, v]) => v > 0)
           .map(([k, v]) => ({
@@ -204,7 +231,7 @@ const CheckFilterValueSelect = ({
           }))
       );
     } else if (type === "dimension") {
-      return Object.entries(filterValues[type].value || {})
+      return Object.entries(filterValues ? filterValues[type].value || {} : {})
         .filter(([, v]) => has(v, item.key as string))
         .map(([k, v]) => {
           return {
@@ -215,7 +242,9 @@ const CheckFilterValueSelect = ({
           };
         });
     } else if (type === "benchmark" || type === "control") {
-      return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+      return Object.entries(
+        filterValues ? filterValues[type].value || {} : {},
+      ).map(([k, v]) => {
         return {
           value: k,
           // @ts-ignore
@@ -225,7 +254,9 @@ const CheckFilterValueSelect = ({
         };
       });
     }
-    return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+    return Object.entries(
+      filterValues ? filterValues[type].value || {} : {},
+    ).map(([k, v]) => {
       return {
         value: k,
         label: k,
@@ -247,7 +278,7 @@ const CheckFilterValueSelect = ({
 
   return (
     <CreatableSelect
-      className="basic-single"
+      className={classNames("basic-single", className)}
       classNamePrefix="select"
       components={{
         // @ts-ignore
@@ -277,7 +308,7 @@ const CheckFilterValueSelect = ({
 };
 
 const CheckFilterEditorItem = ({
-  config,
+  filter,
   index,
   item,
   remove,
@@ -298,9 +329,9 @@ const CheckFilterEditorItem = ({
       <div className="cursor-grab" onPointerDown={(e) => dragControls.start(e)}>
         <Icon className="h-5 w-5" icon="drag_indicator" />
       </div>
-      <div className="grow">
+      <div className="grow min-w-44 max-w-72">
         <CheckFilterTypeSelect
-          config={config}
+          filter={filter}
           index={index}
           item={item}
           // @ts-ignore
@@ -311,7 +342,7 @@ const CheckFilterEditorItem = ({
       {(item.type === "dimension" || item.type === "tag") && (
         <>
           <span>=</span>
-          <div className="grow">
+          <div className="grow min-w-40 max-w-72">
             <CheckFilterKeySelect
               index={index}
               item={item}
@@ -323,7 +354,7 @@ const CheckFilterEditorItem = ({
         </>
       )}
       <span>=</span>
-      <div className="grow">
+      <div className="grow min-w-52 max-w-72">
         <CheckFilterValueSelect
           index={index}
           item={item}
@@ -335,13 +366,15 @@ const CheckFilterEditorItem = ({
       </div>
       <span
         className={classNames(
-          // @ts-ignore
-          config.expressions?.length > 0
+          (filter.expressions?.length || 0) > 1
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
             : "text-foreground-lightest",
         )}
-        // @ts-ignore
-        onClick={() => remove(index)}
+        onClick={
+          (filter.expressions?.length || 0) > 1
+            ? () => remove(index)
+            : undefined
+        }
         title="Remove"
       >
         <Icon className="h-5 w-5" icon="trash" />
@@ -350,99 +383,103 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const CheckFilterEditor = ({
-  config,
-  setConfig,
-  isValid,
-  onCancel,
-  onSave,
-}: CheckFilterEditorProps) => {
+const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
+  const [innerFilter, setInnerFilter] = useState<CheckFilter>(filter);
+  const [isDirty, setIsDirty] = useState(false);
+  const [isValid, setIsValid] = useState({ value: false, reason: "" });
+
+  useEffect(() => {
+    if (!innerFilter) {
+      setIsDirty(false);
+      setIsValid({ value: true, reason: "" });
+      return;
+    }
+
+    setIsValid({ value: validateFilter(innerFilter), reason: "" });
+    setIsDirty(JSON.stringify(innerFilter) !== JSON.stringify(filter));
+  }, [filter, innerFilter, setIsDirty, setIsValid]);
+
   const remove = useCallback(
     (index: number) => {
-      const newConfig: CheckFilter = {
-        ...config,
+      setInnerFilter((existing) => ({
+        ...existing,
         expressions: [
-          ...(config.expressions?.slice(0, index) || []),
-          ...(config.expressions?.slice(index + 1) || []),
+          ...(existing.expressions?.slice(0, index) || []),
+          ...(existing.expressions?.slice(index + 1) || []),
         ],
-      };
-      setConfig(newConfig);
+      }));
     },
-    [config, setConfig],
+    [setInnerFilter],
   );
 
   const update = useCallback(
     (index: number, updatedItem: CheckFilter) => {
-      const newConfig: CheckFilter = {
-        ...config,
+      setInnerFilter((existing) => ({
+        ...existing,
         expressions: [
-          ...(config.expressions?.slice(0, index) || []),
+          ...(existing.expressions?.slice(0, index) || []),
           updatedItem,
-          ...(config.expressions?.slice(index + 1) || []),
+          ...(existing.expressions?.slice(index + 1) || []),
         ],
-      };
-      setConfig(newConfig);
+      }));
     },
-    [config, setConfig],
+    [setInnerFilter],
   );
 
   return (
     <div className="flex flex-col space-y-4">
-      {(config.expressions?.length || 0) > 0 && (
-        <Reorder.Group
-          axis="y"
-          values={config.expressions || []}
-          onReorder={(a) => {
-            if (!!config) {
-              const newConfig = {
-                ...config,
-                expressions: a,
-              };
-              setConfig(newConfig);
-            }
-          }}
-          as="div"
-          className="flex flex-col space-y-4"
-        >
-          {config.expressions?.map((c: CheckFilter, idx: number) => (
-            <CheckFilterEditorItem
-              key={`${c.type}-${c.value}`}
-              config={config}
-              item={c}
-              index={idx}
-              remove={remove}
-              update={update}
-            />
-          ))}
-        </Reorder.Group>
-      )}
+      <Reorder.Group
+        axis="y"
+        values={filter.expressions || []}
+        onReorder={(a) => {
+          if (!!innerFilter) {
+            setInnerFilter((existing) => ({
+              ...existing,
+              expressions: a,
+            }));
+          }
+        }}
+        as="div"
+        className="flex flex-col space-y-4"
+      >
+        {innerFilter.expressions?.map((c: CheckFilter, idx: number) => (
+          <CheckFilterEditorItem
+            key={`${c.type}-${c.value}`}
+            filter={innerFilter}
+            item={c}
+            index={idx}
+            remove={remove}
+            update={update}
+          />
+        ))}
+      </Reorder.Group>
       <CheckEditorAddItem
-        addLabel="Add filter"
-        clearLabel="Clear filters"
+        isDirty={isDirty}
         isValid={isValid}
         onAdd={() =>
-          setConfig({
-            ...config,
+          setInnerFilter((existing) => ({
+            ...existing,
             expressions: [
-              // @ts-ignore
-              ...(config.expressions || []),
-              // @ts-ignore
-              { operator: "equal", type: "" },
+              ...(existing.expressions || []),
+              { operator: "equal" },
             ],
-          })
+          }))
         }
         onClear={() => {
-          setConfig({
-            ...config,
-            expressions: [],
-          });
-          onSave();
+          const toSave: CheckFilter = {
+            expressions: [{ operator: "equal" }],
+            operator: "and",
+          };
+          setInnerFilter(toSave);
+          onApply(toSave);
         }}
-        onCancel={onCancel}
-        onSave={onSave}
+        onApply={() => onApply(innerFilter)}
+        addLabel="Add filter"
       />
     </div>
   );
 };
 
 export default CheckFilterEditor;
+
+export { validateFilter };

@@ -1,8 +1,11 @@
 import useSelectInputValues from "./useSelectInputValues";
-import { DashboardRunState } from "../../../../types";
-import { LeafNodeData } from "../../common";
+import { DashboardRunState } from "@powerpipe/types";
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 import { renderHook } from "@testing-library/react";
-import { SelectInputOption, SelectOption } from "../types";
+import {
+  SelectInputOption,
+  SelectOption,
+} from "@powerpipe/components/dashboards/inputs/types";
 
 const options = [
   {
@@ -304,7 +307,7 @@ describe("hooks", () => {
   describe("useSelectInputValues", () => {
     test.each(tests)("$name", ({ options, data, status, expected }) => {
       const { result } = renderHook(() =>
-        useSelectInputValues(options, data, status)
+        useSelectInputValues(options, data, status),
       );
 
       expect(result.current).toEqual(expected);

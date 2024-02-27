@@ -3,6 +3,7 @@ import ControlDimension from "../Benchmark/ControlDimension";
 import ControlEmptyResultNode from "../common/node/ControlEmptyResultNode";
 import ControlErrorNode from "../common/node/ControlErrorNode";
 import ControlResultNode from "../common/node/ControlResultNode";
+import KeyValuePairNode from "@powerpipe/components/dashboards/check/common/node/KeyValuePairNode";
 import sortBy from "lodash/sortBy";
 import {
   AlarmIcon,
@@ -14,18 +15,18 @@ import {
   OKIcon,
   SkipIcon,
   UnknownIcon,
-} from "../../../../constants/icons";
+} from "@powerpipe/constants/icons";
 import {
   CheckGroupingActions,
   useCheckGrouping,
-} from "../../../../hooks/useCheckGrouping";
+} from "@powerpipe/hooks/useCheckGrouping";
 import {
   CheckNode,
   CheckResult,
   CheckResultStatus,
   CheckSeveritySummary,
 } from "../common";
-import { classNames } from "../../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import { useMemo } from "react";
 
 type CheckChildrenProps = {
@@ -364,6 +365,9 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                   className="mt-0"
                   title={node.title}
                 >
+                  {!!(node as KeyValuePairNode).key ? (
+                    <span>{(node as KeyValuePairNode).key}: </span>
+                  ) : null}
                   {node.title}
                 </h3>
                 <CheckPanelSeverity severity_summary={node.severity_summary} />

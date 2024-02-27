@@ -1,7 +1,7 @@
 import difference from "lodash/difference";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import usePrevious from "../../../../hooks/usePrevious";
-import useTemplateRender from "../../../../hooks/useTemplateRender";
+import usePrevious from "@powerpipe/hooks/usePrevious";
+import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   createContext,
   ReactNode,
@@ -10,9 +10,12 @@ import {
   useState,
 } from "react";
 import { Edge, Node, useReactFlow } from "reactflow";
-import { FoldedNode, RowRenderResult } from "../../common/types";
-import { noop } from "../../../../utils/func";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import {
+  FoldedNode,
+  RowRenderResult,
+} from "@powerpipe/components/dashboards/common/types";
+import { noop } from "@powerpipe/utils/func";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { v4 as uuid } from "uuid";
 
 export type ExpandedNodeInfo = {
@@ -79,7 +82,7 @@ const GraphProvider = ({ children }: { children: ReactNode }) => {
 
     const doRender = async () => {
       const nodesWithHrefs = graphNodes.filter(
-        (n) => n.data && !n.data.isFolded && !!n.data.href
+        (n) => n.data && !n.data.isFolded && !!n.data.href,
       );
       const nodesByCategory: CategoryNodeMap = {};
       for (const node of nodesWithHrefs) {
@@ -98,7 +101,7 @@ const GraphProvider = ({ children }: { children: ReactNode }) => {
         const hrefTemplate = nodes[0].data.href;
         const results = await renderTemplates(
           { [category]: hrefTemplate },
-          nodes.map((n) => n.data.row_data || {})
+          nodes.map((n) => n.data.row_data || {}),
         );
         for (let nodeIdx = 0; nodeIdx < nodes.length; nodeIdx++) {
           const node = nodes[nodeIdx];
@@ -126,29 +129,29 @@ const GraphProvider = ({ children }: { children: ReactNode }) => {
     const expandedNodesKeys = Object.keys(expandedNodes);
     const differentNodeIdsOldToNew = difference(
       previousNodeIds,
-      currentNodeIds
+      currentNodeIds,
     );
     const differentNodeIdsOldToNewAllFoldNodes =
       differentNodeIdsOldToNew.length > 0 &&
       differentNodeIdsOldToNew.every((n) => n.startsWith("fold-node."));
     const differentNodeIdsNewToOld = difference(
       currentNodeIds,
-      previousNodeIds
+      previousNodeIds,
     );
     const differentNodeIdsNewToOldAllFoldNodes =
       differentNodeIdsNewToOld.length > 0 &&
       differentNodeIdsNewToOld.every((n) => n.startsWith("fold-node."));
     const differentNodeIdsNewToOldWithoutExpanded = difference(
       differentNodeIdsNewToOld,
-      expandedNodesKeys
+      expandedNodesKeys,
     );
     const differentEdgeIdsOldToNew = difference(
       previousEdgeIds,
-      currentEdgeIds
+      currentEdgeIds,
     );
     const differentEdgeIdsNewToOld = difference(
       currentEdgeIds,
-      previousEdgeIds
+      previousEdgeIds,
     );
     if (
       !differentNodeIdsOldToNewAllFoldNodes &&

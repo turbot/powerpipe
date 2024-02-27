@@ -13,10 +13,18 @@ const useCheckFilterConfig = (): CheckFilter => {
         return parsedFilters;
       } catch (error) {
         console.error("Error parsing where filters", error);
-        return { operator: "and", expressions: [] };
+        return {
+          operator: "and",
+          // @ts-ignore
+          expressions: [{ operator: "equal" }],
+        };
       }
     } else {
-      return { operator: "and", expressions: [] };
+      return {
+        operator: "and",
+        // @ts-ignore
+        expressions: [{ operator: "equal" }],
+      };
     }
   }, [searchParams]);
 };

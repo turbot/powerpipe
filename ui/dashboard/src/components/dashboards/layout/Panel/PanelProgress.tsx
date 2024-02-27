@@ -1,10 +1,10 @@
-import { classNames } from "../../../../utils/styles";
-import { DashboardDataModeLive } from "../../../../types";
-import { getNodeAndEdgeDataFormat } from "../../common/useNodeAndEdgeData";
-import { NodeAndEdgeProperties } from "../../common/types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { classNames } from "@powerpipe/utils/styles";
+import { DashboardDataModeLive } from "@powerpipe/types";
+import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
+import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo } from "react";
-import { usePanel } from "../../../../hooks/usePanel";
+import { usePanel } from "@powerpipe/hooks/usePanel";
 
 const PanelProgress = ({ className }) => {
   const { definition } = usePanel();
@@ -17,9 +17,9 @@ const PanelProgress = ({ className }) => {
         definition.panel_type === "graph" ||
         definition.panel_type === "hierarchy") &&
       getNodeAndEdgeDataFormat(
-        definition.properties as NodeAndEdgeProperties
+        definition.properties as NodeAndEdgeProperties,
       ) === "NODE_AND_EDGE",
-    [definition]
+    [definition],
   );
 
   const progress = useMemo(() => {
@@ -78,7 +78,7 @@ const PanelProgress = ({ className }) => {
 
     return Math.min(
       Math.ceil(((totalError + totalComplete) / totalThings) * 100),
-      100
+      100,
     );
   }, [definition, panelsMap, showProgress]);
 
@@ -91,7 +91,7 @@ const PanelProgress = ({ className }) => {
     <div
       className={classNames(
         className,
-        "w-full h-[4px] bg-dashboard-panel print:hidden"
+        "w-full h-[4px] bg-dashboard-panel print:hidden",
       )}
     >
       {progress < 100 && (

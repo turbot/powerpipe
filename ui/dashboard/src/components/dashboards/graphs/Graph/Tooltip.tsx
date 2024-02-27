@@ -8,8 +8,8 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
-import { noop } from "../../../../utils/func";
-import { ThemeProvider, ThemeWrapper } from "../../../../hooks/useTheme";
+import { noop } from "@powerpipe/utils/func";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { usePopper } from "react-popper";
 
 type TooltipProps = {
@@ -28,7 +28,7 @@ export function on<T extends Window | Document | HTMLElement | EventTarget>(
 ): void {
   if (obj && obj.addEventListener) {
     obj.addEventListener(
-      ...(args as Parameters<HTMLElement["addEventListener"]>)
+      ...(args as Parameters<HTMLElement["addEventListener"]>),
     );
   }
 }
@@ -41,7 +41,7 @@ export function off<T extends Window | Document | HTMLElement | EventTarget>(
 ): void {
   if (obj && obj.removeEventListener) {
     obj.removeEventListener(
-      ...(args as Parameters<HTMLElement["removeEventListener"]>)
+      ...(args as Parameters<HTMLElement["removeEventListener"]>),
     );
   }
 }
@@ -194,7 +194,7 @@ const Tooltip = ({
                   // closeTooltips(id);
                   timeoutId.current = setTimeout(
                     () => setShowOverlay(false),
-                    hideDelay
+                    hideDelay,
                   );
                 }}
               >
@@ -206,7 +206,7 @@ const Tooltip = ({
             </ThemeWrapper>
           </ThemeProvider>,
           // @ts-ignore as this element definitely exists
-          document.getElementById("portals")
+          document.getElementById("portals"),
         )}
     </>
   );

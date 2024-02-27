@@ -1,8 +1,14 @@
-import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
+import {
+  BasePrimitiveProps,
+  ExecutablePrimitiveProps,
+} from "@powerpipe/components/dashboards/common";
 import { ComponentType } from "react";
-import { CategoryMap, NodeAndEdgeProperties } from "../common/types";
-import { NodeAndEdgeData } from "../graphs/types";
-import { PanelDefinition } from "../../../types";
+import {
+  CategoryMap,
+  NodeAndEdgeProperties,
+} from "@powerpipe/components/dashboards/common/types";
+import { NodeAndEdgeData } from "@powerpipe/components/dashboards/graphs/types";
+import { PanelDefinition } from "@powerpipe/types";
 
 export type BaseHierarchyProps = PanelDefinition &
   BasePrimitiveProps &

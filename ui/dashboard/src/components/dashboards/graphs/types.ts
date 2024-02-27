@@ -2,15 +2,15 @@ import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
   LeafNodeDataColumn,
-} from "../common";
+} from "@powerpipe/components/dashboards/common";
 import {
   Category,
   CategoryMap,
   KeyValuePairs,
   NodeAndEdgeProperties,
-} from "../common/types";
+} from "@powerpipe/components/dashboards/common/types";
 import { ComponentType } from "react";
-import { DashboardRunState, PanelDefinition } from "../../../types";
+import { DashboardRunState, PanelDefinition } from "@powerpipe/types";
 
 export type NodeAndEdgeDataFormat = "LEGACY" | "NODE_AND_EDGE";
 
