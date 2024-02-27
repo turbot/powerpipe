@@ -12,57 +12,68 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-// ResolveTarget extracts a of target and (if present) query args from the command line parameters
+// ResolveTargets extracts a of target and (if present) query args from the command line parameters
 //   - if no resource type is specified in the name, it is added from the command type
 //   - validate the resource type specified in the name matches the command type
 //   - verify the resource exists in the workspace
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
-func ResolveTarget[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) (T, error) {
-	var empty T
+func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]T, error) {
 	if len(cmdArgs) == 0 {
-		return empty, nil
-	}
-	if len(cmdArgs) > 1 {
-		return empty, sperr.New("only a single target is supported")
-	}
-	// now try to resolve
-	target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArgs[0], w)
-	if err != nil {
-		return empty, err
-	}
-	if helpers.IsNil(target) {
-		return empty, fmt.Errorf("'%s' not found in %s (%s)", cmdArgs[0], w.Mod.Name(), w.Path)
+		return nil, nil
 	}
 
+	// now try to resolve targets
+	var targets []T
+	var queryArgsMap map[string]*modconfig.QueryArgs
+	for _, cmdArg := range cmdArgs {
+		target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, w)
+		if err != nil {
+			return nil, err
+		}
+		if helpers.IsNil(target) {
+			return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArgs[0], w.Mod.Name(), w.Path)
+		}
+		targets = append(targets, target)
+		queryArgsMap[target.Name()] = queryArgs
+	}
 	// ok we managed to resolve
 
 	// now check if any args were specified on the command line using the --arg flag
 	// if so verify no args were passed in the resource invocation, e.g. query.my_query("val1","val1"
 	commandLineQueryArgs, err := getCommandLineQueryArgs()
 	if err != nil {
-		return empty, err
+		return nil, err
 	}
 
 	// so args were passed using --arg
 	if !commandLineQueryArgs.Empty() {
 		// verify no args were passed in the resource invocation, e.g. query.my_query("val1","val2")
+		if len(queryArgsMap) != 0 {
+			return nil, sperr.New("both command line args and query invocation args are set")
+		}
+		// this should not happen as the only command supporting multiple targets is benchmark,
+		// and this does not support args
+		if len(targets) > 1 {
+			return nil, sperr.New("cannot use command line args with multiple targets")
+		}
+		queryArgsMap[targets[0].Name()] = commandLineQueryArgs
+
+	}
+
+	// set args for all targets
+	for _, target := range targets {
+		queryArgs := queryArgsMap[target.Name()]
 		if queryArgs != nil {
-			return empty, sperr.New("both command line args and query invocation args are set")
-		}
-		queryArgs = commandLineQueryArgs
-
-	}
-
-	if queryArgs != nil {
-		// if the target is a query provider set the args
-		// (if the target is a dashboard, which i snot a query provider,
-		// we read the args from viper separately and use to populate the inputs)
-		if qp, ok := any(target).(modconfig.QueryProvider); ok {
-			qp.SetArgs(queryArgs)
+			// if the target is a query provider set the args
+			// (if the target is a dashboard, which i snot a query provider,
+			// we read the args from viper separately and use to populate the inputs)
+			if qp, ok := any(target).(modconfig.QueryProvider); ok {
+				qp.SetArgs(queryArgs)
+			}
 		}
 	}
-	return target, nil
+	return targets, nil
 }
 
 // build a QueryArgs from any args passed using the --args flag

@@ -125,7 +125,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// execute query as a snapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, nil)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Targets, nil)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)

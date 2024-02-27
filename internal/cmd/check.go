@@ -37,10 +37,15 @@ var checkOutputMode = localconstants.CheckOutputModeText
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := utils.GetGenericTypeName[T]()
+	argsSupported := cobra.ExactArgs(1)
+	if typeName == "benchmark" {
+		argsSupported = cobra.MinimumNArgs(1)
+	}
+
 	cmd := &cobra.Command{
 		Use:              checkCmdUse(typeName),
 		TraverseChildren: true,
-		Args:             cobra.ExactArgs(1),
+		Args:             argsSupported,
 		Run:              runCheckCmd[T],
 		Short:            checkCmdShort(typeName),
 		Long:             checkCmdLong(typeName),
@@ -260,8 +265,12 @@ func getExecutionTree[T controlinit.CheckTarget](ctx context.Context, initData *
 		return nil, ctx.Err()
 	}
 
-	target := initData.Target
-	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, target)
+	// convert from T to modconfig.ModTreeItem
+	var targets []modconfig.ModTreeItem
+	for _, target := range initData.Targets {
+		targets = append(targets, target)
+	}
+	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, targets)
 	if err != nil {
 		return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 	}

@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"log/slog"
 
 	"github.com/spf13/viper"
@@ -31,7 +32,7 @@ type InitData[T modconfig.ModTreeItem] struct {
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
-	Target            T
+	Targets           []T
 	DefaultClient     *db_client.DbClient
 }
 
@@ -94,7 +95,8 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 		return
 	}
 
-	i.resolveTarget(args)
+	i.resolveTargets(args)
+
 	if i.Result.Error != nil {
 		return
 	}
@@ -138,14 +140,7 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	// create default client
 	// set the dashboard database and search patch config
 	database, searchPathConfig := db_client.GetDefaultDatabaseConfig()
-	// if there is a target, this may change the default database and search path - if it is in a dependency mod
-	if !helpers.IsNil(modconfig.ModTreeItem(i.Target)) {
-		database, searchPathConfig, err = db_client.GetDatabaseConfigForResource(i.Target, i.Workspace.Mod, database, searchPathConfig)
-		if err != nil {
-			i.Result.Error = err
-			return
-		}
-	}
+
 	// create client
 	var opts []backend.ConnectOption
 	if !searchPathConfig.Empty() {
@@ -168,17 +163,31 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 }
 
 // resolve target resource, args and any target specific search path
-func (i *InitData[T]) resolveTarget(args []string) {
+func (i *InitData[T]) resolveTargets(args []string) {
+
+	// special case handling for all
+	if len(args) == 1 && args[0] == "all" {
+		var empty T
+		if _, isBenchmark := (any(empty)).(*modconfig.Benchmark); isBenchmark {
+			{
+				// if the arg is "all", we want to execute all _direct_ children of the Mod
+				// but NOT children which come from dependency mods
+
+				// to achieve this, use a  DirectChildrenModDecorator
+				i.Targets = []T{&controlexecute.DirectChildrenModDecorator{Mod: i.Workspace.Mod}}
+			}
+		}
+
+	}
 
 	// resolve target resources
-	target, err := cmdconfig.ResolveTarget[T](args, i.Workspace)
+	targets, err := cmdconfig.ResolveTargets[T](args, i.Workspace)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
-	// we only expect zero or one target (depending on command)  - this should be enforced by Cobra
-	i.Target = target
+	i.Targets = targets
 
 }
 
@@ -222,4 +231,15 @@ func (i *InitData[T]) Cleanup(ctx context.Context) {
 		i.DefaultClient.Close(ctx)
 	}
 
+}
+
+// GetSingleTarget validates there is only a single target and returns it
+func (i *InitData[T]) GetSingleTarget() (T, error) {
+
+	// cobra should validate this
+	if len(i.Targets) != 1 {
+		var empty T
+		return empty, sperr.New("expected a single target")
+	}
+	return i.Targets[0], nil
 }
