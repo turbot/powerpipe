@@ -48,6 +48,8 @@ Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/doc
 
 1. powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
 
+1. open localhost:9033 in a browser
+
 That's it! Here's the dashboard.
 
 ![rnacentral](./images/rnacentral.png)
@@ -55,31 +57,28 @@ That's it! Here's the dashboard.
 
 ## Run a benchmark
 
-Many Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) includes **benchmarks** that check your cloud resources for compliance. The [Net Insights](https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) mod provides configuration, compliance and security controls to validate security best practices for DNS records. To run the [SSL/TLS Best Practices](https://hub.powerpipe.io/mods/turbot/net_insights/controls/benchmark.ssl_best_practices):
+Many Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) includes **benchmarks** that check your cloud resources for compliance. The [Net Insights](https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) mod provides configuration, compliance and security controls to validate security best practices for DNS records. To run the [SSL/TLS Best Practices benchmark](https://hub.powerpipe.io/mods/turbot/net_insights/controls/benchmark.ssl_best_practices):
 
 1. git clone https://github.com/turbot/powerpipe-mod-net-insights
 
 1. cd powerpipe-mod-net-insights
+
+1. powerpipe server
+
+1. open localhost:9033 in a browser
 ``
-1. powerpipe benchmark run benchmark.ssl_certificate_best_practices --output=brief
 
-Here's the console ouput.
-
-![net insights console](./images/net_insights_console.png)
-
-You can run benchmarks as dashboards too!
-
-1. same
-
-2. same
-
-3. powerpipe server
-
-4. visit localhost:9033 in a browser
-
-Here's the same benchmark as an interactive dashboard.
+Here's the dashboard.
 
 ![net insights dashboard](./images/net_insights_dashboard.png)
+
+You can run benchmarks as dashboards too! Here's the console ouput.
+
+```hcl
+powerpipe benchmark run benchmark.ssl_certificate_best_practices --output=brief
+```
+
+![net insights console](./images/net_insights_console.png)
 
 ## Developing
 
