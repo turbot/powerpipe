@@ -19,7 +19,7 @@ const PanelControl = ({
 }: PanelControlProps) => {
   return (
     <div
-      className="flex items-center space-x-2 p-1.5 cursor-pointer bg-dashboard-panel text-foreground first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard"
+      className="flex items-center space-x-2 px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard"
       onClick={async (e) => await action(e)}
       title={title}
     >

@@ -39,16 +39,20 @@ const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
   const saveGroupingConfig = (toSave) => {
     setSearchParams((previous) => {
       const newParams = new URLSearchParams(previous);
-      newParams.set(
-        "grouping",
-        toSave
-          .map((c) =>
-            c.type === "dimension" || c.type === "tag"
-              ? `${c.type}|${c.value}`
-              : c.type,
-          )
-          .join(","),
-      );
+      if (!toSave || !toSave.length) {
+        newParams.delete("grouping");
+      } else {
+        newParams.set(
+          "grouping",
+          toSave
+            .map((c) =>
+              c.type === "dimension" || c.type === "tag"
+                ? `${c.type}|${c.value}`
+                : c.type,
+            )
+            .join(","),
+        );
+      }
       return newParams;
     });
   };
@@ -58,10 +62,6 @@ const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
       config={groupingConfig}
       onCancel={onClose}
       onApply={saveGroupingConfig}
-      onSave={(toSave) => {
-        saveGroupingConfig(toSave);
-        onClose();
-      }}
     />
   );
 };

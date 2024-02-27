@@ -19,7 +19,6 @@ type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
   onCancel: () => void;
   onApply: (newValue: CheckDisplayGroup[]) => void;
-  onSave: (newValue: CheckDisplayGroup[]) => void;
 };
 
 type CheckGroupingEditorItemProps = {
@@ -226,15 +225,14 @@ const CheckGroupingEditorItem = ({
   );
 };
 
-const CheckGroupingEditor = ({
-  config,
-  onCancel,
-  onApply,
-  onSave,
-}: CheckGroupingEditorProps) => {
+const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
   const [innerConfig, setInnerConfig] = useState<CheckDisplayGroup[]>(config);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
+
+  useEffect(() => {
+    setInnerConfig(config);
+  }, [config, setInnerConfig]);
 
   useEffect(() => {
     let reason: string = "";
@@ -315,9 +313,8 @@ const CheckGroupingEditor = ({
         isValid={isValid}
         // @ts-ignore
         onAdd={() => setInnerConfig((existing) => [...existing, { type: "" }])}
-        onCancel={onCancel}
         onApply={() => onApply(innerConfig)}
-        onSave={() => onSave(innerConfig)}
+        onClear={() => onApply([])}
         addLabel="Add grouping"
       />
     </div>

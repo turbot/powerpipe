@@ -1,16 +1,15 @@
 import CheckEditorAddItem from "@powerpipe/components/dashboards/check/common/CheckEditorAddItem";
 import Icon from "@powerpipe/components/Icon";
-import { classNames } from "@powerpipe/utils/styles";
-import { Reorder, useDragControls } from "framer-motion";
-import { useCallback, useEffect, useMemo, useState } from "react";
 import Select from "react-select";
+import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
   SingleValueWithTags,
 } from "@powerpipe/components/dashboards/inputs/common/Common";
+import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
-import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 type SearchPathEditorProps = {
   availableConnections: string[];
@@ -134,9 +133,7 @@ const SearchPathEditorItem = ({
 const SearchPathEditor = ({
   availableConnections,
   searchPathPrefix,
-  onCancel,
   onApply,
-  onSave,
 }: SearchPathEditorProps) => {
   const [innerSearchPathPrefix, setInnerSearchPathPrefix] =
     useState<string[]>(searchPathPrefix);
@@ -207,11 +204,9 @@ const SearchPathEditor = ({
         onAdd={() => setInnerSearchPathPrefix((existing) => [...existing, ""])}
         onClear={() => {
           setInnerSearchPathPrefix([]);
-          onSave([]);
+          onApply([]);
         }}
-        onCancel={onCancel}
         onApply={() => onApply(innerSearchPathPrefix)}
-        onSave={() => onSave(innerSearchPathPrefix)}
       />
     </div>
   );

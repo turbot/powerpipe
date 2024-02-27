@@ -383,12 +383,7 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const CheckFilterEditor = ({
-  filter,
-  onCancel,
-  onApply,
-  onSave,
-}: CheckFilterEditorProps) => {
+const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
   const [innerFilter, setInnerFilter] = useState<CheckFilter>(filter);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
@@ -472,14 +467,13 @@ const CheckFilterEditor = ({
         }
         onClear={() => {
           const toSave: CheckFilter = {
-            operator: "equal",
+            expressions: [{ operator: "equal" }],
+            operator: "and",
           };
           setInnerFilter(toSave);
-          onSave(toSave);
+          onApply(toSave);
         }}
-        onCancel={onCancel}
         onApply={() => onApply(innerFilter)}
-        onSave={() => onSave(innerFilter)}
         addLabel="Add filter"
       />
     </div>
