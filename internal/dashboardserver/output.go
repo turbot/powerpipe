@@ -13,10 +13,11 @@ import (
 	"github.com/turbot/pipe-fittings/filepaths"
 )
 
-var logSink io.Writer
+var logSinks []io.Writer = []io.Writer{os.Stdout}
 
 const (
 	errorPrefix   = "[ Error   ]"
+	warningPrefix = "[ Warning   ]"
 	messagePrefix = "[ Message ]"
 	readyPrefix   = "[ Ready   ]"
 	waitPrefix    = "[ Wait    ]"
@@ -30,41 +31,42 @@ func initLogSink() {
 		fmt.Printf("failed to open dashboard manager log file: %s\n", err.Error()) //nolint:forbidigo // TODO: better way to log error?
 		os.Exit(3)
 	}
-	logSink = f
+	logSinks = append(logSinks, f)
 }
 
-func output(_ context.Context, prefix string, msg interface{}) {
-	if logSink == nil {
-		logSink = os.Stdout
+type colorFunc func(format string, a ...interface{}) string
+
+func output(prefix string, color colorFunc, msg any) {
+	for _, logSink := range logSinks {
+		_, _ = fmt.Fprintf(logSink, "%s %v\n", prefix, applyColor(prefix, color))
 	}
-	_, _ = fmt.Fprintf(logSink, "%s %v\n", prefix, msg)
 }
 
 func OutputMessage(ctx context.Context, msg string) {
-	output(ctx, applyColor(messagePrefix, color.HiGreenString), msg)
+	output(messagePrefix, color.HiGreenString, msg)
+
 }
 
 func OutputWarning(ctx context.Context, msg string) {
-	output(ctx, applyColor(messagePrefix, color.RedString), msg)
+	output(warningPrefix, color.RedString, msg)
 }
 
 func OutputError(ctx context.Context, err error) {
-	output(ctx, applyColor(errorPrefix, color.RedString), err)
+	output(errorPrefix, color.RedString, err)
 }
 
 func outputReady(ctx context.Context, msg string) {
-	output(ctx, applyColor(readyPrefix, color.GreenString), msg)
+	output(readyPrefix, color.GreenString, msg)
 }
 
 func OutputWait(ctx context.Context, msg string) {
-	output(ctx, applyColor(waitPrefix, color.CyanString), msg)
+	output(waitPrefix, color.GreenString, msg)
 }
 
-func applyColor(str string, color func(format string, a ...interface{}) string) string {
-	// TODO check streampipe logic is service mode
+func applyColor(str string, color colorFunc) string {
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		return str
 	} else {
-		return color((str))
+		return color(str)
 	}
 }

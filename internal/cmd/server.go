@@ -34,7 +34,6 @@ func serverCmd() *cobra.Command {
 Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 	}
 
-	// TODO KAI CHECK ARGS (https://github.com/turbot/powerpipe/issues/106)
 	cmdconfig.
 		OnCmd(cmd).
 		AddModLocationFlag().

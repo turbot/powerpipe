@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"log/slog"
 	"net/http"
 	"path"
 	"reflect"
 	"strings"
 	"time"
 
+	ginlogger "github.com/FabienMht/ginslog/logger"
 	"github.com/didip/tollbooth/v7"
 	"github.com/didip/tollbooth/v7/limiter"
 	"github.com/gin-contrib/gzip"
@@ -127,6 +129,10 @@ func (api *APIService) Start() error {
 
 	// Initialize gin
 	router := gin.New()
+
+	// Add a ginslog middleware, which:
+	//   - Logs all requests, like a combined access and error log.
+	router.Use(ginlogger.New(slog.Default()))
 
 	apiPrefixGroup := router.Group(common.APIPrefix())
 	apiPrefixGroup.Use(common.ValidateAPIVersion)
