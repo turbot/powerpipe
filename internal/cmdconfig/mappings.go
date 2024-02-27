@@ -1,32 +1,41 @@
 package cmdconfig
 
 import (
+	"github.com/spf13/cobra"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/filepaths"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"golang.org/x/exp/maps"
 )
 
-func configDefaults() map[string]any {
-	return map[string]any{
+func configDefaults(cmd *cobra.Command) map[string]any {
+	defs := map[string]any{
 		// global general options
 		constants.ArgTelemetry:       constants.TelemetryInfo,
 		constants.ArgUpdateCheck:     true,
 		constants.ArgPipesInstallDir: filepaths.DefaultPipesInstallDir,
-
-		// from global database options
-		// TODO KAI NEEDED???
-		//constants.ArgDatabasePort:         constants.DatabaseDefaultPort,
-		//constants.ArgDatabaseStartTimeout: constants.DBStartTimeout.Seconds(),
-		//constants.ArgServiceCacheEnabled:  true,
-		//constants.ArgCacheMaxTtl:          300,
 
 		// dashboard
 		constants.ArgDashboardStartTimeout: constants.DashboardServiceStartTimeout.Seconds(),
 
 		// memory
 		constants.ArgMemoryMaxMb: 1024,
+	}
+	cmdSpecificDefaults, ok := cmdSpecificDefaults()[cmd.Name()]
+	if ok {
+		maps.Copy(defs, cmdSpecificDefaults)
+	}
+	return defs
+}
+
+// command specific config defaults (keyed by comand name)
+func cmdSpecificDefaults() map[string]map[string]any {
+	return map[string]map[string]any{
+		"server": {
+			constants.ArgEnvironment: "release",
+		},
 	}
 }
 
@@ -46,7 +55,6 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 	return map[string]cmdconfig.EnvMapping{
 		app_specific.EnvInstallDir:        {ConfigVar: []string{constants.ArgInstallDir}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvModLocation:       {ConfigVar: []string{constants.ArgModLocation}, VarType: cmdconfig.EnvVarTypeString},
-		app_specific.EnvIntrospection:     {ConfigVar: []string{constants.ArgIntrospection}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvTelemetry:         {ConfigVar: []string{constants.ArgTelemetry}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvUpdateCheck:       {ConfigVar: []string{constants.ArgUpdateCheck}, VarType: cmdconfig.EnvVarTypeBool},
 		app_specific.EnvSnapshotLocation:  {ConfigVar: []string{constants.ArgSnapshotLocation}, VarType: cmdconfig.EnvVarTypeString},
