@@ -4,20 +4,26 @@ import { ReactNode, useMemo, useState } from "react";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { usePopper } from "react-popper";
 
-export type IPanelControl = {
+export interface PanelControlProps {
   action: (e: any) => Promise<void>;
   component?: ReactNode;
   icon: string;
   title: string;
-};
+}
 
-const PanelControl = ({ action, icon, title }: IPanelControl) => {
+const PanelControl = ({
+  action,
+  component,
+  icon,
+  title,
+}: PanelControlProps) => {
   return (
     <div
-      className="p-1.5 cursor-pointer bg-dashboard-panel text-foreground first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard"
+      className="flex items-center space-x-2 p-1.5 cursor-pointer bg-dashboard-panel text-foreground first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard"
       onClick={async (e) => await action(e)}
       title={title}
     >
+      {component}
       <Icon className="w-4.5 h-4.5" icon={icon} />
     </div>
   );
@@ -63,6 +69,7 @@ const PanelControls = ({ controls, referenceElement, withOffset = false }) => {
                   <PanelControl
                     key={idx}
                     action={control.action}
+                    component={control.component}
                     icon={control.icon}
                     title={control.title}
                   />

@@ -7,7 +7,7 @@ const CustomizeViewSummary = () => {
   const filterConfig = useCheckFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
-  return null;
+  return <span className="ml-1">Customize</span>;
 };
 
 export default CustomizeViewSummary;

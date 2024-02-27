@@ -167,10 +167,12 @@ const CheckFilterKeySelect = ({
   }, [currentKey, index, item]);
 
   const keys = useMemo(() => {
-    return Object.keys(filterValues[type].key || {}).map((k) => ({
-      value: k,
-      label: k,
-    }));
+    return Object.keys(filterValues ? filterValues[type].key || {} : {}).map(
+      (k) => ({
+        value: k,
+        label: k,
+      }),
+    );
   }, [filterValues, type]);
 
   const styles = useSelectInputStyles();
@@ -219,7 +221,7 @@ const CheckFilterValueSelect = ({
     }
     if (type === "status") {
       return (
-        Object.entries(filterValues[type] || {})
+        Object.entries(filterValues ? filterValues[type] || {} : {})
           // @ts-ignore
           .filter(([, v]) => v > 0)
           .map(([k, v]) => ({
@@ -229,7 +231,7 @@ const CheckFilterValueSelect = ({
           }))
       );
     } else if (type === "dimension") {
-      return Object.entries(filterValues[type].value || {})
+      return Object.entries(filterValues ? filterValues[type].value || {} : {})
         .filter(([, v]) => has(v, item.key as string))
         .map(([k, v]) => {
           return {
@@ -240,7 +242,9 @@ const CheckFilterValueSelect = ({
           };
         });
     } else if (type === "benchmark" || type === "control") {
-      return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+      return Object.entries(
+        filterValues ? filterValues[type].value || {} : {},
+      ).map(([k, v]) => {
         return {
           value: k,
           // @ts-ignore
@@ -250,7 +254,9 @@ const CheckFilterValueSelect = ({
         };
       });
     }
-    return Object.entries(filterValues[type].value || {}).map(([k, v]) => {
+    return Object.entries(
+      filterValues ? filterValues[type].value || {} : {},
+    ).map(([k, v]) => {
       return {
         value: k,
         label: k,
