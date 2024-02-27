@@ -49,7 +49,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { dispatch } = useDashboard();
+  const { dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -319,17 +319,20 @@ const Benchmark = (props: InnerCheckProps) => {
       }}
       setRef={setReferenceElement}
     >
-      <DashboardTitle
-        title={props.definition.title}
-        controls={
-          showBenchmarkControls ? (
-            <PanelControls
-              referenceElement={referenceElement}
-              controls={benchmarkControls}
-            />
-          ) : null
-        }
-      />
+      {/*Don't show when in panel detail view*/}
+      {!selectedPanel && (
+        <DashboardTitle
+          title={props.definition.title}
+          controls={
+            showBenchmarkControls ? (
+              <PanelControls
+                referenceElement={referenceElement}
+                controls={benchmarkControls}
+              />
+            ) : null
+          }
+        />
+      )}
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards.map((summaryCard) => {
           const cardProps: CardProps = {
