@@ -78,7 +78,6 @@ const Benchmark = (props: InnerCheckProps) => {
         action: async () =>
           dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
         component: <CustomizeViewSummary />,
-        icon: "design_services",
         title: "Customize view",
       },
     ]);

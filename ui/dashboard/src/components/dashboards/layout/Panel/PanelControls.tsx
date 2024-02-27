@@ -24,7 +24,7 @@ const PanelControl = ({
       title={title}
     >
       {component}
-      <Icon className="w-4.5 h-4.5" icon={icon} />
+      {icon && <Icon className="w-4.5 h-4.5" icon={icon} />}
     </div>
   );
 };
@@ -64,7 +64,7 @@ const PanelControls = ({ controls, referenceElement, withOffset = false }) => {
               style={{ ...styles.popper }}
               {...attributes.popper}
             >
-              <div className="flex border border-black-scale-3 rounded-md">
+              <div className="flex border border-black-scale-3 rounded-md divide-x divide-divide">
                 {controls.map((control, idx) => (
                   <PanelControl
                     key={idx}

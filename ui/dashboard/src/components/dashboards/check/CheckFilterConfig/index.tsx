@@ -1,4 +1,4 @@
-import CheckFilterEditor from "../CheckFilterEditor";
+import CheckFilterEditor, { validateFilter } from "../CheckFilterEditor";
 import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
 import { CheckFilter } from "../common";
 import { Fragment, ReactNode } from "react";
@@ -52,7 +52,7 @@ const CheckFilterConfig = ({ onClose }: CheckFilterConfigProps) => {
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {
       const newParams = new URLSearchParams(previous);
-      if ((toSave.expressions || []).length === 0) {
+      if (!validateFilter(toSave)) {
         newParams.delete("where");
         return newParams;
       } else {
