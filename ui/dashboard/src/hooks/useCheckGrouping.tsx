@@ -514,7 +514,7 @@ const getCheckResultNode = (checkResult: CheckResult) => {
     "result",
     "result",
     getCheckResultGroupingKey(checkResult),
-    null,
+    undefined,
   );
 };
 
