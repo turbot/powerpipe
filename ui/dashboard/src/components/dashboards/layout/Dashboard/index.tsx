@@ -25,7 +25,6 @@ type DashboardWrapperProps = {
   showPanelControls?: boolean;
 };
 
-// TODO allow full-screen of a panel
 const Dashboard = ({
   definition,
   isRoot = true,
@@ -34,6 +33,7 @@ const Dashboard = ({
   const {
     components: { SnapshotHeader },
     dataMode,
+    showCustomizeBenchmarkPanel,
   } = useDashboard();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
@@ -61,7 +61,7 @@ const Dashboard = ({
             grid
           )}
         </div>
-        <DashboardControls />
+        {showCustomizeBenchmarkPanel && <DashboardControls />}
       </div>
     </DashboardControlsProvider>
   );

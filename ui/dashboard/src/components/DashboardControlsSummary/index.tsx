@@ -11,7 +11,7 @@ type DashboardControlsSummaryProps = {
   searchPathPrefix: string[];
   filterConfig: CheckFilter;
   groupingConfig: CheckDisplayGroup[];
-  toggleControls: Noop;
+  onClose: Noop;
 };
 
 type DashboardFilterButtonCountProps = {
@@ -165,7 +165,7 @@ const DashboardControlsSummary = ({
   searchPathPrefix,
   filterConfig,
   groupingConfig,
-  toggleControls,
+  onClose,
 }: DashboardControlsSummaryProps) => {
   return (
     <>
@@ -176,11 +176,11 @@ const DashboardControlsSummary = ({
         {/*/>*/}
         <DashboardFilterControlButton
           filterConfig={filterConfig}
-          toggleControls={toggleControls}
+          toggleControls={onClose}
         />
         <DashboardGroupingControlButton
           groupingConfig={groupingConfig}
-          toggleControls={toggleControls}
+          toggleControls={onClose}
         />
       </div>
     </>

@@ -367,6 +367,16 @@ const reducer = (state: IDashboardContext, action) => {
       return { ...state, snapshot_metadata_loaded: true };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
+    case DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL:
+      return {
+        ...state,
+        showCustomizeBenchmarkPanel: true,
+      };
+    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL:
+      return {
+        ...state,
+        showCustomizeBenchmarkPanel: false,
+      };
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
@@ -413,6 +423,8 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     execution_id: null,
 
     progress: 0,
+
+    showCustomizeBenchmarkPanel: false,
   };
 };
 

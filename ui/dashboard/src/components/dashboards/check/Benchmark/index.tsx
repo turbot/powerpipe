@@ -23,9 +23,9 @@ import {
   registerComponent,
 } from "@powerpipe/components/dashboards";
 import { noop } from "@powerpipe/utils/func";
-import { PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -49,7 +49,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { dashboard, diff } = useDashboard();
+  const { dashboard, dispatch } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -68,10 +68,19 @@ const Benchmark = (props: InnerCheckProps) => {
       data: benchmarkDataTable,
     };
   }, [benchmarkDataTable, props.definition]);
-  const { panelControls: benchmarkControls } = usePanelControls(
-    definitionWithData,
-    props.showControls,
-  );
+  const { panelControls: benchmarkControls, setCustomControls } =
+    usePanelControls(definitionWithData, props.showControls);
+
+  useEffect(() => {
+    setCustomControls([
+      {
+        action: async () =>
+          dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
+        icon: "design_services",
+        title: "Customize view",
+      },
+    ]);
+  }, [dispatch, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
