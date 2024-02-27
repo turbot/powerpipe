@@ -351,7 +351,7 @@ const CheckFilterEditorItem = ({
       <span>=</span>
       <div className="grow">
         <CheckFilterValueSelect
-          className="min-w-64"
+          className="min-w-72"
           index={index}
           item={item}
           // @ts-ignore
