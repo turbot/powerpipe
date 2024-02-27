@@ -3,17 +3,11 @@ package dashboardserver
 import (
 	"context"
 	"fmt"
-	"io"
-	"os"
-	"path/filepath"
-	"time"
-
 	"github.com/fatih/color"
 	"github.com/mattn/go-isatty"
-	"github.com/turbot/pipe-fittings/filepaths"
+	"log/slog"
+	"os"
 )
-
-var logSinks []io.Writer = []io.Writer{os.Stdout}
 
 const (
 	errorPrefix   = "[ Error   ]"
@@ -23,47 +17,36 @@ const (
 	waitPrefix    = "[ Wait    ]"
 )
 
-func initLogSink() {
-	logName := fmt.Sprintf("dashboard-%s.log", time.Now().Format("2006-01-02"))
-	logPath := filepath.Join(filepaths.EnsureLogDir(), logName)
-	f, err := os.OpenFile(logPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0666)
-	if err != nil {
-		fmt.Printf("failed to open dashboard manager log file: %s\n", err.Error()) //nolint:forbidigo // TODO: better way to log error?
-		os.Exit(3)
-	}
-	logSinks = append(logSinks, f)
-}
-
-type colorFunc func(format string, a ...interface{}) string
-
-func output(prefix string, color colorFunc, msg any) {
-	for _, logSink := range logSinks {
-		_, _ = fmt.Fprintf(logSink, "%s %v\n", prefix, applyColor(prefix, color))
-	}
+func output(_ context.Context, prefix string, msg interface{}) {
+	_, _ = fmt.Fprintf(os.Stdout, "%s %v\n", prefix, msg)
 }
 
 func OutputMessage(ctx context.Context, msg string) {
-	output(messagePrefix, color.HiGreenString, msg)
-
+	output(ctx, applyColor(messagePrefix, color.HiGreenString), msg)
+	slog.Info(msg)
 }
 
 func OutputWarning(ctx context.Context, msg string) {
-	output(warningPrefix, color.RedString, msg)
+	output(ctx, applyColor(messagePrefix, color.RedString), msg)
+	slog.Warn(msg)
 }
 
 func OutputError(ctx context.Context, err error) {
-	output(errorPrefix, color.RedString, err)
+	output(ctx, applyColor(errorPrefix, color.RedString), err)
+	slog.Error("Error", "error", err)
 }
 
-func outputReady(ctx context.Context, msg string) {
-	output(readyPrefix, color.GreenString, msg)
+func OutputReady(ctx context.Context, msg string) {
+	output(ctx, applyColor(readyPrefix, color.GreenString), msg)
+	slog.Info(msg)
 }
 
 func OutputWait(ctx context.Context, msg string) {
-	output(waitPrefix, color.GreenString, msg)
+	output(ctx, applyColor(waitPrefix, color.CyanString), msg)
+	slog.Info(msg)
 }
 
-func applyColor(str string, color colorFunc) string {
+func applyColor(str string, color func(format string, a ...interface{}) string) string {
 	if !isatty.IsTerminal(os.Stdout.Fd()) {
 		return str
 	} else {

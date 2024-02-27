@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"os/signal"
 
@@ -101,6 +102,9 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	dashboardserver.OutputMessage(ctx, "server started")
+	dashboardserver.OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", serverPort, viper.GetString(constants.ArgListen)))
+	dashboardserver.OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", serverPort))
+	dashboardserver.OutputMessage(ctx, "Press Ctrl+C to exit")
+
 	<-ctx.Done()
 }

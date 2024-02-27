@@ -4,14 +4,12 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"log/slog"
 	"net/http"
 	"path"
 	"reflect"
 	"strings"
 	"time"
 
-	ginlogger "github.com/FabienMht/ginslog/logger"
 	"github.com/didip/tollbooth/v7"
 	"github.com/didip/tollbooth/v7/limiter"
 	"github.com/gin-contrib/gzip"
@@ -21,6 +19,7 @@ import (
 	"github.com/gin-gonic/gin/binding"
 	"github.com/go-playground/validator/v10"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
@@ -120,19 +119,12 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 
 // Start starts services managed by the Manager.
 func (api *APIService) Start() error {
-	// if api.mod == nil {
-	// 	return sperr.New("cannot start without a defined mod")
-	// }
 	// Set the gin mode based on our environment, to configure logging etc as appropriate
-	gin.SetMode(viper.GetString("environment"))
+	gin.SetMode(viper.GetString(constants.ArgEnvironment))
 	binding.EnableDecoderDisallowUnknownFields = true
 
 	// Initialize gin
 	router := gin.New()
-
-	// Add a ginslog middleware, which:
-	//   - Logs all requests, like a combined access and error log.
-	router.Use(ginlogger.New(slog.Default()))
 
 	apiPrefixGroup := router.Group(common.APIPrefix())
 	apiPrefixGroup.Use(common.ValidateAPIVersion)

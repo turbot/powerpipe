@@ -61,7 +61,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 			}
 		}()
 
-		outputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, viper.GetString(constants.ArgListen)))
+		OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, viper.GetString(constants.ArgListen)))
 		OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", dashboardServerPort))
 		OutputMessage(ctx, "Press Ctrl+C to exit")
 		<-ctx.Done()
