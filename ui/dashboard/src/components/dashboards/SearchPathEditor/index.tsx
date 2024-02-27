@@ -2,24 +2,94 @@ import CheckEditorAddItem from "@powerpipe/components/dashboards/check/common/Ch
 import Icon from "@powerpipe/components/Icon";
 import { classNames } from "@powerpipe/utils/styles";
 import { Reorder, useDragControls } from "framer-motion";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
+import Select from "react-select";
+import {
+  MultiValueLabelWithTags,
+  OptionWithTags,
+  SingleValueWithTags,
+} from "@powerpipe/components/dashboards/inputs/common/Common";
+import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
+import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
 
 type SearchPathEditorProps = {
+  availableConnections: string[];
   searchPathPrefix: string[];
   onCancel: () => void;
   onApply: (newValue: string[]) => void;
   onSave: (newValue: string[]) => void;
 };
 
-type SearchPathEditorItemProps = {
+interface SearchPathEditorItemSelectProps {
+  availableConnections: string[];
   searchPathPrefix: string[];
   item: string;
   index: number;
-  remove: (index: number) => void;
   update: (index: number, item: string) => void;
+}
+
+interface SearchPathEditorItemProps {
+  availableConnections: string[];
+  searchPathPrefix: string[];
+  item: string;
+  index: number;
+  remove?: (index: number) => void;
+  update: (index: number, item: string) => void;
+}
+
+const SearchPathEditorItemSelect = ({
+  availableConnections,
+  searchPathPrefix,
+  item,
+  index,
+  update,
+}: SearchPathEditorItemSelectProps) => {
+  const connections = useMemo(() => {
+    const c = (availableConnections || [])
+      .filter(
+        (c) => c === item || !(searchPathPrefix || []).find((s) => s === c),
+      )
+      .map((c) => ({ value: c, label: c }));
+    c.sort((x, y) => {
+      if (x.value < y.value) {
+        return -1;
+      } else if (x.value > y.value) {
+        return 1;
+      } else {
+        return 0;
+      }
+    });
+    return c;
+  }, [availableConnections, item, searchPathPrefix]);
+
+  const styles = useSelectInputStyles();
+
+  return (
+    <Select
+      className="basic-single"
+      classNamePrefix="select"
+      components={{
+        // @ts-ignore
+        MultiValueLabel: MultiValueLabelWithTags,
+        // @ts-ignore
+        Option: OptionWithTags,
+        // @ts-ignore
+        SingleValue: SingleValueWithTags,
+      }}
+      // @ts-ignore as this element definitely exists
+      menuPortalTarget={document.getElementById("portals")}
+      onChange={(t) => update(index, (t as SelectOption).value)}
+      options={connections}
+      inputId={`${index}.input`}
+      placeholder="Select a connection…"
+      styles={styles}
+      value={connections.find((t) => t.value === item)}
+    />
+  );
 };
 
 const SearchPathEditorItem = ({
+  availableConnections,
   searchPathPrefix,
   index,
   item,
@@ -41,28 +111,19 @@ const SearchPathEditorItem = ({
         <Icon className="h-5 w-5" icon="drag_indicator" />
       </div>
       <div className="grow">
-        <input
-          type="text"
-          name={`search-path-${index}`}
-          id={`search-path-${index}`}
-          className="flex-1 block w-full bg-dashboard-panel rounded-md border border-black-scale-3 pr-8 overflow-x-auto text-sm md:text-base disabled:bg-black-scale-1 focus:ring-0"
-          onChange={(e) => update(index, e.target.value)}
-          placeholder="Enter a connection"
-          value={item}
+        <SearchPathEditorItemSelect
+          availableConnections={availableConnections}
+          searchPathPrefix={searchPathPrefix}
+          index={index}
+          item={item}
+          // @ts-ignore
+          update={update}
         />
       </div>
       <span
-        className={classNames(
-          searchPathPrefix.length > 1
-            ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
-            : "text-foreground-lightest",
-        )}
-        onClick={searchPathPrefix.length > 1 ? () => remove(index) : undefined}
-        title={
-          searchPathPrefix.length > 1
-            ? "Remove"
-            : "Search path must contain at least one entry"
-        }
+        className="text-foreground-light hover:text-steampipe-red cursor-pointer"
+        onClick={remove ? () => remove(index) : undefined}
+        title="Remove"
       >
         <Icon className="h-5 w-5" icon="trash" />
       </span>
@@ -71,6 +132,7 @@ const SearchPathEditorItem = ({
 };
 
 const SearchPathEditor = ({
+  availableConnections,
   searchPathPrefix,
   onCancel,
   onApply,
@@ -78,6 +140,7 @@ const SearchPathEditor = ({
 }: SearchPathEditorProps) => {
   const [innerSearchPathPrefix, setInnerSearchPathPrefix] =
     useState<string[]>(searchPathPrefix);
+
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
@@ -121,6 +184,7 @@ const SearchPathEditor = ({
         {innerSearchPathPrefix.map((connection, idx) => (
           <SearchPathEditorItem
             key={connection}
+            availableConnections={availableConnections}
             searchPathPrefix={innerSearchPathPrefix}
             item={connection}
             index={idx}
@@ -128,10 +192,17 @@ const SearchPathEditor = ({
             update={update}
           />
         ))}
+        {!innerSearchPathPrefix.length && (
+          <SearchPathEditorItem
+            availableConnections={availableConnections}
+            searchPathPrefix={innerSearchPathPrefix}
+            item=""
+            index={innerSearchPathPrefix.length}
+            update={update}
+          />
+        )}
       </Reorder.Group>
       <CheckEditorAddItem
-        addLabel="Add connection"
-        clearLabel="Reset"
         isValid={isValid}
         onAdd={() => setInnerSearchPathPrefix((existing) => [...existing, ""])}
         onClear={() => {

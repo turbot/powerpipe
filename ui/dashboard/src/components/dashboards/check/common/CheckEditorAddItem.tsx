@@ -1,11 +1,9 @@
 import Icon from "@powerpipe/components/Icon";
-import { classNames } from "@powerpipe/utils/styles";
-import { ThemeNames } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 interface CheckEditorAddItemProps {
-  addLabel: string;
-  clearLabel?: string;
+  addLabel?: string;
+  isDirty: boolean;
   isValid: { value: boolean; reason: string };
   onAdd: () => void;
   onClear?: () => void;
@@ -15,8 +13,8 @@ interface CheckEditorAddItemProps {
 }
 
 const CheckEditorAddItem = ({
-  addLabel,
-  clearLabel,
+  addLabel = "Add",
+  isDirty = false,
   isValid,
   onAdd,
   onClear,
@@ -31,35 +29,13 @@ const CheckEditorAddItem = ({
     <div className="flex items-center justify-between space-x-3">
       <div className="flex items-center space-x-3">
         <div className="flex items-center">
-          <Icon className="block h-5 w-5 invisible" icon="drag_indicator" />
-          <span
-            className={classNames(
-              "flex items-center text-link cursor-pointer min-h-[38px] pl-[8px] grow",
-              theme.name === ThemeNames.STEAMPIPE_DARK
-                ? "border-[#444] hover:border-[#b3b3b3]"
-                : "border-[#d3d3d3] hover:border-[#b3b3b3]",
-            )}
+          <Icon
+            className="block h-5 w-5 cursor-pointer hover:text-foreground-light"
+            icon="add"
             onClick={onAdd}
-          >
-            <span className="block">{addLabel}</span>
-          </span>
+            title={addLabel}
+          />
         </div>
-        {!!onClear && (
-          <div className="flex items-center">
-            <Icon className="block h-5 w-5 invisible" icon="drag_indicator" />
-            <span
-              className={classNames(
-                "flex items-center text-link cursor-pointer min-h-[38px] pl-[8px] grow",
-                theme.name === ThemeNames.STEAMPIPE_DARK
-                  ? "border-[#444] hover:border-[#b3b3b3]"
-                  : "border-[#d3d3d3] hover:border-[#b3b3b3]",
-              )}
-              onClick={onClear}
-            >
-              <span className="block">{clearLabel}</span>
-            </span>
-          </div>
-        )}
       </div>
       <div className="flex items-center justify-end space-x-2">
         <button
@@ -72,7 +48,7 @@ const CheckEditorAddItem = ({
         <button
           type="button"
           className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
-          disabled={!isValid.value}
+          disabled={!isValid.value || !isDirty}
           onClick={onApply}
           title={isValid.reason}
         >

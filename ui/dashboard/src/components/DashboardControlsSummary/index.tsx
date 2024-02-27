@@ -45,7 +45,7 @@ const DashboardFilterButton = ({
 }: DashboardFilterButtonProps) => (
   <button
     className={classNames(
-      "border border-black-scale-3 px-2.5 py-1.5 rounded-md cursor-pointer hover:bg-dashboard",
+      "border border-black-scale-3 px-2.5 py-1.5 whitespace-nowrap rounded-md cursor-pointer hover:bg-dashboard",
       className,
     )}
     onClick={onClick}
@@ -170,10 +170,10 @@ const DashboardControlsSummary = ({
   return (
     <>
       <div className="grow flex items-center justify-end space-x-4">
-        <DashboardSearchPathPrefixControlButton
-          searchPathPrefix={searchPathPrefix}
-          toggleControls={toggleControls}
-        />
+        {/*<DashboardSearchPathPrefixControlButton*/}
+        {/*  searchPathPrefix={searchPathPrefix}*/}
+        {/*  toggleControls={toggleControls}*/}
+        {/*/>*/}
         <DashboardFilterControlButton
           filterConfig={filterConfig}
           toggleControls={toggleControls}

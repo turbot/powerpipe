@@ -3,7 +3,7 @@ import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPat
 import { DashboardActions } from "@powerpipe/types";
 import { Noop } from "@powerpipe/types/func";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useEffect, useMemo} from "react";
+import { useEffect, useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 type SearchPathConfigProps = {
@@ -15,20 +15,15 @@ const SearchPathConfig = ({ onClose }: SearchPathConfigProps) => {
   const [, setSearchParams] = useSearchParams();
   const searchPathPrefix = useDashboardSearchPathPrefix();
 
-  const configuredSearchPath = useMemo(() => {
+  const { configuredSearchPath, availableConnections } = useMemo(() => {
     if (!selectedDashboard || !dashboardsMetadata || !searchPathPrefix) {
-      return [];
+      return { configuredSearchPath: [], availableConnections: [] };
     }
-    if (!!searchPathPrefix.length) {
-      return searchPathPrefix;
-    }
-    return [];
-    // if (!dashboardsMetadata[selectedDashboard.full_name]) {
-    //   return [];
-    // }
-    // return (
-    //   dashboardsMetadata[selectedDashboard.full_name].original_search_path || []
-    // );
+    const metadata = dashboardsMetadata[selectedDashboard?.full_name];
+    return {
+      configuredSearchPath: searchPathPrefix,
+      availableConnections: metadata.original_search_path || [],
+    };
   }, [dashboardsMetadata, searchPathPrefix, selectedDashboard]);
 
   useEffect(() => {
@@ -52,6 +47,7 @@ const SearchPathConfig = ({ onClose }: SearchPathConfigProps) => {
 
   return (
     <SearchPathEditor
+      availableConnections={availableConnections}
       searchPathPrefix={configuredSearchPath}
       onCancel={onClose}
       onApply={saveSearchPath}

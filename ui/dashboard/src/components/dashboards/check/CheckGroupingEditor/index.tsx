@@ -233,6 +233,7 @@ const CheckGroupingEditor = ({
   onSave,
 }: CheckGroupingEditorProps) => {
   const [innerConfig, setInnerConfig] = useState<CheckDisplayGroup[]>(config);
+  const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
@@ -258,7 +259,19 @@ const CheckGroupingEditor = ({
       }
     });
     setIsValid({ value: isValid, reason });
-  }, [innerConfig, setIsValid]);
+
+    const removeEmpty = innerConfig.map((c) => {
+      const noEmpty = {};
+      for (const [k, v] of Object.entries(c)) {
+        if (!v) {
+          continue;
+        }
+        noEmpty[k] = v;
+      }
+      return noEmpty;
+    });
+    setIsDirty(JSON.stringify(config) !== JSON.stringify(removeEmpty));
+  }, [config, innerConfig, setIsDirty, setIsValid]);
 
   const remove = useCallback(
     (index: number) =>
@@ -300,13 +313,14 @@ const CheckGroupingEditor = ({
         ))}
       </Reorder.Group>
       <CheckEditorAddItem
-        addLabel="Add grouping"
+        isDirty={isDirty}
         isValid={isValid}
         // @ts-ignore
         onAdd={() => setInnerConfig((existing) => [...existing, { type: "" }])}
         onCancel={onCancel}
         onApply={() => onApply(innerConfig)}
         onSave={() => onSave(innerConfig)}
+        addLabel="Add grouping"
       />
     </div>
   );

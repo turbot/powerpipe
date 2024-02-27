@@ -33,6 +33,7 @@ type CheckFilterEditorItemProps = {
 };
 
 type CheckFilterTypeSelectProps = {
+  className?: string;
   filter: CheckFilter;
   index: number;
   item: CheckFilter;
@@ -49,6 +50,7 @@ type CheckFilterKeySelectProps = {
 };
 
 type CheckFilterValueSelectProps = {
+  className?: string;
   index: number;
   item: CheckFilter;
   type: CheckFilterType;
@@ -79,6 +81,7 @@ const validateFilter = (filter: CheckFilter): boolean => {
 };
 
 const CheckFilterTypeSelect = ({
+  className,
   filter,
   index,
   item,
@@ -124,7 +127,7 @@ const CheckFilterTypeSelect = ({
 
   return (
     <Select
-      className="basic-single"
+      className={classNames("basic-single", className)}
       classNamePrefix="select"
       components={{
         // @ts-ignore
@@ -197,6 +200,7 @@ const CheckFilterKeySelect = ({
 };
 
 const CheckFilterValueSelect = ({
+  className,
   index,
   item,
   type,
@@ -268,7 +272,7 @@ const CheckFilterValueSelect = ({
 
   return (
     <CreatableSelect
-      className="basic-single"
+      className={classNames("basic-single", className)}
       classNamePrefix="select"
       components={{
         // @ts-ignore
@@ -321,6 +325,7 @@ const CheckFilterEditorItem = ({
       </div>
       <div className="grow">
         <CheckFilterTypeSelect
+          className="min-w-44"
           filter={filter}
           index={index}
           item={item}
@@ -346,6 +351,7 @@ const CheckFilterEditorItem = ({
       <span>=</span>
       <div className="grow">
         <CheckFilterValueSelect
+          className="min-w-64"
           index={index}
           item={item}
           // @ts-ignore
@@ -356,13 +362,15 @@ const CheckFilterEditorItem = ({
       </div>
       <span
         className={classNames(
-          // @ts-ignore
-          filter.expressions?.length > 0
+          (filter.expressions?.length || 0) > 1
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
             : "text-foreground-lightest",
         )}
-        // @ts-ignore
-        onClick={() => remove(index)}
+        onClick={
+          (filter.expressions?.length || 0) > 1
+            ? () => remove(index)
+            : undefined
+        }
         title="Remove"
       >
         <Icon className="h-5 w-5" icon="trash" />
@@ -378,16 +386,19 @@ const CheckFilterEditor = ({
   onSave,
 }: CheckFilterEditorProps) => {
   const [innerFilter, setInnerFilter] = useState<CheckFilter>(filter);
+  const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
     if (!innerFilter) {
+      setIsDirty(false);
       setIsValid({ value: true, reason: "" });
       return;
     }
 
     setIsValid({ value: validateFilter(innerFilter), reason: "" });
-  }, [innerFilter, setIsValid]);
+    setIsDirty(JSON.stringify(innerFilter) !== JSON.stringify(filter));
+  }, [filter, innerFilter, setIsDirty, setIsValid]);
 
   const remove = useCallback(
     (index: number) => {
@@ -444,8 +455,7 @@ const CheckFilterEditor = ({
         ))}
       </Reorder.Group>
       <CheckEditorAddItem
-        addLabel="Add filter"
-        clearLabel="Clear filters"
+        isDirty={isDirty}
         isValid={isValid}
         onAdd={() =>
           setInnerFilter((existing) => ({
@@ -466,6 +476,7 @@ const CheckFilterEditor = ({
         onCancel={onCancel}
         onApply={() => onApply(innerFilter)}
         onSave={() => onSave(innerFilter)}
+        addLabel="Add filter"
       />
     </div>
   );

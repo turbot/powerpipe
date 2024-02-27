@@ -75,6 +75,12 @@ const useSelectInputStyles = () => {
         color: foreground,
       };
     },
+    placeholder: (provided) => {
+      return {
+        ...provided,
+        whiteSpace: "nowrap",
+      };
+    },
   };
 };
 
