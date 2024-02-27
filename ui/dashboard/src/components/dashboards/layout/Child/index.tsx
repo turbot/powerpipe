@@ -2,11 +2,11 @@ import {
   DashboardLayoutNode,
   DashboardPanelType,
   PanelDefinition,
-} from "../../../../types";
-import { getComponent } from "../../index";
-import { getNodeAndEdgeDataFormat } from "../../common/useNodeAndEdgeData";
-import { NodeAndEdgeProperties } from "../../common/types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+} from "@powerpipe/types";
+import { getComponent } from "@powerpipe/components/dashboards";
+import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
+import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ChildProps = {
   layoutDefinition: DashboardLayoutNode;

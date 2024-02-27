@@ -1,5 +1,5 @@
-import ErrorModal from "../../Modal/ErrorModal";
-import { useDashboard } from "../../../hooks/useDashboard";
+import ErrorModal from "@powerpipe/components/Modal/ErrorModal";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type WorkspaceErrorModalProps = {
   error: any;

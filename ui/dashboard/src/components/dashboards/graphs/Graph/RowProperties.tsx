@@ -1,15 +1,15 @@
 import isEmpty from "lodash/isEmpty";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import useTemplateRender from "../../../../hooks/useTemplateRender";
+import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   Category,
   CategoryProperties,
   KeyValuePairs,
   RowRenderResult,
-} from "../../common/types";
-import { classNames } from "../../../../utils/styles";
-import { ErrorIcon } from "../../../../constants/icons";
-import { getComponent } from "../../index";
+} from "@powerpipe/components/dashboards/common/types";
+import { classNames } from "@powerpipe/utils/styles";
+import { ErrorIcon } from "@powerpipe/constants/icons";
+import { getComponent } from "@powerpipe/components/dashboards";
 import { useEffect, useState } from "react";
 
 type RowPropertiesTitleProps = {
@@ -113,7 +113,7 @@ const RowPropertyItemValue = ({
         className={classNames(
           "block break-words",
           renderValue ? "" : "text-foreground-lightest",
-          wrapClassName
+          wrapClassName,
         )}
         title={`${name}=${renderValue ? renderValue : "Empty"}`}
       >
@@ -142,7 +142,7 @@ const RowPropertyItem = ({
       <span
         className={classNames(
           "block text-sm text-foreground-lighter truncate",
-          wrap ? "whitespace-normal" : "truncate"
+          wrap ? "whitespace-normal" : "truncate",
         )}
         title={name}
       >

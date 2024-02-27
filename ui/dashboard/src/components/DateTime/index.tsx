@@ -1,5 +1,5 @@
 import dayjs from "dayjs";
-import { classNames } from "../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 interface DateTimeProps {
   className?: string;

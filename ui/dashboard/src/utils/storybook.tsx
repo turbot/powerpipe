@@ -1,15 +1,15 @@
-import "../utils/registerComponents";
-import Dashboard from "../components/dashboards/layout/Dashboard";
-import { buildComponentsMap } from "../components";
-import { DashboardContext } from "../hooks/useDashboard";
+import "@powerpipe/utils/registerComponents";
+import Dashboard from "@powerpipe/components/dashboards/layout/Dashboard";
+import { buildComponentsMap } from "@powerpipe/components";
+import { DashboardContext } from "@powerpipe/hooks/useDashboard";
 import {
   DashboardDataModeLive,
   DashboardPanelType,
   DashboardRunState,
   DashboardSearch,
-} from "../types";
-import { noop } from "./func";
-import { useStorybookTheme } from "../hooks/useStorybookTheme";
+} from "@powerpipe/types";
+import { noop } from "@powerpipe/utils/func";
+import { useStorybookTheme } from "@powerpipe/hooks/useStorybookTheme";
 
 type PanelStoryDecoratorProps = {
   definition: any;

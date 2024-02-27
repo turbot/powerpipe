@@ -1,4 +1,4 @@
-import { DashboardActions, PanelDefinition } from "../types";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { useCallback } from "react";
 import { useDashboard } from "./useDashboard";
 
@@ -12,7 +12,7 @@ const useSelectPanel = (definition: PanelDefinition) => {
         panel: definition,
       });
     },
-    [dispatch, definition]
+    [dispatch, definition],
   );
 
   return { select: openPanelDetail };

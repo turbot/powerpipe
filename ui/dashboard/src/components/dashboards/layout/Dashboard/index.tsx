@@ -35,9 +35,12 @@ const Dashboard = ({
     dataMode,
     showCustomizeBenchmarkPanel,
   } = useDashboard();
+  console.log(definition);
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
-      {isRoot && <DashboardTitle title={definition.title} />}
+      {isRoot && !definition.artificial && (
+        <DashboardTitle title={definition.title} />
+      )}
       <Children
         children={definition.children}
         parentType="dashboard"

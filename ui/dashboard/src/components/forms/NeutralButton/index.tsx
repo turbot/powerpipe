@@ -1,5 +1,5 @@
 import Button, { ButtonProps } from "../Button";
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 const NeutralButton = ({
   children,
@@ -13,7 +13,7 @@ const NeutralButton = ({
   <Button
     className={classNames(
       "bg-dashboard-panel border border-black-scale-2 text-light hover:bg-black-scale-2 hover:border-black-scale-2 disabled:bg-dashboard disabled:text-light",
-      className
+      className,
     )}
     disabled={disabled}
     onClick={onClick}

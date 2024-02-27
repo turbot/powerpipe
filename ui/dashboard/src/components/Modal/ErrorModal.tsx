@@ -1,7 +1,7 @@
-import ErrorMessage from "../ErrorMessage";
-import Modal from "./index";
-import NeutralButton from "../forms/NeutralButton";
-import { ErrorIcon } from "../../constants/icons";
+import ErrorMessage from "@powerpipe/components/ErrorMessage";
+import Modal from "@powerpipe/components/Modal";
+import NeutralButton from "@powerpipe/components/forms/NeutralButton";
+import { ErrorIcon } from "@powerpipe/constants/icons";
 import { useState } from "react";
 
 const ErrorModal = ({ error, title }) => {

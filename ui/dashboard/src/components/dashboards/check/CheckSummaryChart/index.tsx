@@ -1,6 +1,6 @@
 import IntegerDisplay from "../../../IntegerDisplay";
 import { CheckNodeStatus, CheckSummary } from "../common";
-import { classNames } from "../../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 type ProgressBarGroupProps = {
   children: JSX.Element | JSX.Element[];
@@ -78,7 +78,7 @@ const AlertProgressBarGroupTotal = ({
   const alertTotal = summary.error + summary.alarm;
   const newClassName = classNames(
     className,
-    alertTotal > 0 ? "text-alert" : "text-foreground-lightest"
+    alertTotal > 0 ? "text-alert" : "text-foreground-lightest",
   );
   return <ProgressBarGroupTotal className={newClassName} total={alertTotal} />;
 };
@@ -224,14 +224,14 @@ const CheckSummaryChart = ({
           <ProgressBar
             className={classNames(
               "border border-alert",
-              status === "running" ? "summary-chart-alarm-animate" : "bg-alert"
+              status === "running" ? "summary-chart-alarm-animate" : "bg-alert",
             )}
             percent={getCheckSummaryChartPercent(summary.alarm, maxAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-alert",
-              status === "running" ? "summary-chart-error-animate" : null
+              status === "running" ? "summary-chart-error-animate" : null,
             )}
             percent={getCheckSummaryChartPercent(summary.error, maxAlerts)}
           />
@@ -241,7 +241,7 @@ const CheckSummaryChart = ({
       <div
         className={classNames(
           "h-6 w-0 border-l border-black-scale-4",
-          status === "running" ? "subtle-ping" : null
+          status === "running" ? "subtle-ping" : null,
         )}
       />
       <div className="my-auto px-0" style={{ width: `${nonAlertsWidth}%` }}>
@@ -249,21 +249,21 @@ const CheckSummaryChart = ({
           <ProgressBar
             className={classNames(
               "border border-ok",
-              status === "running" ? "summary-chart-ok-animate" : "bg-ok"
+              status === "running" ? "summary-chart-ok-animate" : "bg-ok",
             )}
             percent={getCheckSummaryChartPercent(summary.ok, maxNonAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-info",
-              status === "running" ? "summary-chart-info-animate" : "bg-info"
+              status === "running" ? "summary-chart-info-animate" : "bg-info",
             )}
             percent={getCheckSummaryChartPercent(summary.info, maxNonAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-skip",
-              status === "running" ? "summary-chart-skip-animate" : "bg-skip"
+              status === "running" ? "summary-chart-skip-animate" : "bg-skip",
             )}
             percent={getCheckSummaryChartPercent(summary.skip, maxNonAlerts)}
           />

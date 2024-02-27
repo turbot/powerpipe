@@ -1,13 +1,16 @@
-import { DashboardRunState } from "../../../../types";
-import { getColumn } from "../../../../utils/data";
-import { LeafNodeData } from "../../common";
-import { SelectInputOption, SelectOption } from "../types";
+import { DashboardRunState } from "@powerpipe/types";
+import { getColumn } from "@powerpipe/utils/data";
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
+import {
+  SelectInputOption,
+  SelectOption,
+} from "@powerpipe/components/dashboards/inputs/types";
 import { useMemo } from "react";
 
 const useSelectInputValues = (
   options: SelectInputOption[] | undefined,
   data: LeafNodeData | undefined,
-  status: DashboardRunState
+  status: DashboardRunState,
 ) => {
   // Get the options for the select
   return useMemo<SelectOption[]>(() => {

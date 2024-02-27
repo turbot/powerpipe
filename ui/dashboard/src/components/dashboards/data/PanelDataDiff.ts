@@ -1,7 +1,11 @@
 import { CardDataDiff } from "./CardDiff";
-import { DashboardPanelType } from "../../../types";
-import { IDiffProperties, IPanelDataDiff, IPanelDiff } from "./types";
-import { LeafNodeData } from "../common";
+import { DashboardPanelType } from "@powerpipe/types";
+import {
+  IDiffProperties,
+  IPanelDataDiff,
+  IPanelDiff,
+} from "@powerpipe/components/dashboards/data/types";
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 
 export class PanelDataDiff implements IPanelDataDiff {
   private _panel_type: DashboardPanelType;

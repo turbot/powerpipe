@@ -1,6 +1,6 @@
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
-import ContainerTitle from "@powerpipe/components/dashboards/titles/ContainerTitle";
+import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
@@ -49,7 +49,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { dashboard, dispatch } = useDashboard();
+  const { dispatch } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -319,15 +319,17 @@ const Benchmark = (props: InnerCheckProps) => {
       }}
       setRef={setReferenceElement}
     >
-      {!dashboard?.artificial && (
-        <ContainerTitle title={props.benchmark.title} />
-      )}
-      {showBenchmarkControls && (
-        <PanelControls
-          referenceElement={referenceElement}
-          controls={benchmarkControls}
-        />
-      )}
+      <DashboardTitle
+        title={props.definition.title}
+        controls={
+          showBenchmarkControls ? (
+            <PanelControls
+              referenceElement={referenceElement}
+              controls={benchmarkControls}
+            />
+          ) : null
+        }
+      />
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards.map((summaryCard) => {
           const cardProps: CardProps = {
@@ -346,6 +348,7 @@ const Benchmark = (props: InnerCheckProps) => {
               parentType="benchmark"
               showControls={false}
             >
+              {/*@ts-ignore*/}
               <Card {...cardProps} diff_panel={summaryCard.diff_panel} />
             </Panel>
           );

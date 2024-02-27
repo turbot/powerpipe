@@ -1,5 +1,5 @@
 import CheckGroupingEditor from "../CheckGroupingEditor";
-import useCheckGroupingConfig from "../../../../hooks/useCheckGroupingConfig";
+import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
 import { CheckDisplayGroup } from "../common";
 import { Noop } from "@powerpipe/types/func";
 import { useSearchParams } from "react-router-dom";

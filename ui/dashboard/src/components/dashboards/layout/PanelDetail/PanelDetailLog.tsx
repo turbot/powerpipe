@@ -1,21 +1,21 @@
-import DateTime from "../../../DateTime";
-import Icon from "../../../Icon";
-import Panel from "../Panel";
+import DateTime from "@powerpipe/components/DateTime";
+import Icon from "@powerpipe/components/Icon";
+import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import sortBy from "lodash/sortBy";
-import { classNames } from "../../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   DashboardRunState,
   PanelDefinition,
   PanelLog,
   PanelsLog,
   PanelsMap,
-} from "../../../../types";
+} from "@powerpipe/types";
 import { Disclosure } from "@headlessui/react";
-import { getNodeAndEdgeDataFormat } from "../../common/useNodeAndEdgeData";
-import { NodeAndEdgeProperties } from "../../common/types";
+import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
+import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
 import { PanelDetailProps } from "./index";
-import { useDashboard } from "../../../../hooks/useDashboard";
-import { usePanel } from "../../../../hooks/usePanel";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { usePanel } from "@powerpipe/hooks/usePanel";
 
 type PanelLogRowProps = {
   log: PanelLog;
@@ -126,7 +126,7 @@ const PanelLogRow = ({ log }: PanelLogRowProps) => {
             <Disclosure.Button
               className={classNames(
                 "w-full px-2 py-1 flex justify-between items-center hover:bg-black-scale-2",
-                log.error ? "cursor-pointer" : "cursor-default"
+                log.error ? "cursor-pointer" : "cursor-default",
               )}
             >
               <div className="flex items-center space-x-3">
@@ -168,7 +168,7 @@ const addDependencyLogs = (
   panelsLog: PanelsLog,
   panelsMap: PanelsMap,
   dependencyLogs: PanelLog[],
-  dependentPanelRecord
+  dependentPanelRecord,
 ) => {
   for (const dependency of panel.dependencies || []) {
     if (dependentPanelRecord[dependency]) {
@@ -184,7 +184,7 @@ const addDependencyLogs = (
       panelsLog,
       panelsMap,
       dependencyLogs,
-      dependentPanelRecord
+      dependentPanelRecord,
     );
   }
   const dependencyPanelLog = panelsLog[panel.name];
@@ -193,14 +193,14 @@ const addDependencyLogs = (
       ...l,
       isDependency: true,
       prefix: panel.panel_type,
-    }))
+    })),
   );
 };
 
 const getDependencyLogs = (
   panel: PanelDefinition,
   panelsLog: PanelsLog,
-  panelsMap: PanelsMap
+  panelsMap: PanelsMap,
 ) => {
   const dependencyLogs: PanelLog[] = [];
   const dependentPanelRecord = {};
@@ -210,7 +210,7 @@ const getDependencyLogs = (
     panelsLog,
     panelsMap,
     dependencyLogs,
-    dependentPanelRecord
+    dependentPanelRecord,
   );
 
   if (
@@ -231,7 +231,7 @@ const getDependencyLogs = (
         panelsLog,
         panelsMap,
         dependencyLogs,
-        dependentPanelRecord
+        dependentPanelRecord,
       );
     }
     for (const edge of nodeAndEdgeProperties.edges || []) {
@@ -244,7 +244,7 @@ const getDependencyLogs = (
         panelsLog,
         panelsMap,
         dependencyLogs,
-        dependentPanelRecord
+        dependentPanelRecord,
       );
     }
   }
@@ -258,7 +258,7 @@ const PanelLogs = () => {
   const dependencyPanelLogs = getDependencyLogs(
     definition as PanelDefinition,
     panelsLog,
-    panelsMap
+    panelsMap,
   );
   const allLogs = sortBy([...dependencyPanelLogs, ...panelLog], "timestamp");
   return (

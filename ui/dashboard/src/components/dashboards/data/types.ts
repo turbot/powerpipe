@@ -1,5 +1,5 @@
-import { DashboardPanelType, PanelDataMode } from "../../../types";
-import { LeafNodeData } from "../common";
+import { DashboardPanelType, PanelDataMode } from "@powerpipe/types";
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 
 export interface IDiffProperties {
   data_mode?: PanelDataMode;

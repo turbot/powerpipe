@@ -1,6 +1,9 @@
-import Hierarchy from "../Hierarchy";
-import { HierarchyProps, IHierarchy } from "../types";
-import { registerHierarchyComponent } from "../index";
+import Hierarchy from "@powerpipe/components/dashboards/hierarchies/Hierarchy";
+import {
+  HierarchyProps,
+  IHierarchy,
+} from "@powerpipe/components/dashboards/hierarchies/types";
+import { registerHierarchyComponent } from "@powerpipe/components/dashboards/hierarchies";
 
 const Tree = (props: HierarchyProps) => <Hierarchy {...props} />;
 

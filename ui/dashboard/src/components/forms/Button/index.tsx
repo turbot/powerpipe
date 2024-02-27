@@ -1,4 +1,4 @@
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 
 export type ButtonProps = {
   children: JSX.Element | JSX.Element[];
@@ -35,7 +35,7 @@ const Button = ({
       className={classNames(
         sizeClass,
         className,
-        "rounded-md shadow-sm whitespace-nowrap focus:outline-none disabled:opacity-50 disabled:cursor-default"
+        "rounded-md shadow-sm whitespace-nowrap focus:outline-none disabled:opacity-50 disabled:cursor-default",
       )}
       disabled={disabled}
       onClick={onClick}

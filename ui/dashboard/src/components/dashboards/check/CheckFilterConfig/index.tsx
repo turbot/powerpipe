@@ -1,5 +1,5 @@
 import CheckFilterEditor from "../CheckFilterEditor";
-import useCheckFilterConfig from "../../../../hooks/useCheckFilterConfig";
+import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
 import { CheckFilter } from "../common";
 import { Fragment, ReactNode } from "react";
 import { Noop } from "@powerpipe/types/func";

@@ -1,5 +1,5 @@
 import ErrorMessage from "../../ErrorMessage";
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import { registerComponent } from "../index";
 
 type ErrorProps = {
@@ -15,7 +15,7 @@ const Error = ({ className, error }: ErrorProps) => {
     <div
       className={classNames(
         "flex w-full h-full p-2 break-keep bg-red-50 border-red-700 border text-red-700 justify-center items-center shadow rounded-md",
-        className
+        className,
       )}
     >
       <ErrorMessage error={error} />

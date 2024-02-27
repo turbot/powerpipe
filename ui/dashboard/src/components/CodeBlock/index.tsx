@@ -2,10 +2,10 @@ import CopyToClipboard, { CopyToClipboardProvider } from "../CopyToClipboard";
 import hcl from "react-syntax-highlighter/dist/esm/languages/prism/hcl";
 import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
 import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
-import { classNames } from "../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
-import { ThemeNames } from "../../hooks/useTheme";
-import { useDashboard } from "../../hooks/useDashboard";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo, useState } from "react";
 import {
   vs,
@@ -81,7 +81,7 @@ const CodeBlock = ({
           className={classNames(
             "relative p-1",
             copyToClipboard ? "cursor-pointer" : null,
-            copyToClipboard && showCopyIcon ? "bg-black-scale-1" : null
+            copyToClipboard && showCopyIcon ? "bg-black-scale-1" : null,
           )}
           onMouseEnter={
             copyToClipboard
@@ -117,7 +117,7 @@ const CodeBlock = ({
           {showCopyIcon && (
             <div
               className={classNames(
-                "absolute cursor-pointer z-50 right-1 top-1"
+                "absolute cursor-pointer z-50 right-1 top-1",
               )}
             >
               <CopyToClipboard data={children} />

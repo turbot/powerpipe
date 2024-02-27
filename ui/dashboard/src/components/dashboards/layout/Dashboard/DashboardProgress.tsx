@@ -1,5 +1,5 @@
-import { DashboardDataModeLive } from "../../../../types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { DashboardDataModeLive } from "@powerpipe/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardProgress = () => {
   const { dataMode, progress, state } = useDashboard();

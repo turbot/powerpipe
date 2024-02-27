@@ -1,6 +1,10 @@
 import AreaChart from "./index";
-import { PanelStoryDecorator } from "../../../../utils/storybook";
-import { MultiTimeSeriesDefaults, MultiTimeSeriesGroupedDefaults, SingleTimeSeriesDefaults } from "../Chart/index.stories";
+import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
+import {
+  MultiTimeSeriesDefaults,
+  MultiTimeSeriesGroupedDefaults,
+  SingleTimeSeriesDefaults,
+} from "../Chart/index.stories";
 
 const story = {
   title: "Charts/Area",

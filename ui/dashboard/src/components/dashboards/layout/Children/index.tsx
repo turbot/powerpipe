@@ -3,8 +3,8 @@ import {
   ContainerDefinition,
   DashboardPanelType,
   PanelDefinition,
-} from "../../../../types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+} from "@powerpipe/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ChildrenProps = {
   children: ContainerDefinition[] | PanelDefinition[] | undefined;

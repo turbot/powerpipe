@@ -1,6 +1,6 @@
-import NeutralButton from "../../../forms/NeutralButton";
-import useDownloadPanelData from "../../../../hooks/useDownloadPanelData";
-import { noop } from "../../../../utils/func";
+import NeutralButton from "@powerpipe/components/forms/NeutralButton";
+import useDownloadPanelData from "@powerpipe/hooks/useDownloadPanelData";
+import { noop } from "@powerpipe/utils/func";
 
 const PanelDetailDataDownloadButton = ({ panelDefinition, size }) => {
   const { download, processing } = useDownloadPanelData(panelDefinition);

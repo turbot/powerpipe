@@ -1,5 +1,5 @@
 import Table from "./index";
-import { PanelStoryDecorator } from "../../../utils/storybook";
+import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
 import { ComponentMeta, ComponentStory } from "@storybook/react";
 
 export default {

@@ -1,18 +1,22 @@
-import ErrorPanel from "../../Error";
+import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import merge from "lodash/merge";
-import useChartThemeColors from "../../../../hooks/useChartThemeColors";
-import useNodeAndEdgeData from "../../common/useNodeAndEdgeData";
+import useChartThemeColors from "@powerpipe/hooks/useChartThemeColors";
+import useNodeAndEdgeData from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import {
   buildNodesAndEdges,
   buildSankeyDataInputs,
   LeafNodeData,
   toEChartsType,
-} from "../../common";
-import { Chart } from "../../charts/Chart";
-import { FlowProperties, FlowProps, FlowType } from "../types";
+} from "@powerpipe/components/dashboards/common";
+import { Chart } from "@powerpipe/components/dashboards/charts/Chart";
+import {
+  FlowProperties,
+  FlowProps,
+  FlowType,
+} from "@powerpipe/components/dashboards/flows/types";
 import { getFlowComponent } from "..";
-import { NodesAndEdges } from "../../common/types";
-import { registerComponent } from "../../index";
+import { NodesAndEdges } from "@powerpipe/components/dashboards/common/types";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const getCommonBaseOptions = () => ({

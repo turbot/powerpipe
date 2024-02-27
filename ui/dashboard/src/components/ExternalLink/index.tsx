@@ -2,10 +2,10 @@ import { Link } from "react-router-dom";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
-} from "../../types";
+} from "@powerpipe/types";
 import { ReactNode } from "react";
 import { registerComponent } from "../dashboards";
-import { useDashboard } from "../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ExternalLinkProps = {
   children: ReactNode;

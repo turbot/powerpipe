@@ -11,17 +11,17 @@ import {
   PanelLog,
   PanelsLog,
   PanelsMap,
-} from "../types";
+} from "@powerpipe/types";
 import {
   EdgeProperties,
   KeyValueStringPairs,
   NodeProperties,
-} from "../components/dashboards/common/types";
+} from "@powerpipe/components/dashboards/common/types";
 
 const buildDashboards = (
   dashboards: AvailableDashboardsDictionary,
   benchmarks: AvailableDashboardsDictionary,
-  snapshots: KeyValueStringPairs
+  snapshots: KeyValueStringPairs,
 ): DashboardsCollection => {
   const dashboardsMap = {};
   const builtDashboards: AvailableDashboard[] = [];
@@ -88,8 +88,8 @@ const panelLogTitle = (panel: PanelDefinition) => {
       return panel.title
         ? panel.title
         : dependencyPanelProperties && dependencyPanelProperties.name
-        ? dependencyPanelProperties.name
-        : panel.name;
+          ? dependencyPanelProperties.name
+          : panel.name;
     case "edge":
       if (panel.title) {
         return panel.title;
@@ -122,7 +122,7 @@ const panelLogTitle = (panel: PanelDefinition) => {
 const buildPanelLog = (
   panel: PanelDefinition,
   timestamp: string,
-  executionTime?: number
+  executionTime?: number,
 ): PanelLog => {
   return {
     error: panel.status === "error" ? panel.error : null,
@@ -144,7 +144,7 @@ const buildPanelsLog = (panels: PanelsMap, timestamp: string) => {
 const calculateExecutionTime = (
   timestamp: string,
   panel: PanelDefinition,
-  panelLogs: PanelLog[]
+  panelLogs: PanelLog[],
 ): number | undefined => {
   let overallTime: number | undefined = undefined;
   if (panel.status === "complete") {
@@ -159,7 +159,7 @@ const calculateExecutionTime = (
 const addUpdatedPanelLogs = (
   panelsLog: PanelsLog,
   panel: PanelDefinition,
-  timestamp: string
+  timestamp: string,
 ) => {
   const newPanelsLog = { ...panelsLog };
   const newPanelLog = [...(newPanelsLog[panel.name] || [])];
@@ -176,7 +176,7 @@ const addUpdatedPanelLogs = (
 const updatePanelsLogFromCompletedPanels = (
   panelsLog: PanelsLog,
   panels: PanelsMap,
-  timestamp: string
+  timestamp: string,
 ) => {
   const newPanelsLog = { ...panelsLog };
   for (const [panelName, panel] of Object.entries(panels || {})) {
@@ -207,13 +207,13 @@ const buildSelectedDashboardInputsFromSearchParams = (searchParams) => {
 
 const updateSelectedDashboard = (
   selectedDashboard: AvailableDashboard | null,
-  newDashboards: AvailableDashboard[]
+  newDashboards: AvailableDashboard[],
 ) => {
   if (!selectedDashboard) {
     return null;
   }
   const matchingDashboard = newDashboards.find(
-    (dashboard) => dashboard.full_name === selectedDashboard.full_name
+    (dashboard) => dashboard.full_name === selectedDashboard.full_name,
   );
   if (matchingDashboard) {
     return matchingDashboard;
@@ -224,7 +224,7 @@ const updateSelectedDashboard = (
 
 const wrapDefinitionInArtificialDashboard = (
   definition: PanelDefinition,
-  layout: any
+  layout: any,
 ): DashboardDefinition => {
   const { title: defTitle, ...definitionWithoutTitle } = definition;
   const { title: layoutTitle, ...layoutWithoutTitle } = layout;

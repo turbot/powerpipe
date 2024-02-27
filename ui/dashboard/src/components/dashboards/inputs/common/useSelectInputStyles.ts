@@ -1,4 +1,4 @@
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 const useSelectInputStyles = () => {

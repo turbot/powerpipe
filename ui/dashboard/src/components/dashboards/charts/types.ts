@@ -2,9 +2,9 @@ import {
   BasePrimitiveProps,
   ColorOverride,
   ExecutablePrimitiveProps,
-} from "../common";
+} from "@powerpipe/components/dashboards/common";
 import { ComponentType } from "react";
-import { PanelDefinition } from "../../../types";
+import { PanelDefinition } from "@powerpipe/types";
 
 export type BaseChartProps = PanelDefinition &
   BasePrimitiveProps &

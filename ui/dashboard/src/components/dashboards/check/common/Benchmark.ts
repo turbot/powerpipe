@@ -11,13 +11,13 @@ import {
   CheckResult,
   CheckSeveritySummary,
   CheckSummary,
-} from "./index";
-import { DashboardLayoutNode, PanelsMap } from "../../../../types";
+} from "@powerpipe/components/dashboards/check/common";
+import { DashboardLayoutNode, PanelsMap } from "@powerpipe/types";
 import {
   LeafNodeData,
   LeafNodeDataColumn,
   LeafNodeDataRow,
-} from "../../common";
+} from "@powerpipe/components/dashboards/common";
 
 class Benchmark implements CheckNode {
   private readonly _sortIndex: string;

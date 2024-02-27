@@ -1,5 +1,5 @@
 import Icon from "../../Icon";
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import { useMemo } from "react";
 
 type DashboardIconProps = {

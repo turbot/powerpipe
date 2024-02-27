@@ -1,8 +1,14 @@
-import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
-import { CategoryMap, NodeAndEdgeProperties } from "../common/types";
+import {
+  BasePrimitiveProps,
+  ExecutablePrimitiveProps,
+} from "@powerpipe/components/dashboards/common";
+import {
+  CategoryMap,
+  NodeAndEdgeProperties,
+} from "@powerpipe/components/dashboards/common/types";
 import { ComponentType } from "react";
-import { NodeAndEdgeData } from "../graphs/types";
-import { PanelDefinition } from "../../../types";
+import { NodeAndEdgeData } from "@powerpipe/components/dashboards/graphs/types";
+import { PanelDefinition } from "@powerpipe/types";
 
 export type BaseFlowProps = PanelDefinition &
   BasePrimitiveProps &

@@ -1,4 +1,4 @@
-import { stringToColor } from "../../../../utils/color";
+import { stringToColor } from "@powerpipe/utils/color";
 
 const ControlDimension = ({ dimensionKey, dimensionValue }) => (
   <span

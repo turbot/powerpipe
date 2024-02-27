@@ -12,13 +12,13 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
-} from "./index";
-import { DashboardRunState } from "../../../../types";
+} from "@powerpipe/components/dashboards/check/common";
+import { DashboardRunState } from "@powerpipe/types";
 import {
   LeafNodeData,
   LeafNodeDataColumn,
   LeafNodeDataRow,
-} from "../../common";
+} from "@powerpipe/components/dashboards/common";
 
 class Control implements CheckNode {
   private readonly _sortIndex: string;

@@ -1,8 +1,11 @@
-import { ClearIcon, SubmitIcon } from "../../../../constants/icons";
-import { DashboardActions, DashboardDataModeLive } from "../../../../types";
-import { registerInputComponent } from "../index";
-import { IInput, InputProps } from "../types";
-import { useDashboard } from "../../../../hooks/useDashboard";
+import { ClearIcon, SubmitIcon } from "@powerpipe/constants/icons";
+import { DashboardActions, DashboardDataModeLive } from "@powerpipe/types";
+import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
+import {
+  IInput,
+  InputProps,
+} from "@powerpipe/components/dashboards/inputs/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 const TextInput = (props: InputProps) => {

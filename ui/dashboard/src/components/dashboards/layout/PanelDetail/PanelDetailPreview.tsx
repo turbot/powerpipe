@@ -1,6 +1,6 @@
-import Child from "../Child";
-import { PanelDefinition } from "../../../../types";
-import { PanelDetailProps } from "./index";
+import Child from "@powerpipe/components/dashboards/layout/Child";
+import { PanelDefinition } from "@powerpipe/types";
+import { PanelDetailProps } from "@powerpipe/components/dashboards/layout/PanelDetail";
 
 const PanelDetailPreview = ({
   definition: { children, name, panel_type, title, ...rest },

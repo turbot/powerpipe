@@ -1,11 +1,11 @@
 import DashboardIcon from "../common/DashboardIcon";
 import has from "lodash/has";
-import IntegerDisplay from "../../IntegerDisplay";
+import IntegerDisplay from "@powerpipe/components/IntegerDisplay";
 import isNumber from "lodash/isNumber";
 import isObject from "lodash/isObject";
 import LoadingIndicator from "../LoadingIndicator";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import useTemplateRender from "../../../hooks/useTemplateRender";
+import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
 import {
   CardDataProcessor,

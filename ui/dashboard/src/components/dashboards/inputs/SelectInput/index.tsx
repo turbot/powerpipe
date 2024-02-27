@@ -1,14 +1,17 @@
 import Select from "react-select";
-import useSelectInputStyles from "../common/useSelectInputStyles";
-import useSelectInputValues from "../common/useSelectInputValues";
-import { DashboardActions, DashboardDataModeLive } from "../../../../types";
-import { InputProps, SelectOption } from "../types";
+import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
+import useSelectInputValues from "@powerpipe/components/dashboards/inputs/common/useSelectInputValues";
+import { DashboardActions, DashboardDataModeLive } from "@powerpipe/types";
+import {
+  InputProps,
+  SelectOption,
+} from "@powerpipe/components/dashboards/inputs/types";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
   SingleValueWithTags,
-} from "../common/Common";
-import { useDashboard } from "../../../../hooks/useDashboard";
+} from "@powerpipe/components/dashboards/inputs/common/Common";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 type SelectInputProps = InputProps & {
@@ -28,10 +31,10 @@ const getValueForState = (multi, option) => {
 const findOptions = (options, multi, value) => {
   return multi
     ? options.filter((option) =>
-        option.value ? value.indexOf(option.value.toString()) >= 0 : false
+        option.value ? value.indexOf(option.value.toString()) >= 0 : false,
       )
     : options.find((option) =>
-        option.value ? option.value.toString() === value : false
+        option.value ? option.value.toString() === value : false,
       );
 };
 
@@ -45,7 +48,7 @@ const SelectInput = ({
   const { dataMode, dispatch, selectedDashboardInputs } = useDashboard();
   const [initialisedFromState, setInitialisedFromState] = useState(false);
   const [value, setValue] = useState<SelectOption | SelectOption[] | null>(
-    null
+    null,
   );
 
   // Get the options for the select

@@ -1,8 +1,8 @@
 import React, { Fragment, useState } from "react";
-import { CloseIcon } from "../../constants/icons";
+import { CloseIcon } from "@powerpipe/constants/icons";
 import { Dialog, Transition } from "@headlessui/react";
-import { ModalThemeWrapper, ThemeProvider } from "../../hooks/useTheme";
-import { classNames } from "../../utils/styles";
+import { ModalThemeWrapper, ThemeProvider } from "@powerpipe/hooks/useTheme";
+import { classNames } from "@powerpipe/utils/styles";
 
 interface ModalProps {
   actions: JSX.Element[];
@@ -92,7 +92,7 @@ const Modal = ({
                   <div>{children}</div>
                   <div
                     className={classNames(
-                      "flex pt-4 border-t border-divide space-x-2 justify-end"
+                      "flex pt-4 border-t border-divide space-x-2 justify-end",
                     )}
                   >
                     <div className="flex flex-1 space-x-3 justify-end">

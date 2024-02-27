@@ -2,14 +2,14 @@ import ControlDimension from "../check/Benchmark/ControlDimension";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import useTemplateRender from "../../../hooks/useTemplateRender";
+import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
   InfoIcon,
   OKIcon,
   SkipIcon,
   UnknownIcon,
-} from "../../../constants/icons";
+} from "@powerpipe/constants/icons";
 import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
@@ -17,15 +17,15 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
-import { classNames } from "../../../utils/styles";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   ErrorIcon,
   SortAscendingIcon,
   SortDescendingIcon,
-} from "../../../constants/icons";
+} from "@powerpipe/constants/icons";
 import { memo, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
-import { PanelDefinition } from "../../../types";
+import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
 import { useSortBy, useTable } from "react-table";
 
@@ -45,7 +45,7 @@ type TableColumnInfo = {
 
 const getColumns = (
   cols: LeafNodeDataColumn[],
-  properties?: TableProperties
+  properties?: TableProperties,
 ): { columns: TableColumnInfo[]; hiddenColumns: string[] } => {
   if (!cols || cols.length === 0) {
     return { columns: [], hiddenColumns: [] };
@@ -373,7 +373,7 @@ const TableView = ({
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable(
       { columns, data: rowData, initialState: { hiddenColumns } },
-      useSortBy
+      useSortBy,
     );
 
   useDeepCompareEffect(() => {
@@ -386,7 +386,7 @@ const TableView = ({
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string])
+          .map((col) => [col.name, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -406,7 +406,7 @@ const TableView = ({
         {...getTableProps()}
         className={classNames(
           "min-w-full divide-y divide-table-divide overflow-hidden",
-          hasTopBorder ? "border-t border-divide" : null
+          hasTopBorder ? "border-t border-divide" : null,
         )}
       >
         <thead className="text-table-head border-b border-divide">
@@ -418,7 +418,7 @@ const TableView = ({
                   scope="col"
                   className={classNames(
                     "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                    isNumericCol(column.data_type) ? "text-right" : null
+                    isNumericCol(column.data_type) ? "text-right" : null,
                   )}
                 >
                   {column.render("Header")}
@@ -428,7 +428,7 @@ const TableView = ({
                     <SortAscendingIcon
                       className={classNames(
                         "inline-block h-4 w-4",
-                        !column.isSorted ? "invisible" : null
+                        !column.isSorted ? "invisible" : null,
                       )}
                     />
                   )}
@@ -463,7 +463,7 @@ const TableView = ({
                       isNumericCol(cell.column.data_type) ? "text-right" : "",
                       cell.column.wrap === "all"
                         ? "break-keep"
-                        : "whitespace-nowrap"
+                        : "whitespace-nowrap",
                     )}
                   >
                     <MemoCellValue
@@ -487,11 +487,11 @@ const TableView = ({
 const TableViewWrapper = (props: TableProps) => {
   const { columns, hiddenColumns } = useMemo(
     () => getColumns(props.data ? props.data.columns : [], props.properties),
-    [props.data, props.properties]
+    [props.data, props.properties],
   );
   const rowData = useMemo(
     () => getData(columns, props.data ? props.data.rows : []),
-    [columns, props.data]
+    [columns, props.data],
   );
 
   return props.data ? (
@@ -545,7 +545,7 @@ const LineView = (props: TableProps) => {
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string])
+          .map((col) => [col.name, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -579,7 +579,7 @@ const LineView = (props: TableProps) => {
                   <span
                     className={classNames(
                       "block",
-                      col.wrap === "all" ? "break-keep" : "truncate"
+                      col.wrap === "all" ? "break-keep" : "truncate",
                     )}
                   >
                     <MemoCellValue

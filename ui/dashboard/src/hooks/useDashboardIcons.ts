@@ -6,12 +6,14 @@ const useDashboardIcons = () => {
 
   // Dynamically import hero icons from its own bundle
   useEffect(() => {
-    import("../icons/heroIcons").then((m) => setHeroIcons(m.icons));
+    import("@powerpipe/icons/heroIcons").then((m) => setHeroIcons(m.icons));
   }, []);
 
   // Dynamically import material symbols from its own bundle
   useEffect(() => {
-    import("../icons/materialSymbols").then((m) => setMaterialSymbols(m.icons));
+    import("@powerpipe/icons/materialSymbols").then((m) =>
+      setMaterialSymbols(m.icons),
+    );
   }, []);
 
   return {

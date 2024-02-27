@@ -1,5 +1,5 @@
 import DonutChart from "./index";
-import { PanelStoryDecorator } from "../../../../utils/storybook";
+import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
 
 const story = {
   title: "Charts/Donut",

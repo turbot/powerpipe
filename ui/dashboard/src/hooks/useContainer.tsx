@@ -6,8 +6,8 @@ import {
   useEffect,
   useState,
 } from "react";
-import { noop } from "../utils/func";
-import { PanelDefinition } from "../types";
+import { noop } from "@powerpipe/utils/func";
+import { PanelDefinition } from "@powerpipe/types";
 
 export type ContainerChildVisibility = "visible" | "hidden";
 
@@ -20,7 +20,7 @@ type IContainerContext = {
   showTitle: boolean;
   updateChildStatus: (
     panel: PanelDefinition,
-    visibility: ContainerChildVisibility
+    visibility: ContainerChildVisibility,
   ) => void;
 };
 
@@ -47,10 +47,10 @@ const ContainerProvider = ({ children }: ContainerProviderProps) => {
       // state if required to force a re-render of the container's title
 
       const visibleIndex = childVisibility.visible.findIndex(
-        (p) => p.name === child.name
+        (p) => p.name === child.name,
       );
       const hiddenIndex = childVisibility.hidden.findIndex(
-        (p) => p.name === child.name
+        (p) => p.name === child.name,
       );
       if (visibility === "visible") {
         // If it's already marked as visible, nothing to do
@@ -69,7 +69,7 @@ const ContainerProvider = ({ children }: ContainerProviderProps) => {
                 ...childVisibility.hidden.slice(0, hiddenIndex),
                 ...childVisibility.hidden.slice(
                   hiddenIndex + 1,
-                  childVisibility.hidden.length - 1
+                  childVisibility.hidden.length - 1,
                 ),
               ]
             : childVisibility.hidden;
@@ -89,7 +89,7 @@ const ContainerProvider = ({ children }: ContainerProviderProps) => {
                 ...childVisibility.visible.slice(0, visibleIndex),
                 ...childVisibility.visible.slice(
                   visibleIndex + 1,
-                  childVisibility.visible.length - 1
+                  childVisibility.visible.length - 1,
                 ),
               ]
             : childVisibility.visible;
@@ -104,7 +104,7 @@ const ContainerProvider = ({ children }: ContainerProviderProps) => {
         });
       }
     },
-    [childVisibility, setChildVisibility]
+    [childVisibility, setChildVisibility],
   );
 
   useEffect(() => {

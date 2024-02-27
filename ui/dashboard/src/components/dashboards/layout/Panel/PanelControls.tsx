@@ -1,6 +1,6 @@
-import Icon from "../../../Icon";
+import Icon from "@powerpipe/components/Icon";
 import { createPortal } from "react-dom";
-import { ThemeProvider, ThemeWrapper } from "../../../../hooks/useTheme";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 
@@ -22,55 +22,58 @@ const PanelControl = ({ action, icon, title }: IPanelControl) => {
   );
 };
 
-const PanelControls = ({ controls, referenceElement }) => {
+const PanelControls = ({ controls, referenceElement, withOffset = false }) => {
   const [popperElement, setPopperElement] = useState(null);
   // Need to define memoized / stable modifiers else the usePopper hook will infinitely re-render
   const noFlip = useMemo(() => ({ name: "flip", enabled: false }), []);
-  const offset = useMemo(
-    () => ({
+  const offset = useMemo(() => {
+    return {
       name: "offset",
       options: {
         // For some reason the height of the popper is not correct unless scrollbars are visible.
         // I've sunk too much time trying to find the root cause, but luckily I only
         // need to modify this along a fixed offset, so can hard-code this for now.
-        offset: [-14.125, -14.125],
+        offset: withOffset ? [-14.125, -14.125] : [0, -28.25],
         // offset: ({ popper }) => {
         // const offset = -popper.height / 2;
         // return [offset, offset];
         // },
       },
-    }),
-    []
-  );
+    };
+  }, [withOffset]);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     modifiers: [noFlip, offset],
     placement: "top-end",
   });
 
-  return createPortal(
-    <ThemeProvider>
-      <ThemeWrapper>
-        <div
-          // @ts-ignore
-          ref={setPopperElement}
-          style={{ ...styles.popper }}
-          {...attributes.popper}
-        >
-          <div className="flex border border-black-scale-3 rounded-md">
-            {controls.map((control, idx) => (
-              <PanelControl
-                key={idx}
-                action={control.action}
-                icon={control.icon}
-                title={control.title}
-              />
-            ))}
-          </div>
-        </div>
-      </ThemeWrapper>
-    </ThemeProvider>,
-    // @ts-ignore as this element definitely exists
-    document.getElementById("portals")
+  return (
+    <>
+      {createPortal(
+        <ThemeProvider>
+          <ThemeWrapper>
+            <div
+              // @ts-ignore
+              ref={setPopperElement}
+              style={{ ...styles.popper }}
+              {...attributes.popper}
+            >
+              <div className="flex border border-black-scale-3 rounded-md">
+                {controls.map((control, idx) => (
+                  <PanelControl
+                    key={idx}
+                    action={control.action}
+                    icon={control.icon}
+                    title={control.title}
+                  />
+                ))}
+              </div>
+            </div>
+          </ThemeWrapper>
+        </ThemeProvider>,
+        // @ts-ignore as this element definitely exists
+        document.getElementById("portals"),
+      )}
+    </>
   );
 };
 

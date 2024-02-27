@@ -1,5 +1,5 @@
 import DashboardListEmptyCallToAction from "./DashboardListEmptyCallToAction";
-import { ComponentsMap } from "../types";
+import { ComponentsMap } from "@powerpipe/types";
 import { getComponent } from "@powerpipe/components/dashboards";
 
 const buildComponentsMap = (overrides = {}): ComponentsMap => {

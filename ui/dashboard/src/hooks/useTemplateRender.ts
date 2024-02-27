@@ -1,8 +1,8 @@
 import {
   KeyValuePairs,
   TemplatesMap,
-} from "../components/dashboards/common/types";
-import { renderInterpolatedTemplates } from "../utils/template";
+} from "@powerpipe/components/dashboards/common/types";
+import { renderInterpolatedTemplates } from "@powerpipe/utils/template";
 import { useCallback, useEffect, useState } from "react";
 
 const useTemplateRender = () => {
@@ -20,7 +20,7 @@ const useTemplateRender = () => {
       }
       return renderInterpolatedTemplates(templates, data, jqWeb);
     },
-    [jqWeb]
+    [jqWeb],
   );
 
   return {

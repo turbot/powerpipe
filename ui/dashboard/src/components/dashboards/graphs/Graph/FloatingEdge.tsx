@@ -5,8 +5,8 @@ import {
   circleGetBezierPath,
   getEdgeParams,
 } from "./utils";
-import { classNames } from "../../../../utils/styles";
-import { colorToRgb } from "../../../../utils/color";
+import { classNames } from "@powerpipe/utils/styles";
+import { colorToRgb } from "@powerpipe/utils/color";
 import { EdgeLabelRenderer, useStore } from "reactflow";
 import { useCallback } from "react";
 
@@ -28,10 +28,10 @@ const FloatingEdge = ({
   },
 }) => {
   const sourceNode = useStore(
-    useCallback((store) => store.nodeInternals.get(source), [source])
+    useCallback((store) => store.nodeInternals.get(source), [source]),
   );
   const targetNode = useStore(
-    useCallback((store) => store.nodeInternals.get(target), [target])
+    useCallback((store) => store.nodeInternals.get(target), [target]),
   );
 
   if (!sourceNode || !targetNode) {
@@ -54,7 +54,7 @@ const FloatingEdge = ({
       title={label}
       className={classNames(
         "block italic max-w-[70px] text-sm text-center text-wrap leading-tight line-clamp-2",
-        row_data && row_data.properties ? "border-b border-dashed" : null
+        row_data && row_data.properties ? "border-b border-dashed" : null,
       )}
       style={{
         borderColor: `rgba(${colorRgb[0]},${colorRgb[1]},${colorRgb[2]},${labelOpacity})`,

@@ -1,6 +1,6 @@
-import usePanelControls from "./usePanelControls";
-import { BaseChartProps } from "../components/dashboards/charts/types";
-import { CardProps } from "../components/dashboards/Card";
+import usePanelControls from "@powerpipe/hooks/usePanelControls";
+import { BaseChartProps } from "@powerpipe/components/dashboards/charts/types";
+import { CardProps } from "@powerpipe/components/dashboards/Card";
 import {
   createContext,
   ReactNode,
@@ -16,22 +16,22 @@ import {
   PanelDefinition,
   PanelDependenciesByStatus,
   PanelsMap,
-} from "../types";
-import { FlowProps } from "../components/dashboards/flows/types";
-import { getNodeAndEdgeDataFormat } from "../components/dashboards/common/useNodeAndEdgeData";
-import { GraphProps } from "../components/dashboards/graphs/types";
-import { HierarchyProps } from "../components/dashboards/hierarchies/types";
-import { ImageProps } from "../components/dashboards/Image";
+} from "@powerpipe/types";
+import { FlowProps } from "@powerpipe/components/dashboards/flows/types";
+import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
+import { GraphProps } from "@powerpipe/components/dashboards/graphs/types";
+import { HierarchyProps } from "@powerpipe/components/dashboards/hierarchies/types";
+import { ImageProps } from "@powerpipe/components/dashboards/Image";
 import {
   InputProperties,
   InputProps,
-} from "../components/dashboards/inputs/types";
-import { IPanelControl } from "../components/dashboards/layout/Panel/PanelControls";
-import { NodeAndEdgeProperties } from "../components/dashboards/common/types";
-import { TableProps } from "../components/dashboards/Table";
-import { TextProps } from "../components/dashboards/Text";
-import { useDashboard } from "./useDashboard";
-import { useContainer } from "./useContainer";
+} from "@powerpipe/components/dashboards/inputs/types";
+import { IPanelControl } from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
+import { TableProps } from "@powerpipe/components/dashboards/Table";
+import { TextProps } from "@powerpipe/components/dashboards/Text";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useContainer } from "@powerpipe/hooks/useContainer";
 
 type IPanelContext = {
   definition:
@@ -83,7 +83,7 @@ const recordDependency = (
   dependencies: PanelDefinition[],
   dependenciesByStatus: PanelDependenciesByStatus,
   inputPanelsAwaitingValue: PanelDefinition[],
-  recordedInputPanels: {}
+  recordedInputPanels: {},
 ) => {
   // Record this panel as a dependency
   dependencies.push(definition);
@@ -120,7 +120,7 @@ const recordDependency = (
       dependencies,
       dependenciesByStatus,
       inputPanelsAwaitingValue,
-      recordedInputPanels
+      recordedInputPanels,
     );
   }
 };
@@ -136,7 +136,7 @@ const PanelProvider = ({
   const [showPanelControls, setShowPanelControls] = useState(false);
   const [showPanelInformation, setShowPanelInformation] = useState(false);
   const [panelInformation, setPanelInformation] = useState<ReactNode | null>(
-    null
+    null,
   );
   const { panelControls } = usePanelControls(definition, showControls);
   const { dependencies, dependenciesByStatus, inputPanelsAwaitingValue } =
@@ -149,7 +149,7 @@ const PanelProvider = ({
         };
       }
       const dataFormat = getNodeAndEdgeDataFormat(
-        definition.properties as NodeAndEdgeProperties
+        definition.properties as NodeAndEdgeProperties,
       );
       if (
         dataFormat === "LEGACY" &&
@@ -181,7 +181,7 @@ const PanelProvider = ({
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
-            recordedInputPanels
+            recordedInputPanels,
           );
         }
         for (const edge of nodeAndEdgeProperties.edges || []) {
@@ -196,7 +196,7 @@ const PanelProvider = ({
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
-            recordedInputPanels
+            recordedInputPanels,
           );
         }
       }
@@ -213,7 +213,7 @@ const PanelProvider = ({
           dependencies,
           dependenciesByStatus,
           inputPanelsAwaitingValue,
-          recordedInputPanels
+          recordedInputPanels,
         );
       }
 
@@ -226,7 +226,7 @@ const PanelProvider = ({
     }
     updateChildStatus(
       definition as PanelDefinition,
-      inputPanelsAwaitingValue.length === 0 ? "visible" : "hidden"
+      inputPanelsAwaitingValue.length === 0 ? "visible" : "hidden",
     );
   }, [definition, inputPanelsAwaitingValue, parentType, updateChildStatus]);
 
