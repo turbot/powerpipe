@@ -1,11 +1,12 @@
 import Icon from "@powerpipe/components/Icon";
 import { createPortal } from "react-dom";
+import { ReactNode, useMemo, useState } from "react";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 
 export type IPanelControl = {
   action: (e: any) => Promise<void>;
+  component?: ReactNode;
   icon: string;
   title: string;
 };

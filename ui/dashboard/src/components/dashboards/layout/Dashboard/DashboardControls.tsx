@@ -1,18 +1,11 @@
 import CheckFilterConfig from "@powerpipe/components/dashboards/check/CheckFilterConfig";
 import CheckGroupingConfig from "@powerpipe/components/dashboards/check/CheckGroupingConfig";
 import Icon from "@powerpipe/components/Icon";
-import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
-import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
-import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 import { DashboardActions } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardControls = () => {
   const { dispatch } = useDashboard();
-  const searchPathPrefix = useDashboardSearchPathPrefix();
-  const filterConfig = useCheckFilterConfig();
-  const groupingConfig = useCheckGroupingConfig();
-
   const hideControls = () =>
     dispatch({ type: DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL });
 

@@ -1,5 +1,6 @@
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
+import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
@@ -76,6 +77,7 @@ const Benchmark = (props: InnerCheckProps) => {
       {
         action: async () =>
           dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
+        component: <CustomizeViewSummary />,
         icon: "design_services",
         title: "Customize view",
       },

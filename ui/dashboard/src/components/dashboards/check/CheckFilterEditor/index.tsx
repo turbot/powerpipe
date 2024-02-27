@@ -323,9 +323,8 @@ const CheckFilterEditorItem = ({
       <div className="cursor-grab" onPointerDown={(e) => dragControls.start(e)}>
         <Icon className="h-5 w-5" icon="drag_indicator" />
       </div>
-      <div className="grow">
+      <div className="grow min-w-44 max-w-72">
         <CheckFilterTypeSelect
-          className="min-w-44"
           filter={filter}
           index={index}
           item={item}
@@ -337,7 +336,7 @@ const CheckFilterEditorItem = ({
       {(item.type === "dimension" || item.type === "tag") && (
         <>
           <span>=</span>
-          <div className="grow">
+          <div className="grow min-w-40 max-w-72">
             <CheckFilterKeySelect
               index={index}
               item={item}
@@ -349,9 +348,8 @@ const CheckFilterEditorItem = ({
         </>
       )}
       <span>=</span>
-      <div className="grow">
+      <div className="grow min-w-52 max-w-72">
         <CheckFilterValueSelect
-          className="min-w-72"
           index={index}
           item={item}
           // @ts-ignore
