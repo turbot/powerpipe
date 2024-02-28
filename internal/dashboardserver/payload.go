@@ -16,6 +16,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -74,9 +75,9 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem) ([]byte, error) {
+func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *dashboardworkspace.WorkspaceEvents) ([]byte, error) {
 	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig()
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, dashboard.GetMod(), defaultDatabase, defaultSearchPathConfig)
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, w.Mod, defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}

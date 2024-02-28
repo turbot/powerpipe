@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"log/slog"
 	"os"
 	"reflect"
@@ -81,7 +82,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			// we don't expect the build functions to ever error during marshalling
 			// this is because the data getting marshalled are not expected to have go specific
 			// properties/data in them
-			panic(fmt.Errorf("error building payload for '%s': %v", reflect.TypeOf(event).String(), payloadError))
+			OutputError(ctx, sperr.WrapWithMessage(payloadError, "error building payload for '%s'", reflect.TypeOf(event).String()))
 		}
 	}()
 
@@ -344,7 +345,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		case "get_server_metadata":
 			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
 			if err != nil {
-				panic(fmt.Errorf("error building payload for get_metadata: %v", err))
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
 			_ = session.Write(payload)
 		case "get_dashboard_metadata":
@@ -352,15 +353,15 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			if dashboard == nil {
 				return
 			}
-			payload, err := buildDashboardMetadataPayload(ctx, dashboard)
+			payload, err := buildDashboardMetadataPayload(ctx, dashboard, s.workspace)
 			if err != nil {
-				panic(fmt.Errorf("error building payload for get_metadata_details: %v", err))
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
 			payload, err := buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
 			if err != nil {
-				panic(fmt.Errorf("error building payload for get_available_dashboards: %v", err))
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}
 			_ = session.Write(payload)
 		case "select_dashboard":
