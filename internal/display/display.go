@@ -7,9 +7,6 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/powerpipe/internal/queryresult"
 	"os"
 	"strings"
 	"time"
@@ -21,7 +18,10 @@ import (
 	"github.com/karrick/gows"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/powerpipe/internal/queryresult"
 )
 
 // ShowQueryOutput displays the output using the proper formatter as applicable
