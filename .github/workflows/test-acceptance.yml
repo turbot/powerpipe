@@ -155,13 +155,6 @@ jobs:
           echo "exit_code=$(echo $?)" >> $GITHUB_OUTPUT
           echo ">> here"
 
-      - name: Save Test Suite Logs
-        uses: actions/upload-artifact@v3
-        with:
-          name: test-logs-${{ matrix.test_block }}-${{ matrix.platform }}
-          path: ~/.powerpipe/logs
-          if-no-files-found: error
-
       # This job checks whether the test suite has passed or not.
       # Since the exit_code is set only when the bats test suite pass,
       # we have added the if-conditional block
