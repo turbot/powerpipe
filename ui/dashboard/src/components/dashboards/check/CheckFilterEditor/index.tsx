@@ -104,18 +104,18 @@ const CheckFilterTypeSelect = ({
     const allTypes: SelectOption[] = [
       { value: "benchmark", label: "Benchmark" },
       { value: "control", label: "Control" },
+      { value: "control_tag", label: "Control Tag" },
       { value: "dimension", label: "Dimension" },
       { value: "reason", label: "Reason" },
       { value: "resource", label: "Resource" },
       { value: "severity", label: "Severity" },
       { value: "status", label: "Status" },
-      { value: "tag", label: "Tag" },
     ];
     return allTypes.filter(
       (t) =>
         t.value === type ||
         t.value === "dimension" ||
-        t.value === "tag" ||
+        t.value === "control_tag" ||
         // @ts-ignore
         !existingTypes.includes(t.value),
     );
@@ -337,7 +337,7 @@ const CheckFilterEditorItem = ({
           update={update}
         />
       </div>
-      {(item.type === "dimension" || item.type === "tag") && (
+      {(item.type === "dimension" || item.type === "control_tag") && (
         <>
           <span>=</span>
           <div className="grow min-w-40 max-w-72">

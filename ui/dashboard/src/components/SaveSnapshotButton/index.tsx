@@ -14,6 +14,7 @@ import {
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor";
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
@@ -33,7 +34,12 @@ const SaveSnapshotButton = () => {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
       };
-      if (!!filterConfig) {
+      // If a benchmark
+      if (
+        dashboard.artificial &&
+        !!filterConfig &&
+        validateFilter(filterConfig)
+      ) {
         // @ts-ignore
         metadata.view.filter_by = filterToSnapshotMetadata(filterConfig);
       }

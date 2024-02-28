@@ -73,13 +73,13 @@ const CheckGroupingTypeSelect = ({
       { value: "result", label: "Result" },
       { value: "severity", label: "Severity" },
       { value: "status", label: "Status" },
-      { value: "tag", label: "Tag" },
+      { value: "control_tag", label: "Control Tag" },
     ];
     return allTypes.filter(
       (t) =>
         t.value === type ||
         t.value === "dimension" ||
-        t.value === "tag" ||
+        t.value === "control_tag" ||
         // @ts-ignore
         !existingTypes.includes(t.value),
     );
@@ -192,7 +192,7 @@ const CheckGroupingEditorItem = ({
           update={update}
         />
       </div>
-      {(item.type === "dimension" || item.type === "tag") && (
+      {(item.type === "dimension" || item.type === "control_tag") && (
         <>
           <span>=</span>
           <div className="grow">
@@ -246,7 +246,7 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
         case "status":
           return !c.value;
         case "dimension":
-        case "tag":
+        case "control_tag":
           return !!c.value;
         case "result":
           return true;

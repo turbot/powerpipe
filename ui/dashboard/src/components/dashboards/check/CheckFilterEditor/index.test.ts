@@ -14,7 +14,7 @@ const filterTestCases: TestCase[] = [
   },
   {
     name: "valid filter with type and value",
-    input: { operator: "equal", type: "tag", value: "production" },
+    input: { operator: "equal", type: "control_tag", value: "production" },
     expected: true,
   },
   {
@@ -40,7 +40,7 @@ const filterTestCases: TestCase[] = [
         { operator: "equal", type: "resource", value: "*mybucket*" },
         {
           operator: "equal",
-          type: "tag",
+          type: "control_tag",
           key: "environment",
           value: "production",
         },
@@ -64,7 +64,7 @@ const filterTestCases: TestCase[] = [
 //     input: {
 //       or: [
 //         { type: "resource", value: "*mybucket*" },
-//         { type: "tag", key: "environment", value: "production" },
+//         { type: "control_tag", key: "environment", value: "production" },
 //       ],
 //     },
 //     expected: true,

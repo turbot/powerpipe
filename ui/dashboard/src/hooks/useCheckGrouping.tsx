@@ -59,8 +59,8 @@ type CheckGroupFilterStatusValuesMap = {
 
 export type CheckGroupFilterValues = {
   status: CheckGroupFilterStatusValuesMap;
+  control_tag: { key: {}; value: {} };
   dimension: { key: {}; value: {} };
-  tag: { key: {}; value: {} };
 };
 
 type ICheckGroupingContext = {
@@ -249,7 +249,7 @@ const getCheckGroupingKey = (
   switch (group.type) {
     case "dimension":
       return getCheckDimensionGroupingKey(group.value, checkResult.dimensions);
-    case "tag":
+    case "control_tag":
       return getCheckTagGroupingKey(group.value, checkResult.tags);
     case "reason":
       return getCheckReasonGroupingKey(checkResult.reason);
@@ -295,11 +295,11 @@ const getCheckGroupingNode = (
         dimensionValue,
         children,
       );
-    case "tag":
+    case "control_tag":
       const value = getCheckTagGroupingKey(group.value, checkResult.tags);
       return new KeyValuePairNode(
         value,
-        "tag",
+        "control_tag",
         group.value || "Tag key not set",
         value,
         children,
@@ -579,7 +579,7 @@ function recordFilterValues(
     reason: { value: {} };
     resource: { value: {} };
     control: { value: {} };
-    tag: { value: {}; key: {} };
+    control_tag: { value: {}; key: {} };
     dimension: { value: {}; key: {} };
     benchmark: { value: {} };
     status: {
@@ -650,15 +650,19 @@ function recordFilterValues(
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(checkResult.tags || {})) {
-    filterValues.tag.key[tagKey] = filterValues.tag.key[tagKey] || {
+    filterValues.control_tag.key[tagKey] = filterValues.control_tag.key[
+      tagKey
+    ] || {
       [tagValue]: 0,
     };
-    filterValues.tag.key[tagKey][tagValue] += 1;
+    filterValues.control_tag.key[tagKey][tagValue] += 1;
 
-    filterValues.tag.value[tagValue] = filterValues.tag.value[tagValue] || {
+    filterValues.control_tag.value[tagValue] = filterValues.control_tag.value[
+      tagValue
+    ] || {
       [tagKey]: 0,
     };
-    filterValues.tag.value[tagValue][tagKey] += 1;
+    filterValues.control_tag.value[tagValue][tagKey] += 1;
   }
 }
 
@@ -743,7 +747,7 @@ const includeResult = (
         matches.push(matchesDimensions);
         break;
       }
-      case "tag": {
+      case "control_tag": {
         // @ts-ignore
         const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
@@ -777,12 +781,12 @@ const useGrouping = (
     const filterValues = {
       benchmark: { value: {} },
       control: { value: {} },
+      control_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
       reason: { value: {} },
       resource: { value: {} },
       severity: { value: {} },
       status: { alarm: 0, empty: 0, error: 0, info: 0, ok: 0, skip: 0 },
-      tag: { key: {}, value: {} },
     };
 
     if (!definition || skip || !panelsMap) {

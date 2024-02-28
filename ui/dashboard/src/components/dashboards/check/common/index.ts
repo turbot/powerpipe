@@ -9,6 +9,7 @@ import { DashboardRunState } from "@powerpipe/types";
 export type CheckNodeType =
   | "benchmark"
   | "control"
+  | "control_tag"
   | "dimension"
   | "empty_result"
   | "error"
@@ -18,8 +19,7 @@ export type CheckNodeType =
   | "running"
   | "root"
   | "severity"
-  | "status"
-  | "tag";
+  | "status";
 
 export type CheckNode = {
   sort: string;
@@ -117,8 +117,8 @@ export type CheckControlRun = {
 export type CheckDisplayGroupType =
   | "benchmark"
   | "control"
+  | "control_tag"
   | "result"
-  | "tag"
   | "dimension"
   | "reason"
   | "resource"

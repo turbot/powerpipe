@@ -14,8 +14,8 @@ type CheckGroupingTitleLabelProps = {
 
 const CheckGroupingTitleLabel = ({ item }: CheckGroupingTitleLabelProps) => {
   switch (item.type) {
+    case "control_tag":
     case "dimension":
-    case "tag":
       return (
         <div className="space-x-1">
           <span className="capitalize">{item.type}</span>
@@ -46,7 +46,7 @@ const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
           "grouping",
           toSave
             .map((c) =>
-              c.type === "dimension" || c.type === "tag"
+              c.type === "dimension" || c.type === "control_tag"
                 ? `${c.type}|${c.value}`
                 : c.type,
             )

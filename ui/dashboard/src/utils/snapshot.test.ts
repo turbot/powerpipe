@@ -219,14 +219,16 @@ describe("snapshot utils", () => {
     });
 
     it("should omit tag with no value", () => {
-      const input: CheckDisplayGroup[] = [{ type: "tag" }];
+      const input: CheckDisplayGroup[] = [{ type: "control_tag" }];
       const expected = [];
       expect(groupingToSnapshotMetadata(input)).toEqual(expected);
     });
 
     it("should handle tag with value", () => {
-      const input: CheckDisplayGroup[] = [{ type: "tag", value: "category" }];
-      const expected = [{ type: "tag", value: "category" }];
+      const input: CheckDisplayGroup[] = [
+        { type: "control_tag", value: "category" },
+      ];
+      const expected = [{ type: "control_tag", value: "category" }];
       expect(groupingToSnapshotMetadata(input)).toEqual(expected);
     });
 

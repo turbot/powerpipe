@@ -8,13 +8,13 @@ import { useSearchParams } from "react-router-dom";
 const groupingKeys = [
   "benchmark",
   "control",
+  "control_tag",
   "dimension",
   "reason",
   "resource",
   "result",
   "severity",
   "status",
-  "tag",
 ];
 
 const useCheckGroupingConfig = () => {
@@ -54,9 +54,9 @@ const useCheckGroupingConfig = () => {
         // { type: "severity" },
         // { type: "dimension", value: "account_id" },
         // { type: "dimension", value: "region" },
-        // { type: "tag", value: "service" },
-        // { type: "tag", value: "cis_type" },
-        // { type: "tag", value: "cis_level" },
+        // { type: "control_tag", value: "service" },
+        // { type: "control_tag", value: "cis_type" },
+        // { type: "control_tag", value: "cis_level" },
         { type: "benchmark" },
         { type: "control" },
         { type: "result" },

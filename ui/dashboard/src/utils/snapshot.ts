@@ -72,7 +72,10 @@ const groupingToSnapshotMetadata = (
 
   return grouping
     .filter((g) => {
-      return !((g.type === "dimension" || g.type === "tag") && !g.value);
+      return !(
+        (g.type === "dimension" || g.type === "control_tag") &&
+        !g.value
+      );
     })
     .map((g) => {
       const mapped: { type: CheckDisplayGroupType; value?: string } = {

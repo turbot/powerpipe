@@ -145,7 +145,7 @@ const DashboardProvider = ({
         "grouping",
         state.snapshot.metadata.view.group_by
           .map((c) =>
-            c.type === "dimension" || c.type === "tag"
+            c.type === "dimension" || c.type === "control_tag"
               ? `${c.type}|${c.value}`
               : c.type,
           )
