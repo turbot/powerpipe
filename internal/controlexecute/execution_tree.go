@@ -34,12 +34,11 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]struct{}
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, target modconfig.ModTreeItem) (*ExecutionTree, error) {
+func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
-
-		client: client,
+		client:    client,
 	}
 
 	// if backend supports search path, get it
@@ -53,8 +52,17 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		return nil, err
 	}
 
+	var resolvedItem modconfig.ModTreeItem
+	// if only one argument is provided, add this as execution root
+	if len(targets) == 1 {
+		resolvedItem = targets[0]
+	} else {
+		// create a root benchmark with `items` as it's children
+		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
+	}
+
 	// build tree of result groups, starting with a synthetic 'root' node
-	executionTree.Root, err = NewRootResultGroup(ctx, executionTree, target)
+	executionTree.Root, err = NewRootResultGroup(ctx, executionTree, resolvedItem)
 	if err != nil {
 		return nil, err
 	}

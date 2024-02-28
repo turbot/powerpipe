@@ -4,15 +4,13 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/utils"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 )
@@ -49,10 +47,6 @@ func getLoadWorkspaceOptsForResourceType[T modconfig.ModTreeItem]() []workspace.
 	switch any(empty).(type) {
 	case *modconfig.Mod:
 		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
-	case *modconfig.Control:
-		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl}))
-	case *modconfig.Benchmark:
-		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeQuery, schema.BlockTypeLocals, schema.BlockTypeControl, schema.BlockTypeBenchmark}))
 	}
 	return opts
 }
@@ -66,12 +60,16 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
-	target, err := localcmdconfig.ResolveTarget[T](args, w)
+	targets, err := localcmdconfig.ResolveTargets[T](args, w)
 	error_helpers.FailOnError(err)
-	if helpers.IsNil(target) {
-		error_helpers.FailOnError(fmt.Errorf("%s '%s' not found", utils.GetGenericTypeName[T](), args[0]))
+
+	// show only supports a single target (should be enforced by cobra)
+	if len(targets) > 1 {
+		// not expected
+		error_helpers.FailOnError(fmt.Errorf("show command only supports a single target"))
 		return
 	}
+	target := targets[0].(T)
 
 	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {

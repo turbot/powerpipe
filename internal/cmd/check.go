@@ -19,7 +19,6 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -37,10 +36,15 @@ var checkOutputMode = localconstants.CheckOutputModeText
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := utils.GetGenericTypeName[T]()
+	argsSupported := cobra.ExactArgs(1)
+	if typeName == "benchmark" {
+		argsSupported = cobra.MinimumNArgs(1)
+	}
+
 	cmd := &cobra.Command{
 		Use:              checkCmdUse(typeName),
 		TraverseChildren: true,
-		Args:             cobra.ExactArgs(1),
+		Args:             argsSupported,
 		Run:              runCheckCmd[T],
 		Short:            checkCmdShort(typeName),
 		Long:             checkCmdLong(typeName),
@@ -162,10 +166,8 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	// now filter the target
 	// get the execution trees
-	namedTree, err := getExecutionTree[T](ctx, initData)
+	trees, err := getExecutionTrees[T](ctx, initData)
 	error_helpers.FailOnError(err)
-
-	// execute controls synchronously (execute returns the number of alarms and errors)
 
 	// pull out useful properties
 	totalAlarms, totalErrors := 0, 0
@@ -174,33 +176,36 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		exitCode = getExitCode(totalAlarms, totalErrors)
 	}()
 
-	err = executeTree(ctx, namedTree.tree, initData)
-	if err != nil {
-		totalErrors++
-		error_helpers.ShowError(ctx, err)
-		return
-	}
+	for _, namedTree := range trees {
+		// execute controls synchronously (execute returns the number of alarms and errors)
+		err = executeTree(ctx, namedTree.tree, initData)
+		if err != nil {
+			totalErrors++
+			error_helpers.ShowError(ctx, err)
+			return
+		}
 
-	// append the total number of alarms and errors for multiple runs
-	totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
-	totalErrors = namedTree.tree.Root.Summary.Status.Error
+		// append the total number of alarms and errors for multiple runs
+		totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
+		totalErrors = namedTree.tree.Root.Summary.Status.Error
 
-	err = publishSnapshot(ctx, namedTree.tree, viper.GetBool(constants.ArgShare), viper.GetBool(constants.ArgSnapshot))
-	if err != nil {
-		error_helpers.ShowError(ctx, err)
-		totalErrors++
-		return
-	}
-	if shouldPrintCheckTiming() {
-		display.PrintTiming(&localqueryresult.TimingMetadata{
-			Duration: time.Since(startTime),
-		})
-	}
+		err = publishSnapshot(ctx, namedTree.tree, viper.GetBool(constants.ArgShare), viper.GetBool(constants.ArgSnapshot))
+		if err != nil {
+			error_helpers.ShowError(ctx, err)
+			totalErrors++
+			return
+		}
+		if shouldPrintCheckTiming() {
+			display.PrintTiming(&localqueryresult.TimingMetadata{
+				Duration: time.Since(startTime),
+			})
+		}
 
-	err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))
-	if err != nil {
-		error_helpers.ShowError(ctx, err)
-		totalErrors++
+		err = exportExecutionTree(ctx, namedTree, initData, viper.GetStringSlice(constants.ArgExport))
+		if err != nil {
+			error_helpers.ShowError(ctx, err)
+			totalErrors++
+		}
 	}
 }
 
@@ -254,38 +259,36 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTree[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) (*namedExecutionTree, error) {
-	// todo kai needed???
+func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) ([]*namedExecutionTree, error) {
+	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()
 	}
 
-	target := initData.Target
-	executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, target)
-	if err != nil {
-		return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
-	}
-
-	var name string
 	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
-		name = fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
+		// if there is a named export - combine targets into a single tree
+		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, initData.Targets...)
+		if err != nil {
+			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
+		}
+		name := fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
+		trees = append(trees, newNamedExecutionTree(name, executionTree))
 	} else {
-		name = getExportName(target.Name(), initData.Workspace.Mod.ShortName)
+		// otherwise return multiple trees
+		for _, target := range initData.Targets {
+			if error_helpers.IsContextCanceled(ctx) {
+				return nil, ctx.Err()
+			}
+			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, target)
+			if err != nil {
+				return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target)
+			}
+
+			trees = append(trees, newNamedExecutionTree(target.Name(), executionTree))
+		}
 	}
 
-	return newNamedExecutionTree(name, executionTree), ctx.Err()
-
-}
-
-// getExportName resolves the base name of the target file
-func getExportName(targetName string, modShortName string) string {
-	parsedName, _ := modconfig.ParseResourceName(targetName)
-	if targetName == "all" {
-		// there will be no block type = manually construct name
-		return fmt.Sprintf("%s.%s", modShortName, parsedName.Name)
-	}
-	// default to just converting to valid resource name
-	return parsedName.ToFullNameWithMod(modShortName)
+	return trees, ctx.Err()
 }
 
 // get the exit code for successful check run

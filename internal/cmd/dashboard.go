@@ -132,7 +132,9 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	initData.Result.DisplayMessages()
 
 	// so a dashboard name was specified - just call GenerateSnapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Target, inputs)
+	target, err := initData.GetSingleTarget()
+	error_helpers.FailOnError(err)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, inputs)
 	error_helpers.FailOnError(err)
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)
