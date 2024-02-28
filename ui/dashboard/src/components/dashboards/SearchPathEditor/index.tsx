@@ -204,6 +204,7 @@ const SearchPathEditor = ({
       <CheckEditorAddItem
         isDirty={isDirty}
         isValid={isValid}
+        helpUrl="https://www.powerpipe.io/docs/reference/configuration#search_path"
         onAdd={() => setInnerSearchPathPrefix((existing) => [...existing, ""])}
         onClear={() => {
           setInnerSearchPathPrefix([]);

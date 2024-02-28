@@ -74,8 +74,13 @@ const PopoverButton = forwardRef((props, ref) => {
           className="inline-block text-foreground-lighter w-5 h-5"
           icon="sort"
         />
-        <span className="hidden lg:block">Search Path</span>
-        {!!searchPathPrefix.length ? (
+        {!searchPathPrefix.length ? (
+          <span className="hidden lg:block">Search Path</span>
+        ) : null}
+        {searchPathPrefix.length >= 1 ? (
+          <span className="hidden lg:block">{searchPathPrefix[0]}</span>
+        ) : null}
+        {!!searchPathPrefix.length && searchPathPrefix.length > 1 ? (
           <Badge>{searchPathPrefix.length}</Badge>
         ) : null}
       </>
@@ -85,7 +90,7 @@ const PopoverButton = forwardRef((props, ref) => {
 
 const ManageSearchPathButton = () => {
   return (
-    <Popover className="relative">
+    <Popover className="hidden md:block relative">
       <Popover.Button as={PopoverButton} />
       <Transition
         as={Fragment}
