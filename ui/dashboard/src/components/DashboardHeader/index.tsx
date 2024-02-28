@@ -19,8 +19,8 @@ const DashboardHeader = () => {
       <PowerpipeLogo />
       <div className="flex flex-grow items-center space-x-2 md:space-x-4">
         <DashboardSearch />
-        <DashboardTagGroupSelect />
         <ManageSearchPathButton />
+        <DashboardTagGroupSelect />
         <SaveSnapshotButton />
         <OpenSnapshotButton />
       </div>
