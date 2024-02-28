@@ -21,7 +21,7 @@ const PowerpipeLogo = () => {
     <div className="mr-1 md:mr-4">
       <ExternalLink
         ignoreDataMode
-        to={`/${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+        to={`/${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
       >
         <div className="block md:hidden w-8">
           {theme.name === ThemeNames.STEAMPIPE_DEFAULT && <Logo />}

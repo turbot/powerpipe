@@ -82,7 +82,7 @@ const TitlePart = ({ part, searchPathPrefix }) => {
     <ExternalLink
       className="link-highlight hover:underline"
       ignoreDataMode
-      to={`/${part.full_name}${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+      to={`/${part.full_name}${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
     >
       {part.title || part.short_name}
     </ExternalLink>
@@ -98,7 +98,7 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
       <ExternalLink
         className="link-highlight hover:underline"
         ignoreDataMode
-        to={`/${benchmark.full_name}${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+        to={`/${benchmark.full_name}${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
       >
         {benchmark.title || benchmark.short_name}
       </ExternalLink>
