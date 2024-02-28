@@ -15,8 +15,10 @@ build:
 dashboard_assets:
 	$(MAKE) -C ui/dashboard
 
+.PHONY: all
 all:
-	build dashboard_assets
+	$(MAKE) build
+	$(MAKE) dashboard_assets
 
 .PHONY: release-dry-run
 release-dry-run:
