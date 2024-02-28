@@ -150,7 +150,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// disable status hooks in init - otherwise we will end up
 	// getting status updates all the way down from the service layer
 	initCtx := statushooks.DisableStatusHooks(ctx)
-	initData := controlinit.NewInitData[T](initCtx, args)
+	initData := controlinit.NewInitData[T](initCtx, cmd, args)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.ShowError(ctx, initData.Result.Error)

@@ -26,7 +26,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	if !w.ModfileExists() {
-		error_helpers.FailOnError(localconstants.ErrorNoModDefinition)
+		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})
 	}
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
@@ -65,7 +65,7 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 	if !w.ModfileExists() {
-		error_helpers.FailOnError(localconstants.ErrorNoModDefinition)
+		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})
 	}
 
 	targets, err := localcmdconfig.ResolveTargets[T](args, w)

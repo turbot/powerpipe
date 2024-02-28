@@ -3,9 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	localconstants "github.com/turbot/powerpipe/internal/constants"
-	"log/slog"
-
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -16,13 +14,16 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
+	"log/slog"
 )
 
 type InitData[T modconfig.ModTreeItem] struct {
@@ -44,7 +45,7 @@ func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
 	}
 }
 
-func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmdArgs ...string) *InitData[T] {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
@@ -52,8 +53,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmdArgs ...string
 		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
 
-	if !w.ModfileExists() && commandRequiresModfile[T](cmdArgs) {
-		return NewErrorInitData[T](localconstants.ErrorNoModDefinition)
+	if !w.ModfileExists() && commandRequiresModfile[T](cmd, cmdArgs) {
+		return NewErrorInitData[T](localconstants.ErrorNoModDefinition{})
 	}
 	i := &InitData[T]{
 		Result:        &InitResult{},
@@ -69,8 +70,15 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmdArgs ...string
 	return i
 }
 
-func commandRequiresModfile[T modconfig.ModTreeItem](args []string) bool {
-	return true
+func commandRequiresModfile[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) bool {
+	// all commands using initData require a modfile EXCEPT query run if it is a raw sql query
+	if utils.CommandFullKey(cmd) != "powerpipe.query.run" {
+		return true
+	}
+
+	// if the command is query run, and the first argument is a raw sql query, we don't need a modfile
+	_, argIsNamedResource := workspace.SqlLooksLikeExecutableResource(args[0])
+	return argIsNamedResource
 }
 
 func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
