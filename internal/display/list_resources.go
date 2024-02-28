@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
@@ -23,6 +24,10 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	opts := getLoadWorkspaceOptsForResourceType[T]()
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
+
+	if !w.ModfileExists() {
+		error_helpers.FailOnError(localconstants.ErrorNoModDefinition)
+	}
 
 	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
@@ -59,6 +64,9 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 	opts := getLoadWorkspaceOptsForResourceType[T]()
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
+	if !w.ModfileExists() {
+		error_helpers.FailOnError(localconstants.ErrorNoModDefinition)
+	}
 
 	targets, err := localcmdconfig.ResolveTargets[T](args, w)
 	error_helpers.FailOnError(err)

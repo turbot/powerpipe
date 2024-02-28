@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"log/slog"
 
 	"github.com/spf13/viper"
@@ -43,7 +44,7 @@ func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
 	}
 }
 
-func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetNames ...string) *InitData[T] {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmdArgs ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
@@ -51,6 +52,9 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetNames ...st
 		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
 
+	if !w.ModfileExists() && commandRequiresModfile[T](cmdArgs) {
+		return NewErrorInitData[T](localconstants.ErrorNoModDefinition)
+	}
 	i := &InitData[T]{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
@@ -60,9 +64,13 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, targetNames ...st
 	i.Result.Warnings = errAndWarnings.Warnings
 
 	// now do the actual initialisation
-	i.Init(ctx, targetNames...)
+	i.Init(ctx, cmdArgs...)
 
 	return i
+}
+
+func commandRequiresModfile[T modconfig.ModTreeItem](args []string) bool {
+	return true
 }
 
 func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
