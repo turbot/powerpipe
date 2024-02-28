@@ -579,8 +579,8 @@ function recordFilterValues(
     reason: { value: {} };
     resource: { value: {} };
     control: { value: {} };
-    control_tag: { value: {}; key: {} };
-    dimension: { value: {}; key: {} };
+    control_tag: { key: {}; value: {} };
+    dimension: { key: {}; value: {} };
     benchmark: { value: {} };
     status: {
       alarm: number;
@@ -638,30 +638,47 @@ function recordFilterValues(
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const dimension of checkResult.dimensions) {
-    filterValues.dimension.key[dimension.key] = filterValues.dimension.key[
-      dimension.key
-    ] || { [dimension.value]: 0 };
+    if (!(dimension.key in filterValues.dimension.key)) {
+      filterValues.dimension.key[dimension.key] = {
+        [dimension.value]: 0,
+      };
+    }
+    if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
+      filterValues.dimension.key[dimension.key][dimension.value] = 0;
+    }
     filterValues.dimension.key[dimension.key][dimension.value] += 1;
 
-    filterValues.dimension.value[dimension.value] = filterValues.dimension
-      .value[dimension.value] || { [dimension.key]: 0 };
+    if (!(dimension.value in filterValues.dimension.value)) {
+      filterValues.dimension.value[dimension.value] = {
+        [dimension.key]: 0,
+      };
+    }
+    if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
+      filterValues.dimension.value[dimension.value][dimension.key] = 0;
+    }
     filterValues.dimension.value[dimension.value][dimension.key] += 1;
   }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(checkResult.tags || {})) {
-    filterValues.control_tag.key[tagKey] = filterValues.control_tag.key[
-      tagKey
-    ] || {
-      [tagValue]: 0,
-    };
+    if (!(tagKey in filterValues.control_tag.key)) {
+      filterValues.control_tag.key[tagKey] = {
+        [tagValue]: 0,
+      };
+    }
+    if (!(tagValue in filterValues.control_tag.key[tagKey])) {
+      filterValues.control_tag.key[tagKey][tagValue] = 0;
+    }
     filterValues.control_tag.key[tagKey][tagValue] += 1;
 
-    filterValues.control_tag.value[tagValue] = filterValues.control_tag.value[
-      tagValue
-    ] || {
-      [tagKey]: 0,
-    };
+    if (!(tagValue in filterValues.control_tag.value)) {
+      filterValues.control_tag.value[tagValue] = {
+        [tagKey]: 0,
+      };
+    }
+    if (!(tagKey in filterValues.control_tag.value[tagValue])) {
+      filterValues.control_tag.value[tagValue][tagKey] = 0;
+    }
     filterValues.control_tag.value[tagValue][tagKey] += 1;
   }
 }

@@ -228,7 +228,7 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
-    } else if (type === "dimension") {
+    } else if (type === "dimension" || type === "control_tag") {
       return Object.entries(filterValues ? filterValues[type].value || {} : {})
         .filter(([, v]) => has(v, item.key as string))
         .map(([k, v]) => {
