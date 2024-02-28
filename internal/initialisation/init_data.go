@@ -3,7 +3,6 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"log/slog"
 
 	"github.com/spf13/viper"
@@ -32,7 +31,7 @@ type InitData[T modconfig.ModTreeItem] struct {
 
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
-	Targets           []T
+	Targets           []modconfig.ModTreeItem
 	DefaultClient     *db_client.DbClient
 }
 
@@ -165,21 +164,6 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 // resolve target resource, args and any target specific search path
 func (i *InitData[T]) resolveTargets(args []string) {
 
-	// special case handling for all
-	if len(args) == 1 && args[0] == "all" {
-		var empty T
-		if _, isBenchmark := (any(empty)).(*modconfig.Benchmark); isBenchmark {
-			{
-				// if the arg is "all", we want to execute all _direct_ children of the Mod
-				// but NOT children which come from dependency mods
-
-				// to achieve this, use a  DirectChildrenModDecorator
-				i.Targets = []T{&controlexecute.DirectChildrenModDecorator{Mod: i.Workspace.Mod}}
-			}
-		}
-
-	}
-
 	// resolve target resources
 	targets, err := cmdconfig.ResolveTargets[T](args, i.Workspace)
 	if err != nil {
@@ -188,7 +172,6 @@ func (i *InitData[T]) resolveTargets(args []string) {
 	}
 
 	i.Targets = targets
-
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
@@ -241,5 +224,5 @@ func (i *InitData[T]) GetSingleTarget() (T, error) {
 		var empty T
 		return empty, sperr.New("expected a single target")
 	}
-	return i.Targets[0], nil
+	return i.Targets[0].(T), nil
 }

@@ -34,7 +34,7 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]struct{}
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets []modconfig.ModTreeItem) (*ExecutionTree, error) {
+func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
 		Workspace: workspace,
@@ -57,7 +57,6 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	if len(targets) > 1 {
 		resolvedItem = targets[0]
 	} else {
-
 		// create a root benchmark with `items` as it's children
 		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
 	}

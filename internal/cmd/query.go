@@ -114,7 +114,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
-	// TODO check cancellation
+	// TODO KAI check cancellation
 	// start cancel handler to intercept interrupts and cancel the context
 	// NOTE: use the initData Cancel function to ensure any initialisation is cancelled if needed
 	//contexthelpers.StartCancelHandler(initData.Cancel)
@@ -125,7 +125,12 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// execute query as a snapshot
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, initData.Targets, nil)
+	target, err := initData.GetSingleTarget()
+	if err != nil {
+		exitCode = constants.ExitCodeInitializationFailed
+		error_helpers.FailOnError(err)
+	}
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, nil)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)

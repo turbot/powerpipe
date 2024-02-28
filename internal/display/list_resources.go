@@ -4,13 +4,13 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/schema"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 )
@@ -69,7 +69,7 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(fmt.Errorf("show command only supports a single target"))
 		return
 	}
-	target := targets[0]
+	target := targets[0].(T)
 
 	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
