@@ -30,8 +30,6 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
-	initLogSink()
-
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -125,7 +123,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		}
 		dashboardName := e.Root.GetName()
 		s.writePayloadToSession(e.Session, payload)
-		outputReady(ctx, fmt.Sprintf("Execution complete: %s", dashboardName))
+		OutputReady(ctx, fmt.Sprintf("Execution complete: %s", dashboardName))
 
 	case *dashboardevents.ControlComplete:
 		slog.Debug("ControlComplete event", "session", e.Session, "control", e.Control.GetControlId())
@@ -394,7 +392,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			error_helpers.FailOnError(err)
 
 			s.writePayloadToSession(sessionId, payload)
-			outputReady(ctx, fmt.Sprintf("Show snapshot complete: %s", snapshotName))
+			OutputReady(ctx, fmt.Sprintf("Show snapshot complete: %s", snapshotName))
 		case "input_changed":
 			s.setDashboardInputsForSession(sessionId, request.Payload.InputValues)
 			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, request.Payload.InputValues, request.Payload.ChangedInput)

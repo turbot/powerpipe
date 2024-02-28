@@ -125,7 +125,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// set-up viper with defaults from the env and default workspace profile
 
 	cmdconfig.BootstrapViper(loader, cmd,
-		cmdconfig.WithConfigDefaults(configDefaults()),
+		cmdconfig.WithConfigDefaults(configDefaults(cmd)),
 		cmdconfig.WithDirectoryEnvMappings(dirEnvMappings()))
 
 	if err != nil {

@@ -2,6 +2,7 @@ package logger
 
 import (
 	"fmt"
+	"github.com/turbot/pipe-fittings/sanitize"
 	"io"
 	"log/slog"
 	"os"
@@ -9,11 +10,9 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/go-kit/logging"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/constants/runtime"
-	"github.com/turbot/pipe-fittings/filepaths"
 )
 
 func Initialize() {
@@ -40,19 +39,17 @@ func PowerpipeLogger() *slog.Logger {
 	handlerOptions := &slog.HandlerOptions{
 		Level: level,
 
-		// TODO KAI SANITIZE
-		//ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
-		//	sanitized := sanitize.Instance.SanitizeKeyValue(a.Key, a.Value.Any())
-		//
-		//	return slog.Attr{
-		//		Key:   a.Key,
-		//		Value: slog.AnyValue(sanitized),
-		//	}
-		//},
+		ReplaceAttr: func(groups []string, a slog.Attr) slog.Attr {
+			sanitized := sanitize.Instance.SanitizeKeyValue(a.Key, a.Value.Any())
+
+			return slog.Attr{
+				Key:   a.Key,
+				Value: slog.AnyValue(sanitized),
+			}
+		},
 	}
 
-	logDestination := logging.NewRotatingLogWriter(filepaths.EnsureLogDir(), app_specific.AppName)
-	return slog.New(slog.NewJSONHandler(logDestination, handlerOptions))
+	return slog.New(slog.NewJSONHandler(os.Stderr, handlerOptions))
 }
 
 func getLogLevel() slog.Leveler {
@@ -72,6 +69,6 @@ func getLogLevel() slog.Leveler {
 	case "off":
 		return constants.LogLevelOff
 	default:
-		return slog.LevelInfo
+		return constants.LogLevelOff
 	}
 }
