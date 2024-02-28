@@ -59,6 +59,13 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 		},
 	}
 
+	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig()
+	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase, defaultSearchPathConfig)
+	if err != nil {
+		return nil, err
+	}
+	payload.Metadata.SearchPath = searchPath
+
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.Title),
@@ -81,6 +88,24 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 		return nil, err
 	}
 
+	payload := DashboardMetadataPayload{
+		Action: "dashboard_metadata",
+		Metadata: DashboardMetadata{
+			Database: database,
+		},
+	}
+
+	searchPath, err := getSearchPathMetadata(ctx, database, searchPathConfig)
+	if err != nil {
+		return nil, err
+	}
+	payload.Metadata.SearchPath = searchPath
+
+	return json.Marshal(payload)
+}
+
+func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
+	// if backend supports search path, get it
 	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)
 	if err != nil {
 		return nil, err
@@ -89,21 +114,16 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 	//  close the client after we are done
 	defer client.Close(ctx)
 
-	payload := DashboardMetadataPayload{
-		Action: "dashboard_metadata",
-		Metadata: DashboardMetadata{
-			Database: database,
-		},
-	}
-	// if backend supports search path, get it
 	if sp, ok := client.Backend.(backend.SearchPathProvider); ok {
-		payload.Metadata.OriginalSearchPath = sp.OriginalSearchPath()
-		payload.Metadata.ResolvedSearchPath = sp.ResolvedSearchPath()
-		payload.Metadata.ConfiguredSearchPath = searchPathConfig.SearchPath
-		payload.Metadata.SearchPathPrefix = searchPathConfig.SearchPathPrefix
+		return &SearchPathMetadata{
+			OriginalSearchPath:   sp.OriginalSearchPath(),
+			ResolvedSearchPath:   sp.ResolvedSearchPath(),
+			ConfiguredSearchPath: searchPathConfig.SearchPath,
+			SearchPathPrefix:     searchPathConfig.SearchPathPrefix,
+		}, nil
 	}
 
-	return json.Marshal(payload)
+	return nil, nil
 }
 
 func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
