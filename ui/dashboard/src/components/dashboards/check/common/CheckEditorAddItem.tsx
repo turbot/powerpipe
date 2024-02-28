@@ -38,14 +38,13 @@ const CheckEditorAddItem = ({
           <span className="group-hover:text-foreground-light">Add</span>
         </div>
       </div>
-      <div className="flex items-center justify-end space-x-2">
-        <button
-          type="button"
-          className="rounded-md bg-dashboard-panel border border-black-scale-3 px-2.5 py-1.5 text-sm font-semibold text-foreground"
+      <div className="flex items-center justify-end space-x-3">
+        <span
+          className="text-sm text-foreground-lighter cursor-pointer hover:text-link mr-2"
           onClick={onClear}
         >
           Reset
-        </button>
+        </span>
         <button
           type="button"
           className="rounded-md bg-ok px-2.5 py-1.5 text-sm font-semibold text-white focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-indigo-600 disabled:opacity-50 disabled:cursor-not-allowed"
@@ -61,10 +60,7 @@ const CheckEditorAddItem = ({
             className="block"
             title="Get help on this feature"
           >
-            <Icon
-              className="h-6 w-6 text-foreground-light"
-              icon="materialsymbols-solid:info_i"
-            />
+            <Icon className="h-5 w-5 text-foreground-light" icon="help" />
           </ExternalLink>
         ) : (
           <Icon className="block h-5 w-5 invisible" icon="help_center" />

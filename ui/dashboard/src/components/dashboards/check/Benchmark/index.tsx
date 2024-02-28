@@ -78,7 +78,7 @@ const Benchmark = (props: InnerCheckProps) => {
         action: async () =>
           dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
         component: <CustomizeViewSummary />,
-        title: "Customize view",
+        title: "Filter & Group",
       },
     ]);
   }, [dispatch, setCustomControls]);

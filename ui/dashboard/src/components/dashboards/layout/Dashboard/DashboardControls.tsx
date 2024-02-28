@@ -12,7 +12,7 @@ const DashboardControls = () => {
   return (
     <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden">
       <div className="flex items-center justify-between p-4">
-        <h3>Customize view</h3>
+        <h3>Filter & Group</h3>
         <Icon
           className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
           icon="close"
@@ -21,11 +21,11 @@ const DashboardControls = () => {
         />
       </div>
       <div className="p-4 space-y-3">
-        <span className="font-semibold">Filters</span>
-        <CheckFilterConfig onClose={hideControls} />
+        <span className="font-semibold">Filter</span>
+        <CheckFilterConfig />
       </div>
       <div className="p-4 space-y-3">
-        <span className="font-semibold">Grouping</span>
+        <span className="font-semibold">Group</span>
         <CheckGroupingConfig onClose={hideControls} />
       </div>
     </div>
