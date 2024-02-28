@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -147,17 +148,14 @@ func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 	if err != nil {
 		// do not show warning if --force is set
 		if !viper.GetBool(constants.ArgForce) {
-			error_helpers.ShowWarning(fmt.Sprintf("Could not connect to database '%s' - plugin validation will not be performed", defaultDatabase))
+			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")
 		}
 		return nil
 	}
 
 	steampipeBackend, isSteampipe := client.Backend.(*backend.SteampipeBackend)
 	if !isSteampipe {
-		// do not show warning if --force is set
-		if !viper.GetBool(constants.ArgForce) {
-			error_helpers.ShowWarning(fmt.Sprintf("Backend '%s' does not support Steampipe plugins so plugin requirements cannot be validated", client.Backend.Name()))
-		}
+		slog.Warn("database does not support Steampipe plugins so plugin requirements cannot be validated", "database", client.Backend.Name())
 		return nil
 	}
 	return modconfig.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
