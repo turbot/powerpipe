@@ -34,8 +34,10 @@ export type IDashboardContext = {
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
-  selectedDashboardSearchPathPrefix?: string[];
   lastChangedInput: string | null;
+
+  executionSearchPathPrefix?: string[];
+  selectedDashboardSearchPathPrefix?: string[];
 
   dashboardTags: DashboardTags;
 
@@ -299,6 +301,7 @@ export type ServerMetadata = {
   cli?: CliServerMetadata;
   cloud?: CloudServerMetadata;
   telemetry: "info" | "none";
+  search_path: SearchPathMetadata;
 };
 
 export type DashboardLayoutNode = {
@@ -373,12 +376,14 @@ export type AvailableDashboardsDictionary = {
   [key: string]: AvailableDashboard;
 };
 
-export type DashboardMetadata = {
+export type SearchPathMetadata = {
   configured_search_path?: string | null;
   database?: string | null;
   original_search_path?: string[];
   resolved_search_path?: string[];
 };
+
+export type DashboardMetadata = SearchPathMetadata;
 
 export type DashboardsMetadataDictionary = {
   [key: string]: DashboardMetadata;
