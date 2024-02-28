@@ -54,7 +54,7 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 
 	var resolvedItem modconfig.ModTreeItem
 	// if only one argument is provided, add this as execution root
-	if len(targets) > 1 {
+	if len(targets) == 1 {
 		resolvedItem = targets[0]
 	} else {
 		// create a root benchmark with `items` as it's children
