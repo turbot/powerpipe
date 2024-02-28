@@ -2,6 +2,7 @@ import Icon from "@powerpipe/components/Icon";
 
 interface CheckEditorAddItemProps {
   addLabel?: string;
+  applyLabel?: string;
   isDirty: boolean;
   isValid: { value: boolean; reason: string };
   onAdd: () => void;
@@ -11,6 +12,7 @@ interface CheckEditorAddItemProps {
 
 const CheckEditorAddItem = ({
   addLabel = "Add",
+  applyLabel = "Apply",
   isDirty = false,
   isValid,
   onAdd,
@@ -43,7 +45,7 @@ const CheckEditorAddItem = ({
         onClick={onApply}
         title={isValid.reason}
       >
-        Apply
+        {applyLabel}
       </button>
       {/*<button*/}
       {/*  type="button"*/}

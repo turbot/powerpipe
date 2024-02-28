@@ -35,7 +35,7 @@ const CustomizeViewSummary = () => {
     <div className="flex items-center space-x-2">
       {!!filterCount ? (
         <>
-          <span>Filters</span>
+          <span>Filters & Groups</span>
           <CustomizeViewFilterButtonCount count={filterCount} />
         </>
       ) : (

@@ -1,11 +1,12 @@
-import DashboardSearch from "../DashboardSearch";
-import DashboardTagGroupSelect from "../DashboardTagGroupSelect";
-import OpenSnapshotButton from "../OpenSnapshotButton";
-import PowerpipeLogo from "./PowerpipeLogo";
-import SaveSnapshotButton from "../SaveSnapshotButton";
-import ThemeToggle from "../ThemeToggle";
+import DashboardSearch from "@powerpipe/components/DashboardSearch";
+import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
+import ManageSearchPathButton from "@powerpipe/components/ManageSearchPathButton";
+import OpenSnapshotButton from "@powerpipe/components/OpenSnapshotButton";
+import PowerpipeLogo from "@powerpipe/components/DashboardHeader/PowerpipeLogo";
+import SaveSnapshotButton from "@powerpipe/components/SaveSnapshotButton";
+import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
-import { getComponent } from "../dashboards";
+import { getComponent } from "@powerpipe/components/dashboards";
 
 const DashboardHeader = () => {
   const ExternalLink = getComponent("external_link");
@@ -19,6 +20,7 @@ const DashboardHeader = () => {
       <div className="flex flex-grow items-center space-x-2 md:space-x-4">
         <DashboardSearch />
         <DashboardTagGroupSelect />
+        <ManageSearchPathButton />
         <SaveSnapshotButton />
         <OpenSnapshotButton />
       </div>

@@ -1,37 +1,50 @@
 import SearchPathEditor from "@powerpipe/components/dashboards/SearchPathEditor";
 import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
-import { DashboardActions } from "@powerpipe/types";
-import { Noop } from "@powerpipe/types/func";
+import { SearchPathMetadata } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-type SearchPathConfigProps = {
-  onClose: Noop;
-};
-
-const SearchPathConfig = ({ onClose }: SearchPathConfigProps) => {
-  const { dispatch, selectedDashboard, dashboardsMetadata } = useDashboard();
+const SearchPathConfig = ({ onClose }) => {
+  const { selectedDashboard, metadata, dashboardsMetadata } = useDashboard();
   const [, setSearchParams] = useSearchParams();
   const searchPathPrefix = useDashboardSearchPathPrefix();
 
   const { configuredSearchPath, availableConnections } = useMemo(() => {
-    if (!selectedDashboard || !dashboardsMetadata || !searchPathPrefix) {
+    const hasServerMetadataSearchPath =
+      !!metadata?.search_path?.original_search_path &&
+      !!metadata.search_path.original_search_path.length;
+    const hasDashboardMetadataSearchPath =
+      !!selectedDashboard &&
+      !!dashboardsMetadata &&
+      !!dashboardsMetadata[selectedDashboard.full_name] &&
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path &&
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+        ?.original_search_path &&
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+        ?.original_search_path?.length;
+
+    if (!hasServerMetadataSearchPath && !hasDashboardMetadataSearchPath) {
       return { configuredSearchPath: [], availableConnections: [] };
     }
-    const metadata = dashboardsMetadata[selectedDashboard?.full_name];
+
+    let foundMetadata: SearchPathMetadata | null = null;
+    if (selectedDashboard) {
+      foundMetadata =
+        dashboardsMetadata[selectedDashboard?.full_name]?.search_path;
+    }
+
+    if (!foundMetadata && !!metadata) {
+      foundMetadata = metadata.search_path;
+    }
+
     return {
       configuredSearchPath: searchPathPrefix,
-      availableConnections: metadata.original_search_path || [],
+      availableConnections: foundMetadata
+        ? foundMetadata.original_search_path || []
+        : [],
     };
-  }, [dashboardsMetadata, searchPathPrefix, selectedDashboard]);
-
-  useEffect(() => {
-    dispatch({
-      type: DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX,
-      search_path_prefix: searchPathPrefix,
-    });
-  }, [dispatch, searchPathPrefix]);
+  }, [metadata, dashboardsMetadata, searchPathPrefix, selectedDashboard]);
 
   const saveSearchPath = (toSave: string[]) => {
     setSearchParams((previous) => {
@@ -43,18 +56,14 @@ const SearchPathConfig = ({ onClose }: SearchPathConfigProps) => {
       }
       return newParams;
     });
+    onClose();
   };
 
   return (
     <SearchPathEditor
       availableConnections={availableConnections}
       searchPathPrefix={configuredSearchPath}
-      onCancel={onClose}
       onApply={saveSearchPath}
-      onSave={(toSave) => {
-        saveSearchPath(toSave);
-        onClose();
-      }}
     />
   );
 };

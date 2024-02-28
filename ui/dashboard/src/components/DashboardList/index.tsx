@@ -38,6 +38,7 @@ type SectionProps = {
   dashboards: AvailableDashboardWithMod[];
   dispatch: (action: DashboardAction) => void;
   searchValue: string;
+  searchPathPrefix: string[];
 };
 
 const DashboardTag = ({
@@ -74,20 +75,21 @@ const DashboardTag = ({
   </span>
 );
 
-const TitlePart = ({ part }) => {
+const TitlePart = ({ part, searchPathPrefix }) => {
   const ExternalLink = getComponent("external_link");
+
   return (
     <ExternalLink
       className="link-highlight hover:underline"
       ignoreDataMode
-      to={`/${part.full_name}`}
+      to={`/${part.full_name}${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
     >
       {part.title || part.short_name}
     </ExternalLink>
   );
 };
 
-const BenchmarkTitle = ({ benchmark, searchValue }) => {
+const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
   const { dashboardsMap } = useDashboard();
   const ExternalLink = getComponent("external_link");
 
@@ -96,7 +98,7 @@ const BenchmarkTitle = ({ benchmark, searchValue }) => {
       <ExternalLink
         className="link-highlight hover:underline"
         ignoreDataMode
-        to={`/${benchmark.full_name}`}
+        to={`/${benchmark.full_name}${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
       >
         {benchmark.title || benchmark.short_name}
       </ExternalLink>
@@ -119,7 +121,7 @@ const BenchmarkTitle = ({ benchmark, searchValue }) => {
           {!!index && (
             <span className="px-1 text-sm text-foreground-lighter">{">"}</span>
           )}
-          <TitlePart part={part} />
+          <TitlePart part={part} searchPathPrefix={searchPathPrefix} />
         </Fragment>
       ))}
     </>
@@ -131,6 +133,7 @@ const Section = ({
   dashboards,
   dispatch,
   searchValue,
+  searchPathPrefix,
 }: SectionProps) => {
   return (
     <div className="space-y-2">
@@ -139,9 +142,15 @@ const Section = ({
         <div key={dashboard.full_name} className="flex space-x-2 items-center">
           <div className="md:col-span-6 truncate">
             {(dashboard.type === "dashboard" ||
-              dashboard.type === "snapshot") && <TitlePart part={dashboard} />}
+              dashboard.type === "snapshot") && (
+              <TitlePart part={dashboard} searchPathPrefix={searchPathPrefix} />
+            )}
             {dashboard.type === "benchmark" && (
-              <BenchmarkTitle benchmark={dashboard} searchValue={searchValue} />
+              <BenchmarkTitle
+                benchmark={dashboard}
+                searchValue={searchValue}
+                searchPathPrefix={searchPathPrefix}
+              />
             )}
           </div>
           <div className="hidden md:block col-span-6 space-x-2">
@@ -262,6 +271,7 @@ const DashboardList = () => {
     dispatch,
     metadata,
     search: { value: searchValue, groupBy: searchGroupBy },
+    searchPathPrefix,
   } = useDashboard();
   const [unfilteredDashboards, setUnfilteredDashboards] = useState<
     AvailableDashboardWithMod[]
@@ -402,6 +412,7 @@ const DashboardList = () => {
                   dashboards={section.dashboards}
                   dispatch={dispatch}
                   searchValue={searchValue}
+                  searchPathPrefix={searchPathPrefix}
                 />
               ))}
             </div>

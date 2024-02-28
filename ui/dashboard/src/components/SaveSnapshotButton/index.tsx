@@ -59,7 +59,7 @@ const SaveSnapshotButton = () => {
 
   return (
     <NeutralButton
-      className="inline-flex items-center space-x-1"
+      className="inline-flex items-center space-x-2"
       disabled={!dashboard || !snapshot}
       onClick={saveSnapshot}
     >

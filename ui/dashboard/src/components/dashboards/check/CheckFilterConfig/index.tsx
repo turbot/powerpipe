@@ -2,12 +2,7 @@ import CheckFilterEditor, { validateFilter } from "../CheckFilterEditor";
 import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
 import { CheckFilter } from "../common";
 import { Fragment, ReactNode } from "react";
-import { Noop } from "@powerpipe/types/func";
 import { useSearchParams } from "react-router-dom";
-
-type CheckFilterConfigProps = {
-  onClose: Noop;
-};
 
 const filtersToText = (filter: CheckFilter) => {
   if (filter.operator === "and") {
@@ -45,7 +40,7 @@ const filtersToText = (filter: CheckFilter) => {
   return "<unsupported>";
 };
 
-const CheckFilterConfig = ({ onClose }: CheckFilterConfigProps) => {
+const CheckFilterConfig = () => {
   const [, setSearchParams] = useSearchParams();
   const filterConfig = useCheckFilterConfig();
 
@@ -63,17 +58,7 @@ const CheckFilterConfig = ({ onClose }: CheckFilterConfigProps) => {
     });
   };
 
-  return (
-    <CheckFilterEditor
-      filter={filterConfig}
-      onCancel={onClose}
-      onApply={saveFilterConfig}
-      onSave={(toSave) => {
-        saveFilterConfig(toSave);
-        onClose();
-      }}
-    />
-  );
+  return <CheckFilterEditor filter={filterConfig} onApply={saveFilterConfig} />;
 };
 
 export default CheckFilterConfig;

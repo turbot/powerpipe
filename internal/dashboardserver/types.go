@@ -159,13 +159,16 @@ type ModMetadata struct {
 	ShortName string `json:"short_name"`
 }
 
-type DashboardMetadata struct {
-	Database           string   `json:"database"`
-	ResolvedSearchPath []string `json:"resolved_search_path"`
-
+type SearchPathMetadata struct {
+	ResolvedSearchPath   []string `json:"resolved_search_path"`
 	OriginalSearchPath   []string `json:"original_search_path"`
 	ConfiguredSearchPath []string `json:"configured_search_path"`
 	SearchPathPrefix     []string `json:"short_name"`
+}
+
+type DashboardMetadata struct {
+	Database   string              `json:"database"`
+	SearchPath *SearchPathMetadata `json:"search_path"`
 }
 
 type DashboardCLIMetadata struct {
@@ -178,6 +181,7 @@ type ServerMetadata struct {
 	CLI           DashboardCLIMetadata           `json:"cli"`
 	Cloud         *steampipeconfig.CloudMetadata `json:"cloud,omitempty"`
 	Telemetry     string                         `json:"telemetry"`
+	SearchPath    *SearchPathMetadata            `json:"search_path"`
 }
 
 type ServerMetadataPayload struct {

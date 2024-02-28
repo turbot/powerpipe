@@ -34,8 +34,9 @@ export type IDashboardContext = {
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
-  selectedDashboardSearchPathPrefix?: string[];
   lastChangedInput: string | null;
+
+  searchPathPrefix: string[];
 
   dashboardTags: DashboardTags;
 
@@ -150,8 +151,7 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
-  SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX:
-    "set_selected_dashboard_search_path_prefix",
+  SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
   SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
@@ -244,9 +244,9 @@ export type SelectedDashboardStates = {
   refetchDashboard: boolean;
   search: DashboardSearch;
   searchParams: URLSearchParams;
+  searchPathPrefix: string[];
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
-  selectedDashboardSearchPathPrefix: string[];
 };
 
 export type DashboardInputs = {
@@ -299,6 +299,7 @@ export type ServerMetadata = {
   cli?: CliServerMetadata;
   cloud?: CloudServerMetadata;
   telemetry: "info" | "none";
+  search_path: SearchPathMetadata;
 };
 
 export type DashboardLayoutNode = {
@@ -373,11 +374,15 @@ export type AvailableDashboardsDictionary = {
   [key: string]: AvailableDashboard;
 };
 
-export type DashboardMetadata = {
+export type SearchPathMetadata = {
   configured_search_path?: string | null;
-  database?: string | null;
   original_search_path?: string[];
   resolved_search_path?: string[];
+};
+
+export type DashboardMetadata = {
+  database?: string | null;
+  search_path: SearchPathMetadata;
 };
 
 export type DashboardsMetadataDictionary = {

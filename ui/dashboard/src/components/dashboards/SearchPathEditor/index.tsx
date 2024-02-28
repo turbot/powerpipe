@@ -14,9 +14,7 @@ import { useCallback, useEffect, useMemo, useState } from "react";
 type SearchPathEditorProps = {
   availableConnections: string[];
   searchPathPrefix: string[];
-  onCancel: () => void;
   onApply: (newValue: string[]) => void;
-  onSave: (newValue: string[]) => void;
 };
 
 interface SearchPathEditorItemSelectProps {
@@ -137,7 +135,7 @@ const SearchPathEditor = ({
 }: SearchPathEditorProps) => {
   const [innerSearchPathPrefix, setInnerSearchPathPrefix] =
     useState<string[]>(searchPathPrefix);
-
+  const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
@@ -146,7 +144,11 @@ const SearchPathEditor = ({
       value: isValid,
       reason: !isValid ? "Search path contains empty connection" : "",
     });
-  }, [innerSearchPathPrefix, setIsValid]);
+    setIsDirty(
+      JSON.stringify(innerSearchPathPrefix) !==
+        JSON.stringify(searchPathPrefix),
+    );
+  }, [searchPathPrefix, innerSearchPathPrefix, setIsDirty, setIsValid]);
 
   const remove = useCallback(
     (index: number) => {
@@ -200,6 +202,7 @@ const SearchPathEditor = ({
         )}
       </Reorder.Group>
       <CheckEditorAddItem
+        isDirty={isDirty}
         isValid={isValid}
         onAdd={() => setInnerSearchPathPrefix((existing) => [...existing, ""])}
         onClear={() => {
@@ -207,6 +210,8 @@ const SearchPathEditor = ({
           onApply([]);
         }}
         onApply={() => onApply(innerSearchPathPrefix)}
+        addLabel="Add connection"
+        applyLabel="Save"
       />
     </div>
   );
