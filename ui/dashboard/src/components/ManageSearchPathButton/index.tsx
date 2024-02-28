@@ -17,7 +17,6 @@ const PopoverButton = forwardRef((props, ref) => {
     selectedDashboard,
     snapshot,
   } = useDashboard();
-
   const {
     enabled,
     hasServerMetadataSearchPath,
@@ -30,9 +29,11 @@ const PopoverButton = forwardRef((props, ref) => {
       !!selectedDashboard &&
       !!dashboardsMetadata &&
       !!dashboardsMetadata[selectedDashboard.full_name] &&
-      !!dashboardsMetadata[selectedDashboard.full_name]?.original_search_path &&
-      !!dashboardsMetadata[selectedDashboard.full_name]?.original_search_path
-        ?.length;
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path &&
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+        ?.original_search_path &&
+      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+        ?.original_search_path?.length;
     return {
       enabled: hasServerMetadataSearchPath || hasDashboardMetadataSearchPath,
       hasServerMetadataSearchPath,
@@ -46,8 +47,6 @@ const PopoverButton = forwardRef((props, ref) => {
   ) {
     return null;
   }
-
-  console.log(props);
 
   return (
     // @ts-ignore
@@ -93,9 +92,11 @@ const ManageSearchPathButton = () => {
         leaveTo="opacity-0 translate-y-1"
       >
         <Popover.Panel className="absolute left-1/2 z-10 mt-4 flex w-screen max-w-max -translate-x-1/2 px-4">
-          <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
-            <SearchPathConfig onClose={() => setShowSearchPathConfig(false)} />
-          </div>
+          {({ close }) => (
+            <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
+              <SearchPathConfig onClose={close} />
+            </div>
+          )}
         </Popover.Panel>
       </Transition>
     </Popover>

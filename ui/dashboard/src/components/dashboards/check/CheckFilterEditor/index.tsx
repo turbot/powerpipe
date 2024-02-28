@@ -19,9 +19,7 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 
 type CheckFilterEditorProps = {
   filter: CheckFilter;
-  onCancel: () => void;
   onApply: (newValue: CheckFilter) => void;
-  onSave: (newValue: CheckFilter) => void;
 };
 
 type CheckFilterEditorItemProps = {

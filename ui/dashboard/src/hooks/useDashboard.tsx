@@ -33,6 +33,7 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
+import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 
 const DashboardContext = createContext<IDashboardContext | null>(null);
 
@@ -97,6 +98,14 @@ const DashboardProvider = ({
 
   const location = useLocation();
   const navigationType = useNavigationType();
+  const searchPathPrefix = useDashboardSearchPathPrefix();
+
+  useEffect(() => {
+    dispatch({
+      type: DashboardActions.SET_SEARCH_PATH_PREFIX,
+      search_path_prefix: searchPathPrefix,
+    });
+  }, [dispatch, searchPathPrefix]);
 
   // Keep track of the previous selected dashboard and inputs
   const previousSelectedDashboardStates: SelectedDashboardStates | undefined =
@@ -106,10 +115,9 @@ const DashboardProvider = ({
       refetchDashboard: state.refetchDashboard,
       search: state.search,
       searchParams,
+      searchPathPrefix: state.searchPathPrefix,
       selectedDashboard: state.selectedDashboard,
       selectedDashboardInputs: state.selectedDashboardInputs,
-      selectedDashboardSearchPathPrefix:
-        state.selectedDashboardSearchPathPrefix,
     });
 
   // Alert analytics
@@ -386,11 +394,9 @@ const DashboardProvider = ({
     }
 
     const previousSearchPath = (
-      previousSelectedDashboardStates.selectedDashboardSearchPathPrefix || []
+      previousSelectedDashboardStates.searchPathPrefix || []
     ).join(",");
-    const currentSearchPath = (
-      state.selectedDashboardSearchPathPrefix || []
-    ).join(",");
+    const currentSearchPath = (state.searchPathPrefix || []).join(",");
 
     // If we didn't previously have a dashboard selected in state (e.g. you've gone from home page
     // to a report, or it's first load), or the selected dashboard has been changed, select that
@@ -422,12 +428,9 @@ const DashboardProvider = ({
           input_values: state.selectedDashboardInputs,
         },
       };
-      if (
-        !!state.selectedDashboardSearchPathPrefix &&
-        state.selectedDashboardSearchPathPrefix.length > 0
-      ) {
-        selectDashboardMessage.search_path_prefix =
-          state.selectedDashboardSearchPathPrefix;
+      if (!!state.searchPathPrefix.length) {
+        selectDashboardMessage.payload.search_path_prefix =
+          state.searchPathPrefix;
       }
       sendSocketMessage(selectDashboardMessage);
       sendSocketMessage({
@@ -466,9 +469,9 @@ const DashboardProvider = ({
     previousSelectedDashboardStates,
     sendSocketMessage,
     socketReady,
+    state.searchPathPrefix,
     state.selectedDashboard,
     state.selectedDashboardInputs,
-    state.selectedDashboardSearchPathPrefix,
     state.lastChangedInput,
     state.dataMode,
     state.refetchDashboard,

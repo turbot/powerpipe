@@ -53,10 +53,10 @@ const reducer = (state: IDashboardContext, action) => {
           [state.selectedDashboard?.full_name]: action.metadata,
         },
       };
-    case DashboardActions.SET_SELECTED_DASHBOARD_SEARCH_PATH_PREFIX:
+    case DashboardActions.SET_SEARCH_PATH_PREFIX:
       return {
         ...state,
-        selectedDashboardSearchPathPrefix: action.search_path_prefix,
+        searchPathPrefix: action.search_path_prefix,
       };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
@@ -267,7 +267,6 @@ const reducer = (state: IDashboardContext, action) => {
         snapshotId: null,
         state: null,
         selectedDashboard: action.dashboard,
-        selectedDashboardSearchPathPrefix: [],
         selectedPanel: null,
         lastChangedInput: null,
       };
@@ -400,9 +399,9 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
+    searchPathPrefix: [],
     selectedPanel: null,
     selectedDashboard: null,
-    selectedDashboardSearchPathPrefix: [],
     selectedDashboardInputs:
       buildSelectedDashboardInputsFromSearchParams(searchParams),
     snapshot: null,

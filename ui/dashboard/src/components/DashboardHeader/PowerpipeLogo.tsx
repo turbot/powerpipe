@@ -13,12 +13,16 @@ import { useDashboard } from "@powerpipe/hooks/useDashboard";
 const PowerpipeLogo = () => {
   const {
     themeContext: { theme },
+    searchPathPrefix,
   } = useDashboard();
   const ExternalLink = getComponent("external_link");
 
   return (
     <div className="mr-1 md:mr-4">
-      <ExternalLink ignoreDataMode to="/">
+      <ExternalLink
+        ignoreDataMode
+        to={`/${searchPathPrefix ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+      >
         <div className="block md:hidden w-8">
           {theme.name === ThemeNames.STEAMPIPE_DEFAULT && <Logo />}
           {theme.name === ThemeNames.STEAMPIPE_DARK && <LogoDarkmode />}
