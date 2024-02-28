@@ -8,12 +8,14 @@ import {
 import { forwardRef, Fragment, useMemo } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import Badge from "@powerpipe/components/Badge";
 
 const PopoverButton = forwardRef((props, ref) => {
   const {
     metadata,
     dataMode,
     dashboardsMetadata,
+    searchPathPrefix,
     selectedDashboard,
     snapshot,
   } = useDashboard();
@@ -73,6 +75,9 @@ const PopoverButton = forwardRef((props, ref) => {
           icon="sort"
         />
         <span className="hidden lg:block">Search Path</span>
+        {!!searchPathPrefix.length ? (
+          <Badge>{searchPathPrefix.length}</Badge>
+        ) : null}
       </>
     </NeutralButton>
   );
