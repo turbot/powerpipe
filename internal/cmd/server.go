@@ -6,21 +6,21 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/utils"
-
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/service/api"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -67,12 +67,9 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	error_helpers.FailOnError(serverListen.IsValid())
 
 	serverHost := ""
-	if serverListen == dashboardserver.ListenTypeLocal {
-		serverHost = "127.0.0.1"
-	}
 	if err := utils.IsPortBindable(serverHost, int(serverPort)); err != nil {
 		exitCode = constants.ExitCodeBindPortUnavailable
-		error_helpers.FailOnError(err)
+		error_helpers.FailOnError(sperr.New("Port %d is not available - is another instance of 'powerpipe server' running?\n       Set a different port using the --port argument", serverPort))
 	}
 
 	// initialise the workspace
