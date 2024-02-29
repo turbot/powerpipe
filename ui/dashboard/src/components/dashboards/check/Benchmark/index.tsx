@@ -50,7 +50,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { dispatch, selectedPanel } = useDashboard();
+  const { cliMode, dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -73,6 +73,10 @@ const Benchmark = (props: InnerCheckProps) => {
     usePanelControls(definitionWithData, props.showControls);
 
   useEffect(() => {
+    // TODO remove once all workspaces are running Powerpipe
+    if (cliMode === "steampipe") {
+      return;
+    }
     setCustomControls([
       {
         action: async () =>
@@ -81,7 +85,7 @@ const Benchmark = (props: InnerCheckProps) => {
         title: "Filter & Group",
       },
     ]);
-  }, [dispatch, setCustomControls]);
+  }, [cliMode, dispatch, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {

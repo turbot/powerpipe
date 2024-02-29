@@ -43,6 +43,16 @@ const reducer = (state: IDashboardContext, action) => {
         },
       };
     case DashboardActions.DASHBOARD_METADATA:
+      // TODO remove once all workspaces are running Powerpipe as this is actually SERVER_METADATA in Powerpipe
+      if (state.cliMode === "steampipe") {
+        return {
+          ...state,
+          metadata: {
+            mod: {},
+            ...action.metadata,
+          },
+        };
+      }
       if (!state.selectedDashboard?.full_name) {
         return state;
       }
@@ -52,6 +62,11 @@ const reducer = (state: IDashboardContext, action) => {
           ...state.dashboardsMetadata,
           [state.selectedDashboard?.full_name]: action.metadata,
         },
+      };
+    case DashboardActions.SET_CLI_MODE:
+      return {
+        ...state,
+        cliMode: action.cli_mode,
       };
     case DashboardActions.SET_SEARCH_PATH_PREFIX:
       return {
@@ -384,6 +399,7 @@ const reducer = (state: IDashboardContext, action) => {
 
 const getInitialState = (searchParams, defaults: any = {}) => {
   return {
+    cliMode: defaults.cliMode || "powerpipe",
     versionMismatchCheck: defaults.versionMismatchCheck,
     availableDashboardsLoaded: false,
     metadata: null,
@@ -446,15 +462,13 @@ const useDashboardState = ({
   stateDefaults = {},
   versionMismatchCheck,
 }: DashboardStateProps) => {
-  const [state, dispatchInner] = useReducer(
-    reducer,
-    getInitialState(searchParams, {
-      ...stateDefaults,
-      ...dataOptions,
-      ...renderOptions,
-      versionMismatchCheck,
-    }),
-  );
+  const initialState = getInitialState(searchParams, {
+    ...stateDefaults,
+    ...dataOptions,
+    ...renderOptions,
+    versionMismatchCheck,
+  });
+  const [state, dispatchInner] = useReducer(reducer, initialState);
   useDashboardVersionCheck(state);
   const dispatch = useCallback((action) => {
     // console.log(action.type, action);

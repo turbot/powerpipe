@@ -86,6 +86,7 @@ const DashboardProvider = ({
     eventHooks,
   );
   const { ready: socketReady, send: sendSocketMessage } = useDashboardWebSocket(
+    state.cliMode,
     state.dataMode,
     dispatch,
     eventHandler,
@@ -433,14 +434,16 @@ const DashboardProvider = ({
           state.searchPathPrefix;
       }
       sendSocketMessage(selectDashboardMessage);
-      sendSocketMessage({
-        action: SocketActions.GET_DASHBOARD_METADATA,
-        payload: {
-          dashboard: {
-            full_name: state.selectedDashboard.full_name,
+      if (state.cliMode === "provider") {
+        sendSocketMessage({
+          action: SocketActions.GET_DASHBOARD_METADATA,
+          payload: {
+            dashboard: {
+              full_name: state.selectedDashboard.full_name,
+            },
           },
-        },
-      });
+        });
+      }
       return;
     }
     // Else if we did previously have a dashboard selected in state and the
@@ -469,6 +472,7 @@ const DashboardProvider = ({
     previousSelectedDashboardStates,
     sendSocketMessage,
     socketReady,
+    state.cliMode,
     state.searchPathPrefix,
     state.selectedDashboard,
     state.selectedDashboardInputs,
