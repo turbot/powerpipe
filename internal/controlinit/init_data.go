@@ -3,6 +3,7 @@ package controlinit
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/cobra"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -28,11 +29,11 @@ type InitData[T CheckTarget] struct {
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData[T CheckTarget](ctx context.Context, args []string) *InitData[T] {
+func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
 
 	statushooks.SetStatus(ctx, "Loading workspace")
 
-	initData := initialisation.NewInitData[T](ctx, args...)
+	initData := initialisation.NewInitData[T](ctx, cmd, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
 	i := &InitData[T]{

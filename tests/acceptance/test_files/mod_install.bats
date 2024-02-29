@@ -3,8 +3,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 @test "list with no mods installed" {
   run powerpipe mod list
-  assert_output 'NAME
-local'
+  assert_output 'No mods installed.'
 }
 
 @test "install latest(--force)" {
@@ -20,6 +19,14 @@ local
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
   run powerpipe mod install
   assert_output 'All mods are up to date'
+}
+
+@test "install mod and list" {
+  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.10 --force
+  run powerpipe mod list
+  assert_output '
+local
+└── github.com/turbot/steampipe-mod-aws-compliance@v0.10.0'
 }
 
 @test "install old version when latest already installed" {

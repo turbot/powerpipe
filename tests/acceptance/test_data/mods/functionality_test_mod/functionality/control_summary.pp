@@ -12,34 +12,34 @@ benchmark "control_summary_benchmark" {
 control "sample_control_1" {
   title         = "Sample control 1"
   description   = "A sample control"
-  sql           = query.static_query.sql
+  query         = query.static_query
   severity      = "high"
 }
 
 control "sample_control_2" {
   title         = "Sample control 2"
   description   = "A sample control"
-  sql           = query.static_query.sql
+  query         = query.static_query
   severity      = "critical"
 }
 
 control "sample_control_3" {
   title         = "Sample control 3"
   description   = "A sample control"
-  sql           = query.static_query.sql
+  query         = query.static_query
   severity      = "high"
 }
 
 control "sample_control_4" {
   title         = "Sample control 4"
   description   = "A sample control that returns ERROR"
-  sql           = query.static_query.sql
+  query         = query.static_query
   severity      = "critical"
 }
 
 control "sample_control_5" {
   title         = "Sample control 5"
   description   = "A sample control"
-  sql           = query.static_query.sql
+  query         = query.static_query
   severity      = "high"
 }

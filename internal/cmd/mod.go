@@ -53,7 +53,7 @@ Examples:
 	cmd.AddCommand(modInstallCmd(),
 		modUninstallCmd(),
 		modUpdateCmd(),
-		listCmd[*modconfig.Mod](),
+		modListCmd(),
 		showCmd[*modconfig.Mod](),
 		modInitCmd(),
 	)
@@ -265,6 +265,60 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 
 	//nolint:forbidigo // acceptable
 	fmt.Println(modinstaller.BuildInstallSummary(installData))
+}
+
+// list
+func modListCmd() *cobra.Command {
+	var cmd = &cobra.Command{
+		Use:   "list",
+		Run:   runModListCmd,
+		Short: "List currently installed mods",
+		Long: `List currently installed mods.
+		
+Example:
+
+  # List installed mods
+  steampipe mod list`,
+	}
+
+	cmdconfig.OnCmd(cmd).
+		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddModLocationFlag()
+	return cmd
+}
+
+func runModListCmd(cmd *cobra.Command, _ []string) {
+	ctx := cmd.Context()
+	utils.LogTime("cmd.runModListCmd")
+	defer func() {
+		utils.LogTime("cmd.runModListCmd end")
+		if r := recover(); r != nil {
+			error_helpers.ShowError(ctx, helpers.ToError(r))
+			exitCode = constants.ExitCodeUnknownErrorPanic
+		}
+	}()
+
+	// try to load the workspace mod definition
+	// - if it does not exist, this will return a nil mod and a nil error
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
+	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable
+		fmt.Println("No mods installed.")
+		return
+	}
+
+	opts := modinstaller.NewInstallOpts(workspaceMod)
+	installer, err := modinstaller.NewModInstaller(opts)
+	error_helpers.FailOnError(err)
+
+	treeString := installer.GetModList()
+	if len(strings.Split(treeString, "\n")) > 1 {
+		//nolint:forbidigo // acceptable
+		fmt.Println()
+	}
+	//nolint:forbidigo // acceptable
+	fmt.Println(treeString)
 }
 
 func modInitCmd() *cobra.Command {

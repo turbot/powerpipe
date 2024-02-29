@@ -106,7 +106,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData[*modconfig.Query](ctx, args...)
+	initData := initialisation.NewInitData[*modconfig.Query](ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
