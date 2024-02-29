@@ -39,11 +39,6 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 		return nil, err
 	}
 
-	if c.BeforeExecuteHook != nil {
-		if err := c.BeforeExecuteHook(ctx, dbConn); err != nil {
-			return nil, err
-		}
-	}
 	defer func() {
 		dbConn.Close()
 
@@ -85,12 +80,6 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 		return localqueryresult.NewResult(nil), nil
 	}
 
-	// TODO KAI be clear about which execute calls we need to call the hook for - simplify? <TIMING>
-	if c.BeforeExecuteHook != nil {
-		if err := c.BeforeExecuteHook(ctx, dbConn); err != nil {
-			return nil, err
-		}
-	}
 	// get a context with a timeout for the query to execute within
 	// we don't use the cancelFn from this timeout context, since usage will lead to 'pgx'
 	// prematurely closing the database connection that this query executed in

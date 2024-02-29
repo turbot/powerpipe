@@ -21,15 +21,21 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 
 	modLocation := viper.GetString(constants.ArgModLocation)
 	// build options to specify which blocks we need to load (based on type T
-	opts := getLoadWorkspaceOptsForResourceType[T]()
+	opts := getListLoadWorkspaceOpts[T]()
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
+
+	// get resource filter depending on resource type and output type
+	resourceFilter := getListResourceFilter[T](w)
+	resources, err := workspace.FilterWorkspaceResourcesOfType[T](w, resourceFilter)
+	if err != nil {
+		error_helpers.ShowErrorWithMessage(ctx, err, "failed to filter resources")
+		return
+	}
 
 	if !w.ModfileExists() {
 		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})
 	}
-
-	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
 	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
@@ -45,10 +51,44 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	}
 }
 
-// build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
-func getLoadWorkspaceOptsForResourceType[T modconfig.ModTreeItem]() []workspace.LoadWorkspaceOption {
+func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) workspace.ResourceFilter {
+	var res = workspace.ResourceFilter{}
+
 	var empty T
-	var opts []workspace.LoadWorkspaceOption
+	if _, ok := any(empty).(*modconfig.Benchmark); ok {
+
+		// if T is benchmark, and if output is pretty or plain, only show top level benchmarks
+		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {
+			// build a lookup of mod names to filter on
+			var modNames = map[string]struct{}{}
+			for _, mod := range w.Mods {
+				modNames[mod.Name()] = struct{}{}
+			}
+
+			// add a predicate which returns true only if the resources parent is one of these mods
+			res.WherePredicate = func(item modconfig.HclResource) bool {
+				mti, ok := item.(modconfig.ModTreeItem)
+				if !ok {
+					return false
+				}
+
+				parents := mti.GetParents()
+				if len(parents) == 0 {
+					return false
+				}
+				_, inTargetMod := modNames[parents[0].Name()]
+				return inTargetMod
+			}
+		}
+	}
+
+	return res
+}
+
+// build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
+func getListLoadWorkspaceOpts[T modconfig.ModTreeItem]() []workspace.LoadWorkspaceOption {
+	var empty T
+	var opts = []workspace.LoadWorkspaceOption{workspace.WithVariableValidation(false)}
 	switch any(empty).(type) {
 	case *modconfig.Mod:
 		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
@@ -61,7 +101,7 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 
 	modLocation := viper.GetString(constants.ArgModLocation)
 	// build options to specify which blocks we need to load (based on type T
-	opts := getLoadWorkspaceOptsForResourceType[T]()
+	opts := getListLoadWorkspaceOpts[T]()
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 	if !w.ModfileExists() {
