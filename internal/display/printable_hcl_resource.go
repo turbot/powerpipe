@@ -1,6 +1,7 @@
 package display
 
 import (
+	"github.com/turbot/pipe-fittings/modconfig"
 	"slices"
 	"strings"
 
@@ -22,7 +23,10 @@ func (p PrintableHclResource[T]) GetItems() []T {
 }
 
 func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
-	var rows []printers.TableRow
+	// split rows into top level mod resources and dependency mod resources
+	// show the top level resources first
+
+	var rows, depRows []printers.TableRow
 	var columns []string
 	for _, item := range p.Items {
 		row := item.GetListData().GetRow()
@@ -31,20 +35,36 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 		}
 
 		cleanRow(*row)
-		rows = append(rows, *row)
 
+		if isDependencyResource(item) {
+			depRows = append(depRows, *row)
+
+		} else {
+			rows = append(rows, *row)
+		}
 	}
-	if len(rows) == 0 {
+	if len(rows)+len(depRows) == 0 {
 		return printers.NewTable(), nil
 	}
 
 	// sort output based on column 0
-	slices.SortFunc(rows, func(a, b printers.TableRow) int {
+	sortFunc := func(a, b printers.TableRow) int {
 		return strings.Compare(a.Cells[0].(string), b.Cells[0].(string))
-	})
+	}
+	slices.SortFunc(rows, sortFunc)
+	slices.SortFunc(depRows, sortFunc)
 
-	t := printers.NewTable().WithData(rows, columns)
+	t := printers.NewTable().WithData(append(rows, depRows...), columns)
 	return t, nil
+}
+
+func isDependencyResource(item printers.Listable) bool {
+	// is this a ModTreeItem - we expect it will be
+	mti, ok := item.(modconfig.ModTreeItem)
+	if !ok {
+		return false
+	}
+	return mti.IsDependencyResource()
 }
 
 func cleanRow(row printers.TableRow) {
