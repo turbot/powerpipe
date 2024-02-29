@@ -1,8 +1,10 @@
 package display
 
 import (
-	"github.com/turbot/pipe-fittings/printers"
+	"slices"
 	"strings"
+
+	"github.com/turbot/pipe-fittings/printers"
 )
 
 type PrintableHclResource[T printers.Listable] struct {
@@ -36,9 +38,12 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 		return printers.NewTable(), nil
 	}
 
-	// TODO KAI SORT???
+	// sort output based on column 0
+	slices.SortFunc(rows, func(a, b printers.TableRow) int {
+		return strings.Compare(a.Cells[0].(string), b.Cells[0].(string))
+	})
 
-	t := printers.NewTable().WithData(rows, columns) // .SortBy("NAME")
+	t := printers.NewTable().WithData(rows, columns)
 	return t, nil
 }
 

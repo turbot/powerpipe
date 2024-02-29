@@ -25,11 +25,16 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
+	// get resource predicate depdening on resource type and output type
+	resourceFilter, err := getListResourceFilter[T](cmd, w)
+	resources, err := workspace.FilterWorkspaceResourcesOfType[T](w, resourceFilter)
+	if err != nil {
+		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
+		return
+	}
 	if !w.ModfileExists() {
 		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})
 	}
-
-	resources := workspace.GetWorkspaceResourcesOfType[T](w)
 
 	printer, err := printers.GetPrinter[T](cmd)
 	if err != nil {
@@ -43,6 +48,40 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed when printing")
 		return
 	}
+}
+
+func getListResourceFilter[T modconfig.ModTreeItem](cmd *cobra.Command, w *workspace.Workspace) (workspace.ResourceFilter, error) {
+	var res = workspace.ResourceFilter{}
+
+	var empty T
+	if _, ok := any(empty).(*modconfig.Benchmark); ok {
+
+		// if T is benchmark, and if output is pretty or plain, only show top level benchmarks
+		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {
+			// build a lookup of mod names to filter on
+			var modNames = map[string]struct{}{}
+			for _, mod := range w.Mods {
+				modNames[mod.Name()] = struct{}{}
+			}
+
+			// add a predicate which returns true only if the resources parent is one of these mods
+			res.WherePredicate = func(item modconfig.HclResource) bool {
+				mti, ok := item.(modconfig.ModTreeItem)
+				if !ok {
+					return false
+				}
+
+				parents := mti.GetParents()
+				if len(parents) == 0 {
+					return false
+				}
+				_, inTargetMod := modNames[parents[0].Name()]
+				return inTargetMod
+			}
+		}
+	}
+
+	return res, nil
 }
 
 // build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)

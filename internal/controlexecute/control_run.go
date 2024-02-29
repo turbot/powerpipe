@@ -271,22 +271,6 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	slog.Debug("finish result", "name", r.Control.Name())
 }
 
-// todo kai why do we need to manually acquire a session??? <SESSION>
-//// try to acquire a database session - retry up to 4 times if there is an error
-//func (r *ControlRun) acquireSession(ctx context.Context, client *db_client.DbClient) *db_common.AcquireSessionResult {
-//	var sessionResult *db_common.AcquireSessionResult
-//	for attempt := 0; attempt < 4; attempt++ {
-//		sessionResult = client.AcquireSession(ctx)
-//		if sessionResult.Error == nil || error_helpers.IsCancelledError(sessionResult.Error) {
-//			break
-//		}
-//
-//		slog.Debug("controlRun %s acquireSession failed with error: %s - retrying", r.ControlId, sessionResult.Error)
-//	}
-//
-//	return sessionResult
-//}
-
 // create a context with status updates disabled (we do not want to show 'loading' results)
 func (r *ControlRun) getControlQueryContext(ctx context.Context) context.Context {
 	// disable the status spinner to hide 'loading' results)

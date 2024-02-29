@@ -117,6 +117,14 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *works
 }
 
 func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+	// if there is more than 1 arg, "all" is not valid
+	if len(args) > 1 {
+		// verify that no other benchmarks/controls are given with an all
+		if helpers.StringSliceContains(args, "all") {
+			return nil, sperr.New("cannot execute 'all' with other benchmarks")
+		}
+	}
+
 	isAll := len(args) == 1 && args[0] == "all"
 	if !isAll {
 		return nil, nil

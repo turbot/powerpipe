@@ -19,8 +19,6 @@ type DbClient struct {
 
 	// the Backend
 	Backend backend.Backend
-
-	BeforeExecuteHook func(context.Context, *sql.Conn) error
 }
 
 func NewDbClient(ctx context.Context, connectionString string, opts ...backend.ConnectOption) (_ *DbClient, err error) {
