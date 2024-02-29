@@ -303,6 +303,7 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
+		//nolint:forbidigo // acceptable
 		fmt.Println("No mods installed.")
 		return
 	}
@@ -313,8 +314,10 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 
 	treeString := installer.GetModList()
 	if len(strings.Split(treeString, "\n")) > 1 {
+		//nolint:forbidigo // acceptable
 		fmt.Println()
 	}
+	//nolint:forbidigo // acceptable
 	fmt.Println(treeString)
 }
 
