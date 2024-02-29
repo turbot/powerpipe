@@ -9,13 +9,13 @@ benchmark "check_cache_benchmark" {
 control "cache_test_1" {
   title         = "Control to test cache functionality 1"
   description   = "Control to test cache functionality in steampipe."
-  sql           = query.check_cache.sql
+  query         = query.check_cache
   severity      = "high"
 }
 
 control "cache_test_2" {
   title         = "Control to test cache functionality 2"
   description   = "Control to test cache functionality in steampipe."
-  sql           = query.check_cache.sql
+  query         = query.check_cache
   severity      = "high"
 }
