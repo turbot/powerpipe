@@ -179,7 +179,10 @@ func resourceCommandShortDescription(typeName string) string {
 func resourceCommandLongDescription(typeName string) string {
 	switch typeName {
 	case schema.BlockTypeQuery:
-		return "List, view, and run Powerpipe queries. You can run named queries or any arbitrary SQL."
+		return `List, view, and run Powerpipe queries and its direct dependents.
+		
+Run a query from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a query from the current mod or its direct dependents or from a Powerpipe server instance.`
 
 	case schema.BlockTypeControl:
 		return `List, view, and run Powerpipe controls and its direct dependents.
