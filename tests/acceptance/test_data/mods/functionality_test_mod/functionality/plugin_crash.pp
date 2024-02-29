@@ -10,7 +10,7 @@ benchmark "check_plugin_crash_benchmark" {
 control "plugin_chaos_test_1" {
   title       = "Control to query a chaos table"
   description = "Control to query a chaos table to test all flavours of integer and float data types"
-  sql         = query.check_plugincrash_normalquery1.sql
+  query       = query.check_plugincrash_normalquery1
   severity    = "high"
 }
 
@@ -24,6 +24,6 @@ control "plugin_crash_test" {
 control "plugin_chaos_test_2" {
   title       = "Control to query a chaos table"
   description = "Control to query a chaos table test the Get call with all the possible scenarios like errors, panics and delays"
-  sql         = query.check_plugincrash_normalquery2.sql
+  query       = query.check_plugincrash_normalquery2
   severity    = "high"
 }
