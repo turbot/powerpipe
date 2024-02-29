@@ -25,13 +25,14 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
-	// get resource predicate depdening on resource type and output type
-	resourceFilter, err := getListResourceFilter[T](cmd, w)
+	// get resource filter depending on resource type and output type
+	resourceFilter := getListResourceFilter[T](w)
 	resources, err := workspace.FilterWorkspaceResourcesOfType[T](w, resourceFilter)
 	if err != nil {
-		error_helpers.ShowErrorWithMessage(ctx, err, "failed obtaining printer")
+		error_helpers.ShowErrorWithMessage(ctx, err, "failed to filter resources")
 		return
 	}
+
 	if !w.ModfileExists() {
 		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})
 	}
@@ -50,7 +51,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	}
 }
 
-func getListResourceFilter[T modconfig.ModTreeItem](cmd *cobra.Command, w *workspace.Workspace) (workspace.ResourceFilter, error) {
+func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) workspace.ResourceFilter {
 	var res = workspace.ResourceFilter{}
 
 	var empty T
@@ -81,7 +82,7 @@ func getListResourceFilter[T modconfig.ModTreeItem](cmd *cobra.Command, w *works
 		}
 	}
 
-	return res, nil
+	return res
 }
 
 // build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
