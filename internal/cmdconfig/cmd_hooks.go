@@ -218,7 +218,7 @@ func ensureInstallDirs() {
 	if _, err := os.Stat(pipesInstallDir); os.IsNotExist(err) {
 		slog.Debug("creating pipes install dir")
 		err = os.MkdirAll(pipesInstallDir, 0755)
-		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create pipes installation directory: %s", installDir))
+		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create pipes installation directory: %s", pipesInstallDir))
 	}
 
 	// store as InstallDir
