@@ -54,7 +54,7 @@ const Dashboard = ({
           <SnapshotHeader />
         </div>
       )}
-      <div className="flex flex-col md:flex-row w-full md:w-auto h-full">
+      <div className="flex flex-col md:flex-row w-full md:w-auto h-full overflow-y-auto">
         <div className="w-full">
           {isRoot ? <DashboardProgress /> : null}
           {isRoot ? (

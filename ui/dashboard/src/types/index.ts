@@ -7,6 +7,8 @@ import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
 
 export type IDashboardContext = {
+  cliMode: DashboardCliMode;
+
   versionMismatchCheck: boolean;
   metadata: ServerMetadata | null;
   availableDashboardsLoaded: boolean;
@@ -83,6 +85,8 @@ export const DashboardDataModeLive = "live";
 export const DashboardDataModeCLISnapshot = "cli_snapshot";
 export const DashboardDataModeCloudSnapshot = "cloud_snapshot";
 
+export type DashboardCliMode = "powerpipe" | "steampipe";
+
 export type DashboardDataMode = "live" | "cli_snapshot" | "cloud_snapshot";
 
 export type PanelDataMode = "diff";
@@ -148,6 +152,7 @@ export const DashboardActions: IActions = {
   LEAF_NODES_UPDATED: "leaf_nodes_updated",
   SELECT_DASHBOARD: "select_dashboard",
   SELECT_PANEL: "select_panel",
+  SET_CLI_MODE: "set_cli_mode",
   SET_DASHBOARD: "set_dashboard",
   SET_DASHBOARD_INPUT: "set_dashboard_input",
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",

@@ -1,6 +1,7 @@
 import isEmpty from "lodash/isEmpty";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import {
+  DashboardCliMode,
   DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
@@ -20,6 +21,7 @@ export const SocketActions: IActions = {
 };
 
 const useDashboardWebSocket = (
+  cliMode: DashboardCliMode,
   dataMode: DashboardDataMode,
   dispatch: (action: any) => void,
   eventHandler: (event: ReceivedSocketMessagePayload) => void,
@@ -78,7 +80,12 @@ const useDashboardWebSocket = (
     if (readyState !== ReadyState.OPEN || !sendJsonMessage) {
       return;
     }
-    sendJsonMessage({ action: SocketActions.GET_SERVER_METADATA });
+    // TODO remove once all workspaces are running Powerpipe as this is actually GET_SERVER_METADATA in Powerpipe
+    if (cliMode === "steampipe") {
+      sendJsonMessage({ action: SocketActions.GET_DASHBOARD_METADATA });
+    } else {
+      sendJsonMessage({ action: SocketActions.GET_SERVER_METADATA });
+    }
     sendJsonMessage({ action: SocketActions.GET_AVAILABLE_DASHBOARDS });
   }, [readyState, sendJsonMessage]);
 
