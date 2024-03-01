@@ -40,7 +40,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 
 	// verify cloud token and workspace has been set
 	if requireCloudToken && token == "" {
-		return error_helpers.MissingCloudTokenError
+		return error_helpers.MissingCloudTokenError()
 	}
 
 	// should never happen as there is a default set
@@ -57,7 +57,7 @@ func validateSnapshotLocation(ctx context.Context, cloudToken string) error {
 	// if snapshot location is not set, set to the users default
 	if snapshotLocation == "" {
 		if cloudToken == "" {
-			return error_helpers.MissingCloudTokenError
+			return error_helpers.MissingCloudTokenError()
 		}
 		return setSnapshotLocationFromDefaultWorkspace(ctx, cloudToken)
 	}

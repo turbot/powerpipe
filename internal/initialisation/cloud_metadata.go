@@ -23,7 +23,7 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 		// it must be a database name - verify the cloud token was provided
 		cloudToken := viper.GetString(constants.ArgPipesToken)
 		if cloudToken == "" {
-			return nil, error_helpers.MissingCloudTokenError
+			return nil, error_helpers.MissingCloudTokenError()
 		}
 
 		// so we have a database and a token - build the connection string and set it in viper
