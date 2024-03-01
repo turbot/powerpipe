@@ -67,13 +67,13 @@ const CheckGroupingTypeSelect = ({
     const allTypes: SelectOption[] = [
       { value: "benchmark", label: "Benchmark" },
       { value: "control", label: "Control" },
+      { value: "control_tag", label: "Control Tag" },
       { value: "dimension", label: "Dimension" },
       { value: "reason", label: "Reason" },
       { value: "resource", label: "Resource" },
       { value: "result", label: "Result" },
       { value: "severity", label: "Severity" },
       { value: "status", label: "Status" },
-      { value: "control_tag", label: "Control Tag" },
     ];
     return allTypes.filter(
       (t) =>
@@ -104,7 +104,7 @@ const CheckGroupingTypeSelect = ({
       onChange={(t) => setCurrentType((t as SelectOption).value)}
       options={types}
       inputId={`${type}.input`}
-      placeholder="Select a grouping…"
+      placeholder="Select a group type…"
       styles={styles}
       value={types.find((t) => t.value === type)}
     />
@@ -154,7 +154,7 @@ const CheckGroupingValueSelect = ({
       onChange={(t) => setCurrentValue((t as SelectOption).value)}
       options={values}
       inputId={`${type}.input`}
-      placeholder="Select a grouping…"
+      placeholder="Select a group key…"
       styles={styles}
       value={values.find((t) => t.value === value)}
     />
