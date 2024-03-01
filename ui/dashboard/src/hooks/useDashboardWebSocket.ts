@@ -87,7 +87,7 @@ const useDashboardWebSocket = (
       sendJsonMessage({ action: SocketActions.GET_SERVER_METADATA });
     }
     sendJsonMessage({ action: SocketActions.GET_AVAILABLE_DASHBOARDS });
-  }, [readyState, sendJsonMessage]);
+  }, [cliMode, readyState, sendJsonMessage]);
 
   useEffect(() => {
     return () => {
