@@ -102,7 +102,7 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 		}
 	}
 	if missingCount := len(missingInputs); missingCount > 0 {
-		return fmt.Errorf("%s '%s' must be provided using '--dashboard-input name=value'", utils.Pluralize("input", missingCount), strings.Join(missingInputs, ","))
+		return fmt.Errorf("%s '%s' must be provided using '--arg name=value'", utils.Pluralize("input", missingCount), strings.Join(missingInputs, ","))
 	}
 
 	return nil

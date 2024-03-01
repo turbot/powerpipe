@@ -244,15 +244,18 @@ func collectInputs() (map[string]interface{}, error) {
 		raw := variableArg
 		eq := strings.Index(raw, "=")
 		if eq == -1 {
-			return nil, fmt.Errorf("the --dashboard-input argument '%s' is not correctly specified. It must be an input name and value separated an equals sign: --dashboard-input key=value", raw)
+			return nil, fmt.Errorf("the --arg argument '%s' is not correctly specified. It must be an input name and value separated an equals sign: --arg key=value", raw)
 		}
 		name := raw[:eq]
 		rawVal := raw[eq+1:]
 		if _, ok := res[name]; ok {
-			return nil, fmt.Errorf("the dashboard-input option '%s' is provided more than once", name)
+			return nil, fmt.Errorf("the arg option '%s' is provided more than once", name)
 		}
 		// add `input. to start of name
-		key := modconfig.BuildModResourceName(schema.BlockTypeInput, name)
+		key := name
+		if !strings.HasPrefix(name, "input.") {
+			key = modconfig.BuildModResourceName(schema.BlockTypeInput, name)
+		}
 		res[key] = rawVal
 	}
 
