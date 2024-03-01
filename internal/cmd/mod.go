@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
@@ -18,7 +19,9 @@ import (
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/utils"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/display"
 )
 
 func modCmd() *cobra.Command {
@@ -283,6 +286,9 @@ Example:
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
+			constants.ArgOutput,
+			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", "))).
 		AddModLocationFlag()
 	return cmd
 }
@@ -297,6 +303,13 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 			exitCode = constants.ExitCodeUnknownErrorPanic
 		}
 	}()
+
+	// if the output format is json or yaml, call the generic list function
+	output := viper.GetString(constants.ArgOutput)
+	if output == constants.OutputFormatJSON || output == constants.OutputFormatYAML {
+		display.ListResources[*modconfig.Mod](cmd)
+		return
+	}
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
