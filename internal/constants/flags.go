@@ -32,6 +32,7 @@ const (
 	QueryOutputModeSnapshot
 	QueryOutputModeSnapshotShort
 	QueryOutputModeTable
+	QueryOutputModeNone
 )
 
 var QueryOutputModeIds = map[QueryOutputMode][]string{
@@ -41,6 +42,7 @@ var QueryOutputModeIds = map[QueryOutputMode][]string{
 	QueryOutputModeSnapshot:      {constants.OutputFormatSnapshot},
 	QueryOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
 	QueryOutputModeTable:         {constants.OutputFormatTable},
+	QueryOutputModeNone:          {constants.OutputFormatNone},
 }
 
 type DashboardOutputMode enumflag.Flag
