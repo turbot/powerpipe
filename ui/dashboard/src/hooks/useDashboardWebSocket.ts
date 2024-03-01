@@ -34,7 +34,7 @@ const useDashboardWebSocket = (
 
   const getSocketServerUrl = useCallback(async () => {
     if (socketUrlFactory) {
-      return socketUrlFactory();
+      return await socketUrlFactory();
     }
 
     // In this scenario the browser will be at http://localhost:3000,
