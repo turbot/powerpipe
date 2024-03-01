@@ -233,12 +233,12 @@ func (i *InitData[T]) Cleanup(ctx context.Context) {
 }
 
 // GetSingleTarget validates there is only a single target and returns it
-func (i *InitData[T]) GetSingleTarget() (T, error) {
+func (i *InitData[T]) GetSingleTarget() (modconfig.ModTreeItem, error) {
 
 	// cobra should validate this
 	if len(i.Targets) != 1 {
 		var empty T
 		return empty, sperr.New("expected a single target")
 	}
-	return i.Targets[0].(T), nil
+	return i.Targets[0], nil
 }
