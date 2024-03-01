@@ -146,6 +146,9 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 		cmdconfig.SetDefaultsFromConfig(loader.ConfiguredProfile.ConfigMap(cmd))
 	}
 
+	// now env vars have been processed, set filepaths.PipesInstallDir
+	filepaths.PipesInstallDir = viper.GetString(constants.ArgPipesInstallDir)
+
 	// NOTE: we need to resolve the token separately
 	// - that is because we need the resolved value of ArgPipesHost in order to load any saved token
 	// and we cannot get this until the other config has been resolved
@@ -205,23 +208,17 @@ func validateConfig() error_helpers.ErrorAndWarnings {
 	return res
 }
 
+// create ~/.steampipe if needed
 func ensureInstallDirs() {
 	installDir := viper.GetString(constants.ArgInstallDir)
-	pipesInstallDir := viper.GetString(constants.ArgPipesInstallDir)
 
-	slog.Debug("ensureInstallDir", "installDir", installDir, "pipesInstallDir", pipesInstallDir)
+	slog.Debug("ensureInstallDir", "installDir", installDir)
 	if _, err := os.Stat(installDir); os.IsNotExist(err) {
 		slog.Debug("creating install dir")
 		err = os.MkdirAll(installDir, 0755)
 		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create installation directory: %s", installDir))
 	}
-	if _, err := os.Stat(pipesInstallDir); os.IsNotExist(err) {
-		slog.Debug("creating pipes install dir")
-		err = os.MkdirAll(pipesInstallDir, 0755)
-		error_helpers.FailOnErrorWithMessage(err, fmt.Sprintf("could not create pipes installation directory: %s", pipesInstallDir))
-	}
 
-	// store as InstallDir
+	// store as app_specific.InstallDir
 	app_specific.InstallDir = installDir
-	filepaths.PipesInstallDir = installDir
 }
