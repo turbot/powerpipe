@@ -63,7 +63,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgTiming, false, "Turn on the query timer").
-		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultCheckQueryTimeout, "The query timeout").
+		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgSnapshotTag, nil, "Specify tags to set on the snapshot").

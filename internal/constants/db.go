@@ -1,5 +1,5 @@
 package constants
 
 const (
-	DatabaseDefaultCheckQueryTimeout = 240
+	DatabaseDefaultQueryTimeout = 300
 )
