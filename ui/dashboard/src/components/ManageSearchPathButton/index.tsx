@@ -54,7 +54,7 @@ const PopoverButton = forwardRef((props, ref) => {
     // @ts-ignore
     <NeutralButton
       ref={ref}
-      className="inline-flex items-center space-x-2"
+      className="inline-flex items-center space-x-2 h-full"
       disabled={!enabled}
       title={
         enabled
