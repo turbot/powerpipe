@@ -7,7 +7,6 @@ toolchain go1.21.3
 replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
 require (
-	github.com/Machiel/slugify v1.0.1 // indirect
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.16.0
@@ -43,7 +42,6 @@ require (
 require github.com/sethvargo/go-retry v0.2.4 // indirect
 
 require (
-	github.com/FabienMht/ginslog v0.0.1
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/gin-contrib/gzip v0.0.6
@@ -54,7 +52,6 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb v1.5.6
 	github.com/mattn/go-sqlite3 v1.14.19
-	github.com/samber/slog-gin v1.10.2
 	golang.org/x/sync v0.5.0
 	golang.org/x/text v0.14.0
 )
