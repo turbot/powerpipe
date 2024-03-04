@@ -54,15 +54,15 @@ const Dashboard = ({
           <SnapshotHeader />
         </div>
       )}
-      <div className="flex flex-col md:flex-row w-full md:w-auto h-full">
-        <div className="w-full">
-          {isRoot ? <DashboardProgress /> : null}
-          {isRoot ? (
-            <div className="h-full overflow-y-auto p-4">{grid}</div>
-          ) : (
-            grid
-          )}
-        </div>
+      <div className="flex flex-col md:flex-row w-full h-full overflow-y-hidden">
+        {isRoot ? (
+          <div className="flex flex-col flex-1 h-full overflow-y-hidden">
+            <DashboardProgress />
+            <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
+          </div>
+        ) : (
+          <div className="w-full">{grid}</div>
+        )}
         {showCustomizeBenchmarkPanel && <DashboardControls />}
       </div>
     </DashboardControlsProvider>

@@ -236,7 +236,7 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
 
   useEffect(() => {
     let reason: string = "";
-    const isValid = innerConfig.every((c) => {
+    const isValid = innerConfig.every((c, i) => {
       switch (c.type) {
         case "benchmark":
         case "control":
@@ -249,6 +249,10 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
         case "control_tag":
           return !!c.value;
         case "result":
+          if (i !== innerConfig.length - 1) {
+            reason = "Result must be the last grouping";
+            return false;
+          }
           return true;
         default:
           return false;

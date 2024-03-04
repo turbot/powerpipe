@@ -80,13 +80,12 @@ const ThemeProvider = ({ children }) => {
 };
 
 const FullHeightThemeWrapper = ({ children }) => {
-  const { setWrapperRef, theme, withFooterPadding } = useTheme();
+  const { setWrapperRef, theme } = useTheme();
   return (
     <div
       ref={setWrapperRef}
       className={classNames(
-        `h-screen flex flex-col theme-${theme.name} bg-dashboard print:bg-white print:theme-steampipe-default text-foreground print:text-black overflow-y-hidden`,
-        withFooterPadding ? "pb-4" : "",
+        `flex flex-col h-screen theme-${theme.name} bg-dashboard print:bg-white print:theme-steampipe-default text-foreground print:text-black`,
       )}
     >
       {children}

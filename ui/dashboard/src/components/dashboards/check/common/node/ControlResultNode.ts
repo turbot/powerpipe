@@ -6,20 +6,26 @@ import {
   CheckResult,
   CheckSeveritySummary,
 } from "../index";
-import HierarchyNode from "@powerpipe/components/dashboards/check/common/node/HierarchyNode";
 
-class ControlResultNode extends HierarchyNode {
+// class ControlResultNode extends HierarchyNode {
+//   private readonly _result: CheckResult;
+//
+//   constructor(
+//     result: CheckResult,
+//     sort: string,
+//     type: CheckNodeType,
+//     key: string,
+//     value: string,
+//     children?: CheckNode[],
+//   ) {
+//     super(type, `${key}=${value}`, value, sort, children || []);
+//     this._result = result;
+//   }
+
+class ControlResultNode implements CheckNode {
   private readonly _result: CheckResult;
 
-  constructor(
-    result: CheckResult,
-    sort: string,
-    type: CheckNodeType,
-    key: string,
-    value: string,
-    children?: CheckNode[],
-  ) {
-    super(type, `${key}=${value}`, value, sort, children || []);
+  constructor(result: CheckResult) {
     this._result = result;
   }
 
@@ -70,12 +76,15 @@ class ControlResultNode extends HierarchyNode {
   }
 
   get status(): CheckNodeStatus {
-    for (const child of this.children || []) {
-      if (child.status === "running") {
-        return "running";
-      }
-    }
+    // If we have results, this node is complete
     return "complete";
+
+    // for (const child of this.children || []) {
+    //   if (child.status === "running") {
+    //     return "running";
+    //   }
+    // }
+    // return "complete";
   }
 
   get severity_summary(): CheckSeveritySummary {

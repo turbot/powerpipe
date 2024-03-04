@@ -10,7 +10,7 @@ const DashboardControls = () => {
     dispatch({ type: DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL });
 
   return (
-    <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden">
+    <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden overflow-y-auto">
       <div className="flex items-center justify-between p-4">
         <h3>Filter & Group</h3>
         <Icon
