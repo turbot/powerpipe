@@ -53,7 +53,7 @@ const SaveSnapshotButton = () => {
     const blob = new Blob([JSON.stringify(withMetadata)], {
       type: "application/json",
     });
-    saveAs(blob, `${dashboard.name}.${timestampForFilename(Date.now())}.sps`);
+    saveAs(blob, `${dashboard.name}.${timestampForFilename(Date.now())}.pps`);
   };
 
   if (

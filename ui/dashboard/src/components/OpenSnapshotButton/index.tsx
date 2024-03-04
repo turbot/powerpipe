@@ -24,7 +24,7 @@ const OpenSnapshotButton = () => {
       </span>
       <input
         ref={fileInputRef}
-        accept=".sps"
+        accept=".application/json,.pps,.sps"
         className="hidden"
         id="open-snapshot"
         name="open-snapshot"
