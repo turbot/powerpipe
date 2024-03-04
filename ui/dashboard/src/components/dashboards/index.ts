@@ -6,7 +6,7 @@ const getComponent = (key: string) => componentsMap[key];
 
 const registerComponent = (
   key: string,
-  component: (props: any) => ReactNode
+  component: (props: any) => ReactNode,
 ) => {
   componentsMap[key] = component;
 };

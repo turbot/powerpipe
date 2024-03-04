@@ -6,7 +6,7 @@ const useWindowSize = (): readonly [number, number] => {
   const [size, setSize] = useState(
     typeof window !== "undefined"
       ? ([window.innerWidth, window.innerHeight] as const)
-      : ([0, 0] as const)
+      : ([0, 0] as const),
   );
   useEffect(() => {
     const updateSize = () => {

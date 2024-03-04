@@ -265,7 +265,7 @@ const sortDashboardSearchResults = (
 const DashboardList = () => {
   const {
     availableDashboardsLoaded,
-      cliMode,
+    cliMode,
     components: { DashboardListEmptyCallToAction },
     dashboards,
     dashboardsMap,

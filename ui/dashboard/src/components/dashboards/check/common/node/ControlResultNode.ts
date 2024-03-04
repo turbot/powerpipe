@@ -70,7 +70,7 @@ class ControlResultNode extends HierarchyNode {
   }
 
   get status(): CheckNodeStatus {
-    for (const child of (this.children || [])) {
+    for (const child of this.children || []) {
       if (child.status === "running") {
         return "running";
       }

@@ -6,11 +6,13 @@ import useDashboardWebSocketEventHandler from "./useDashboardWebSocketEventHandl
 import usePrevious from "./usePrevious";
 import {
   DashboardActions,
+  DashboardCliMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
   DashboardDataModeLive,
   DashboardDataOptions,
   DashboardRenderOptions,
+  DashboardSearch,
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
@@ -47,7 +49,10 @@ type DashboardProviderProps = {
   featureFlags?: string[];
   renderOptions?: DashboardRenderOptions;
   socketUrlFactory?: SocketURLFactory;
-  stateDefaults?: {};
+  stateDefaults?: {
+    cliMode?: DashboardCliMode;
+    search?: DashboardSearch;
+  };
   themeContext: any;
   versionMismatchCheck?: boolean;
 };
@@ -100,6 +105,24 @@ const DashboardProvider = ({
   const location = useLocation();
   const navigationType = useNavigationType();
   const searchPathPrefix = useDashboardSearchPathPrefix();
+
+  // Handle the case where the CLI mode might be changed at runtime e.g. if a Pipes Steampipe-only workspace
+  // is upgraded to be a PowerPipes workspace
+  useEffect(() => {
+    // If we're not passed a default, nothing to do
+    if (!stateDefaults || !stateDefaults.cliMode) {
+      return;
+    }
+    // If the passed default matches the CLI mode, nothing to do
+    if (stateDefaults.cliMode === state.cliMode) {
+      return;
+    }
+    // Otherwise we need to update the CLI mode
+    dispatch({
+      type: DashboardActions.SET_CLI_MODE,
+      cli_mode: stateDefaults.cliMode,
+    });
+  }, [dispatch, state.cliMode, stateDefaults]);
 
   useEffect(() => {
     dispatch({
@@ -434,7 +457,7 @@ const DashboardProvider = ({
           state.searchPathPrefix;
       }
       sendSocketMessage(selectDashboardMessage);
-      if (state.cliMode === "provider") {
+      if (state.cliMode === "powerpipe") {
         sendSocketMessage({
           action: SocketActions.GET_DASHBOARD_METADATA,
           payload: {

@@ -3,12 +3,12 @@ import { useEffect, useState } from "react";
 function usePaginatedList<T>(
   items: T[] = [],
   pageSize = 10,
-  doubleOnExpand = true
+  doubleOnExpand = true,
 ) {
   const [allItems, setAllItems] = useState(items);
   const [visibleItems, setVisibleItems] = useState(items.slice(0, pageSize));
   const [nextPageSize, setNextPageSize] = useState(
-    doubleOnExpand ? pageSize * 2 : pageSize
+    doubleOnExpand ? pageSize * 2 : pageSize,
   );
 
   useEffect(() => {
@@ -25,7 +25,7 @@ function usePaginatedList<T>(
     }
     const nextItems = allItems.slice(
       visibleItems.length,
-      nextPageSize + visibleItems.length - 1
+      nextPageSize + visibleItems.length - 1,
     );
     setVisibleItems([...visibleItems, ...nextItems]);
     setNextPageSize(doubleOnExpand ? nextPageSize * 2 : pageSize);

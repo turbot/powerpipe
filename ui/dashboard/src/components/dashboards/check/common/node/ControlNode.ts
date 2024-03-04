@@ -6,7 +6,7 @@ class ControlNode extends HierarchyNode {
     sort: string,
     name: string,
     title: string | undefined,
-    children?: CheckNode[]
+    children?: CheckNode[],
   ) {
     super("control", name, title || name, sort, children || []);
   }

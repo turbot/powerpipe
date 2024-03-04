@@ -30,7 +30,9 @@ const useSelectInputStyles = () => {
       return {
         ...provided,
         backgroundColor: backgroundPanel,
-        borderColor: state.isFocused ? "#2684FF !important" : `${blackScale3} !important`,
+        borderColor: state.isFocused
+          ? "#2684FF !important"
+          : `${blackScale3} !important`,
         boxShadow: "none",
       };
     },

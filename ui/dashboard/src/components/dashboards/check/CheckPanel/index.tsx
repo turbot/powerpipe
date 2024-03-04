@@ -365,7 +365,8 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                   className="mt-0"
                   title={node.title}
                 >
-                  {(node as KeyValuePairNode).type === "control_tag" && !!(node as KeyValuePairNode).key ? (
+                  {(node as KeyValuePairNode).type === "control_tag" &&
+                  !!(node as KeyValuePairNode).key ? (
                     <span>{(node as KeyValuePairNode).key}: </span>
                   ) : null}
                   {node.title}

@@ -6,7 +6,7 @@ class BenchmarkNode extends HierarchyNode {
     sort: string,
     name: string,
     title: string | undefined,
-    children?: CheckNode[]
+    children?: CheckNode[],
   ) {
     super("benchmark", name, title || name, sort, children || []);
   }

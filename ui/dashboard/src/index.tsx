@@ -23,5 +23,5 @@ root.render(
         </BreakpointProvider>
       </ErrorBoundary>
     </ThemeProvider>
-  </Router>
+  </Router>,
 );

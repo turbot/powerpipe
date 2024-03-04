@@ -14,7 +14,7 @@ test("findDimension with undefined key returns undefined", () => {
 
 test("findDimension with missing key returns undefined", () => {
   expect(
-    findDimension([{ key: "region", value: "us-east-1" }], "account_id")
+    findDimension([{ key: "region", value: "us-east-1" }], "account_id"),
   ).toBe(undefined);
 });
 

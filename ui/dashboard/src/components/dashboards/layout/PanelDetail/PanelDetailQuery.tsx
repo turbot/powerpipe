@@ -15,7 +15,7 @@ const beautify = (query) => {
 const PanelDetailQuery = ({ definition }: PanelDetailProps) => {
   const formattedQuery = useMemo(
     () => beautify(definition.sql),
-    [definition.sql]
+    [definition.sql],
   );
 
   if (!formattedQuery) {

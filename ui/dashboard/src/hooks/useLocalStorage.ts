@@ -14,11 +14,11 @@ const useLocalStorage = (key): [string | null, (string) => void] => {
       } catch (err) {
         console.error(
           `Error setting setting value for local storage key [${key}]`,
-          err
+          err,
         );
       }
     },
-    [key]
+    [key],
   );
   return [value, setItem];
 };

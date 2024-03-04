@@ -2,7 +2,7 @@ import React, { useLayoutEffect, useRef, useState } from "react";
 
 const useDimensions = (): readonly [
   React.RefObject<HTMLDivElement>,
-  DOMRect
+  DOMRect,
 ] => {
   const ref = useRef<HTMLDivElement>(null);
   // Initialize state with undefined width/height so server and client renders match

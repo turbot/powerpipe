@@ -157,7 +157,7 @@
     rgb(var(--color-alert)),
     rgb(var(--color-alert)) 0.5rem,
     var(--color-alert-animate) 0.5rem,
-    var(--color-alert-animate) 1.25rem,
+    var(--color-alert-animate) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;

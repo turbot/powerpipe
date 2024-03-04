@@ -30,7 +30,7 @@ const getBreakpoint = (width: number) => {
 
 const checkMaxBreakpoint = (
   currentBreakpoint: string | null,
-  breakpointAndDown: string
+  breakpointAndDown: string,
 ): boolean => {
   // If we have no current breakpoint, return false
   if (!currentBreakpoint) return false;
@@ -71,7 +71,7 @@ const checkMaxBreakpoint = (
 
 const checkMinBreakpoint = (
   currentBreakpoint: string | null,
-  breakpointAndUp: string
+  breakpointAndUp: string,
 ): boolean => {
   // If we have no current breakpoint, return false
   if (!currentBreakpoint) return false;
@@ -119,7 +119,7 @@ const checkMinBreakpoint = (
 const BreakpointProvider = ({ children }: { children: React.ReactNode }) => {
   const [width] = useWindowSize();
   const [currentBreakpoint, setCurrentBreakpoint] = useState(
-    getBreakpoint(width)
+    getBreakpoint(width),
   );
   useEffect(() => {
     setCurrentBreakpoint(getBreakpoint(width));
@@ -127,11 +127,11 @@ const BreakpointProvider = ({ children }: { children: React.ReactNode }) => {
   const maxBreakpoint = useCallback(
     (breakpointAndDown) =>
       checkMaxBreakpoint(currentBreakpoint, breakpointAndDown),
-    [currentBreakpoint]
+    [currentBreakpoint],
   );
   const minBreakpoint = useCallback(
     (breakpointAndUp) => checkMinBreakpoint(currentBreakpoint, breakpointAndUp),
-    [currentBreakpoint]
+    [currentBreakpoint],
   );
   return (
     <BreakpointContext.Provider
