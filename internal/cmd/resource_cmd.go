@@ -117,7 +117,7 @@ func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
 }
 
 func dashboardChildCommands() []*cobra.Command {
-	return []*cobra.Command{
+	res := []*cobra.Command{
 		resourceCmd[*modconfig.DashboardCard](withCmdName("card")),
 		resourceCmd[*modconfig.DashboardChart](withCmdName("chart")),
 		resourceCmd[*modconfig.DashboardContainer](withCmdName("container")),
@@ -130,6 +130,11 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*modconfig.DashboardText](withCmdName("text")),
 	}
 
+	// set all to hidden
+	for _, cmd := range res {
+		cmd.Hidden = true
+	}
+	return res
 }
 
 func runCmd[T modconfig.HclResource]() *cobra.Command {

@@ -49,8 +49,15 @@ func (p PrintableHclResource[T]) GetTable() (*printers.Table, error) {
 
 	// sort output based on column 0
 	sortFunc := func(a, b printers.TableRow) int {
-		return strings.Compare(a.Cells[0].(string), b.Cells[0].(string))
+		// sort by column a first, then column be
+		modCompare := strings.Compare(a.Cells[0].(string), b.Cells[0].(string))
+		if modCompare != 0 {
+			return modCompare
+		}
+		// first column same, compare the second
+		return strings.Compare(a.Cells[1].(string), b.Cells[1].(string))
 	}
+
 	slices.SortFunc(rows, sortFunc)
 	slices.SortFunc(depRows, sortFunc)
 
@@ -78,10 +85,14 @@ func cleanRow(row printers.TableRow) {
 		for _, r := range charsToRemove {
 			str = strings.ReplaceAll(str, r, "")
 		}
-		// TODO tactical column width to 100
-		const maxWidth = 100
-		if len(str) > maxWidth {
-			str = str[:maxWidth] + "…"
+
+		// do not truncate the final column
+		truncate := i != len(row.Cells)-1
+		if truncate {
+			const maxWidth = 100
+			if len(str) > maxWidth {
+				str = str[:maxWidth] + "…"
+			}
 		}
 		row.Cells[i] = str
 	}
