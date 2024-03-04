@@ -265,6 +265,7 @@ const sortDashboardSearchResults = (
 const DashboardList = () => {
   const {
     availableDashboardsLoaded,
+      cliMode,
     components: { DashboardListEmptyCallToAction },
     dashboards,
     dashboardsMap,
@@ -420,7 +421,7 @@ const DashboardList = () => {
         </div>
       </div>
       <div className="col-span-12 lg:col-span-3 mt-4 lg:mt-2">
-        <CallToActions />
+        <CallToActions cliMode={cliMode} />
       </div>
     </div>
   );
