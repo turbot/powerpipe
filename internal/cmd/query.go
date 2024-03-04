@@ -114,13 +114,18 @@ func queryRun(cmd *cobra.Command, args []string) {
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
-	// TODO KAI check cancellation
-	// start cancel handler to intercept interrupts and cancel the context
-	// NOTE: use the initData Cancel function to ensure any initialisation is cancelled if needed
-	//contexthelpers.StartCancelHandler(initData.Cancel)
-
 	if err := initData.Result.Error; err != nil {
 		exitCode = constants.ExitCodeInitializationFailed
+		error_helpers.FailOnError(err)
+	}
+
+	// register the query exporters if necessary
+	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
+		err := initData.RegisterExporters(queryExporters()...)
+		error_helpers.FailOnError(err)
+
+		// validate required export formats
+		err = initData.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport))
 		error_helpers.FailOnError(err)
 	}
 
@@ -141,16 +146,6 @@ func queryRun(cmd *cobra.Command, args []string) {
 	//if !existingResource {
 	//	snap.FileNameRoot = "query"
 	//}
-
-	// register the query exporters if necessary
-	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		err := initData.RegisterExporters(queryExporters()...)
-		error_helpers.FailOnError(err)
-
-		// validate required export formats
-		err = initData.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport))
-		error_helpers.FailOnError(err)
-	}
 
 	// display the result
 	switch viper.GetString(constants.ArgOutput) {
