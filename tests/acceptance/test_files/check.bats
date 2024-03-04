@@ -198,16 +198,16 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 @test "powerpipe control run - export snapshot" {
   cd $CONTROL_RENDERING_TEST_MOD
-  run powerpipe control run control.sample_control_mixed_results_1 --export test.sps --progress=false
+  run powerpipe control run control.sample_control_mixed_results_1 --export test.pps --progress=false
 
   # get the patch diff between the two snapshots
-  run jd -f patch $TEST_DATA_DIR/expected_check_snapshot.sps test.sps
+  run jd -f patch $TEST_DATA_DIR/expected_check_snapshot.pps test.pps
 
   # run the script to evaluate the patch
   # returns nothing if there is no diff(except start_time, end_time & search_path)
   diff=$($FILE_PATH/json_patch.sh $output)
   echo $diff
-  rm -f test.sps
+  rm -f test.pps
 
   # check if there is no diff returned by the script
   assert_equal "$diff" ""

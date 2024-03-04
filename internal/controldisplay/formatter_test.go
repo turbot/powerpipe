@@ -39,7 +39,7 @@ var formatterTestCase = []testCase{
 	{
 		input: "snapshot",
 		expected: testFormatter{
-			alias:     "sps",
+			alias:     "pps",
 			extension: constants.SnapshotExtension,
 			name:      constants.OutputFormatSnapshot,
 		},
