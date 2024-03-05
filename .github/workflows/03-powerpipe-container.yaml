@@ -5,11 +5,12 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Powerpipe version (without 'v')"
+        description: "Powerpipe version (with 'v')"
         required: true
 
 env:
-  IMAGE_DESCRIPTION: "Powerpipe container image v${{ github.event.inputs.version }}"
+  POWERPIPE_VERSION: ${{ github.event.inputs.version }}
+  IMAGE_DESCRIPTION: "Powerpipe container image ${{ github.event.inputs.version }}"
 
 # Defines the build and release job.
 jobs:
@@ -40,6 +41,12 @@ jobs:
           username: ${{ github.repository_owner }}
           password: ${{ secrets.GH_ACCESS_TOKEN }}
 
+      # Remove the 'v' from the version to get the docker tag
+      - name: Clean Version for Tag
+        id: generate_docker_tag
+        run: |
+          echo "docker_tag=${POWERPIPE_VERSION#"v"}" >> $GITHUB_OUTPUT
+
       # Builds the Docker image and pushes it to the GitHub Container Registry.
       - name: Build and Push to Container Registry
         id: docker_build
@@ -52,10 +59,10 @@ jobs:
           # NOTE: GH_ACCESS_TOKEN is a secret that contains a GitHub Personal Access Token with the `read:packages` and `write:packages` scopes. 
           #       It will only be used whilst the repository is private.
           build-args: |
-            TARGETVERSION=v${{ github.event.inputs.version }}
+            TARGETVERSION=${{ github.event.inputs.version }}
             GH_ACCESS_TOKEN=${{ secrets.GH_ACCESS_TOKEN }}
           tags: |
-            ghcr.io/${{ github.repository_owner }}/powerpipe:${{ github.event.inputs.version }}
+            ghcr.io/${{ github.repository_owner }}/powerpipe:${{ steps.generate_docker_tag.outputs.docker_tag }}
             ghcr.io/${{ github.repository_owner }}/powerpipe:latest
           outputs: type=image,name=powerpipe,annotation-index.org.opencontainers.image.description=${{ env.IMAGE_DESCRIPTION }}
 
