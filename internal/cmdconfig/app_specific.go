@@ -45,6 +45,7 @@ func SetAppSpecificConstants() {
 	app_specific.DefaultConfigPath = strings.Join([]string{".", globalConfigPath}, ":")
 
 	app_specific.DefaultVarsFileName = "powerpipe.ppvars"
+	app_specific.LegacyDefaultVarsFileName = "steampipe.spvars"
 	// default to local steampipe service
 	app_specific.DefaultDatabase = "postgres://steampipe@127.0.0.1:9193/steampipe"
 
