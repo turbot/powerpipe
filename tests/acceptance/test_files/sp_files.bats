@@ -3,6 +3,21 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 ### spvars file tests ###
 
+@test "test variable resolution in workspace mod set from steampipe.spvars file" {
+  cd $FILE_PATH/test_data/mods/test_workspace_mod_var_precedence_set_from_steampipe_spvars
+
+  run powerpipe query run query.version --output csv
+  # check the output - query should use the value of variable set from the steampipe.spvars
+  # file ("v7.0.0") which will give the output:
+# +--------+----------+--------+
+# | reason | resource | status |
+# +--------+----------+--------+
+# | v7.0.0 | v7.0.0   | ok     |
+# +--------+----------+--------+
+  assert_output 'reason,resource,status
+v7.0.0,v7.0.0,ok'
+}
+
 @test "test variable resolution in workspace mod set from explicit spvars file" {
   cd $FILE_PATH/test_data/mods/test_workspace_mod_var_set_from_explicit_spvars
 
