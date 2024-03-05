@@ -78,3 +78,4 @@ COPY docker-entrypoint.sh /usr/local/bin
 # Define the entrypoint and default command
 ENTRYPOINT ["docker-entrypoint.sh"]
 CMD ["powerpipe"]
+
