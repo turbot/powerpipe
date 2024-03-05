@@ -1,4 +1,4 @@
-name: Test - Linting
+name: "10 - Test: Linting"
 on:
   push:
     tags:
