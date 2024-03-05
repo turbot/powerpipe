@@ -65,6 +65,8 @@ archives:
   - format: tar.gz
     id: homebrew
     name_template: "{{ .ProjectName }}.{{ .Os }}.{{ .Arch }}"
+    files:
+      - none*
 
 # it is necessary to specify the name_template of the snapshot, or else the snapshot gets created with
 # two dash(-) which results in a 500 error while downloading
