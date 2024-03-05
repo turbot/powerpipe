@@ -41,7 +41,7 @@ type ErrorPayload struct {
 	Error  string `json:"error"`
 }
 
-var ExecutionStartedSchemaVersion int64 = 20221222
+var ExecutionStartedSchemaVersion int64 = 20240130
 
 type ExecutionStartedPayload struct {
 	SchemaVersion string                            `json:"schema_version"`
@@ -54,7 +54,7 @@ type ExecutionStartedPayload struct {
 	StartTime     time.Time                         `json:"start_time"`
 }
 
-var LeafNodeUpdatedSchemaVersion int64 = 20221222
+var LeafNodeUpdatedSchemaVersion int64 = 20240130
 
 type LeafNodeUpdatedPayload struct {
 	SchemaVersion string         `json:"schema_version"`
@@ -79,7 +79,7 @@ type ExecutionErrorPayload struct {
 	Timestamp time.Time `json:"timestamp"`
 }
 
-var ExecutionCompletePayloadSchemaVersion int64 = 20221222
+var ExecutionCompletePayloadSchemaVersion int64 = 20240130
 
 type ExecutionCompletePayload struct {
 	Action        string                             `json:"action"`
