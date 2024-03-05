@@ -90,7 +90,7 @@ brews:
     folder: Formula
     url_template: "https://github.com/turbot/powerpipe/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://powerpipe.io/"
-    description: "powerpipe exposes APIs and services as a high-performance relational database, giving you the ability to write SQL-based queries to explore, assess and report on dynamic data."
+    description: "Dashboards for DevOps. Visualize cloud configurations. Assess security posture against a massive library of benchmarks. Build custom dashboards with code."
     skip_upload: auto
     install: |-
       bin.install "powerpipe"
