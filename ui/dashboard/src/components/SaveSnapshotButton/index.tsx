@@ -6,6 +6,7 @@ import {
   DashboardDataModeCLISnapshot,
   DashboardSnapshotMetadata,
 } from "@powerpipe/types";
+import { EXECUTION_SCHEMA_VERSION_20240130 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
@@ -48,6 +49,7 @@ const SaveSnapshotButton = () => {
         metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
       }
       withMetadata.metadata = metadata;
+      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240130;
     }
 
     const blob = new Blob([JSON.stringify(withMetadata)], {
