@@ -8,12 +8,12 @@ LABEL org.opencontainers.image.ref.name powerpipe \
       org.opencontainers.image.description "Powerpipe container image ${TARGETVERSION}"
 
 # Set environment variables
-# USER_UID: Override the powerpipe UID (default: 9193)
+# USER_UID: Override the powerpipe UID (default: 9033)
 # USER_GID: Override the powerpipe GID (default: 0)
 # POWERPIPE_LOG_LEVEL: Set logging level (default: "off")
 # POWERPIPE_UPDATE_CHECK: Disable auto-update checks (default: false)
 # POWERPIPE_TELEMETRY: Disable telemetry (default: none)
-ENV USER_UID=9193 \
+ENV USER_UID=9033 \
     USER_GID=0 \
     POWERPIPE_LOG_LEVEL="off" \
     POWERPIPE_UPDATE_CHECK=false \

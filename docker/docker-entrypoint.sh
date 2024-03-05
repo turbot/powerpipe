@@ -53,7 +53,7 @@ check_and_change_ownership() {
 log_if_debug "Setting up default UID and GID if not provided..."
 
 # Default UID and GID for powerpipe user if not provided
-DEFAULT_UID=7103
+DEFAULT_UID=9033
 DEFAULT_GID=0
 
 log_if_debug "Checking and changing ownership of mounted volumes if necessary..."
