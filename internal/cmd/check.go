@@ -145,11 +145,10 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// show the status spinner
 	statushooks.Show(ctx)
 
-	// initialise
-	statushooks.SetStatus(ctx, "Initializing...")
-	// disable status hooks in init - otherwise we will end up
-	// getting status updates all the way down from the service layer
+	// disable status hooks in init - otherwise we will end up getting status updates all the way down from the service layer
 	initCtx := statushooks.DisableStatusHooks(ctx)
+
+	// initialise
 	initData := controlinit.NewInitData[T](initCtx, cmd, args)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
