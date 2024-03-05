@@ -69,7 +69,7 @@ USER powerpipe
 WORKDIR /workspace
 USER root
 
-# This is the default port for the dashboard service (PostgresSQL))
+# This is the default port for the dashboard service
 EXPOSE 9033
 
 # Copy the entrypoint script into the image
