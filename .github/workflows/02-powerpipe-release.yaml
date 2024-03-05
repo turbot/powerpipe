@@ -44,57 +44,9 @@ jobs:
     needs: [verify_input]
     uses: turbot/powerpipe/.github/workflows/11-test-acceptance.yaml@main
 
-  verify_asset_unreleased:
-    name: Verify Assets Unreleased
-    needs: [verify_input]
-    runs-on: ubuntu-latest
-
-    outputs:
-      status: ${{ steps.verify.conclusion }}
-
-    steps:
-    - name: Trim asset version prefix and Validate
-      run: |-
-        echo $VERSION
-        trim=${VERSION#"v"}
-        echo $trim
-        if [[ $trim =~  ^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
-          echo "Version OK: $trim"
-        else
-          echo "Invalid version: $trim"
-          exit 1
-        fi
-        echo "VERSION=${trim}" >> $GITHUB_ENV
-
-    - name: 'Authenticate to Google Cloud'
-      uses: 'google-github-actions/auth@v2'
-      with:
-        service_account: ${{ secrets.GCP_GITHUB_ACTION_PUSH_ARTIFACTS }}
-        credentials_json: ${{ secrets.GCP_GITHUB_ACTION_PUSH_ARTIFACTS_CREDENTIAL_JSON }}
-
-    - name: Get GCloud CLI
-      uses: google-github-actions/setup-gcloud@v2.1.0
-      with:
-        project_id: ${{ env.PROJECT_ID }}
-
-    - name: Setup GCloud CLI
-      run: |-
-        gcloud config list
-        gcloud components install beta
-        gcloud components install alpha --quiet
-        gcloud beta auth configure-docker us-docker.pkg.dev
-
-    - name: Delete the tag if it already exists
-      id: verify
-      continue-on-error: true
-      run: |-
-        [ $(gcloud beta artifacts docker tags list ${{ env.CORE_REPO }}/${{ env.ASSET_IMAGE_NAME }}  --project ${{ env.PROJECT_ID }}  --format=json | jq 'map(select(.tag | endswith("${{ env.VERSION }}"))) | length') -eq 1 ]
-        gcloud beta artifacts docker tags delete ${{ env.CORE_REPO }}/${{ env.ASSET_IMAGE_NAME }}:"${{ env.VERSION }}"
-
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: [acceptance_tests,verify_asset_unreleased]
-    if: needs.verify_asset_unreleased.outputs.status == 'success'
+    needs: [acceptance_tests]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
