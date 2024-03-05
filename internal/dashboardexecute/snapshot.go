@@ -35,8 +35,12 @@ func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents
 		return nil, err
 	case snapshot = <-resultChannel:
 		// set the filename root of the snapshot
-		// TODO KAI CHECK THIS
 		fileRootName := rootResource.Name()
+
+		// if the root resource has no corresponding filename, this must be a query snapshot - update the filename root
+		if rootResource.GetDeclRange().Filename == "" {
+			fileRootName = rootResource.BlockType()
+		}
 
 		snapshot.FileNameRoot = fileRootName
 		//  return the context error (if any) to ensure we respect cancellation

@@ -115,7 +115,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
 	// load workspace profile from the configured install dir
-	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]()
+	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]()
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
@@ -161,7 +161,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	return validateConfig()
 }
 
-func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.SteampipeWorkspaceProfile]) error {
+func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]) error {
 	/*
 	   saved cloud token
 	   pipes_token in default workspace

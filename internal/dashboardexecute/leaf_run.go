@@ -102,7 +102,6 @@ func (r *LeafRun) resolveDatabaseConfig() error {
 	}
 	// if the resource specifies a database, use that
 	if c, ok := r.resource.(modconfig.DatabaseItem); ok {
-		// TODO kai should we add validation here?
 		if resourceDatabase := c.GetDatabase(); resourceDatabase != nil {
 			database = *resourceDatabase
 		}
