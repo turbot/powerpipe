@@ -86,7 +86,7 @@ brews:
     repository:
       owner: turbot
       name: homebrew-tap
-      branch: bump-brew
+      branch: powerpipe-brew
     folder: Formula
     url_template: "https://github.com/turbot/powerpipe/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://powerpipe.io/"
