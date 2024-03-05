@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/cloud"
-	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/powerpipe/internal/controlexecute"
@@ -72,10 +70,8 @@ func PublishSnapshot(ctx context.Context, e *controlexecute.ExecutionTree, shoul
 	if err != nil {
 		return err
 	}
-	if viper.GetBool(constants.ArgProgress) {
-		statushooks.Done(ctx)
-		fmt.Println(message) //nolint:forbidigo // acceptable
-	}
+	statushooks.Done(ctx)
+	fmt.Println(message) //nolint:forbidigo // acceptable
 	return nil
 
 }
