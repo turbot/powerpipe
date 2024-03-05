@@ -39,13 +39,17 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	// populate the panels
 	panels = checkRun.BuildSnapshotPanels(make(map[string]steampipeconfig.SnapshotPanel))
 
+	vars, err := dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspaceEvents(e.Workspace))
+	if err != nil {
+		return nil, err
+	}
 	// create the snapshot
 	res := &steampipeconfig.SteampipeSnapshot{
 		SchemaVersion: fmt.Sprintf("%d", steampipeconfig.SteampipeSnapshotSchemaVersion),
 		Panels:        panels,
 		Layout:        checkRun.Root.AsTreeNode(),
 		Inputs:        map[string]interface{}{},
-		Variables:     dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspaceEvents(e.Workspace)),
+		Variables:     vars,
 		SearchPath:    e.SearchPath,
 		StartTime:     e.StartTime,
 		EndTime:       e.EndTime,

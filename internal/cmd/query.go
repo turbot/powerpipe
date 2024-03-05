@@ -141,12 +141,6 @@ func queryRun(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	// TODO KAI FIX ME
-	// set the filename root for the snapshot (in case needed)
-	//if !existingResource {
-	//	snap.FileNameRoot = "query"
-	//}
-
 	// display the result
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:

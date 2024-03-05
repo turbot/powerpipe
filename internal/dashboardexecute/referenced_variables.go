@@ -14,7 +14,7 @@ import (
 // <mod>.<var-name>
 // the VariableValues map will contain these variables with the name format <mod>.var.<var-name>,
 // so we must convert the name
-func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.WorkspaceEvents) map[string]string {
+func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.WorkspaceEvents) (map[string]string, error) {
 	var referencedVariables = make(map[string]string)
 
 	addReferencedVars := func(refs []*modconfig.ResourceReference) {
@@ -36,8 +36,8 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardwo
 
 	switch r := root.(type) {
 	case *DashboardRun:
-		//nolint:errcheck // TODO: fix this
-		r.dashboard.WalkResources(
+
+		err := r.dashboard.WalkResources(
 			func(resource modconfig.HclResource) (bool, error) {
 				if resourceWithMetadata, ok := resource.(modconfig.ResourceWithMetadata); ok {
 					addReferencedVars(resourceWithMetadata.GetReferences())
@@ -45,11 +45,13 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardwo
 				return true, nil
 			},
 		)
+		if err != nil {
+			return nil, err
+		}
 	case *CheckRun:
 		switch n := r.resource.(type) {
 		case *modconfig.Benchmark:
-			//nolint:errcheck // TODO: fix this
-			n.WalkResources(
+			err := n.WalkResources(
 				func(resource modconfig.ModTreeItem) (bool, error) {
 					if resourceWithMetadata, ok := resource.(modconfig.ResourceWithMetadata); ok {
 						addReferencedVars(resourceWithMetadata.GetReferences())
@@ -57,10 +59,13 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardwo
 					return true, nil
 				},
 			)
+			if err != nil {
+				return nil, err
+			}
 		case *modconfig.Control:
 			addReferencedVars(n.GetReferences())
 		}
 	}
 
-	return referencedVariables
+	return referencedVariables, nil
 }

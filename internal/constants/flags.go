@@ -70,19 +70,21 @@ const (
 	CheckOutputModeMd
 	CheckOutputModeTest
 	CheckOutputModeSnapshot
+	CheckOutputModeSnapshotShort
 	CheckOutputModeNone
 )
 
 var CheckOutputModeIds = map[CheckOutputMode][]string{
-	CheckOutputModeText:     {constants.OutputFormatText},
-	CheckOutputModeBrief:    {constants.OutputFormatBrief},
-	CheckOutputModeCsv:      {constants.OutputFormatCSV},
-	CheckOutputModeHTM:      {constants.OutputFormatHTML},
-	CheckOutputModeJSON:     {constants.OutputFormatJSON},
-	CheckOutputModeMd:       {constants.OutputFormatMD},
-	CheckOutputModeTest:     {constants.OutputFormatText},
-	CheckOutputModeSnapshot: {constants.OutputFormatSnapshot},
-	CheckOutputModeNone:     {constants.OutputFormatNone},
+	CheckOutputModeText:          {constants.OutputFormatText},
+	CheckOutputModeBrief:         {constants.OutputFormatBrief},
+	CheckOutputModeCsv:           {constants.OutputFormatCSV},
+	CheckOutputModeHTM:           {constants.OutputFormatHTML},
+	CheckOutputModeJSON:          {constants.OutputFormatJSON},
+	CheckOutputModeMd:            {constants.OutputFormatMD},
+	CheckOutputModeTest:          {constants.OutputFormatText},
+	CheckOutputModeSnapshot:      {constants.OutputFormatSnapshot},
+	CheckOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
+	CheckOutputModeNone:          {constants.OutputFormatNone},
 }
 
 func FlagValues[T comparable](mappings map[T][]string) []string {

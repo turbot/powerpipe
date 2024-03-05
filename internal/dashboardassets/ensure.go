@@ -142,8 +142,6 @@ func LoadDashboardAssetVersion() (*ReportAssetsVersion, error) {
 }
 
 // extractTarGz extracts a .tar.gz archive to a destination directory.
-// this can go into pipe-fittings
-// TODO::Binaek - move this to pipe-fittings
 func extractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error {
 	slog.Info("dashboardassets.extractTarGz start")
 	defer slog.Info("dashboardassets.extractTarGz end")

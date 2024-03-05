@@ -357,7 +357,10 @@ func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resou
 			event.SetParentsChanged(item, prevResourceMaps)
 			return true, nil
 		}
-		event.WalkChangedResources(f) //nolint:errcheck // TODO: fix this
+		err := event.WalkChangedResources(f)
+		if err != nil {
+			slog.Error("error walking changed resources", "error", err)
+		}
 		w.PublishDashboardEvent(ctx, event)
 	}
 }

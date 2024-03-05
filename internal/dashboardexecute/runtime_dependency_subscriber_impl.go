@@ -321,12 +321,16 @@ func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 	// convert arg runtime dependencies into arg map
 	runtimeArgs, err := s.buildRuntimeDependencyArgs()
 	if err != nil {
-		slog.Debug("buildRuntimeDependencyArgs failed: %s", s.resource.Name(), err.Error())
+		slog.Warn("buildRuntimeDependencyArgs failed: %s", s.resource.Name(), err.Error())
 		return err
 	}
 
 	// now if any param defaults had runtime dependencies, populate them
-	s.populateParamDefaults(queryProvider)
+	err = s.populateParamDefaults(queryProvider)
+	if err != nil {
+		slog.Warn("populateParamDefaults failed: %s", s.resource.Name(), err.Error())
+		return err
+	}
 
 	slog.Debug("built runtime args: %v", s.resource.Name(), runtimeArgs)
 
@@ -358,16 +362,20 @@ func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 	return nil
 }
 
-func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider modconfig.QueryProvider) {
+func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider modconfig.QueryProvider) error {
 	paramDefs := provider.GetParams()
 	for _, paramDef := range paramDefs {
 		if dep := s.findRuntimeDependencyForParentProperty(paramDef.UnqualifiedName); dep != nil {
 			// assuming the default property is the target, set the default
 			if typehelpers.SafeString(dep.Dependency.TargetPropertyName) == "default" {
-				paramDef.SetDefault(dep.Value) //nolint:errcheck // TODO: fix this
+				err := paramDef.SetDefault(dep.Value)
+				if err != nil {
+					return err
+				}
 			}
 		}
 	}
+	return nil
 }
 
 // convert runtime dependencies into arg map

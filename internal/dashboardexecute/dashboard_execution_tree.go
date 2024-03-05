@@ -89,12 +89,10 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 		return NewDashboardRun(r, e, e)
 	case *modconfig.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *modconfig.Query, *modconfig.Control:
-
+	case *modconfig.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r.(modconfig.QueryProvider))
+		dashboard, err := modconfig.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
-		// TODO KAI query only???
 		e.dashboardName = dashboard.Name()
 		if err != nil {
 			return nil, err
@@ -133,8 +131,11 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 
 	panels := e.BuildSnapshotPanels()
 	// build map of those variables referenced by the dashboard run
-	referencedVariables := GetReferencedVariables(e.Root, e.workspace)
-
+	referencedVariables, err := GetReferencedVariables(e.Root, e.workspace)
+	if err != nil {
+		e.SetError(ctx, err)
+		return
+	}
 	immutablePanels, err := utils.JsonCloneToMap(panels)
 	if err != nil {
 		e.SetError(ctx, err)
