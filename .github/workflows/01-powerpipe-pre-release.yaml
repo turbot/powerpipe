@@ -23,7 +23,7 @@ jobs:
 
   acceptance_tests:
     name: Run Acceptance Tests
-    uses: turbot/powerpipe/.github/workflows/test-acceptance.yml@main
+    uses: turbot/powerpipe/.github/workflows/11-test-acceptance.yaml@main
 
   build_assets:
     name: Build and Release Dashboard Assets
