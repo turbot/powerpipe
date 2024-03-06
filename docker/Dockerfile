@@ -25,9 +25,6 @@ ENV USER_UID=9033 \
 ARG TARGETVERSION \
     TARGETARCH
 
-# NOTE: Temporary workaround until repository is public    
-ARG GH_ACCESS_TOKEN
-
 # This RUN command configures Powerpipe within the container through the following steps:
 # 1. Updates package lists with `apt-get update` to ensure installation of the latest versions of packages and dependencies.
 # 2. Adds a system user 'powerpipe' with no login capabilities and assigns it to the existing group defined by USER_GID, facilitating secure Powerpipe operations.
@@ -44,20 +41,11 @@ ARG GH_ACCESS_TOKEN
 # 5. Extracts the Powerpipe binary from the tar.gz file in /tmp to /opt/powerpipe.
 # 6. Moves the Powerpipe executable to /usr/local/bin, adding it to the system PATH for easy execution.
 # 7. Cleans up by running `apt-get clean` and removing unnecessary files, including the downloaded tar.gz file and apt lists, to minimize the image size.
-# NOTE: Conditional handling of GH_ACCESS_TOKEN will be removed once the Powerpipe repository becomes public.
 RUN apt-get update && \
     group_name=$(getent group ${USER_GID} | cut -d: -f1) && \
     adduser --system --disabled-login --ingroup $group_name --gecos "powerpipe user" --shell /bin/false --uid $USER_UID powerpipe && \
-    if [ -n "$GH_ACCESS_TOKEN" ]; then \
-        apt-get install -y curl jq gosu && \
-        bash -c "\
-        release_info=\$(curl -s -H 'Authorization: token $GH_ACCESS_TOKEN' 'https://api.github.com/repos/turbot/powerpipe/releases/tags/$TARGETVERSION') && \
-        asset_url=\$(echo \$release_info | jq -r '.assets[] | select(.name == \"powerpipe.linux.$TARGETARCH.tar.gz\").url') && \
-        curl -L -H 'Authorization: token $GH_ACCESS_TOKEN' -H 'Accept: application/octet-stream' \"\$asset_url\" -o /tmp/powerpipe.linux.$TARGETARCH.tar.gz"; \
-    else \
-        apt-get install -y wget gosu && \
-        wget -nv https://github.com/turbot/powerpipe/releases/download/${TARGETVERSION}/powerpipe.linux.${TARGETARCH}.tar.gz -O /tmp/powerpipe.linux.${TARGETARCH}.tar.gz; \
-    fi && \
+    apt-get install -y wget gosu && \
+    wget -nv https://github.com/turbot/powerpipe/releases/download/${TARGETVERSION}/powerpipe.linux.${TARGETARCH}.tar.gz -O /tmp/powerpipe.linux.${TARGETARCH}.tar.gz && \
     mkdir -p /opt/powerpipe && \
     tar xzf /tmp/powerpipe.linux.${TARGETARCH}.tar.gz -C /opt/powerpipe && \
     mv /opt/powerpipe/powerpipe /usr/local/bin/powerpipe && \
