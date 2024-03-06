@@ -1,1 +1,0 @@
-- what happens if you run a dashboard command while a server is running? Hopefully independent execution so any viper changes for mod search path are not an issue 
