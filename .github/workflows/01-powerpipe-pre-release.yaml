@@ -41,7 +41,7 @@ jobs:
       - name: Calculate version
         id: calculate_version
         run: |
-          VERSION_JSON=$(cat powerpipe/version.json)
+          VERSION_JSON=$(cat powerpipe/internal/version/version.json)
           MAJOR=$(echo $VERSION_JSON | jq '.major')
           MINOR=$(echo $VERSION_JSON | jq '.minor')
           PATCH=$(echo $VERSION_JSON | jq '.patch')
