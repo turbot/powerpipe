@@ -56,11 +56,8 @@ jobs:
           context: powerpipe/docker/
           push: true
           platforms: linux/amd64, linux/arm64
-          # NOTE: GH_ACCESS_TOKEN is a secret that contains a GitHub Personal Access Token with the `read:packages` and `write:packages` scopes. 
-          #       It will only be used whilst the repository is private.
           build-args: |
             TARGETVERSION=${{ github.event.inputs.version }}
-            GH_ACCESS_TOKEN=${{ secrets.GH_ACCESS_TOKEN }}
           tags: |
             ghcr.io/${{ github.repository_owner }}/powerpipe:${{ steps.generate_docker_tag.outputs.docker_tag }}
             ghcr.io/${{ github.repository_owner }}/powerpipe:latest
