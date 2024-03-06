@@ -41,16 +41,13 @@ brew install powerpipe
 
 Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/docs/powerpipe-hcl?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#dashboards">widgets</a> to help you explore and visualize your resources. For example, the <a href="RNAcentral">RNAcentrals</a> mod visualizes a dataset of RNA types. To run the RNACentral dashboard:
 
+```sh
+mkdir rna && cd rna
+powerpipe mod install https://github.com/turbot/powerpipe-mod-rnacentral
+powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
+```
 
-1. git clone https://github.com/turbot/powerpipe-mod-rnacentral
-
-1. cd powerpipe-mod-rnacentral
-
-1. powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
-
-1. open localhost:9033 in a browser
-
-That's it! Here's the dashboard.
+View your dashboard at http://localhost:9033
 
 ![rnacentral](./images/rnacentral.png)
 
