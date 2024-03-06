@@ -37,7 +37,7 @@ brew tap turbot/tap
 brew install powerpipe
 ```
 
-## Run a dashboard
+## Your first dashboard
 
 Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/docs/powerpipe-hcl?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#dashboards">widgets</a> to help you explore and visualize your resources. For example, the <a href="RNAcentral">RNAcentrals</a> mod visualizes a dataset of RNA types. To run the RNACentral dashboard:
 
@@ -51,21 +51,24 @@ View your dashboard at http://localhost:9033
 
 ![rnacentral](./images/rnacentral.png)
 
-
-## Run a benchmark
+## Dashboards and Benchmarks with Steampipe
 
 Many Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) includes **benchmarks** that check your cloud resources for compliance. The [Net Insights](https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) mod provides configuration, compliance and security controls to validate security best practices for DNS records. To run the [SSL/TLS Best Practices benchmark](https://hub.powerpipe.io/mods/turbot/net_insights/controls/benchmark.ssl_best_practices):
 
-1. git clone https://github.com/turbot/powerpipe-mod-net-insights
+```sh
+# Net insights uses the net plugin from Steampipe
+steampipe plugin install net
+steampipe service start
 
-1. cd powerpipe-mod-net-insights
+# Install the Powerpipe mod
+mkdir net && cd net
+powerpipe mod install https://github.com/turbot/powerpipe-mod-net-insights
 
-1. powerpipe server
+# Start the dashboard server
+powerpipe server
+```
 
-1. open localhost:9033 in a browser
-``
-
-Here's the dashboard.
+View your dashboard at http://localhost:9033
 
 ![net insights dashboard](./images/net_insights_dashboard.png)
 
