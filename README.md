@@ -14,9 +14,9 @@ Powerpipe is **dashboards and benchmarks as code**. Use it to visualize any data
 
 ## Demo Time!
 
-**[Watch on YouTube →](https://www.youtube.com/watch?v=TBD)**
+**[Watch on YouTube →](https://www.youtube.com/watch?v=-h6RSpvR0FE)**
 
-[![Powerpipe demo](https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png)](https://www.youtube.com/watch?v=TBD)
+[![Powerpipe demo](https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png)](https://www.youtube.com/watch?v=-h6RSpvR0FE)
 
 ## Install Powerpipe
 
