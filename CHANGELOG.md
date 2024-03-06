@@ -1,5 +1,5 @@
 
-## v0.1.0 [2024-03-05]
+## v0.1.0 [2024-03-06]
 
 Introducing Powerpipe - Dashboards for DevOps.
 
