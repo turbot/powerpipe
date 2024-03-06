@@ -4,9 +4,9 @@ GOLANG_CROSS_VERSION  ?= v1.21.5
 
 .PHONY: build
 build:
-	$(eval MAJOR := $(shell cat version.json | jq '.major'))
-	$(eval MINOR := $(shell cat version.json | jq '.minor'))
-	$(eval PATCH := $(shell cat version.json | jq '.patch'))
+	$(eval MAJOR := $(shell cat internal/version/version.json | jq '.major'))
+	$(eval MINOR := $(shell cat internal/version/version.json | jq '.minor'))
+	$(eval PATCH := $(shell cat internal/version/version.json | jq '.patch'))
 	$(eval TIMESTAMP := $(shell date +%Y%m%d%H%M%S))
 
 	go build -o $(OUTPUT_DIR) -ldflags "-X main.version=$(MAJOR).$(MINOR).$(PATCH)-dev.$(TIMESTAMP)" .
