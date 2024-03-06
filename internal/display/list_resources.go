@@ -92,6 +92,8 @@ func getListLoadWorkspaceOpts[T modconfig.ModTreeItem]() []workspace.LoadWorkspa
 	switch any(empty).(type) {
 	case *modconfig.Mod:
 		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
+	case *modconfig.Variable:
+		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeVariable}))
 	}
 	return opts
 }
