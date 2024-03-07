@@ -58,6 +58,8 @@ local
   run powerpipe mod install https://github.com/turbot/steampipe-mod-hackernews-insights@0.4.0 --force
   # should install with the protocol in the url prefix
   assert_output '
+Initializing mod, created mod.pp.
+
 Installed 1 mod:
 
 local
@@ -75,6 +77,8 @@ local
   run powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
   # test the tree structure output
   assert_output '
+Initializing mod, created mod.pp.
+
 Installed 4 mods:
 
 local
