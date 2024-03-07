@@ -2,9 +2,9 @@
 
 _Bug fixes_
 * Fix CLI available version check. ([#250](https://github.com/turbot/powerpipe/issues/250))
-* Notify when mod install creates a default mod. ([#246](https://github.com/turbot/powerpipe/issues/246))
-* Remove newline from end of mod install output.  ([#247](https://github.com/turbot/powerpipe/issues/247))
-* Fix issue where asff output was always missing the first row.
+* Notify when `mod install` creates a default mod. ([#246](https://github.com/turbot/powerpipe/issues/246))
+* Remove newline from end of `mod install` output.  ([#247](https://github.com/turbot/powerpipe/issues/247))
+* Fix issue where `asff` output was always missing the first row.
 
 
 ## v0.1.0 [2024-03-06]
