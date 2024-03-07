@@ -1,3 +1,8 @@
+## v0.1.1 [2024-03-07]
+
+_Bug fixes_
+* Fix CLI available version check. ([#250](https://github.com/turbot/powerpipe/issues/250))
+* Fix issue where asff output was always missing the first row.
 
 ## v0.1.0 [2024-03-06]
 
