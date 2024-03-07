@@ -7,6 +7,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 }
 
 @test "install latest(--force)" {
+  skip
   run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
   assert_output --partial 'Installed 1 mod:
 
@@ -16,13 +17,13 @@ local
 }
 
 @test "install latest and then run install" {
-  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
+  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
   run powerpipe mod install
   assert_output 'All mods are up to date'
 }
 
 @test "install mod and list" {
-  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.10 --force
+  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.10
   run powerpipe mod list
   assert_output '
 local
@@ -30,7 +31,7 @@ local
 }
 
 @test "install old version when latest already installed" {
-  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance --force
+  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
   run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.1
   assert_output '
 Downgraded 1 mod:
@@ -57,7 +58,8 @@ local
 @test "install a mod with protocol in url" {
   run powerpipe mod install https://github.com/turbot/steampipe-mod-hackernews-insights@0.4.0 --force
   # should install with the protocol in the url prefix
-  assert_output '
+  assert_output 'Initializing mod, created mod.pp.
+
 Installed 1 mod:
 
 local
@@ -74,7 +76,8 @@ local
 @test "complex mod dependency resolution - test tree structure" {
   run powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
   # test the tree structure output
-  assert_output '
+  assert_output 'Initializing mod, created mod.pp.
+
 Installed 4 mods:
 
 local

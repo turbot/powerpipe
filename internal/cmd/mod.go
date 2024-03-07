@@ -128,6 +128,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 		if err != nil {
 			error_helpers.FailOnError(err)
 		}
+		fmt.Printf("Initializing mod, created %s.\n", app_specific.DefaultModFileName()) //nolint:forbidigo // acceptable output
 	}
 
 	// if any mod names were passed as args, convert into formed mod names
@@ -141,7 +142,10 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	fmt.Println(modinstaller.BuildInstallSummary(installData)) //nolint:forbidigo // intended output
+	summary := modinstaller.BuildInstallSummary(installData)
+	// tactical: remove trailing newline
+	summary = strings.TrimRight(summary, "\n")
+	fmt.Println(summary) //nolint:forbidigo // intended output
 }
 
 func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
