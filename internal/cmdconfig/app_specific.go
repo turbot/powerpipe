@@ -66,4 +66,7 @@ func SetAppSpecificConstants() {
 	cmdconfig.CustomPreRunHook = preRunHook
 	cmdconfig.CustomPostRunHook = postRunHook
 
+	// Version check
+	app_specific.VersionCheckHost = "hub.powerpipe.io"
+	app_specific.VersionCheckPath = "api/cli/version/latest"
 }

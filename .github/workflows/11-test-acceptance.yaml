@@ -9,6 +9,9 @@ on:
   workflow_dispatch:
   pull_request:
 
+env:
+  POWERPIPE_UPDATE_CHECK: false
+
 jobs:
   goreleaser:
     name: Build
