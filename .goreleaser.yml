@@ -79,6 +79,9 @@ checksum:
 changelog:
   skip: true
 
+release:
+  draft: true
+
 brews:
   - ids:
       - homebrew

@@ -48,4 +48,4 @@ release:
 		-v `pwd`/../pipe-fittings:/go/src/pipe-fittings \
 		-w /go/src/powerpipe \
 		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		release --clean --skip-validate --skip-publish
+		release --clean --skip-validate
