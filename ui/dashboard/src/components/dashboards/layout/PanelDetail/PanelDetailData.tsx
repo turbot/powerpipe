@@ -1,3 +1,5 @@
+// Ensure Table is loaded & registered first
+import "@powerpipe/components/dashboards/Table";
 import Panel from "../Panel";
 import { getComponent } from "../../index";
 import { PanelDetailProps } from "./index";

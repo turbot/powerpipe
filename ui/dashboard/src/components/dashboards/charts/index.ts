@@ -1,3 +1,5 @@
+// Ensure Table is loaded & registered first
+import "@powerpipe/components/dashboards/Table";
 import { getComponent } from "../index";
 import { IChart } from "./types";
 const Table = getComponent("table");

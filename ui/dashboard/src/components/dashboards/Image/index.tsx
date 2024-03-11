@@ -1,3 +1,5 @@
+// Ensure Table is loaded & registered first
+import "@powerpipe/components/dashboards/Table";
 import get from "lodash/get";
 import Img from "react-cool-img";
 import {
