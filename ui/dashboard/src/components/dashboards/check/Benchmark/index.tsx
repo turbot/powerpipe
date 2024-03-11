@@ -1,3 +1,5 @@
+// Ensure Table is loaded & registered first
+import "@powerpipe/components/dashboards/Table";
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
 import CheckGrouping from "../CheckGrouping";
 import CustomizeViewSummary from "../CustomizeViewSummary";
