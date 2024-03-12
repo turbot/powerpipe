@@ -39,7 +39,7 @@ brew install powerpipe
 
 ## Dashboards for DevOps
 
-See our documentation for DevOps-oriented examples of how to use Powerpipe to [visualize cloud infrastructure](https://powerpipe.io/docs#visualize-cloud-infrastructure) and [run security and compliance benchmarks](https://powerpipe.io/docs#run-security-and-compliance-benchmarks). These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for [Steampipe and its plugin ecosystem](https://hub.steampipe.io/).
+See our documentation for examples of how to use Powerpipe to [visualize cloud infrastructure](https://powerpipe.io/docs#visualize-cloud-infrastructure) and [run security and compliance benchmarks](https://powerpipe.io/docs#run-security-and-compliance-benchmarks). These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for [Steampipe and its plugin ecosystem](https://hub.steampipe.io/).
 
 Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
