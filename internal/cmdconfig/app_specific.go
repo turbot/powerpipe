@@ -69,4 +69,5 @@ func SetAppSpecificConstants() {
 	// Version check
 	app_specific.VersionCheckHost = "hub.powerpipe.io"
 	app_specific.VersionCheckPath = "api/cli/version/latest"
+	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 }
