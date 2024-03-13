@@ -80,7 +80,7 @@ changelog:
   skip: true
 
 release:
-  draft: true
+  prerelease: auto
 
 brews:
   - ids:
