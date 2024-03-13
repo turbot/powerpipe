@@ -14,7 +14,7 @@ Powerpipe is **dashboards and benchmarks as code**. Use it to visualize any data
 
 **Code, not clicks** - Our dashboards are [code](https://powerpipe.io/docs/powerpipe-hcl): version-controlled, composable, shareable, easy to edit — designed for the way you work. [Join](https://turbot.com/community/join) our open-source community!
 
-## Demo Time!
+## Demo time!
 
 **[Watch on YouTube →](https://www.youtube.com/watch?v=-h6RSpvR0FE)**
 
@@ -37,88 +37,19 @@ brew tap turbot/tap
 brew install powerpipe
 ```
 
-## Your first dashboard
+## Dashboards for DevOps
 
-Dashboards use charts, tables, and interactive <a href="https://powerpipe.io/docs/powerpipe-hcl?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme#dashboards">widgets</a> to help you explore and visualize your resources. For example, the <a href="RNAcentral">RNAcentrals</a> mod visualizes a dataset of RNA types. To run the RNACentral dashboard:
+See our documentation for examples of how to use Powerpipe to [visualize cloud infrastructure](https://powerpipe.io/docs#visualize-cloud-infrastructure) and [run security and compliance benchmarks](https://powerpipe.io/docs#run-security-and-compliance-benchmarks). These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for Steampipe and its plugin ecosystem.
 
-```sh
-mkdir rna && cd rna
-powerpipe mod install https://github.com/turbot/powerpipe-mod-rnacentral
-powerpipe server --database postgres://reader:NWDMCE5xdipIjRrp@hh-pgsql-public.ebi.ac.uk:5432/pfmegrnargs
-```
+Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
-View your dashboard at http://localhost:9033
 
-![rnacentral](./images/rnacentral.png)
-
-## Dashboards and Benchmarks with Steampipe
-
-Many Powerpipe [mods](https://hub.powerpipe.io.io/mods?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) includes **benchmarks** that check your cloud resources for compliance. The [Net Insights](https://hub.powerpipe.io/mods/turbot/net_insights?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) mod provides configuration, compliance and security controls to validate security best practices for DNS records. To run the [SSL/TLS Best Practices benchmark](https://hub.powerpipe.io/mods/turbot/net_insights/controls/benchmark.ssl_best_practices):
-
-```sh
-# Net insights uses the net plugin from Steampipe
-steampipe plugin install net
-steampipe service start
-
-# Install the Powerpipe mod
-mkdir net && cd net
-powerpipe mod install https://github.com/turbot/powerpipe-mod-net-insights
-
-# Start the dashboard server
-powerpipe server
-```
-
-View your dashboard at http://localhost:9033
-
-![net insights dashboard](./images/net_insights_dashboard.png)
-
-You can run benchmarks as dashboards too! Here's the console ouput.
-
-```hcl
-powerpipe benchmark run benchmark.ssl_certificate_best_practices --output=brief
-```
-
-![net insights console](./images/net_insights_console.png)
-
-## Developing
-
-<details>
-<summary>Developing Powerpipe</summary>
-
-Prerequisites:
-
-- [Golang](https://golang.org/doc/install) Version 1.21 or higher.
-
-Clone `github.com/powerpipe` and `github.com/turbot/pipe-fittings` repositories:
-
-```sh
-git clone https://github.com/turbot/powerpipe
-git clone https://github.com/turbot/pipe-fittings
-cd powerpipe
-```
-
-The build lands in `/usr/local/bin/` unless `OUTPUT_DIR` is specified.
-
-```sh
-make
-```
-
-Check the version:
-```sh
-powerpipe --version
-```
-```
-Powerpipe v0.1.0-local.1
-```
-
-</details>
-
-## Open Source & Contributing
+## Open source & contributing
 This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
 
 [Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
 
-## Get Involved
+## Get involved
 
 **[Join #powerpipe on Slack →](https://turbot.com/community/join)**
 
