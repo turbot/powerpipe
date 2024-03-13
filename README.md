@@ -45,6 +45,12 @@ See our [documentation](https://powerpipe.io/docs#visualize-cloud-infrastructure
 
 Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
+## Powerpipe mods: dashboards & benchmarks
+
+Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for AWS, Azure, GCP, GitHub, Kubernetes, Terraform, M365 and much more to cover common use cases for security & compliance, cost management, shift-left scanning and asset inventory & insights.
+
+Dashboards and benchmarks use SQL to gather data and HCL to flow the data into dashboard widgets and benchmark controls. You can use the existing suites of benchmarks and dashboards, or build derivative versions, or create your own.
+
 
 ## Open source & contributing
 This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
