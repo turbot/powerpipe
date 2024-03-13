@@ -1,3 +1,7 @@
+## v0.1.2 [tbd]
+_Whats new_
+- Optimize workspace load time for large workspaces with multiple dependent mods.  ([#365](https://github.com/turbot/pipe-fittings/issues/365))
+
 ## v0.1.1 [2024-03-07]
 
 _Bug fixes_
