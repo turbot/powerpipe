@@ -37,7 +37,7 @@ brew tap turbot/tap
 brew install powerpipe
 ```
 
-Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs#visualize-cloud-infrastructure)
+Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
 
 ## Dashboards for DevOps
 
