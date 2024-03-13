@@ -2,6 +2,7 @@ package controlexecute
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -173,10 +174,10 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
-	if r.runError == context.DeadlineExceeded {
-		r.runError = fmt.Errorf("control execution timed out")
-	} else {
+	if !errors.Is(r.runError, context.DeadlineExceeded) {
 		r.runError = error_helpers.TransformErrorToSteampipe(err)
+	} else {
+		r.runError = fmt.Errorf("control execution timed out")
 	}
 	r.RunErrorString = r.runError.Error()
 	// update error count
