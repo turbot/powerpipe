@@ -39,17 +39,15 @@ brew install powerpipe
 
 Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
 
-## Dashboards for DevOps
-
-See our [documentation](https://powerpipe.io/docs#visualize-cloud-infrastructure) for examples of how to use Powerpipe to visualize cloud infrastructure and run security and compliance benchmarks. These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for Steampipe and its plugin ecosystem.
-
-Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
-
 ## Powerpipe mods: dashboards & benchmarks
 
 Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for AWS, Azure, GCP, GitHub, Kubernetes, Terraform, M365 and much more to cover common use cases for security & compliance, cost management, shift-left scanning and asset inventory & insights.
 
+These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for Steampipe and its plugin ecosystem.
+
 Dashboards and benchmarks use SQL to gather data and HCL to flow the data into dashboard widgets and benchmark controls. You can use the existing suites of benchmarks and dashboards, or build derivative versions, or create your own.
+
+Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
 
 ## Open source & contributing
