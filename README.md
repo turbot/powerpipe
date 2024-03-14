@@ -94,7 +94,7 @@ powerpipe --version
 ```
 
 ```
-Powerpipe v0.1.0-local.1
+Powerpipe v0.1.1-dev.20240314090000
 ```
 </details>
 
