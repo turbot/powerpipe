@@ -39,7 +39,7 @@ brew install powerpipe
 
 Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
 
-## Powerpipe mods: dashboards & benchmarks
+## Powerpipe mods: dashboards and benchmarks
 
 Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for AWS, Azure, GCP, GitHub, Kubernetes, Terraform, M365 and much more to cover common use cases for security & compliance, cost management, shift-left scanning and asset inventory & insights.
 
@@ -48,7 +48,7 @@ These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written f
 Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
 
-## Open source & contributing
+## Open source and contributing
 This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
 
 [Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
