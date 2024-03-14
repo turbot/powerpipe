@@ -100,6 +100,10 @@ Powerpipe v0.1.1-dev.20240314090000
   Now [install a plugin and run your first query →](https://powerpipe.io/docs).
 </details>
 
+## Turbot Pipes
+
+ Bring your team to [Turbot Pipes](https://turbot.com/pipes?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) to use Powerpipe together in the cloud.
+
 ## Get involved
 
 **[Join #powerpipe on Slack →](https://turbot.com/community/join)**
