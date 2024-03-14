@@ -10,7 +10,7 @@
 
 **Relationship diagrams**. The only dashboarding tool designed from the ground up to [visualize DevOps data](https://powerpipe.io/docs#visualize-cloud-infrastructure). Explore your cloud, understand relationships, drill down to the details.
 
-**Dashboards & reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
+**Dashboards and reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
 
 **Code, not clicks**. Our dashboards are [code](https://powerpipe.io/docs/powerpipe-hcl): version-controlled, composable, shareable, easy to edit — designed for the way you work. [Join](https://turbot.com/community/join) our open-source community!
 
