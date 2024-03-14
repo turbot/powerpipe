@@ -72,7 +72,7 @@ This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/a
  make
  ```
 
-The build installs the new version to your `/usr/local/bin/` directory:
+The build installs the new version to your `/usr/local/bin/` directory.
 </details>
 
 <details>
