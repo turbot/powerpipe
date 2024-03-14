@@ -57,6 +57,35 @@ This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/a
 
 [Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
 
+## Developing
+
+<details>
+ <summary>Prerequisites.</summary>
+ - [Golang](https://golang.org/doc/install) Version 1.19 or higher.
+</details>
+
+<details>
+ <summary>Build.</summary>
+ 
+ ```
+ cd powerpipe
+ make
+ ```
+
+The build installs the new version to your `/usr/local/bin/` directory:
+</details>
+
+<details>
+ <summary>
+  Check the version.
+ </summary>
+ 
+ ```
+$ powerpipe -v
+Powerpipe v0.1.1-dev.20240314090000
+```
+</details>
+
 ## Get involved
 
 **[Join #powerpipe on Slack →](https://turbot.com/community/join)**
