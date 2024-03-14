@@ -86,6 +86,12 @@ Powerpipe v0.1.1-dev.20240314090000
 ```
 </details>
 
+<details>
+ <summary>Run a query.</summary>
+ 
+  Now [install a plugin and run your first query →](https://powerpipe.io/docs).
+</details>
+
 ## Get involved
 
 **[Join #powerpipe on Slack →](https://turbot.com/community/join)**
