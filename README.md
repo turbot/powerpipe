@@ -54,44 +54,34 @@ This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/a
 ## Developing
 
 <details>
- <summary>Prerequisites.</summary>
- - [Golang](https://golang.org/doc/install) Version 1.19 or higher.
-</details>
+<summary>Developing Powerpipe</summary>
 
-<details>
- <summary>Clone the repo.</summary>
- 
+Prerequisites:
+
+- [Golang](https://golang.org/doc/install) Version 1.21 or higher.
+
+Clone `github.com/powerpipe` and `github.com/turbot/pipe-fittings` repositories:
+
+```sh
+git clone git@github.com:turbot/powerpipe
+git clone git@github.com:turbot/pipe-fittings
+cd powerpipe
 ```
-git clone https://github.com/turbot/powerpipe
+
+Build will build powerpipe binary in /usr/local/bin/ unless `OUTPUT_DIR` is specified:
+
+```sh
+make
 ```
-</details>
 
-<details>
- <summary>Build.</summary>
- 
- ```
- cd powerpipe
- make
- ```
-
-The build installs the new version to your `/usr/local/bin/` directory.
-</details>
-
-<details>
- <summary>
-  Check the version.
- </summary>
- 
- ```
-$ powerpipe -v
-Powerpipe v0.1.1-dev.20240314090000
+Check the version:
+```sh
+powerpipe --version
 ```
-</details>
+```
+Powerpipe v0.1.0-local.1
+```
 
-<details>
- <summary>Run a query.</summary>
- 
-  Now [install a plugin and run your first query →](https://powerpipe.io/docs).
 </details>
 
 ## Turbot Pipes
