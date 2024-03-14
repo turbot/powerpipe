@@ -41,7 +41,7 @@ Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
 
 ## Powerpipe mods: dashboards and benchmarks
 
-Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for AWS, Azure, GCP, GitHub, Kubernetes, Terraform, M365 and much more to cover common use cases for security & compliance, cost management, shift-left scanning and asset inventory & insights.
+Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for [AWS](https://hub.powerpipe.io/?q=aws), [Azure](https://hub.powerpipe.io/?q=azure), [GCP](https://hub.powerpipe.io/?q=gcp), [GitHub](https://hub.powerpipe.io/?q=github), [Kubernetes](https://hub.powerpipe.io/?q=kubernetes), [Terraform](https://hub.powerpipe.io/?q=terraform), [M365](https://hub.powerpipe.io/mods/turbot/microsoft365_compliance) and much more to cover common use cases for [security & compliance](https://hub.powerpipe.io/?objectives=compliance), [cost management](https://hub.powerpipe.io/?objectives=cost), [shift-left scanning](https://hub.powerpipe.io/?categories=iac) and [asset inventory & insights](https://hub.powerpipe.io/?objectives=dashboard).
 
 These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for Steampipe and its plugin ecosystem.
 
