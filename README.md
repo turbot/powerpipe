@@ -12,7 +12,7 @@
 
 **Relationship diagrams**. The only dashboarding tool designed from the ground up to [visualize DevOps data](https://powerpipe.io/docs#visualize-cloud-infrastructure). Explore your cloud, understand relationships, drill down to the details.
 
-**Code, not clicks**. Our dashboards are [code](https://powerpipe.io/docs/powerpipe-hcl): version-controlled, composable, shareable, easy to edit — designed for the way you work. 
+**Code, not clicks**. Our dashboards are [code](https://powerpipe.io/docs/): version-controlled, composable, shareable, easy to edit — designed for the way you work. 
 
 ## Demo time!
 
