@@ -65,6 +65,14 @@ This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/a
 </details>
 
 <details>
+ <summary>Clone the repo.</summary>
+ 
+```
+git clone https://github.com/turbot/powerpipe
+```
+</details>
+
+<details>
  <summary>Build.</summary>
  
  ```
