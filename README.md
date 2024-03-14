@@ -6,11 +6,11 @@
 
 [Powerpipe](https://powerpipe.io) is **Dashboards for DevOps**. Use it to visualize any data source, and run compliance benchmarks and controls, for effective decision-making and ongoing compliance monitoring.
 
+**Dashboards and reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
+
 **Benchmarks**. We offer [5,000+ open-source controls](https://hub.powerpipe.io) from CIS, NIST, PCI, HIPAA, FedRamp and more. [Run instantly on your machine](https://powerpipe.io/docs#run-security-and-compliance-benchmarks) or as part of your deployment pipeline.
 
 **Relationship diagrams**. The only dashboarding tool designed from the ground up to [visualize DevOps data](https://powerpipe.io/docs#visualize-cloud-infrastructure). Explore your cloud, understand relationships, drill down to the details.
-
-**Dashboards and reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
 
 **Code, not clicks**. Our dashboards are [code](https://powerpipe.io/docs/powerpipe-hcl): version-controlled, composable, shareable, easy to edit — designed for the way you work. [Join](https://turbot.com/community/join) our open-source community!
 
