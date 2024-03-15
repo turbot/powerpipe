@@ -20,6 +20,16 @@
 
 <a href="https://www.youtube.com/watch?v=-h6RSpvR0FE"><img alt="powerpipe demo" width=500 src="https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png"></a>
 
+See the [documentation](https://powerpipe.io/docs) for:
+
+- [Viewing dashboards](https://powerpipe.io/docs/run/dashboard)
+- [Running benchmarks](https://powerpipe.io/docs/run/benchmark)
+- [CLI commands](https://powerpipe.io/docs/reference/cli)
+- [HCL reference](https://powerpipe.io/docs/powerpipe-hcl)
+- [Configuration](https://powerpipe.io/docs/reference/config-files)
+- [Building mods](https://powerpipe.io/docs/build)
+
+
 ## Install Powerpipe
 
 The <a href="https://powerpipe.io/downloads">downloads</a> page shows you how, but tl;dr:
