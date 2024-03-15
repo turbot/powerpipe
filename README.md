@@ -63,11 +63,11 @@ cd powerpipe
 <details>
 <summary>Build</summary>
 
-The Powerpipe binary lands in `/usr/local/bin` unless you specify an alternate `OUTPUT_DIR`.
-
 ```sh
 make
 ```
+
+The Powerpipe binary lands in `/usr/local/bin` unless you specify an alternate `OUTPUT_DIR`.
 
 </details>
 
@@ -76,6 +76,7 @@ make
 
 ```sh
 powerpipe --version
+
 powerpipe --help
 ```
 </details>
