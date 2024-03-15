@@ -202,6 +202,7 @@ const CheckFilterTypeSelect = ({
       options={types}
       inputId={`${type}.input`}
       placeholder="Select a filter…"
+      // @ts-ignore
       styles={styles}
       value={types.find((t) => t.value === type)}
     />
@@ -250,10 +251,13 @@ const CheckFilterKeySelect = ({
       }}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) => setCurrentKey((t as SelectOption).value)}
+      onChange={(t) =>
+        setCurrentKey((t as SelectOption).value as CheckDisplayGroupType)
+      }
       options={keys}
       inputId={`${type}.input`}
       placeholder={`Choose a ${type}…`}
+      // @ts-ignore
       styles={styles}
       value={keys.find((t) => t.value === filterKey)}
     />
@@ -295,7 +299,7 @@ const CheckFilterValueSelect = ({
       return keys
         .filter(([k]) => k === item?.key)
         .flatMap(([k, v]) => {
-          const keys = Object.keys(v);
+          const keys = Object.keys(v as any);
           return keys.map((key) => ({
             value: key,
             label: key,
@@ -357,12 +361,13 @@ const CheckFilterValueSelect = ({
       onChange={(t) =>
         setCurrentValue({
           value: (t as SelectOption).value,
-          title: (t as SelectOption).label,
+          title: (t as SelectOption).label as string,
         })
       }
       options={values}
       inputId={`${type}.input`}
       placeholder="Choose a value…"
+      // @ts-ignore
       styles={styles}
       value={values.find((t) => t.value === value)}
     />
