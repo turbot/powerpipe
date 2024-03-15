@@ -18,7 +18,7 @@
 
 **[Watch on YouTube →](https://www.youtube.com/watch?v=-h6RSpvR0FE)**
 
-[![Powerpipe demo](https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png)](https://www.youtube.com/watch?v=-h6RSpvR0FE)
+<a href="https://www.youtube.com/watch?v=-h6RSpvR0FE"><img alt="powerpipe demo" width=500 src="https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png"></a>
 
 ## Install Powerpipe
 
