@@ -48,16 +48,9 @@ Many mods are written for Steampipe and its plugin ecosystem. But Powerpipe is d
 ## Developing
 
 <details>
-<summary>Prerequisites</summary>
-
-
-- [Golang](https://golang.org/doc/install) Version 1.21 or higher.
-</details>
-
-<details>
 <summary>Clone</summary>
 
-Clone `github.com/powerpipe` and `github.com/turbot/pipe-fittings` repositories:
+Clone [github.com/powerpipe](https://github.com/turbot/powerpipe) and [github.com/turbot/pipe-fittings](https://github.com/turbot/pipe-fittings):
 
 ```sh
 git clone git@github.com:turbot/powerpipe
@@ -70,7 +63,7 @@ cd powerpipe
 <details>
 <summary>Build</summary>
 
-The Powerpipe binary lands in /usr/local/bin/ unless you specify an alternate `OUTPUT_DIR`.
+The Powerpipe binary lands in `/usr/local/bin` unless you specify an alternate `OUTPUT_DIR`.
 
 ```sh
 make
@@ -79,14 +72,11 @@ make
 </details>
 
 <details>
-<summary>Check the version</summary>
+<summary>Check the install</summary>
 
 ```sh
 powerpipe --version
-```
-
-```
-Powerpipe v0.1.1-dev.20240314090000
+powerpipe --help
 ```
 </details>
 
