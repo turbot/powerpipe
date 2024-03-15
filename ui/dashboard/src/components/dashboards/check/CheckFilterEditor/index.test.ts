@@ -8,13 +8,18 @@ interface TestCase {
 
 const filterTestCases: TestCase[] = [
   {
-    name: "valid filter with type and key",
-    input: { operator: "equal", type: "resource", key: "name" },
+    name: "valid filter with type and value",
+    input: { operator: "equal", type: "status", value: "alarm" },
     expected: true,
   },
   {
-    name: "valid filter with type and value",
-    input: { operator: "equal", type: "control_tag", value: "production" },
+    name: "valid filter with type, key and value",
+    input: {
+      operator: "equal",
+      type: "control_tag",
+      key: "environment",
+      value: "production",
+    },
     expected: true,
   },
   {
@@ -25,6 +30,11 @@ const filterTestCases: TestCase[] = [
   {
     name: "filter missing type",
     input: { operator: "equal", key: "name" },
+    expected: false,
+  },
+  {
+    name: "filter missing value",
+    input: { operator: "equal", type: "control_tag", key: "environment" },
     expected: false,
   },
   {
