@@ -70,9 +70,15 @@ const validateFilter = (filter: CheckFilter): boolean => {
   }
 
   if (filter.operator === "equal") {
-    const noValue = filter.value === undefined || !filter.value?.trim();
-    if (noValue) return false;
-    return !!filter.type && (filter.key !== undefined || !noValue);
+    const valueExists = !!filter.value?.trim();
+    const typeExists = !!filter.type?.trim();
+    const keyExists = !!filter.key?.trim();
+    if (!valueExists) return false;
+    if (!typeExists) return false;
+    if (keyExists) {
+      return typeExists && valueExists;
+    }
+    return true;
   }
 
   return false;
