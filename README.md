@@ -45,27 +45,19 @@ Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that
 
 Many mods are written for Steampipe and its plugin ecosystem. But Powerpipe is database-agnostic, and we provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
 
-
-## Open source and contributing
-This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
-
-[Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
-
 ## Developing
 
 <details>
-<summary>Prerequisites.</summary>
+<summary>Prerequisites</summary>
 
 
 - [Golang](https://golang.org/doc/install) Version 1.21 or higher.
 </details>
 
 <details>
-<summary>Clone.</summary>
-
+<summary>Clone</summary>
 
 Clone `github.com/powerpipe` and `github.com/turbot/pipe-fittings` repositories:
-
 
 ```sh
 git clone git@github.com:turbot/powerpipe
@@ -76,7 +68,7 @@ cd powerpipe
 </details>
 
 <details>
-<summary>Build.</summary>
+<summary>Build</summary>
 
 The Powerpipe binary lands in /usr/local/bin/ unless you specify an alternate `OUTPUT_DIR`.
 
@@ -87,7 +79,7 @@ make
 </details>
 
 <details>
-<summary>Check the version.</summary>
+<summary>Check the version</summary>
 
 ```sh
 powerpipe --version
@@ -97,6 +89,11 @@ powerpipe --version
 Powerpipe v0.1.1-dev.20240314090000
 ```
 </details>
+
+## Open source and contributing
+This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
+
+[Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
 
 ## Turbot Pipes
 
