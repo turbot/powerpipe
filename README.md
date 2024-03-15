@@ -47,6 +47,8 @@ Many mods are written for Steampipe and its plugin ecosystem. But Powerpipe is d
 
 ## Developing
 
+If you want to help develop the core Powerpipe binary, these are the steps to build it.
+
 <details>
 <summary>Clone</summary>
 
@@ -80,6 +82,8 @@ powerpipe --version
 powerpipe --help
 ```
 </details>
+
+If you're interested in developing [Powerpipe mods](https://hub.powerpipe.io), see our [documentation for mod developers](https://powerpipe.io/docs/build).
 
 ## Turbot Pipes
 
