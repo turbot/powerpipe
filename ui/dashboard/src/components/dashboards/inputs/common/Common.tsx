@@ -24,8 +24,8 @@ const OptionTag = ({ tagKey, tagValue }) => (
   </span>
 );
 
-const LabelTagWrapper = ({ label, tags }) => (
-  <div className="space-x-2 truncate">
+const LabelTagWrapper = ({ label, tags, isDisabled }) => (
+  <div className={`space-x-2 truncate ${isDisabled ? "text-gray-300" : ""}`}>
     {/*@ts-ignore*/}
     <span title={label}>{label}</span>
     {/*@ts-ignore*/}
@@ -42,16 +42,28 @@ const LabelTagWrapper = ({ label, tags }) => (
 
 const OptionWithTags = (props: OptionProps) => (
   <components.Option {...props}>
-    {/*@ts-ignore*/}
-    <LabelTagWrapper label={props.data.label} tags={props.data.tags} />
+    <LabelTagWrapper
+      // @ts-ignore
+      label={props.data.label}
+      // @ts-ignore
+      tags={props.data.tags}
+      // @ts-ignore
+      isDisabled={props.data.isDisabled}
+    />
   </components.Option>
 );
 
 const SingleValueWithTags = ({ children, ...props }: SingleValueProps) => {
   return (
     <components.SingleValue {...props}>
-      {/*@ts-ignore*/}
-      <LabelTagWrapper label={props.data.label} tags={props.data.tags} />
+      <LabelTagWrapper
+        // @ts-ignore
+        label={props.data.label}
+        // @ts-ignore
+        tags={props.data.tags}
+        // @ts-ignore
+        isDisabled={props.data.isDisabled}
+      />
     </components.SingleValue>
   );
 };
@@ -59,8 +71,14 @@ const SingleValueWithTags = ({ children, ...props }: SingleValueProps) => {
 const MultiValueLabelWithTags = ({ children, ...props }: SingleValueProps) => {
   return (
     <components.MultiValueLabel {...props}>
-      {/*@ts-ignore*/}
-      <LabelTagWrapper label={props.data.label} tags={props.data.tags} />
+      <LabelTagWrapper
+        // @ts-ignore
+        label={props.data.label}
+        // @ts-ignore
+        tags={props.data.tags}
+        // @ts-ignore
+        isDisabled={props.data.isDisabled}
+      />
     </components.MultiValueLabel>
   );
 };

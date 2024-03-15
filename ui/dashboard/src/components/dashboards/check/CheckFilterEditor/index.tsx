@@ -5,7 +5,7 @@ import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
-import { CheckFilter, CheckFilterType } from "../common";
+import { CheckDisplayGroupType, CheckFilter, CheckFilterType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
 import {
   MultiValueLabelWithTags,
@@ -84,6 +84,17 @@ const validateFilter = (filter: CheckFilter): boolean => {
   return false;
 };
 
+const filterTypeMap = {
+  benchmark: "Benchmark",
+  control: "Control",
+  control_tag: "Control Tag",
+  dimension: "Dimension",
+  reason: "Reason",
+  resource: "Resource",
+  severity: "Severity",
+  status: "Status",
+};
+
 const CheckFilterTypeSelect = ({
   className,
   filter,
@@ -93,12 +104,43 @@ const CheckFilterTypeSelect = ({
   update,
 }: CheckFilterTypeSelectProps) => {
   const [currentType, setCurrentType] = useState<CheckFilterType>(type);
+  const { context: filterValues } = useDashboardControls();
+
+  const allFilters = useMemo(
+    () =>
+      Object.entries(filterValues).reduce((acc: any[], [key, value]): any[] => {
+        if (filterValues[key]?.hasOwnProperty("key")) {
+          let keys = Object.keys(filterValues[key]?.key);
+          if (!keys.length) {
+            return acc.concat({
+              isDisabled: true,
+              value: `${key}:none`,
+              label: `${filterTypeMap[key]} (none)`,
+            });
+          }
+          return acc.concat(
+            ...keys.map((k) => ({
+              value: `${key}:${k}`,
+              label: (
+                <span title={`${filterTypeMap[key]}: ${k}`}>
+                  <span className="text-gray-400">{filterTypeMap[key]}:</span>{" "}
+                  {k}
+                </span>
+              ),
+            }))
+          );
+        }
+        return acc.concat({ value: key, label: filterTypeMap[key] });
+      }, []),
+    [filterValues]
+  );
 
   useDeepCompareEffect(() => {
     update(index, {
       ...item,
-      type: currentType,
       value: "",
+      type: currentType,
+      key: currentType?.includes(":") ? currentType?.split(":")[1] : undefined,
     });
   }, [currentType, index, item]);
 
@@ -107,23 +149,31 @@ const CheckFilterTypeSelect = ({
     const existingTypes = filter.expressions
       ?.map((c) => c.type?.toString())
       .filter((t) => !!t);
-    const allTypes: SelectOption[] = [
-      { value: "benchmark", label: "Benchmark" },
-      { value: "control", label: "Control" },
-      { value: "control_tag", label: "Control Tag" },
-      { value: "dimension", label: "Dimension" },
-      { value: "reason", label: "Reason" },
-      { value: "resource", label: "Resource" },
-      { value: "severity", label: "Severity" },
-      { value: "status", label: "Status" },
-    ];
-    return allTypes.filter(
+    // const allTypes: SelectOption[] = [
+    //   { value: "benchmark", label: "Benchmark" },
+    //   { value: "control", label: "Control" },
+    //   // { value: "control_tag", label: "Control Tag" },
+    //   {
+    //     value: "control_tag:plugin",
+    //     label: (
+    //       <>
+    //         <span className="text-gray-400">Control Tag:</span> Plugin
+    //       </>
+    //     ),
+    //   },
+    //   { value: "dimension", label: "Dimension" },
+    //   { value: "reason", label: "Reason" },
+    //   { value: "resource", label: "Resource" },
+    //   { value: "severity", label: "Severity" },
+    //   { value: "status", label: "Status" },
+    // ];
+    return allFilters.filter(
       (t) =>
         t.value === type ||
         t.value === "dimension" ||
         t.value === "control_tag" ||
         // @ts-ignore
-        !existingTypes.includes(t.value),
+        !existingTypes.includes(t.value)
     );
   }, [filter, type]);
 
@@ -143,7 +193,12 @@ const CheckFilterTypeSelect = ({
       }}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) => setCurrentType((t as SelectOption).value)}
+      onChange={(t) => {
+        setCurrentType(() => {
+          const v = (t as SelectOption).value;
+          return v as CheckDisplayGroupType;
+        });
+      }}
       options={types}
       inputId={`${type}.input`}
       placeholder="Select a filter…"
@@ -171,11 +226,11 @@ const CheckFilterKeySelect = ({
   }, [currentKey, index, item]);
 
   const keys = useMemo(() => {
-    return Object.keys(filterValues ? filterValues[type].key || {} : {}).map(
+    return Object.keys(filterValues ? filterValues[type]?.key || {} : {}).map(
       (k) => ({
         value: k,
         label: k,
-      }),
+      })
     );
   }, [filterValues, type]);
 
@@ -218,7 +273,6 @@ const CheckFilterValueSelect = ({
     title?: string;
   }>({ value, title: item.title });
   const { context: filterValues } = useDashboardControls();
-
   const values = useMemo(() => {
     if (!type) {
       return [];
@@ -234,20 +288,24 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
-    } else if (type === "dimension" || type === "control_tag") {
-      return Object.entries(filterValues ? filterValues[type].value || {} : {})
-        .filter(([, v]) => has(v, item.key as string))
-        .map(([k, v]) => {
-          return {
-            value: k,
-            label: k,
+    } else if (type.includes(":")) {
+      const keys = Object.entries(
+        filterValues ? filterValues[type?.split(":")[0]]?.key || {} : {}
+      );
+      return keys
+        .filter(([k]) => k === item?.key)
+        .flatMap(([k, v]) => {
+          const keys = Object.keys(v);
+          return keys.map((key) => ({
+            value: key,
+            label: key,
             // @ts-ignore
-            tags: { occurrences: v[item.key] },
-          };
+            tags: { occurrences: v[key] },
+          }));
         });
     } else if (type === "benchmark" || type === "control") {
       return Object.entries(
-        filterValues ? filterValues[type].value || {} : {},
+        filterValues ? filterValues[type]?.value || {} : {}
       ).map(([k, v]) => {
         return {
           value: k,
@@ -259,7 +317,7 @@ const CheckFilterValueSelect = ({
       });
     }
     return Object.entries(
-      filterValues ? filterValues[type].value || {} : {},
+      filterValues ? filterValues[type]?.value || {} : {}
     ).map(([k, v]) => {
       return {
         value: k,
@@ -343,7 +401,7 @@ const CheckFilterEditorItem = ({
           update={update}
         />
       </div>
-      {(item.type === "dimension" || item.type === "control_tag") && (
+      {/* {(item.type === "dimension" || item.type === "control_tag") && (
         <>
           <span>=</span>
           <div className="grow min-w-40 max-w-72">
@@ -356,7 +414,7 @@ const CheckFilterEditorItem = ({
             />
           </div>
         </>
-      )}
+      )} */}
       <span>=</span>
       <div className="grow min-w-52 max-w-72">
         <CheckFilterValueSelect
@@ -372,7 +430,7 @@ const CheckFilterEditorItem = ({
         className={classNames(
           (filter.expressions?.length || 0) > 1
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
-            : "text-foreground-lightest",
+            : "text-foreground-lightest"
         )}
         onClick={
           (filter.expressions?.length || 0) > 1
@@ -413,7 +471,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         ],
       }));
     },
-    [setInnerFilter],
+    [setInnerFilter]
   );
 
   const update = useCallback(
@@ -427,7 +485,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         ],
       }));
     },
-    [setInnerFilter],
+    [setInnerFilter]
   );
 
   return (

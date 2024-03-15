@@ -42,7 +42,7 @@ const filtersToText = (filter: CheckFilter) => {
 
 const CheckFilterConfig = () => {
   const [, setSearchParams] = useSearchParams();
-  const filterConfig = useCheckFilterConfig();
+  const [filterConfig] = useCheckFilterConfig();
 
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {

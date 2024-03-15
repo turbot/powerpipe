@@ -3,7 +3,7 @@ import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
 import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor";
 
 const CustomizeViewSummary = () => {
-  const filterConfig = useCheckFilterConfig();
+  const [, filterConfig] = useCheckFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
   const filterCount = filterConfig?.expressions?.length
