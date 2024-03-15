@@ -33,7 +33,7 @@ func modCmd() *cobra.Command {
 
 Mods enable you to run, build, and share dashboards, benchmarks and other resources.
 
-Find pre-built mods in the public registry at https://hub.steampipe.io.
+Find pre-built mods in the public registry at https://hub.powerpipe.io.
 
 Examples:
 
@@ -73,8 +73,8 @@ func modInstallCmd() *cobra.Command {
 		Short: "Install one or more mods and their dependencies",
 		Long: `Install one or more mods and their dependencies.
 
-Mods provide an easy way to share Steampipe queries, controls, and benchmarks.
-Find mods using the public registry at hub.steampipe.io.
+Mods provide an easy way to share queries, controls, and benchmarks.
+Find mods using the public registry at hub.powerpipe.io.
 
 Examples:
 
@@ -285,7 +285,7 @@ func modListCmd() *cobra.Command {
 Example:
 
   # List installed mods
-  steampipe mod list`,
+  powerpipe mod list`,
 	}
 
 	cmdconfig.OnCmd(cmd).
