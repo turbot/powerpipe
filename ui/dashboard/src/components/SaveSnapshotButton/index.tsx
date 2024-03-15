@@ -19,7 +19,7 @@ import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilt
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
-  const [filterConfig] = useCheckFilterConfig();
+  const filterConfig = useCheckFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
   const saveSnapshot = () => {

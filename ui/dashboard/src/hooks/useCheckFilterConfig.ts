@@ -2,7 +2,7 @@ import { CheckFilter } from "@powerpipe/components/dashboards/check/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const useCheckFilterConfig = (): [CheckFilter, CheckFilter] => {
+const useCheckFilterConfig = (): CheckFilter => {
   const [searchParams] = useSearchParams();
   const defaultFilter = {
     operator: "and",
@@ -15,27 +15,13 @@ const useCheckFilterConfig = (): [CheckFilter, CheckFilter] => {
       try {
         let parsedFilters: CheckFilter;
         parsedFilters = JSON.parse(rawFilters);
-        return [
-          parsedFilters,
-          {
-            ...parsedFilters,
-            expressions: parsedFilters.expressions?.map((expression) => {
-              if (expression.type?.includes(":")) {
-                return {
-                  ...expression,
-                  type: expression.type.split(":")[0],
-                };
-              }
-              return expression;
-            }),
-          } as CheckFilter,
-        ];
+        return parsedFilters;
       } catch (error) {
         console.error("Error parsing where filters", error);
-        return [defaultFilter, defaultFilter];
+        return defaultFilter;
       }
     } else {
-      return [defaultFilter, defaultFilter];
+      return defaultFilter;
     }
   }, [searchParams]);
 };

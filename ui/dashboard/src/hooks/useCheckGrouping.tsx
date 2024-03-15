@@ -93,7 +93,7 @@ const addBenchmarkTrunkNode = (
   children: CheckNode[],
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
   groupingKeysBeforeBenchmark: string[],
-  parentGroupType: string | null
+  parentGroupType: string | null,
 ): CheckNode => {
   let newChildren: CheckNode[];
   if (benchmark_trunk.length > 1) {
@@ -103,7 +103,7 @@ const addBenchmarkTrunkNode = (
         children,
         benchmarkChildrenLookup,
         groupingKeysBeforeBenchmark,
-        parentGroupType
+        parentGroupType,
       ),
     ];
   } else {
@@ -140,7 +140,7 @@ const addBenchmarkTrunkNode = (
       : currentNode?.sort || "Other",
     currentNode?.name || "Other",
     currentNode?.title || "Other",
-    newChildren
+    newChildren,
   );
 };
 
@@ -179,7 +179,7 @@ const getCheckStatusSortKey = (status: CheckResultStatus): string => {
 };
 
 const getCheckSeverityGroupingKey = (
-  severity: CheckSeverity | undefined
+  severity: CheckSeverity | undefined,
 ): string => {
   switch (severity) {
     case "critical":
@@ -196,7 +196,7 @@ const getCheckSeverityGroupingKey = (
 };
 
 const getCheckSeveritySortKey = (
-  severity: CheckSeverity | undefined
+  severity: CheckSeverity | undefined,
 ): string => {
   switch (severity) {
     case "critical":
@@ -214,7 +214,7 @@ const getCheckSeveritySortKey = (
 
 const getCheckDimensionGroupingKey = (
   dimensionKey: string | undefined,
-  dimensions: CheckResultDimension[]
+  dimensions: CheckResultDimension[],
 ): string => {
   if (!dimensionKey) {
     return "<not set>";
@@ -244,7 +244,7 @@ const getCheckResourceGroupingKey = (resource: string | undefined): string => {
 
 const getCheckGroupingKey = (
   checkResult: CheckResult,
-  group: CheckDisplayGroup
+  group: CheckDisplayGroup,
 ) => {
   switch (group.type) {
     case "dimension":
@@ -280,20 +280,20 @@ const getCheckGroupingNode = (
   children: CheckNode[],
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
   groupingKeysBeforeBenchmark: string[] = [],
-  parentGroupType: string | null
+  parentGroupType: string | null,
 ): CheckNode => {
   switch (group.type) {
     case "dimension":
       const dimensionValue = getCheckDimensionGroupingKey(
         group.value,
-        checkResult.dimensions
+        checkResult.dimensions,
       );
       return new KeyValuePairNode(
         dimensionValue,
         "dimension",
         group.value || "Dimension key not set",
         dimensionValue,
-        children
+        children,
       );
     case "control_tag":
       const value = getCheckTagGroupingKey(group.value, checkResult.tags);
@@ -302,7 +302,7 @@ const getCheckGroupingNode = (
         "control_tag",
         group.value || "Tag key not set",
         value,
-        children
+        children,
       );
     case "reason":
       return new KeyValuePairNode(
@@ -310,7 +310,7 @@ const getCheckGroupingNode = (
         "reason",
         "reason",
         getCheckReasonGroupingKey(checkResult.reason),
-        children
+        children,
       );
     case "resource":
       return new KeyValuePairNode(
@@ -318,7 +318,7 @@ const getCheckGroupingNode = (
         "resource",
         "resource",
         getCheckResourceGroupingKey(checkResult.resource),
-        children
+        children,
       );
     // case "result":
     //   return new ControlResultNode(
@@ -335,7 +335,7 @@ const getCheckGroupingNode = (
         "severity",
         "severity",
         getCheckSeverityGroupingKey(checkResult.control.severity),
-        children
+        children,
       );
     case "status":
       return new KeyValuePairNode(
@@ -343,7 +343,7 @@ const getCheckGroupingNode = (
         "status",
         "status",
         getCheckStatusGroupingKey(checkResult.status),
-        children
+        children,
       );
     case "benchmark":
       return checkResult.benchmark_trunk.length > 1
@@ -352,7 +352,7 @@ const getCheckGroupingNode = (
             children,
             benchmarkChildrenLookup,
             groupingKeysBeforeBenchmark,
-            parentGroupType
+            parentGroupType,
           )
         : children[0];
     case "control":
@@ -362,7 +362,7 @@ const getCheckGroupingNode = (
           : checkResult.control.title || checkResult.control.name,
         checkResult.control.name,
         checkResult.control.title,
-        children
+        children,
       );
     default:
       throw new Error(`Unknown group type ${group.type}`);
@@ -371,10 +371,10 @@ const getCheckGroupingNode = (
 
 const addBenchmarkGroupingNode = (
   existingGroups: CheckNode[],
-  groupingNode: CheckNode
+  groupingNode: CheckNode,
 ) => {
   const existingGroup = existingGroups.find(
-    (existingGroup) => existingGroup.name === groupingNode.name
+    (existingGroup) => existingGroup.name === groupingNode.name,
   );
   if (existingGroup) {
     (existingGroup as BenchmarkNode).merge(groupingNode);
@@ -385,11 +385,11 @@ const addBenchmarkGroupingNode = (
 
 function getBenchmarkChildrenLookupKey(
   groupingHierarchyKeys: string[],
-  groupKey: string
+  groupKey: string,
 ) {
   const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
     0,
-    groupingHierarchyKeys.indexOf("benchmark")
+    groupingHierarchyKeys.indexOf("benchmark"),
   );
   const benchmarkChildrenLookupKey =
     groupingKeysBeforeBenchmark.length > 0
@@ -404,7 +404,7 @@ const groupCheckItems = (
   groupingsConfig: CheckDisplayGroup[],
   checkNodeStates: CheckGroupNodeStates,
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
-  groupingHierarchyKeys: string[]
+  groupingHierarchyKeys: string[],
 ) => {
   return groupingsConfig
     .filter((groupConfig) => groupConfig.type !== "result")
@@ -413,7 +413,7 @@ const groupCheckItems = (
         cumulativeGrouping,
         currentGroupingConfig,
         currentIndex,
-        filteredGroups
+        filteredGroups,
       ) => {
         // We want to capture the parent group type to use later for sorting purposes.
         // If we're trying to decide how to sort a control node, we need to know if
@@ -424,7 +424,7 @@ const groupCheckItems = (
         // Get this items grouping key - e.g. control or benchmark name
         const groupKey = getCheckGroupingKey(
           checkResult,
-          currentGroupingConfig
+          currentGroupingConfig,
         );
 
         if (!groupKey) {
@@ -439,7 +439,7 @@ const groupCheckItems = (
             (benchmark) =>
               (checkNodeStates[benchmark.name] = {
                 expanded: false,
-              })
+              }),
           );
         } else {
           checkNodeStates[groupKey] = {
@@ -459,7 +459,7 @@ const groupCheckItems = (
             cumulativeGrouping[groupKey]._,
             benchmarkChildrenLookup,
             groupingKeysBeforeBenchmark,
-            parentGroupType
+            parentGroupType,
           );
 
           if (groupingNode) {
@@ -494,7 +494,7 @@ const groupCheckItems = (
 
         return cumulativeGrouping[groupKey];
       },
-      temp
+      temp,
     );
 };
 
@@ -590,7 +590,7 @@ function recordFilterValues(
       info: number;
     };
   },
-  checkResult: CheckResult
+  checkResult: CheckResult,
 ) {
   // Record the benchmark of this check result to allow assisted filtering later
   if (!!checkResult.benchmark_trunk && checkResult.benchmark_trunk.length > 0) {
@@ -696,7 +696,7 @@ const wildcardToRegex = (wildcard: string) => {
 
 const includeResult = (
   checkResult: CheckResult,
-  checkFilterConfig: CheckFilter
+  checkFilterConfig: CheckFilter,
 ): boolean => {
   if (
     !checkFilterConfig ||
@@ -768,7 +768,7 @@ const includeResult = (
         const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
         for (const [tagKey, tagValue] of Object.entries(
-          checkResult.tags || {}
+          checkResult.tags || {},
         )) {
           if (keyRegex.test(tagKey) && valueRegex.test(tagValue)) {
             matchesTags = true;
@@ -789,9 +789,9 @@ const useGrouping = (
   definition: PanelDefinition | null,
   panelsMap: PanelsMap | undefined,
   groupingsConfig: CheckDisplayGroup[],
-  skip = false
+  skip = false,
 ) => {
-  const [, checkFilterConfig] = useCheckFilterConfig();
+  const checkFilterConfig = useCheckFilterConfig();
 
   return useMemo(() => {
     const filterValues = {
@@ -811,14 +811,14 @@ const useGrouping = (
 
     // @ts-ignore
     const nestedBenchmarks = definition.children?.filter(
-      (child) => child.panel_type === "benchmark"
+      (child) => child.panel_type === "benchmark",
     );
     const nestedControls =
       definition.panel_type === "control"
         ? [definition]
         : // @ts-ignore
           definition.children?.filter(
-            (child) => child.panel_type === "control"
+            (child) => child.panel_type === "control",
           );
 
     const rootBenchmarkPanel = panelsMap[definition.name];
@@ -830,7 +830,7 @@ const useGrouping = (
       nestedBenchmarks,
       nestedControls,
       panelsMap,
-      []
+      [],
     );
 
     const checkNodeStates: CheckGroupNodeStates = {};
@@ -856,7 +856,7 @@ const useGrouping = (
         groupingsConfig,
         checkNodeStates,
         benchmarkChildrenLookup,
-        []
+        [],
       );
       // Build and add a check result node to the children of the trailing group.
       // This will be used to calculate totals and severity, amongst other things.
@@ -905,7 +905,7 @@ const CheckGroupingProvider = ({
     definition,
     diff_panels,
     groupingsConfig,
-    !diff_panels
+    !diff_panels,
   );
 
   const previousGroupings = usePrevious({ groupingsConfig });
@@ -953,7 +953,7 @@ const useCheckGrouping = () => {
   const context = useContext(CheckGroupingContext);
   if (context === undefined) {
     throw new Error(
-      "useCheckGrouping must be used within a CheckGroupingContext"
+      "useCheckGrouping must be used within a CheckGroupingContext",
     );
   }
   return context as ICheckGroupingContext;

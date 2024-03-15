@@ -1,6 +1,6 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
-import has from "lodash/has";
+// import has from "lodash/has";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
@@ -16,6 +16,19 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
+
+const filterKeysSorter = (a, b) => {
+  const aIsGrouped = Array.isArray(a?.options);
+  const bIsGrouped = Array.isArray(b?.options);
+
+  if (aIsGrouped && !bIsGrouped) {
+    return 1; // a should come after b
+  } else if (!aIsGrouped && bIsGrouped) {
+    return -1; // a should come before b
+  } else {
+    return a?.label?.localeCompare(b?.label); // Alphabetical sort if both have colons or neither has
+  }
+};
 
 type CheckFilterEditorProps = {
   filter: CheckFilter;
@@ -108,40 +121,67 @@ const CheckFilterTypeSelect = ({
 
   const allFilters = useMemo(
     () =>
-      Object.entries(filterValues).reduce((acc: any[], [key, value]): any[] => {
-        if (filterValues[key]?.hasOwnProperty("key")) {
-          let keys = Object.keys(filterValues[key]?.key);
-          if (!keys.length) {
-            return acc.concat({
-              isDisabled: true,
-              value: `${key}:none`,
-              label: `${filterTypeMap[key]} (none)`,
-            });
+      Object.entries(filterValues)
+        .reduce((acc: any[], [key, value]): any[] => {
+          if (filterValues[key]?.hasOwnProperty("key")) {
+            let keys = Object.keys(filterValues[key]?.key);
+            let group: any = {
+              label: filterTypeMap[key],
+              options: [],
+            };
+            for (let k in filterValues[key]?.key) {
+              group.options.push({
+                value: `${key}:${k}`,
+                label: k,
+              });
+            }
+            return acc.concat(group);
+            // return acc;
+
+            return acc.concat(
+              ...keys.map((k) => ({
+                value: `${key}:${k}`,
+                label: (
+                  // <span
+                  //   className="grid grid-cols-6 gap-x-1.5 items-center"
+                  //   title={`${filterTypeMap[key]}: ${k}`}
+                  // >
+                  //   <span className="col-span-4 overflow-hidden text-ellipsis">
+                  //     {k}
+                  //   </span>
+                  //   <span
+                  //     className={`col-span-2 uppercase text-xxs rounded-full inline-flex px-0.5 py-0.5 items-center justify-center mr-1.5 opacity-0.5 text-gray-300`}
+                  //   >
+                  //     {filterTypeMap[key]}
+                  //   </span>{" "}
+                  // </span>
+                  <span>
+                    <span className="text-gray-400">{filterTypeMap[key]}:</span>{" "}
+                    {k}
+                  </span>
+                ),
+              })),
+            );
           }
-          return acc.concat(
-            ...keys.map((k) => ({
-              value: `${key}:${k}`,
-              label: (
-                <span title={`${filterTypeMap[key]}: ${k}`}>
-                  <span className="text-gray-400">{filterTypeMap[key]}:</span>{" "}
-                  {k}
-                </span>
-              ),
-            }))
-          );
-        }
-        return acc.concat({ value: key, label: filterTypeMap[key] });
-      }, []),
-    [filterValues]
+          return acc.concat({ value: key, label: filterTypeMap[key] });
+        }, [])
+        .sort(filterKeysSorter),
+    [filterValues],
   );
 
   useDeepCompareEffect(() => {
-    update(index, {
-      ...item,
-      value: "",
-      type: currentType,
-      key: currentType?.includes(":") ? currentType?.split(":")[1] : undefined,
-    });
+    if (currentType) {
+      update(index, {
+        ...item,
+        value: "",
+        type: currentType?.includes(":")
+          ? (currentType?.split(":")[0] as CheckFilterType)
+          : currentType,
+        key: currentType?.includes(":")
+          ? currentType?.split(":")[1]
+          : undefined,
+      });
+    }
   }, [currentType, index, item]);
 
   const types = useMemo(() => {
@@ -173,7 +213,7 @@ const CheckFilterTypeSelect = ({
         t.value === "dimension" ||
         t.value === "control_tag" ||
         // @ts-ignore
-        !existingTypes.includes(t.value)
+        !existingTypes.includes(t?.value),
     );
   }, [filter, type]);
 
@@ -203,8 +243,21 @@ const CheckFilterTypeSelect = ({
       inputId={`${type}.input`}
       placeholder="Select a filter…"
       // @ts-ignore
-      styles={styles}
-      value={types.find((t) => t.value === type)}
+      styles={{
+        ...styles,
+        menu: (provided) => ({
+          ...styles?.menu(provided),
+          width: "275px",
+        }),
+      }}
+      value={types
+        .reduce((acc, curr) => {
+          if (curr?.options) {
+            return acc.concat(...curr.options);
+          }
+          return acc.concat(curr);
+        }, [])
+        .find((t) => t.value === type + (item?.key ? `:${item.key}` : ""))}
     />
   );
 };
@@ -231,7 +284,7 @@ const CheckFilterKeySelect = ({
       (k) => ({
         value: k,
         label: k,
-      })
+      }),
     );
   }, [filterValues, type]);
 
@@ -292,9 +345,9 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
-    } else if (type.includes(":")) {
+    } else if (["control_tag", "dimension"].includes(type)) {
       const keys = Object.entries(
-        filterValues ? filterValues[type?.split(":")[0]]?.key || {} : {}
+        filterValues ? filterValues[type]?.key || {} : {},
       );
       return keys
         .filter(([k]) => k === item?.key)
@@ -309,7 +362,7 @@ const CheckFilterValueSelect = ({
         });
     } else if (type === "benchmark" || type === "control") {
       return Object.entries(
-        filterValues ? filterValues[type]?.value || {} : {}
+        filterValues ? filterValues[type]?.value || {} : {},
       ).map(([k, v]) => {
         return {
           value: k,
@@ -321,7 +374,7 @@ const CheckFilterValueSelect = ({
       });
     }
     return Object.entries(
-      filterValues ? filterValues[type]?.value || {} : {}
+      filterValues ? filterValues[type]?.value || {} : {},
     ).map(([k, v]) => {
       return {
         value: k,
@@ -435,7 +488,7 @@ const CheckFilterEditorItem = ({
         className={classNames(
           (filter.expressions?.length || 0) > 1
             ? "text-foreground-light hover:text-steampipe-red cursor-pointer"
-            : "text-foreground-lightest"
+            : "text-foreground-lightest",
         )}
         onClick={
           (filter.expressions?.length || 0) > 1
@@ -476,7 +529,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         ],
       }));
     },
-    [setInnerFilter]
+    [setInnerFilter],
   );
 
   const update = useCallback(
@@ -490,7 +543,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         ],
       }));
     },
-    [setInnerFilter]
+    [setInnerFilter],
   );
 
   return (
