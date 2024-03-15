@@ -55,7 +55,6 @@ Clone [github.com/powerpipe](https://github.com/turbot/powerpipe) and [github.co
 ```sh
 git clone git@github.com:turbot/powerpipe
 git clone git@github.com:turbot/pipe-fittings
-cd powerpipe
 ```
 
 </details>
@@ -64,6 +63,7 @@ cd powerpipe
 <summary>Build</summary>
 
 ```sh
+cd powerpipe
 make
 ```
 
