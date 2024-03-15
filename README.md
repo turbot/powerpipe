@@ -1,8 +1,8 @@
-<a href="https://powerpipe.io?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
+<a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
 
-[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.steampipe.io/mods?objectives=dashboard?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) &nbsp;
-[![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) &nbsp;
-[![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme)
+[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.steampipe.io/mods?objectives=dashboard) &nbsp;
+[![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
+[![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com)
 
 [Powerpipe](https://powerpipe.io) is **Dashboards for DevOps**. Use it to visualize any data source, and run compliance benchmarks and controls, for effective decision-making and ongoing compliance monitoring.
 
@@ -22,7 +22,7 @@
 
 ## Install Powerpipe
 
-The <a href="https://powerpipe.io/downloads?utm_id=gfpreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">downloads</a> page shows you how, but tl;dr:
+The <a href="https://powerpipe.io/downloads">downloads</a> page shows you how, but tl;dr:
 
 Linux or WSL
 
@@ -100,7 +100,7 @@ Powerpipe v0.1.1-dev.20240314090000
 
 ## Turbot Pipes
 
- Bring your team to [Turbot Pipes](https://turbot.com/pipes?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) to use Powerpipe together in the cloud.
+ Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud.
 
 ## Get involved
 
