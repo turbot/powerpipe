@@ -23,7 +23,7 @@ jobs:
 
   acceptance_tests:
     name: Run Acceptance Tests
-    uses: turbot/powerpipe/.github/workflows/11-test-acceptance.yaml@main
+    uses: turbot/powerpipe/.github/workflows/11-test-acceptance.yaml@272-save-money
     with:
       test_platforms: '["ubuntu-latest", "macos-latest"]'
 
