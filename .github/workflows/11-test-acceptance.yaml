@@ -76,13 +76,27 @@ jobs:
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
+  setup_platform:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    outputs:
+      platform: ${{ steps.set-platform.outputs.platform }}
+    steps:
+      - id: set-platform
+        run: |
+          if [ -z "${{ github.event.inputs.test_platforms }}" ]; then
+            echo "::set-output name=platform::$(echo '["ubuntu-latest"]')"
+          else
+            echo "::set-output name=platform::${{ github.event.inputs.test_platforms }}"
+          fi
+
   acceptance_test:
     name: Test
-    needs: goreleaser
+    needs: setup_platform
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{ fromJson(inputs.test_platforms) }}
+        platform: ${{ fromJson(needs.setup_platform.outputs.platform) }}
         test_block:
           - "check"
           - "dashboard"
