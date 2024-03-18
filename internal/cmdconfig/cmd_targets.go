@@ -105,7 +105,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *works
 			return nil, err
 		}
 		if helpers.IsNil(target) {
-			return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArgs[0], w.Mod.Name(), w.Path)
+			return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArg, w.Mod.Name(), w.Path)
 		}
 		if queryArgs != nil {
 			return nil, sperr.New("benchmarks do not support query args")
