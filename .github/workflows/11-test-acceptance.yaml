@@ -4,7 +4,7 @@ on:
     inputs:
       test_platforms:
         description: "Platforms to run the tests on(JSON array of platforms to test on)"
-        required: true
+        required: false
         type: string
         default: '["ubuntu-latest"]'
   push:
@@ -12,7 +12,6 @@ on:
       - v*
     branches:
       - main
-  workflow_dispatch:
   pull_request:
 
 env:
