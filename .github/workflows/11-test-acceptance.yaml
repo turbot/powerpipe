@@ -12,6 +12,12 @@ on:
       - v*
     branches:
       - main
+  workflow_dispatch:
+    inputs:
+      test_platforms:
+        description: "Override platforms for testing"
+        required: false
+        type: string
   pull_request:
 
 env:
