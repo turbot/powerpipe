@@ -31,7 +31,10 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	}
 
 	// TACTICAL create a check run to wrap the execution tree
-	checkRun = &dashboardexecute.CheckRun{Root: e.Root.Children[0]}
+	checkRun = &dashboardexecute.CheckRun{
+		Root:    e.Root.Children[0],
+		Summary: e.Root.Summary,
+	}
 	checkRun.DashboardTreeRunImpl = dashboardexecute.NewDashboardTreeRunImpl(dashboardNode, nil, checkRun, nil)
 
 	// populate the panels

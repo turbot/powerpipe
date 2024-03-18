@@ -104,17 +104,18 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 	slog.Info("Initializing...")
 
-	// code after this depends of i.WorkspaceEvents being defined. make sure that it is
+	// code after this depends of i.Workspace being defined. make sure that it is
 	if i.Workspace == nil {
 		i.Result.Error = sperr.WrapWithRootMessage(error_helpers.InvalidStateError, "InitData.Init called before setting up WorkspaceEvents")
 		return
 	}
 
+	// attempt to resolve the provided args into target resource(s)
 	i.resolveTargets(args)
-
 	if i.Result.Error != nil {
 		return
 	}
+
 	statushooks.SetStatus(ctx, "Initializing")
 	i.WorkspaceEvents = dashboardworkspace.NewWorkspaceEvents(i.Workspace)
 
@@ -179,7 +180,6 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 // resolve target resource, args and any target specific search path
 func (i *InitData[T]) resolveTargets(args []string) {
-
 	// resolve target resources
 	targets, err := cmdconfig.ResolveTargets[T](args, i.Workspace)
 	if err != nil {
