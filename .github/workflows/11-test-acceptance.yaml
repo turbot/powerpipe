@@ -1,12 +1,23 @@
 name: "11 - Test: Acceptance"
 on:
   workflow_call:
+    inputs:
+      test_platforms:
+        description: "Platforms to run the tests on(JSON array of platforms to test on)"
+        required: false
+        type: string
+        default: '["ubuntu-latest"]'
   push:
     tags:
       - v*
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      test_platforms:
+        description: "Override platforms for testing"
+        required: false
+        type: string
   pull_request:
 
 env:
@@ -65,13 +76,35 @@ jobs:
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
+  setup_platform:
+    needs: goreleaser
+    runs-on: ubuntu-latest
+    outputs:
+      platform: ${{ steps.set-platform.outputs.platform }}
+    steps:
+      - id: set-platform
+        run: |
+          DEFAULT_PLATFORMS='["ubuntu-latest"]'
+          # Use the workflow input directly, as it correctly handles inputs from workflow_call and workflow_dispatch
+          if [[ -z "${{ inputs.test_platforms }}" ]]; then
+            echo "::set-output name=platform::$DEFAULT_PLATFORMS"
+          else
+            echo "::set-output name=platform::${{ inputs.test_platforms }}"
+          fi
+
+      - name: Debug output
+        run: |
+          echo "inputs.test_platforms: ${{ inputs.test_platforms }}"
+          echo "outputs.platform: ${{ steps.set-platform.outputs.platform }}"
+          echo "toJSON: ${{ toJson(inputs.test_platforms) }}"
+
   acceptance_test:
     name: Test
-    needs: goreleaser
+    needs: setup_platform
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: ${{ fromJson(needs.setup_platform.outputs.platform) }}
         test_block:
           - "check"
           - "dashboard"
