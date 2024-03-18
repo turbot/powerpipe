@@ -96,6 +96,7 @@ jobs:
         run: |
           echo "inputs.test_platforms: ${{ inputs.test_platforms }}"
           echo "outputs.platform: ${{ steps.set-platform.outputs.platform }}"
+          echo "toJSON: ${{ toJson(inputs.test_platforms) }}"
 
   acceptance_test:
     name: Test
@@ -103,7 +104,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{ needs.setup_platform.outputs.platform }}
+        platform: ${{ fromJson(needs.setup_platform.outputs.platform) }}
         test_block:
           - "check"
           - "dashboard"
