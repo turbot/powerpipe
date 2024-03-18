@@ -1,6 +1,12 @@
 name: "11 - Test: Acceptance"
 on:
   workflow_call:
+    inputs:
+      test_platforms:
+        description: "Platforms to run the tests on(JSON array of platforms to test on)"
+        required: true
+        type: string
+        default: '["ubuntu-latest"]'
   push:
     tags:
       - v*
@@ -71,7 +77,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: [ubuntu-latest, macos-latest]
+        platform: ${{ fromJson(inputs.test_platforms) }}
         test_block:
           - "check"
           - "dashboard"
