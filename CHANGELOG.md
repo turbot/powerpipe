@@ -1,3 +1,8 @@
+## v0.1.3 [2024-03-18]
+_Bug fixes_
+- When exporting or displaying a check run as a snapshot, ensure the top level panel has a valid summary. ([#274](https://github.com/turbot/pipe-fittings/issues/274))
+- Update `mod list` output to include `resource_name` and `mod` fields. 
+
 ## v0.1.2 [2024-03-15]
 _Whats new_
 - Optimize workspace load time for large workspaces with multiple dependent mods. ([#365](https://github.com/turbot/pipe-fittings/issues/365))
