@@ -103,7 +103,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        platform: ${{ fromJson(needs.setup_platform.outputs.platform) }}
+        platform: ${{ needs.setup_platform.outputs.platform }}
         test_block:
           - "check"
           - "dashboard"
