@@ -16,19 +16,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
-
-const filterKeysSorter = (a, b) => {
-  const aIsGrouped = Array.isArray(a?.options);
-  const bIsGrouped = Array.isArray(b?.options);
-
-  if (aIsGrouped && !bIsGrouped) {
-    return 1; // a should come after b
-  } else if (!aIsGrouped && bIsGrouped) {
-    return -1; // a should come before b
-  } else {
-    return a?.label?.localeCompare(b?.label); // Alphabetical sort if both have colons or neither has
-  }
-};
+import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
 type CheckFilterEditorProps = {
   filter: CheckFilter;
@@ -97,17 +85,6 @@ const validateFilter = (filter: CheckFilter): boolean => {
   return false;
 };
 
-const filterTypeMap = {
-  benchmark: "Benchmark",
-  control: "Control",
-  control_tag: "Control Tag",
-  dimension: "Dimension",
-  reason: "Reason",
-  resource: "Resource",
-  severity: "Severity",
-  status: "Status",
-};
-
 const CheckFilterTypeSelect = ({
   className,
   filter,
@@ -124,44 +101,17 @@ const CheckFilterTypeSelect = ({
       Object.entries(filterValues)
         .reduce((acc: any[], [key, value]): any[] => {
           if (filterValues[key]?.hasOwnProperty("key")) {
-            let keys = Object.keys(filterValues[key]?.key);
             let group: any = {
               label: filterTypeMap[key],
               options: [],
             };
             for (let k in filterValues[key]?.key) {
               group.options.push({
-                value: `${key}:${k}`,
+                value: `${key}|${k}`,
                 label: k,
               });
             }
             return acc.concat(group);
-            // return acc;
-
-            return acc.concat(
-              ...keys.map((k) => ({
-                value: `${key}:${k}`,
-                label: (
-                  // <span
-                  //   className="grid grid-cols-6 gap-x-1.5 items-center"
-                  //   title={`${filterTypeMap[key]}: ${k}`}
-                  // >
-                  //   <span className="col-span-4 overflow-hidden text-ellipsis">
-                  //     {k}
-                  //   </span>
-                  //   <span
-                  //     className={`col-span-2 uppercase text-xxs rounded-full inline-flex px-0.5 py-0.5 items-center justify-center mr-1.5 opacity-0.5 text-gray-300`}
-                  //   >
-                  //     {filterTypeMap[key]}
-                  //   </span>{" "}
-                  // </span>
-                  <span>
-                    <span className="text-gray-400">{filterTypeMap[key]}:</span>{" "}
-                    {k}
-                  </span>
-                ),
-              })),
-            );
           }
           return acc.concat({ value: key, label: filterTypeMap[key] });
         }, [])
@@ -174,11 +124,11 @@ const CheckFilterTypeSelect = ({
       update(index, {
         ...item,
         value: "",
-        type: currentType?.includes(":")
-          ? (currentType?.split(":")[0] as CheckFilterType)
+        type: currentType?.includes("|")
+          ? (currentType?.split("|")[0] as CheckFilterType)
           : currentType,
-        key: currentType?.includes(":")
-          ? currentType?.split(":")[1]
+        key: currentType?.includes("|")
+          ? currentType?.split("|")[1]
           : undefined,
       });
     }
@@ -257,7 +207,7 @@ const CheckFilterTypeSelect = ({
           }
           return acc.concat(curr);
         }, [])
-        .find((t) => t.value === type + (item?.key ? `:${item.key}` : ""))}
+        .find((t) => t.value === type + (item?.key ? `|${item.key}` : ""))}
     />
   );
 };

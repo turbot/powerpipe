@@ -123,7 +123,8 @@ export type CheckDisplayGroupType =
   | "reason"
   | "resource"
   | "severity"
-  | "status";
+  | "status"
+  | string;
 
 export type CheckDisplayGroup = {
   type: CheckDisplayGroupType;
