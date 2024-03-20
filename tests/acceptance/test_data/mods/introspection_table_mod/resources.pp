@@ -44,7 +44,7 @@ dashboard "sample_dashboard_1" {
   title = "Sample dashboard 1"
   description = "Sample dashboard to test introspection functionality"
 
-  container "sample_conatiner_1" {
+  container {
 		card "sample_card_1" {
 			title = "Sample card 1"
 		}
