@@ -40,7 +40,6 @@ load "$LIB_BATS_SUPPORT/load.bash"
 }
 
 @test "variable show output" {
-  skip
   cd $SIMPLE_MOD_DIR
   powerpipe variable show sample_var_1 --output json > output.json
 
