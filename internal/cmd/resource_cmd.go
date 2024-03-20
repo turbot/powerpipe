@@ -125,7 +125,6 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*modconfig.DashboardGraph](withCmdName("graph")),
 		resourceCmd[*modconfig.DashboardHierarchy](withCmdName("hierarchy")),
 		resourceCmd[*modconfig.DashboardImage](withCmdName("image")),
-		resourceCmd[*modconfig.DashboardInput](withCmdName("input")),
 		resourceCmd[*modconfig.DashboardTable](withCmdName("table")),
 		resourceCmd[*modconfig.DashboardText](withCmdName("text")),
 	}
