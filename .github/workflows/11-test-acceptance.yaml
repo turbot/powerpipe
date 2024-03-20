@@ -74,6 +74,7 @@ jobs:
         platform: [ubuntu-latest]
         test_block:
           - "check"
+          - "resource_show_outputs"
           - "dashboard"
           - "mod_install"
           - "sp_files"

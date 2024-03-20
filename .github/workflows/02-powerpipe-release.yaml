@@ -102,6 +102,7 @@ jobs:
         platform: [ubuntu-latest, macos-latest]
         test_block:
           - "check"
+          - "resource_show_outputs"
           - "dashboard"
           - "mod_install"
           - "sp_files"
