@@ -1,0 +1,43 @@
+[
+  {
+    "args": {},
+    "auto_generated": false,
+    "description": "Sample control to test introspection functionality",
+    "end_line_number": 33,
+    "is_anonymous": false,
+    "mod_name": "introspection_table_mod",
+    "path": [
+      [
+        "mod.introspection_table_mod",
+        "introspection_table_mod.benchmark.sample_benchmark_1",
+        "introspection_table_mod.control.sample_control_1"
+      ]
+    ],
+    "qualified_name": "introspection_table_mod.control.sample_control_1",
+    "query": "introspection_table_mod.query.sample_query_1",
+    "references": [
+      {
+        "auto_generated": false,
+        "end_line_number": 28,
+        "from_attribute": "query",
+        "from_block_name": "sample_control_1",
+        "from_block_type": "control",
+        "is_anonymous": false,
+        "mod_name": "introspection_table_mod",
+        "reference_from": "control.sample_control_1",
+        "reference_to": "query.sample_query_1",
+        "resource_name": "da71cb65",
+        "source_definition": "  query = query.sample_query_1",
+        "start_line_number": 28
+      }
+    ],
+    "resource_name": "sample_control_1",
+    "severity": "high",
+    "source_definition": "control \"sample_control_1\" {\n  title = \"Sample control 1\"\n  description = \"Sample control to test introspection functionality\"\n  query = query.sample_query_1\n  severity = \"high\"\n  tags = {\n    \"foo\": \"bar\"\n  }\n}",
+    "start_line_number": 25,
+    "tags": {
+      "foo": "bar"
+    },
+    "title": "Sample control 1"
+  }
+]
