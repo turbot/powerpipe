@@ -3,8 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/display"
-	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"io"
 	"os"
 	"strings"
@@ -19,6 +17,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -27,6 +26,8 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/display"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -35,7 +36,7 @@ var checkOutputMode = localconstants.CheckOutputModeText
 
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
-	typeName := utils.GetGenericTypeName[T]()
+	typeName := modconfig.GenericTypeToBlockType[T]()
 	argsSupported := cobra.ExactArgs(1)
 	if typeName == "benchmark" {
 		argsSupported = cobra.MinimumNArgs(1)

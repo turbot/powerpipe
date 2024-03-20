@@ -1,0 +1,46 @@
+[
+  {
+    "EdgeNames": [
+      "introspection_table_mod.edge.sample_edge_3"
+    ],
+    "NodeNames": [
+      "introspection_table_mod.node.sample_node_3"
+    ],
+    "auto_generated": false,
+    "edges": [
+      {
+        "auto_generated": false,
+        "end_line_number": 114,
+        "is_anonymous": false,
+        "mod_name": "introspection_table_mod",
+        "qualified_name": "introspection_table_mod.edge.sample_edge_3",
+        "resource_name": "sample_edge_3",
+        "source_definition": "      edge \"sample_edge_3\" {\n        sql = <<-EOQ\n          select 1 as edge\n        EOQ\n      }",
+        "sql": "select 1 as edge\n",
+        "start_line_number": 110
+      }
+    ],
+    "end_line_number": 115,
+    "is_anonymous": false,
+    "mod_name": "introspection_table_mod",
+    "nodes": [
+      {
+        "auto_generated": false,
+        "end_line_number": 109,
+        "is_anonymous": false,
+        "mod_name": "introspection_table_mod",
+        "qualified_name": "introspection_table_mod.node.sample_node_3",
+        "resource_name": "sample_node_3",
+        "source_definition": "      node \"sample_node_3\" {\n        sql = <<-EOQ\n          select 1 as node\n        EOQ\n      }",
+        "sql": "select 1 as node\n",
+        "start_line_number": 105
+      }
+    ],
+    "qualified_name": "introspection_table_mod.hierarchy.sample_hierarchy_1",
+    "resource_name": "sample_hierarchy_1",
+    "source_definition": "    hierarchy \"sample_hierarchy_1\" {\n      title = \"Sample hierarchy 1\"\n      width = 5\n\n      node \"sample_node_3\" {\n        sql = <<-EOQ\n          select 1 as node\n        EOQ\n      }\n      edge \"sample_edge_3\" {\n        sql = <<-EOQ\n          select 1 as edge\n        EOQ\n      }\n    }",
+    "start_line_number": 101,
+    "title": "Sample hierarchy 1",
+    "width": 5
+  }
+]

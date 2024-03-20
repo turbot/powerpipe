@@ -11,7 +11,6 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
 )
@@ -26,7 +25,7 @@ type ResourceCommandConfig struct {
 }
 
 func newResourceCommandConfig[T modconfig.ModTreeItem]() *ResourceCommandConfig {
-	typeName := utils.GetGenericTypeName[T]()
+	typeName := modconfig.GenericTypeToBlockType[T]()
 	return &ResourceCommandConfig{
 		cmd: typeName,
 	}
@@ -62,7 +61,7 @@ func resourceCmd[T modconfig.ModTreeItem](opts ...ResourceCommandOption) *cobra.
 }
 
 func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := utils.GetGenericTypeName[T]()
+	typeName := modconfig.GenericTypeToBlockType[T]()
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Args:  cobra.NoArgs,
@@ -79,7 +78,7 @@ func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
 }
 
 func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := utils.GetGenericTypeName[T]()
+	typeName := modconfig.GenericTypeToBlockType[T]()
 
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
@@ -99,7 +98,7 @@ func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
 
 // determine which resource commands apply to this resource
 func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
-	typeName := utils.GetGenericTypeName[T]()
+	typeName := modconfig.GenericTypeToBlockType[T]()
 
 	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
 

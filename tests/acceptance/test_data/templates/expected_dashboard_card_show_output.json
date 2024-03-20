@@ -1,0 +1,21 @@
+[
+  {
+    "auto_generated": false,
+    "end_line_number": 50,
+    "is_anonymous": false,
+    "mod_name": "introspection_table_mod",
+    "path": [
+      [
+        "mod.introspection_table_mod",
+        "introspection_table_mod.dashboard.sample_dashboard_1",
+        "introspection_table_mod.container.dashboard_sample_dashboard_1_anonymous_container_0",
+        "introspection_table_mod.text.sample_text_1"
+      ]
+    ],
+    "qualified_name": "introspection_table_mod.card.sample_card_1",
+    "resource_name": "sample_card_1",
+    "source_definition": "\t\tcard \"sample_card_1\" {\n\t\t\ttitle = \"Sample card 1\"\n\t\t}",
+    "start_line_number": 48,
+    "title": "Sample card 1"
+  }
+]

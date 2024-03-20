@@ -1,0 +1,24 @@
+[
+  {
+    "Columns": null,
+    "auto_generated": false,
+    "end_line_number": 121,
+    "is_anonymous": false,
+    "mod_name": "introspection_table_mod",
+    "path": [
+      [
+        "mod.introspection_table_mod",
+        "introspection_table_mod.dashboard.sample_dashboard_1",
+        "introspection_table_mod.container.dashboard_sample_dashboard_1_anonymous_container_0",
+        "introspection_table_mod.text.sample_text_1"
+      ]
+    ],
+    "qualified_name": "introspection_table_mod.table.sample_table_1",
+    "resource_name": "sample_table_1",
+    "source_definition": "    table \"sample_table_1\" {\n      sql = \"select 1 as table\"\n      width = 4\n      title = \"Sample table 1\"\n    }",
+    "sql": "select 1 as table",
+    "start_line_number": 117,
+    "title": "Sample table 1",
+    "width": 4
+  }
+]
