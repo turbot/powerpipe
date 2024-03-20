@@ -40,10 +40,6 @@ benchmark "sample_benchmark_1" {
 	]
 }
 
-card "sample_card_2" {
-	title = "Sample card 2"
-}
-
 dashboard "sample_dashboard_1" {
   title = "Sample dashboard 1"
   description = "Sample dashboard to test introspection functionality"
@@ -130,4 +126,8 @@ dashboard "sample_dashboard_1" {
       title = "Sample input 1"
     }
   }
+}
+
+card "sample_card_2" {
+	title = "Sample card 2"
 }
