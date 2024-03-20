@@ -131,3 +131,7 @@ dashboard "sample_dashboard_1" {
 card "sample_card_2" {
 	title = "Sample card 2"
 }
+
+input "sample_input_2" {
+  title = "Sample input 2"
+}

@@ -271,5 +271,4 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 function teardown() {
   rm -f output.json
-  cd -
 }
