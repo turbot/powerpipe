@@ -131,3 +131,9 @@ dashboard "sample_dashboard_1" {
 card "sample_card_2" {
 	title = "Sample card 2"
 }
+
+dashboard "compose_other" {
+  dashboard "reused_sample_dashboard_1" {
+    base = introspection_table_mod.dashboard.sample_dashboard_1
+  }
+}
