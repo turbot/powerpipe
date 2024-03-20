@@ -1,3 +1,7 @@
+## v0.1.4 [TBD]
+_Whats new_
+- Updated Filter and Grouping dropdowns.
+
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
 - When exporting or displaying a check run as a snapshot, ensure the top level panel has a valid summary. ([#274](https://github.com/turbot/pipe-fittings/issues/274))
