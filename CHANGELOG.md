@@ -1,6 +1,6 @@
 ## v0.1.4 [TBD]
 _Whats new_
-- Updated Filter and Grouping dropdowns.
+- Improved layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/pipe-fittings/issues/263))
 
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
