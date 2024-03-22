@@ -60,6 +60,7 @@ const useSelectInputStyles = () => {
         boxShadow: "none",
         marginTop: 0,
         marginBottom: 0,
+        maxWidth: "300px",
       };
     },
     menuList: (provided) => {
@@ -83,6 +84,10 @@ const useSelectInputStyles = () => {
         whiteSpace: "nowrap",
       };
     },
+    group: (provided) => ({
+      ...provided,
+      borderTop: `1px solid ${blackScale3}`,
+    }),
   };
 };
 

@@ -14,6 +14,7 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
+import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
@@ -58,24 +59,49 @@ const CheckGroupingTypeSelect = ({
     update(index, {
       ...item,
       type: currentType,
-      value: "",
     });
   }, [currentType, index, item]);
 
+  const { context: filterValues } = useDashboardControls();
+
+  const allFilters = useMemo(
+    () =>
+      Object.entries(filterValues)
+        .reduce((acc: any[], [key, value]): any[] => {
+          if (filterValues[key]?.hasOwnProperty("key")) {
+            let group: any = {
+              label: filterTypeMap[key],
+              options: [],
+            };
+            for (let k in filterValues[key]?.key) {
+              group.options.push({
+                value: `${key}|${k}`,
+                label: k,
+              });
+            }
+            return acc.concat(group);
+          }
+          return acc.concat({ value: key, label: filterTypeMap[key] });
+        }, [])
+        .concat({ label: "Result", value: "result" })
+        .sort(filterKeysSorter),
+    [filterValues],
+  );
+
   const types = useMemo(() => {
     const existingTypes = config.map((c) => c.type.toString());
-    const allTypes: SelectOption[] = [
-      { value: "benchmark", label: "Benchmark" },
-      { value: "control", label: "Control" },
-      { value: "control_tag", label: "Control Tag" },
-      { value: "dimension", label: "Dimension" },
-      { value: "reason", label: "Reason" },
-      { value: "resource", label: "Resource" },
-      { value: "result", label: "Result" },
-      { value: "severity", label: "Severity" },
-      { value: "status", label: "Status" },
-    ];
-    return allTypes.filter(
+    // const allTypes: SelectOption[] = [
+    //   { value: "benchmark", label: "Benchmark" },
+    //   { value: "control", label: "Control" },
+    //   { value: "control_tag", label: "Control Tag" },
+    //   { value: "dimension", label: "Dimension" },
+    //   { value: "reason", label: "Reason" },
+    //   { value: "resource", label: "Resource" },
+    //   { value: "result", label: "Result" },
+    //   { value: "severity", label: "Severity" },
+    //   { value: "status", label: "Status" },
+    // ];
+    return allFilters.filter(
       (t) =>
         t.value === type ||
         t.value === "dimension" ||
@@ -101,12 +127,22 @@ const CheckGroupingTypeSelect = ({
       }}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) => setCurrentType((t as SelectOption).value)}
+      onChange={(t) =>
+        setCurrentType((t as SelectOption).value as CheckDisplayGroupType)
+      }
       options={types}
       inputId={`${type}.input`}
       placeholder="Select a group type…"
+      // @ts-ignore
       styles={styles}
-      value={types.find((t) => t.value === type)}
+      value={types
+        .reduce((acc, curr) => {
+          if (curr?.options) {
+            return acc.concat(...curr.options);
+          }
+          return acc.concat(curr);
+        }, [])
+        .find((t) => t.value === type)}
     />
   );
 };
@@ -192,7 +228,7 @@ const CheckGroupingEditorItem = ({
           update={update}
         />
       </div>
-      {(item.type === "dimension" || item.type === "control_tag") && (
+      {/* {(item.type === "dimension" || item.type === "control_tag") && (
         <>
           <span>=</span>
           <div className="grow">
@@ -205,7 +241,7 @@ const CheckGroupingEditorItem = ({
             />
           </div>
         </>
-      )}
+      )} */}
       <span
         className={classNames(
           config.length > 1
@@ -231,13 +267,18 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
-    setInnerConfig(config);
+    setInnerConfig(
+      config.map((c) => ({
+        ...c,
+        type: c?.value ? `${c.type}|${c.value}` : c?.type,
+      })) as any,
+    );
   }, [config, setInnerConfig]);
 
   useEffect(() => {
     let reason: string = "";
     const isValid = innerConfig.every((c, i) => {
-      switch (c.type) {
+      switch (c?.type) {
         case "benchmark":
         case "control":
         case "reason":
@@ -245,9 +286,6 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
         case "severity":
         case "status":
           return !c.value;
-        case "dimension":
-        case "control_tag":
-          return !!c.value;
         case "result":
           if (i !== innerConfig.length - 1) {
             reason = "Result must be the last grouping";
@@ -255,7 +293,10 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
           }
           return true;
         default:
-          return false;
+          if (c?.type?.includes("|")) {
+            return true;
+          }
+          return true;
       }
     });
     setIsValid({ value: isValid, reason });

@@ -4,6 +4,11 @@ import { useSearchParams } from "react-router-dom";
 
 const useCheckFilterConfig = (): CheckFilter => {
   const [searchParams] = useSearchParams();
+  const defaultFilter = {
+    operator: "and",
+    // @ts-ignore
+    expressions: [{ operator: "equal" }],
+  } as CheckFilter;
   return useMemo(() => {
     const rawFilters = searchParams.get("where");
     if (rawFilters) {
@@ -13,18 +18,10 @@ const useCheckFilterConfig = (): CheckFilter => {
         return parsedFilters;
       } catch (error) {
         console.error("Error parsing where filters", error);
-        return {
-          operator: "and",
-          // @ts-ignore
-          expressions: [{ operator: "equal" }],
-        };
+        return defaultFilter;
       }
     } else {
-      return {
-        operator: "and",
-        // @ts-ignore
-        expressions: [{ operator: "equal" }],
-      };
+      return defaultFilter;
     }
   }, [searchParams]);
 };

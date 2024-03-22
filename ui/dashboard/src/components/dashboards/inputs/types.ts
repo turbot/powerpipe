@@ -10,7 +10,7 @@ export type BaseInputProps = PanelDefinition &
   ExecutablePrimitiveProps;
 
 export type SelectOption = {
-  label: string;
+  label: React.ReactNode;
   value: string | null;
   tags?: object;
 };
