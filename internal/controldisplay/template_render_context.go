@@ -8,7 +8,7 @@ type TemplateRenderConfig struct {
 }
 
 type TemplateRenderConstants struct {
-	SteampipeVersion string
+	PowerpipeVersion string
 	WorkingDir       string
 }
 

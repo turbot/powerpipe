@@ -20,10 +20,10 @@
     "Id": "{{ .Run.Control.FullName }}",
     "ProductArn": "arn:aws:securityhub:{{ .GetDimensionValue "region" }}:{{ .GetDimensionValue "account_id" }}:product/{{ .GetDimensionValue "account_id" }}/default",
     "ProductFields": {
-        "ProviderName": "Steampipe",
-        "ProviderVersion": "{{ render_context.Constants.SteampipeVersion }}"
+        "ProviderName": "Powerpipe",
+        "ProviderVersion": "{{ render_context.Constants.PowerpipeVersion }}"
     },
-    "GeneratorId": "steampipe-{{ .Run.Control.ShortName }}",
+    "GeneratorId": "powerpipe-{{ .Run.Control.ShortName }}",
     "AwsAccountId": "{{ .GetDimensionValue "account_id" }}",
     "Types": [
         "automated"
@@ -49,7 +49,7 @@
     }
 }{{ end -}}
 
-{{/* mapping steampipe statuses with ASFF status values */}}
+{{/* mapping powerpipe statuses with ASFF status values */}}
 {{ define "statusmap" }}
     {{- if eq . "ok" -}}
         PASSED

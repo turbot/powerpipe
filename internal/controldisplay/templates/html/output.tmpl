@@ -3,7 +3,7 @@
 <html lang="en">
 
 <head>
-  <title>Steampipe Report</title>
+  <title>Powerpipe Report</title>
   <style>
     /**
        {{- template "normalize_css" -}}
@@ -26,8 +26,8 @@
     {{ range .Data.Root.Groups -}}
     {{ template "root_group_template" . -}}
     {{ end }}
-    <footer><em>Report run at <code>{{ .Data.StartTime.Format "2006-01-02 15:04:05" }}</code> using <a href="https://steampipe.io"
-          rel="nofollow"><code>Steampipe {{ .Constants.SteampipeVersion }}</code></a> in dir
+    <footer><em>Report run at <code>{{ .Data.StartTime.Format "2006-01-02 15:04:05" }}</code> using <a href="https://powerpipe.io"
+          rel="nofollow"><code>Steampipe {{ .Constants.PowerpipeVersion }}</code></a> in dir
         <code>{{ .Constants.WorkingDir }}</code>.</em></footer>
   </div>
 </body>
