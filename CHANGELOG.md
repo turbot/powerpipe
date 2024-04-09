@@ -1,6 +1,8 @@
 ## v0.1.4 [TBD]
 _Whats new_
+- Support installing private mods using a github app token. ([#381](https://github.com/turbot/pipe-fittings/issues/381)).
 - Improved layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/pipe-fittings/issues/263))
+- Remove `dashboard input list` and `dashboard input show` commands.
 
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
