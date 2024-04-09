@@ -66,3 +66,9 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_output --partial 'does not define a query or SQL, and has no edges/nodes'
 }
 
+@test "Parsing case 10 - nested dashboards (PASS)" {
+  cd $FILE_PATH/test_data/mods/dashboard_parsing_validation
+
+  run powerpipe dashboard run dashboard.nested_dashboards --output snapshot
+  assert_success
+}
