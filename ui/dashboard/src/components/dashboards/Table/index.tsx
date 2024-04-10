@@ -297,14 +297,14 @@ const CellValue = ({
         className="link-highlight tabular-nums"
         title={showTitle ? `${column.name}=${value}` : undefined}
       >
-        {value}
+        {value.toLocaleString()}
       </ExternalLink>
     ) : (
       <span
         className="tabular-nums"
         title={showTitle ? `${column.name}=${value}` : undefined}
       >
-        {value}
+        {value.toLocaleString()}
       </span>
     );
   }
