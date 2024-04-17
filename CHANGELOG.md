@@ -1,13 +1,14 @@
 ## v0.1.4 [TBD]
 _Whats new_
 - Support installing private mods using a github app token. ([#381](https://github.com/turbot/pipe-fittings/issues/381)).
-- Improved layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/pipe-fittings/issues/263))
+- Improve layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/powerpipe/issues/263))
 - Remove `dashboard input list` and `dashboard input show` commands.
-- Add thousands separator to numeric values in dashboard tables. ([#315](https://github.com/turbot/pipe-fittings/issues/315))
+- Add thousands separator to numeric values in dashboard tables. ([#315](https://github.com/turbot/powerpipe/issues/315))
+- Only show benchmark cards for statuses that are contained in the current filter and add status to filter on card click. ([#322](https://github.com/turbot/powerpipe/issues/322))
 
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
-- When exporting or displaying a check run as a snapshot, ensure the top level panel has a valid summary. ([#274](https://github.com/turbot/pipe-fittings/issues/274))
+- When exporting or displaying a check run as a snapshot, ensure the top level panel has a valid summary. ([#274](https://github.com/turbot/powerpipe/issues/274))
 - Update `mod list` output to include `resource_name` and `mod` fields. 
 
 ## v0.1.2 [2024-03-15]

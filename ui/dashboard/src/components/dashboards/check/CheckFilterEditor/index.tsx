@@ -469,6 +469,10 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
     setIsDirty(JSON.stringify(innerFilter) !== JSON.stringify(filter));
   }, [filter, innerFilter, setIsDirty, setIsValid]);
 
+  useDeepCompareEffect(() => {
+    setInnerFilter(filter);
+  }, [filter]);
+
   const remove = useCallback(
     (index: number) => {
       setInnerFilter((existing) => ({
