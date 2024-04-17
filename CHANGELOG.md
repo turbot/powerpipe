@@ -4,7 +4,7 @@ _Whats new_
 - Improve layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/powerpipe/issues/263))
 - Remove `dashboard input list` and `dashboard input show` commands.
 - Add thousands separator to numeric values in dashboard tables. ([#315](https://github.com/turbot/powerpipe/issues/315))
-- Update behavior of status cards on dashboard panel. ([#322](https://github.com/turbot/powerpipe/issues/322))
+- Only show benchmark cards for statuses that are contained in the current filter and add status to filter on card click. ([#322](https://github.com/turbot/powerpipe/issues/322))
 
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
