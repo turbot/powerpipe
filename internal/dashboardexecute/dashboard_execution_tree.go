@@ -8,7 +8,9 @@ import (
 	"sync"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -106,8 +108,14 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	startTime := time.Now()
 
-	// store context
-	cancelCtx, cancel := context.WithCancel(ctx)
+	// setup a cancel context with timeout and start cancel handler
+	var cancel context.CancelFunc
+	if executionTimeout := viper.GetInt(constants.ArgDashboardTimeout); executionTimeout > 0 {
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(executionTimeout)*time.Second)
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
+	}
+
 	e.cancel = cancel
 	workspace := e.workspace
 
@@ -124,7 +132,7 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 
 	// perform any necessary initialisation
 	// (e.g. check run creates the control execution tree)
-	e.Root.Initialise(cancelCtx)
+	e.Root.Initialise(ctx)
 	if e.Root.GetError() != nil {
 		return
 	}
@@ -177,7 +185,7 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	}
 
 	// execute synchronously
-	e.Root.Execute(cancelCtx)
+	e.Root.Execute(ctx)
 
 	// now close any clients created just for this run
 	e.clientMap.Close(ctx)

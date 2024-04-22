@@ -72,7 +72,8 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		constants.EnvPipesHost:       {ConfigVar: []string{constants.ArgPipesHost}, VarType: cmdconfig.EnvVarTypeString},
 		constants.EnvPipesToken:      {ConfigVar: []string{constants.ArgPipesToken}, VarType: cmdconfig.EnvVarTypeString},
 		// powerpipe specific constants
-		localconstants.EnvListen: {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
-		localconstants.EnvPort:   {ConfigVar: []string{constants.ArgPort}, VarType: cmdconfig.EnvVarTypeInt},
+		localconstants.EnvListen:           {ConfigVar: []string{constants.ArgListen}, VarType: cmdconfig.EnvVarTypeString},
+		localconstants.EnvBenchmarkTimeout: {ConfigVar: []string{constants.ArgBenchmarkTimeout}, VarType: cmdconfig.EnvVarTypeInt},
+		localconstants.EnvDashboardTimeout: {ConfigVar: []string{constants.ArgDashboardTimeout}, VarType: cmdconfig.EnvVarTypeInt},
 	}
 }

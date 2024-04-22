@@ -73,7 +73,8 @@ The current mod is the working directory, or the directory specified by the --mo
 		// NOTE: use StringArrayFlag for ArgVariable, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgVariable, nil, "Specify the value of a variable").
-		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values")
+		AddStringSliceFlag(constants.ArgVarFile, nil, "Specify an .ppvar file containing variable values").
+		AddIntFlag(constants.ArgDashboardTimeout, 0, "Set a the dashboard execution timeout")
 
 	return cmd
 }
