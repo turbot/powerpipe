@@ -3,14 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"log/slog"
-	"sync"
-
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"log/slog"
+	"sync"
 )
 
 type DashboardParentImpl struct {

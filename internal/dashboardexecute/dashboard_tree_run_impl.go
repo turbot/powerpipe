@@ -2,9 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
-	"time"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -32,8 +30,6 @@ type DashboardTreeRunImpl struct {
 	parent        dashboardtypes.DashboardParent
 	executionTree *DashboardExecutionTree
 	resource      modconfig.DashboardLeafNode
-	startTime     time.Time
-	endTime       time.Time
 
 	// store the top level run which embeds this struct
 	// we need this for setStatus which serialises the run for the message payload
@@ -145,16 +141,8 @@ func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
 		r.setErrorString()
 		r.setStatus(ctx, dashboardtypes.RunCanceled)
 	} else {
-		if err.Error() == context.DeadlineExceeded.Error() {
-			// had the control started?
-			if r.Status == dashboardtypes.RunRunning {
-				r.err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(r.startTime).Seconds())
-			} else {
-				r.err = fmt.Errorf("execution timed out before control started")
-			}
-		} else {
-			r.err = error_helpers.TransformErrorToSteampipe(err)
-		}
+		r.err = error_helpers.TransformErrorToSteampipe(err)
+
 		// error type does not serialise to JSON so copy into a string
 		r.setErrorString()
 		r.setStatus(ctx, dashboardtypes.RunError)
@@ -185,15 +173,6 @@ func (r *DashboardTreeRunImpl) setStatus(ctx context.Context, status dashboardty
 	// notify our parent that our status has changed
 	r.parent.ChildStatusChanged(ctx)
 
-	// if we have started set the start time
-	if status == dashboardtypes.RunRunning {
-		r.startTime = time.Now()
-	}
-	// if we have completed set the end time
-	if status.IsFinished() {
-		r.endTime = time.Now()
-
-	}
 	// raise LeafNodeUpdated event
 	// TODO [node_reuse] do this a different way https://github.com/turbot/steampipe/issues/2919
 	// TACTICAL: pass the full run struct - 'r.run', rather than ourselves - so we serialize all properties
