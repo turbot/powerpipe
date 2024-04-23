@@ -75,7 +75,6 @@ type ControlRun struct {
 	doneChan    chan bool
 	attempts    int
 	startTime   time.Time
-	endTime     time.Time
 }
 
 func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
@@ -395,7 +394,6 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 	if r.Finished() {
 		// close the doneChan - we don't need it anymore
 		close(r.doneChan)
-		r.endTime = time.Now()
 	}
 }
 

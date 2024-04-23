@@ -143,9 +143,6 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		s.writePayloadToSession(e.Session, payload)
 
 	case *dashboardevents.LeafNodeUpdated:
-		if e.LeafNode["status"] == "error" {
-			slog.Debug("LeafNodeUpdated event", "session", e.Session, "leafNode", e.LeafNode["id"], "status", e.LeafNode["status"])
-		}
 		payload, payloadError = buildLeafNodeUpdatedPayload(e)
 		if payloadError != nil {
 			return

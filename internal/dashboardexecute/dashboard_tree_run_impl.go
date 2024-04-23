@@ -133,7 +133,7 @@ func (r *DashboardTreeRunImpl) GetResource() modconfig.DashboardLeafNode {
 
 // SetError implements DashboardTreeRun
 func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
-	slog.Info("SetError", "name", r.Name, "error", err)
+	slog.Debug("SetError", "name", r.Name, "error", err)
 
 	// set status (this sends update event)
 	if error_helpers.IsContextCancelledError(err) {
