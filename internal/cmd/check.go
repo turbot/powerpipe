@@ -119,14 +119,15 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	startTime := time.Now()
 
-	// setup a cancel context with timeout and start cancel handler
-	var cancel context.CancelFunc
-	var ctx context.Context
+	// if an execution timeout is set, store deadline
+	// - this will be used by DB client when adding a deadline to the ctx used for execution
 	if executionTimeout := viper.GetInt(constants.ArgDashboardTimeout); executionTimeout > 0 {
-		ctx, cancel = context.WithTimeout(cmd.Context(), time.Duration(executionTimeout))
+		viper.Set(localconstants.ConfigKeyExecuteDeadline, time.Now().Add(time.Duration(executionTimeout)*time.Second))
 	} else {
-		ctx, cancel = context.WithCancel(cmd.Context())
+		viper.Set(localconstants.ConfigKeyExecuteDeadline, time.Time{})
 	}
+
+	ctx, cancel := context.WithCancel(cmd.Context())
 	contexthelpers.StartCancelHandler(cancel)
 
 	defer func() {

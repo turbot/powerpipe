@@ -2,7 +2,9 @@ package dashboardexecute
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -30,6 +32,9 @@ type DashboardTreeRunImpl struct {
 	parent        dashboardtypes.DashboardParent
 	executionTree *DashboardExecutionTree
 	resource      modconfig.DashboardLeafNode
+	startTime     time.Time
+	endTime       time.Time
+
 	// store the top level run which embeds this struct
 	// we need this for setStatus which serialises the run for the message payload
 	run dashboardtypes.DashboardTreeRun
@@ -132,16 +137,26 @@ func (r *DashboardTreeRunImpl) GetResource() modconfig.DashboardLeafNode {
 
 // SetError implements DashboardTreeRun
 func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
-	slog.Debug("SetError", "name", r.Name, "error", err)
-	r.err = err
-	// error type does not serialise to JSON so copy into a string
-	r.ErrorString = err.Error()
+	slog.Info("SetError", "name", r.Name, "error", err)
+
 	// set status (this sends update event)
 	if error_helpers.IsContextCancelledError(err) {
 		r.setStatus(ctx, dashboardtypes.RunCanceled)
 	} else {
+		if err.Error() == context.DeadlineExceeded.Error() {
+			// had the control started?
+			if r.Status == dashboardtypes.RunRunning {
+				r.err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(r.startTime).Seconds())
+			} else {
+				r.err = fmt.Errorf("execution timed out before control started")
+			}
+		} else {
+			r.err = error_helpers.TransformErrorToSteampipe(err)
+		}
 		r.setStatus(ctx, dashboardtypes.RunError)
 	}
+	// error type does not serialise to JSON so copy into a string
+	r.ErrorString = err.Error()
 	// tell parent we are done
 	r.notifyParentOfCompletion()
 }
@@ -159,6 +174,15 @@ func (r *DashboardTreeRunImpl) setStatus(ctx context.Context, status dashboardty
 	// notify our parent that our status has changed
 	r.parent.ChildStatusChanged(ctx)
 
+	// if we have started set the start time
+	if status == dashboardtypes.RunRunning {
+		r.startTime = time.Now()
+	}
+	// if we have completed set the end time
+	if status.IsFinished() {
+		r.endTime = time.Now()
+
+	}
 	// raise LeafNodeUpdated event
 	// TODO [node_reuse] do this a different way https://github.com/turbot/steampipe/issues/2919
 	// TACTICAL: pass the full run struct - 'r.run', rather than ourselves - so we serialize all properties

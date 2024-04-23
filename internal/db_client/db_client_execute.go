@@ -4,14 +4,16 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/turbot/pipe-fittings/queryresult"
+	"log/slog"
 	"time"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/statushooks"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
@@ -89,7 +91,6 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 
 	defer func() {
 		if err != nil {
-			err = error_helpers.HandleQueryTimeoutError(err)
 			// stop spinner in case of error
 			statushooks.Done(ctxExecute)
 			// error - rollback transaction if we have one
@@ -133,15 +134,38 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 }
 
 func (c *DbClient) getExecuteContext(ctx context.Context) context.Context {
-	queryTimeout := time.Duration(viper.GetInt(constants.ArgDatabaseQueryTimeout)) * time.Second
-	// if timeout is zero, do not set a timeout
+	// get the query timeout
+	queryTimeout := time.Duration(viper.GetInt(constants.ArgDatabaseQueryTimeout))
+	// read execution deadline from viper - this will be set if there is a dashboard_timeout or a query_timeout is set
+	executionDeadline := viper.GetTime(localconstants.ConfigKeyExecuteDeadline)
+
 	if queryTimeout == 0 {
-		return ctx
+		// if there is not timeout just return ctx
+		if executionDeadline.IsZero() {
+			return ctx
+		}
+		// so we have a deadline but no query timeout - just use current value  of executionDeadline
+		slog.Info("getExecuteContext - using execution deadline", "deadline", executionDeadline)
+	} else {
+		if executionDeadline.IsZero() {
+			// so there is a query timeout but no execution deadline
+			executionDeadline = time.Now().Add(queryTimeout)
+			slog.Info("getExecuteContext - using query timeout", "timeout", queryTimeout)
+		} else {
+			// so we have both - which is earlier
+			queryDeadline := time.Now().Add(queryTimeout)
+			if queryDeadline.Before(executionDeadline) {
+				executionDeadline = queryDeadline
+				slog.Info("getExecuteContext - both execution timeout and query timeout set - using query timeout", "timeout", queryTimeout)
+			} else {
+				slog.Info("getExecuteContext - both execution timeout and query timeout set - using execution timeout", "deadline", executionDeadline)
+			}
+		}
 	}
+
 	// create a context with a deadline
-	shouldBeDoneBy := time.Now().Add(queryTimeout)
-	//nolint:govet //we don't use this cancel fn because, pgx prematurely cancels the PG connection when this cancel gets called in 'defer'
-	newCtx, _ := context.WithDeadline(ctx, shouldBeDoneBy)
+	//nolint:golint,lostcancel //we don't use this cancel fn because, pgx prematurely cancels the PG connection when this cancel gets called in 'defer'
+	newCtx, _ := context.WithDeadline(ctx, executionDeadline)
 
 	return newCtx
 }

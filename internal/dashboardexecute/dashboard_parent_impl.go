@@ -2,12 +2,14 @@ package dashboardexecute
 
 import (
 	"context"
+	"fmt"
 	"log/slog"
 	"sync"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
@@ -110,11 +112,19 @@ func (r *DashboardParentImpl) waitForChildrenAsync(ctx context.Context) chan err
 
 		// so all children have completed - check for errors
 		// TODO [node_reuse] format better error https://github.com/turbot/steampipe/issues/2920
-		err := error_helpers.CombineErrors(errors...)
+		//err := error_helpers.CombineErrors(errors...)
+		var err error
+		if len(errors) > 0 {
+			err = fmt.Errorf("%d %s failed with an error", len(errors), utils.Pluralize("child", len(errors)))
+		}
 
 		// if context is cancelled, just return context cancellation error
 		if ctx.Err() != nil {
-			err = ctx.Err()
+			if ctx.Err().Error() == context.DeadlineExceeded.Error() {
+				err = fmt.Errorf("execution timed out")
+			} else {
+				err = ctx.Err()
+			}
 		}
 
 		doneChan <- err

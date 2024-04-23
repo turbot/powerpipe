@@ -4,7 +4,7 @@ dashboard "testing_card_blocks" {
   container {
     card "card1" {
       sql = <<-EOQ
-        select 1 as card1_value
+        select pg_sleep(5), 1 as card1_value
       EOQ
       width = 2
     }
@@ -13,7 +13,7 @@ dashboard "testing_card_blocks" {
       type  = "info"
       width = 2
       sql = <<-EOQ
-        select 2 as card2_value
+        select pg_sleep(5), 2 as card2_value
       EOQ
     }
   }

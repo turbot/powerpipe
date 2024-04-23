@@ -15,6 +15,7 @@ import (
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
@@ -108,13 +109,18 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	startTime := time.Now()
 
-	// setup a cancel context with timeout and start cancel handler
-	var cancel context.CancelFunc
+	// if an execution timeout is set, store deadline
+	// - this will be used by DB client when adding a deadline to the ctx used for execution
 	if executionTimeout := viper.GetInt(constants.ArgDashboardTimeout); executionTimeout > 0 {
-		ctx, cancel = context.WithTimeout(ctx, time.Duration(executionTimeout)*time.Second)
+		slog.Info("DashboardExecutionTree.Execute - setting execution deadline", "timeout", executionTimeout)
+		viper.Set(localconstants.ConfigKeyExecuteDeadline, time.Now().Add(time.Duration(executionTimeout)*time.Second))
 	} else {
-		ctx, cancel = context.WithCancel(ctx)
+		viper.Set(localconstants.ConfigKeyExecuteDeadline, time.Time{})
 	}
+
+	// setup a cancel context with timeout and start cancel handler
+	// store context
+	ctx, cancel := context.WithCancel(ctx)
 
 	e.cancel = cancel
 	workspace := e.workspace
