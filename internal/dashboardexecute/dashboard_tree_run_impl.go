@@ -141,6 +141,8 @@ func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
 
 	// set status (this sends update event)
 	if error_helpers.IsContextCancelledError(err) {
+		// error type does not serialise to JSON so copy into a string
+		r.setErrorString()
 		r.setStatus(ctx, dashboardtypes.RunCanceled)
 	} else {
 		if err.Error() == context.DeadlineExceeded.Error() {
@@ -153,12 +155,21 @@ func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
 		} else {
 			r.err = error_helpers.TransformErrorToSteampipe(err)
 		}
+		// error type does not serialise to JSON so copy into a string
+		r.setErrorString()
 		r.setStatus(ctx, dashboardtypes.RunError)
 	}
-	// error type does not serialise to JSON so copy into a string
-	r.ErrorString = err.Error()
 	// tell parent we are done
 	r.notifyParentOfCompletion()
+}
+
+func (r *DashboardTreeRunImpl) setErrorString() {
+	if r.err != nil {
+		// error type does not serialise to JSON so copy into a string
+		r.ErrorString = r.err.Error()
+	} else {
+		r.ErrorString = ""
+	}
 }
 
 // SetComplete implements DashboardTreeRun
