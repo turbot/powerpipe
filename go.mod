@@ -24,7 +24,7 @@ require (
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/thediveo/enumflag/v2 v2.0.4
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.1.1
+	github.com/turbot/pipe-fittings v1.1.2
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.0
 	github.com/turbot/terraform-components v0.0.0-20231108031935-358f803c1a8b // indirect
@@ -129,8 +129,6 @@ require (
 	github.com/golang/protobuf v1.5.4 // indirect
 	github.com/google/flatbuffers v23.5.26+incompatible // indirect
 	github.com/google/go-cmp v0.6.0 // indirect
-	github.com/google/go-github/v61 v61.0.0 // indirect
-	github.com/google/go-querystring v1.1.0 // indirect
 	github.com/google/s2a-go v0.1.7 // indirect
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
