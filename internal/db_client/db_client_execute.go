@@ -4,13 +4,13 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
-	"github.com/turbot/pipe-fittings/queryresult"
 	"time"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/statushooks"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"golang.org/x/text/language"
@@ -89,7 +89,6 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 
 	defer func() {
 		if err != nil {
-			err = error_helpers.HandleQueryTimeoutError(err)
 			// stop spinner in case of error
 			statushooks.Done(ctxExecute)
 			// error - rollback transaction if we have one

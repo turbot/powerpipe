@@ -79,7 +79,8 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
-		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)")
+		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
+		AddIntFlag(constants.ArgBenchmarkTimeout, 0, "Set a the execution timeout")
 
 	// for control command, add --arg
 	switch typeName {
@@ -118,8 +119,15 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	startTime := time.Now()
 
-	// setup a cancel context and start cancel handler
-	ctx, cancel := context.WithCancel(cmd.Context())
+	// setup a cancel context with timeout and start cancel handler
+	var cancel context.CancelFunc
+	var ctx context.Context
+	// if a benchmark timeout was specified, use that
+	if executionTimeout := viper.GetInt(constants.ArgBenchmarkTimeout); executionTimeout > 0 {
+		ctx, cancel = context.WithTimeout(cmd.Context(), time.Duration(executionTimeout))
+	} else {
+		ctx, cancel = context.WithCancel(cmd.Context())
+	}
 	contexthelpers.StartCancelHandler(cancel)
 
 	defer func() {

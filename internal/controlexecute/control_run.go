@@ -2,7 +2,6 @@ package controlexecute
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"log/slog"
 	"sync"
@@ -75,6 +74,7 @@ type ControlRun struct {
 	stateLock   sync.Mutex
 	doneChan    chan bool
 	attempts    int
+	startTime   time.Time
 }
 
 func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
@@ -174,10 +174,15 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
-	if !errors.Is(r.runError, context.DeadlineExceeded) {
-		r.runError = error_helpers.TransformErrorToSteampipe(err)
+	if err.Error() == context.DeadlineExceeded.Error() {
+		// had the control started?
+		if r.RunStatus == dashboardtypes.RunRunning {
+			r.runError = fmt.Errorf("control execution timed out after running for %0.2fs", time.Since(r.startTime).Seconds())
+		} else {
+			r.runError = fmt.Errorf("execution timed out before control started")
+		}
 	} else {
-		r.runError = fmt.Errorf("control execution timed out")
+		r.runError = error_helpers.TransformErrorToSteampipe(err)
 	}
 	r.RunErrorString = r.runError.Error()
 	// update error count
@@ -187,8 +192,8 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 	} else {
 		r.setRunStatus(ctx, dashboardtypes.RunError)
 	}
-}
 
+}
 func (r *ControlRun) skip(ctx context.Context) {
 	r.setRunStatus(ctx, dashboardtypes.RunComplete)
 }
@@ -218,7 +223,7 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	}()
 
 	// set our status
-	r.RunStatus = dashboardtypes.RunRunning
+	r.setRunStatus(ctx, dashboardtypes.RunRunning)
 
 	// update the current running control in the Progress renderer
 	r.Tree.Progress.OnControlStart(ctx, r)
@@ -382,6 +387,10 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 	r.RunStatus = status
 	r.stateLock.Unlock()
 
+	// if status is started, set start time
+	if status == dashboardtypes.RunRunning {
+		r.startTime = time.Now()
+	}
 	if r.Finished() {
 		// close the doneChan - we don't need it anymore
 		close(r.doneChan)

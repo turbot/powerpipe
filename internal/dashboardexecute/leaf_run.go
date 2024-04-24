@@ -2,8 +2,10 @@ package dashboardexecute
 
 import (
 	"context"
+	"fmt"
 	"golang.org/x/exp/maps"
 	"log/slog"
+	"time"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -220,6 +222,14 @@ func (*LeafRun) IsSnapshotPanel() {}
 func (r *LeafRun) executeQuery(ctx context.Context) error {
 	slog.Debug("LeafRun SQL resolved, executing", "name", r.resource.Name())
 
+	// check for context errors
+	if err := ctx.Err(); err != nil {
+		if err.Error() == context.DeadlineExceeded.Error() {
+			err = fmt.Errorf("dashboard execution timed out before execution of this node started")
+		}
+		return err
+	}
+
 	// get the client for this leaf run
 	// (we have already resolved the database and search path config)
 	client, err := r.executionTree.getClient(ctx, r.database, r.searchPathConfig)
@@ -227,8 +237,12 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 		return err
 	}
 
+	startTime := time.Now()
 	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
 	if err != nil {
+		if err.Error() == context.DeadlineExceeded.Error() {
+			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
+		}
 		slog.Debug("LeafRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
 	}

@@ -44,7 +44,9 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database")
+		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddIntFlag(constants.ArgBenchmarkTimeout, 0, "Set a the dashboard execution timeout")
+
 	return cmd
 }
 

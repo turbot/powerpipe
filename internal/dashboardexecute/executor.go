@@ -46,8 +46,12 @@ var Executor *DashboardExecutor
 func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
-		if err != nil && ctx.Err() != nil {
-			err = ctx.Err()
+		if err == nil && ctx.Err() != nil {
+			if ctx.Err() != nil && ctx.Err().Error() == context.DeadlineExceeded.Error() {
+				err = fmt.Errorf("execution timed out")
+			} else {
+				err = ctx.Err()
+			}
 		}
 		// if there was an error executing, send an ExecutionError event
 		if err != nil {
