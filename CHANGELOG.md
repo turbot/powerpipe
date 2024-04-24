@@ -1,6 +1,9 @@
 ## v0.1.4 [TBD]
 _Whats new_
 - Support installing private mods using a github app token. ([#381](https://github.com/turbot/pipe-fittings/issues/381)).
+ - Add benchmark and dashboard execution timeouts. ([#336](https://github.com/turbot/powerpipe/issues/336))
+- When calling mod update, respect the argument (if any) and only update specified mods. ([#331](https://github.com/turbot/powerpipe/issues/331))
+- Fix `mod update` display of updates to transitive dependencies. ([#288](https://github.com/turbot/powerpipe/issues/288))
 - Improve layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/powerpipe/issues/263))
 - Remove `dashboard input list` and `dashboard input show` commands.
 - Add thousands separator to numeric values in dashboard tables. ([#315](https://github.com/turbot/powerpipe/issues/315))
