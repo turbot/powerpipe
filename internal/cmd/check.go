@@ -122,12 +122,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// setup a cancel context with timeout and start cancel handler
 	var cancel context.CancelFunc
 	var ctx context.Context
-	// if a benchmark timeout was specified, use that
-	if executionTimeout := viper.GetInt(constants.ArgBenchmarkTimeout); executionTimeout > 0 {
-		ctx, cancel = context.WithTimeout(cmd.Context(), time.Duration(executionTimeout)*time.Second)
-	} else {
-		ctx, cancel = context.WithCancel(cmd.Context())
-	}
+	ctx, cancel = context.WithCancel(cmd.Context())
 	contexthelpers.StartCancelHandler(cancel)
 
 	defer func() {
@@ -242,7 +237,9 @@ func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTr
 // executeTree executes and displays the (table) results of an execution
 func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData[T]) error {
 	// create a context with check status hooks
-	checkCtx := createCheckContext(ctx)
+	checkCtx, cancel := createCheckContext(ctx)
+	defer cancel()
+
 	err := tree.Execute(checkCtx)
 	if err != nil {
 		return err
@@ -314,8 +311,17 @@ func getExitCode(alarms int, errors int) int {
 }
 
 // create the context for the check run - add a control status renderer
-func createCheckContext(ctx context.Context) context.Context {
-	return controlstatus.AddControlHooksToContext(ctx, controlstatus.NewStatusControlHooks())
+func createCheckContext(ctx context.Context) (context.Context, context.CancelFunc) {
+	var cancel context.CancelFunc
+	// if a dashboard timeout was specified, use that
+	if executionTimeout := viper.GetInt(constants.ArgBenchmarkTimeout); executionTimeout > 0 {
+		ctx, cancel = context.WithTimeout(ctx, time.Duration(executionTimeout)*time.Second)
+	} else {
+		ctx, cancel = context.WithCancel(ctx)
+
+	}
+	ctx = controlstatus.AddControlHooksToContext(ctx, controlstatus.NewStatusControlHooks())
+	return ctx, cancel
 }
 
 func validateCheckArgs(ctx context.Context) error {
