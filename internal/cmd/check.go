@@ -124,7 +124,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	var ctx context.Context
 	// if a benchmark timeout was specified, use that
 	if executionTimeout := viper.GetInt(constants.ArgBenchmarkTimeout); executionTimeout > 0 {
-		ctx, cancel = context.WithTimeout(cmd.Context(), time.Duration(executionTimeout))
+		ctx, cancel = context.WithTimeout(cmd.Context(), time.Duration(executionTimeout)*time.Second)
 	} else {
 		ctx, cancel = context.WithCancel(cmd.Context())
 	}
