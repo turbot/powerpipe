@@ -42,7 +42,7 @@ require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/didip/tollbooth/v7 v7.0.1
 	github.com/gin-contrib/gzip v1.0.0
-	github.com/gin-contrib/size v0.0.0-20230212012657-e14a14094dc4
+	github.com/gin-contrib/size v1.0.0
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/jackc/pgx/v5 v5.5.5
 	github.com/jedib0t/go-pretty/v6 v6.5.8
