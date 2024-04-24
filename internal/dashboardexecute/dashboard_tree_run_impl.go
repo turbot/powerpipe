@@ -141,20 +141,11 @@ func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
 	} else {
 		r.err = error_helpers.TransformErrorToSteampipe(err)
 		// error type does not serialise to JSON so copy into a string
-		r.setErrorString()
+		r.ErrorString = r.err.Error()
 		r.setStatus(ctx, dashboardtypes.RunError)
 	}
 	// tell parent we are done
 	r.notifyParentOfCompletion()
-}
-
-func (r *DashboardTreeRunImpl) setErrorString() {
-	if r.err != nil {
-		// error type does not serialise to JSON so copy into a string
-		r.ErrorString = r.err.Error()
-	} else {
-		r.ErrorString = ""
-	}
 }
 
 // SetComplete implements DashboardTreeRun
