@@ -98,7 +98,7 @@ const CheckFilterTypeSelect = ({
 
   const allFilters = useMemo(
     () =>
-      Object.entries(filterValues)
+      Object.entries(filterValues || {})
         .reduce((acc: any[], [key, value]): any[] => {
           if (filterValues[key]?.hasOwnProperty("key")) {
             let group: any = {
