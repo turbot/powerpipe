@@ -68,7 +68,7 @@ Examples:
 
 func modInstallCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "install",
+		Use:   "install [flags] [mod-url]",
 		Run:   runModInstallCmd,
 		Short: "Install one or more mods and their dependencies",
 		Long: `Install one or more mods and their dependencies.
@@ -170,7 +170,7 @@ func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 
 func modUninstallCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "uninstall",
+		Use:   "uninstall [flags] [mod-url]",
 		Run:   runModUninstallCmd,
 		Short: "Uninstall a mod and its dependencies",
 		Long: `Uninstall a mod and its dependencies.
@@ -220,7 +220,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 
 func modUpdateCmd() *cobra.Command {
 	var cmd = &cobra.Command{
-		Use:   "update",
+		Use:   "update [flags] [mod-url]",
 		Run:   runModUpdateCmd,
 		Short: "Update one or more mods and their dependencies",
 		Long: `Update one or more mods and their dependencies.

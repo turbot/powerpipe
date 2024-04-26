@@ -80,7 +80,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
-		AddIntFlag(constants.ArgBenchmarkTimeout, 0, "Set a the execution timeout")
+		AddIntFlag(constants.ArgBenchmarkTimeout, 0, "Set the benchmark execution timeout")
 
 	// for control command, add --arg
 	switch typeName {
