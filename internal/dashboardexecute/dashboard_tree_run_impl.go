@@ -135,13 +135,14 @@ func (r *DashboardTreeRunImpl) GetResource() modconfig.DashboardLeafNode {
 func (r *DashboardTreeRunImpl) SetError(ctx context.Context, err error) {
 	slog.Debug("SetError", "name", r.Name, "error", err)
 
+	r.err = error_helpers.TransformErrorToSteampipe(err)
+	// error type does not serialise to JSON so copy into a string
+	r.ErrorString = r.err.Error()
+
 	// set status (this sends update event)
 	if error_helpers.IsContextCancelledError(err) {
 		r.setStatus(ctx, dashboardtypes.RunCanceled)
 	} else {
-		r.err = error_helpers.TransformErrorToSteampipe(err)
-		// error type does not serialise to JSON so copy into a string
-		r.ErrorString = r.err.Error()
 		r.setStatus(ctx, dashboardtypes.RunError)
 	}
 	// tell parent we are done
