@@ -1,4 +1,4 @@
-## v0.1.4 [2024-04-26]
+## v0.2.0 [2024-04-26]
 _Whats new_
 - It is now possible to set a timeout for benchmark and dashboard execution. These can be set:
     - in the workspace using config `dashboard_timeout` and `benchmark_timeout`
