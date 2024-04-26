@@ -1,13 +1,20 @@
-## v0.1.4 [TBD]
+## v0.1.4 [2024-04-26]
 _Whats new_
+- It is now possible to set a timeout for benchmark and dashboard execution. These can be set:
+    - in the workspace using config `dashboard_timeout` and `benchmark_timeout`
+    - using the `--dashboard-timeout` flag for the the `dashboard run` and `server` commands 
+    - using the `--benchmark-timeout` flag for the `benchmark run` commands. 
+    - using the environment variables `DASHBOARD_TIMEOUT` and `BENCHMARK_TIMEOUT` respectively.
+  ([#336](https://github.com/turbot/powerpipe/issues/336))
 - Support installing private mods using a github app token. ([#381](https://github.com/turbot/pipe-fittings/issues/381)).
- - Add benchmark and dashboard execution timeouts. ([#336](https://github.com/turbot/powerpipe/issues/336))
-- When calling mod update, respect the argument (if any) and only update specified mods. ([#331](https://github.com/turbot/powerpipe/issues/331))
-- Fix `mod update` display of updates to transitive dependencies. ([#288](https://github.com/turbot/powerpipe/issues/288))
 - Improve layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/powerpipe/issues/263))
 - Remove `dashboard input list` and `dashboard input show` commands.
 - Add thousands separator to numeric values in dashboard tables. ([#315](https://github.com/turbot/powerpipe/issues/315))
 - Only show benchmark cards for statuses that are contained in the current filter and add status to filter on card click. ([#322](https://github.com/turbot/powerpipe/issues/322))
+
+_Bug fixes_
+- When calling mod update, respect the argument (if any) and only update specified mods. ([#331](https://github.com/turbot/powerpipe/issues/331))
+- Fix `mod update` display of updates to transitive dependencies. ([#288](https://github.com/turbot/powerpipe/issues/288))
 
 ## v0.1.3 [2024-03-18]
 _Bug fixes_
