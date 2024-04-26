@@ -4,7 +4,7 @@ _Whats new_
     - in the workspace using config `dashboard_timeout` and `benchmark_timeout`
     - using the `--dashboard-timeout` flag for the the `dashboard run` and `server` commands 
     - using the `--benchmark-timeout` flag for the `benchmark run` commands. 
-    - using the environment variables `DASHBOARD_TIMEOUT` and `BENCHMARK_TIMEOUT` respectively.
+    - using the environment variables `POWERPIPE_DASHBOARD_TIMEOUT` and `POWERPIPE_BENCHMARK_TIMEOUT` respectively.
   ([#336](https://github.com/turbot/powerpipe/issues/336))
 - Support installing private mods using a github app token. ([#381](https://github.com/turbot/pipe-fittings/issues/381)).
 - Improve layout of filter and grouping components for control tags and dimensions. ([#263](https://github.com/turbot/powerpipe/issues/263))
