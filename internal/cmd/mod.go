@@ -94,12 +94,18 @@ Examples:
   powerpipe mod install --dry-run`,
 	}
 
+	// variable used to assign the output mode flag
+	var updateStrategy = constants.ModUpdateIdMinimal
+
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
 		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
+		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
+			constants.ArgPull,
+			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
 		AddModLocationFlag()
 
 	return cmd
@@ -133,9 +139,12 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 
 	// if any mod names were passed as args, convert into formed mod names
 	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	installOpts.ModArgs = utils.TrimGitUrls(installOpts.ModArgs)
+
+	// set the update strategy
+	installOpts.UpdateStrategy = viper.GetString(constants.ArgPull)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
+	// so the install
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
 	if err != nil {
 		// exitCode = constants.ExitCodeModInstallFailed
@@ -211,7 +220,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	trimGitUrls(opts)
+
 	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
 	//nolint:forbidigo // acceptable
@@ -234,11 +243,17 @@ Example:
   powerpipe mod update`,
 	}
 
+	// variable used to assign the output mode flag
+	var updateStrategy = constants.ModUpdateIdLatest
+
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after update is complete").
 		AddBoolFlag(constants.ArgForce, false, "Update mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be updated without modifying them").
 		AddBoolFlag(constants.ArgHelp, false, "Help for update", cmdconfig.FlagOptions.WithShortHand("h")).
+		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
+			constants.ArgPull,
+			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
 		AddModLocationFlag()
 
 	return cmd
@@ -266,7 +281,10 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	trimGitUrls(opts)
+	// set the update strategy
+	opts.UpdateStrategy = viper.GetString(constants.ArgPull)
+
+	// do this update
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
 
@@ -292,7 +310,7 @@ Example:
 		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.OutputModeIds), ", "))).
 		AddModLocationFlag()
 	return cmd
 }
@@ -401,12 +419,4 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 	}
 
 	return mod, nil
-}
-
-// Modifies(trims) the URL if contains http ot https in arguments
-func trimGitUrls(opts *modinstaller.InstallOpts) {
-	for i, url := range opts.ModArgs {
-		opts.ModArgs[i] = strings.TrimPrefix(url, "http://")
-		opts.ModArgs[i] = strings.TrimPrefix(url, "https://")
-	}
 }
