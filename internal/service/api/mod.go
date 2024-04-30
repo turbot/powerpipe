@@ -46,10 +46,10 @@ func (api *APIService) getModHandler(c *gin.Context) {
 }
 
 type InstallModResponse struct {
-	Installed   *versionmap.DependencyVersionMap `json:"installed"`
-	Uninstalled *versionmap.DependencyVersionMap `json:"uninstalled"`
-	Downgraded  *versionmap.DependencyVersionMap `json:"downgraded"`
-	Upgraded    *versionmap.DependencyVersionMap `json:"upgraded"`
+	Installed   *versionmap.InstalledDependencyVersionsMap `json:"installed"`
+	Uninstalled *versionmap.InstalledDependencyVersionsMap `json:"uninstalled"`
+	Downgraded  *versionmap.InstalledDependencyVersionsMap `json:"downgraded"`
+	Upgraded    *versionmap.InstalledDependencyVersionsMap `json:"upgraded"`
 }
 
 type InstallModRequest struct {

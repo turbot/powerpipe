@@ -190,6 +190,7 @@ Example:
   powerpipe mod uninstall github.com/turbot/steampipe-mod-azure-compliance`,
 	}
 
+	// TODO KAI set update mode to none??
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after uninstallation is complete").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be uninstalled without modifying them").
@@ -306,6 +307,8 @@ Example:
   powerpipe mod list`,
 	}
 
+	// TODO KAI set update mode to none??
+
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
@@ -368,6 +371,8 @@ Example:
   # Initialize the current directory with a mod.pp file
   powerpipe mod init`,
 	}
+
+	// TODO KAI set update mode to none??
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgHelp, false, "Help for init", cmdconfig.FlagOptions.WithShortHand("h")).
