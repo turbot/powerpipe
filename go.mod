@@ -10,7 +10,7 @@ require (
 	github.com/fatih/color v1.16.0
 	github.com/gin-contrib/static v1.1.1
 	github.com/gin-gonic/gin v1.9.1
-	github.com/go-playground/validator/v10 v10.19.0
+	github.com/go-playground/validator/v10 v10.20.0
 	github.com/hashicorp/go-hclog v1.6.2 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.20.1 // indirect
