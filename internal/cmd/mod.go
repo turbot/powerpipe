@@ -138,10 +138,9 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// if any mod names were passed as args, convert into formed mod names
-	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	updateStrategy := viper.GetString(constants.ArgPull)
+	installOpts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
 
-	// set the update strategy
-	installOpts.UpdateStrategy = viper.GetString(constants.ArgPull)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
 	// so the install
@@ -220,7 +219,9 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 		fmt.Println("No mods installed.")
 		return
 	}
-	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
+
+	updateStrategy := constants.ModUpdateNone
+	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
 
 	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
@@ -281,7 +282,8 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	updateStrategy := viper.GetString(constants.ArgPull)
+	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
 	// set the update strategy
 	opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 
@@ -346,7 +348,8 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	opts := modinstaller.NewInstallOpts(workspaceMod)
+	updateStrategy := constants.ModUpdateNone
+	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy)
 	installer, err := modinstaller.NewModInstaller(opts)
 	error_helpers.FailOnError(err)
 
