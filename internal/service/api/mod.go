@@ -4,9 +4,9 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modinstaller"
-	"github.com/turbot/pipe-fittings/versionmap"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modinstaller"
+	"github.com/turbot/pipe-fittings/v2/versionmap"
 )
 
 func (api *APIService) RegisterModApiEndpoints(router *gin.RouterGroup) {

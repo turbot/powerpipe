@@ -1,7 +1,7 @@
 package dashboardtypes
 
 import (
-	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 )
 

@@ -3,7 +3,7 @@ package db_client
 import (
 	"database/sql"
 
-	"github.com/turbot/pipe-fittings/queryresult"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
 )
 
 func fieldDescriptionsToColumns(fieldDescriptions []*sql.ColumnType, connection *sql.Conn) []*queryresult.ColumnDef {
