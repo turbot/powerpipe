@@ -1,7 +1,7 @@
 package controlexecute
 
 import (
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 )
 
 // ExecutionTreeNode is implemented by all control execution tree nodes

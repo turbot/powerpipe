@@ -7,11 +7,11 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 

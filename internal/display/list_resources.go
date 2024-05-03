@@ -7,12 +7,12 @@ import (
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"golang.org/x/exp/maps"
 
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/printers"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/printers"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 )
 

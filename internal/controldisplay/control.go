@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/viper"
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 

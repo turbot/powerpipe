@@ -8,10 +8,10 @@ import (
 	"strconv"
 	"sync"
 
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 

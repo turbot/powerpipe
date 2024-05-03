@@ -3,7 +3,7 @@ package dashboardevents
 import (
 	"time"
 
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
