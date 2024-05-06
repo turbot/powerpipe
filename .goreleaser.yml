@@ -5,11 +5,11 @@ builds:
       - linux
     goarch:
       - arm64
-
+    flags:
+      - -tags=netgo
     env:
       - CC=aarch64-linux-gnu-gcc
       - CXX=aarch64-linux-gnu-g++
-
     # Custom ldflags.
     #
     # Default: '-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser'
@@ -25,11 +25,11 @@ builds:
       - linux
     goarch:
       - amd64
-
+    flags:
+      - -tags=netgo
     env:
       - CC=x86_64-linux-gnu-gcc
       - CXX=x86_64-linux-gnu-g++
-
     ldflags:
       - -s -w -X  main.version={{.Version}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser
 
@@ -39,11 +39,11 @@ builds:
       - darwin
     goarch:
       - arm64
-
+    flags:
+      - -tags=netgo
     env:
       - CC=oa64-clang
       - CXX=oa64-clang++
-
     ldflags:
       - -s -w -X  main.version={{.Version}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser
 
@@ -53,11 +53,11 @@ builds:
       - darwin
     goarch:
       - amd64
-
+    flags:
+      - -tags=netgo
     env:
       - CC=o64-clang
       - CXX=o64-clang++
-
     ldflags:
       - -s -w -X  main.version={{.Version}} -X main.date={{.Date}} -X main.commit={{.Commit}} -X main.builtBy=goreleaser
 
