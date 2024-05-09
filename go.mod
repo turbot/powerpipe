@@ -4,9 +4,9 @@ go 1.21.0
 
 toolchain go1.21.3
 
-//replace (
-//	github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
-//)
+replace (
+	github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+)
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0 // indirect

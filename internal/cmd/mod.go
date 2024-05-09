@@ -95,7 +95,7 @@ Examples:
 	}
 
 	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdMinimal
+	var updateStrategy = constants.ModUpdateIdLatest
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
@@ -138,9 +138,8 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// if any mod names were passed as args, convert into formed mod names
-	updateStrategy := viper.GetString(constants.ArgPull)
-	installOpts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
-
+	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
+	installOpts.UpdateStrategy = viper.GetString(constants.ArgPull)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
 	// so the install
@@ -220,8 +219,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	updateStrategy := constants.ModUpdateNone
-	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
 
 	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
@@ -282,8 +280,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	updateStrategy := viper.GetString(constants.ArgPull)
-	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy, args...)
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
 	// set the update strategy
 	opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 
@@ -348,8 +345,7 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	updateStrategy := constants.ModUpdateNone
-	opts := modinstaller.NewInstallOpts(workspaceMod, updateStrategy)
+	opts := modinstaller.NewInstallOpts(workspaceMod)
 	installer, err := modinstaller.NewModInstaller(opts)
 	error_helpers.FailOnError(err)
 
