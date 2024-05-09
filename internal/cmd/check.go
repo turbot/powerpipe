@@ -52,7 +52,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	}
 
 	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdMinimal
+	var updateStrategy = constants.ModUpdateIdLatest
 
 	builder := cmdconfig.OnCmd(cmd)
 	builder.

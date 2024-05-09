@@ -48,7 +48,7 @@ The current mod is the working directory, or the directory specified by the --mo
 	}
 
 	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdMinimal
+	var updateStrategy = constants.ModUpdateIdLatest
 
 	cmdconfig.OnCmd(cmd).
 		AddCloudFlags().
