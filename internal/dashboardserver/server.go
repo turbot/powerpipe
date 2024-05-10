@@ -20,6 +20,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"gopkg.in/olahol/melody.v1"
 )
 
 type Server struct {

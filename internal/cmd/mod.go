@@ -8,6 +8,7 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
@@ -141,7 +142,6 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	installOpts.UpdateStrategy = viper.GetString(constants.ArgPull)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
-	// so the install
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
 	if err != nil {
 		// exitCode = constants.ExitCodeModInstallFailed
@@ -187,7 +187,6 @@ Example:
   powerpipe mod uninstall github.com/turbot/steampipe-mod-azure-compliance`,
 	}
 
-	// TODO KAI set update mode to none??
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after uninstallation is complete").
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be uninstalled without modifying them").
@@ -305,8 +304,6 @@ Example:
   powerpipe mod list`,
 	}
 
-	// TODO KAI set update mode to none??
-
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgHelp, false, "Help for list", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
@@ -369,8 +366,6 @@ Example:
   # Initialize the current directory with a mod.pp file
   powerpipe mod init`,
 	}
-
-	// TODO KAI set update mode to none??
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgHelp, false, "Help for init", cmdconfig.FlagOptions.WithShortHand("h")).

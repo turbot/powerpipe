@@ -4,9 +4,8 @@ go 1.21.0
 
 toolchain go1.21.3
 
-//replace (
-//	github.com/turbot/pipe-fittings => ../pipe-fittings
-//)
+replace github.com/turbot/pipe-fittings => ../pipe-fittings
+
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0 // indirect
@@ -25,7 +24,6 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.18.2
 	github.com/stevenle/topsort v0.2.0 // indirect
-	github.com/thediveo/enumflag/v2 v2.0.5
 	github.com/turbot/go-kit v0.10.0-rc.0
 	github.com/turbot/pipe-fittings v1.3.0-rc.0
 	github.com/turbot/steampipe-cloud-sdk-go v0.6.0 // indirect
@@ -35,7 +33,6 @@ require (
 	github.com/zclconf/go-cty v1.14.4 // indirect
 	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d
-	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 	sigs.k8s.io/yaml v1.3.0 // indirect
 )
 
@@ -52,8 +49,10 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb v1.6.3
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/thediveo/enumflag/v2 v2.0.5
 	golang.org/x/sync v0.7.0
 	golang.org/x/text v0.15.0
+	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
 
 require (
@@ -138,7 +137,7 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.2 // indirect
 	github.com/googleapis/gax-go/v2 v2.12.0 // indirect
-	github.com/gorilla/websocket v1.4.2 // indirect
+	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.0 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
