@@ -3,7 +3,7 @@ package controlstatus
 import (
 	"context"
 
-	"github.com/turbot/pipe-fittings/v2/contexthelpers"
+	"github.com/turbot/pipe-fittings/contexthelpers"
 )
 
 var (

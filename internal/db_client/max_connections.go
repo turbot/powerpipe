@@ -2,7 +2,7 @@ package db_client
 
 import (
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/constants"
 )
 
 func MaxDbConnections() int {

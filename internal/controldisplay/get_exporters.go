@@ -1,7 +1,7 @@
 package controldisplay
 
 import (
-	"github.com/turbot/pipe-fittings/v2/export"
+	"github.com/turbot/pipe-fittings/export"
 )
 
 // GetExporters returns an array of ControlExporters corresponding to the available output formats

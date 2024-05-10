@@ -1,7 +1,7 @@
 package queryresult
 
 import (
-	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/pipe-fittings/queryresult"
 	"time"
 )
 

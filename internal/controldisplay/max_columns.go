@@ -3,7 +3,7 @@ package controldisplay
 import (
 	"github.com/karrick/gows"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/constants"
 )
 
 func GetMaxCols() int {
