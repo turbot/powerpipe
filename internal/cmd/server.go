@@ -21,6 +21,7 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"gopkg.in/olahol/melody.v1"
 )
 
 func serverCmd() *cobra.Command {

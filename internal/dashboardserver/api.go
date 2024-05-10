@@ -14,6 +14,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
+	"gopkg.in/olahol/melody.v1"
 )
 
 func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} {

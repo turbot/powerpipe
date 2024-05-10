@@ -6,6 +6,7 @@ import (
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"gopkg.in/olahol/melody.v1"
 )
 
 type ListenType string
