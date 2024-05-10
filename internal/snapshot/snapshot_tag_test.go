@@ -1,8 +1,8 @@
 package snapshot
 
 import (
-	"github.com/turbot/pipe-fittings/v2/modconfig"
-	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	"reflect"
 	"testing"
 )

@@ -1,7 +1,7 @@
 package dashboardevents
 
 import (
-	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/modconfig"
 )
 
 type DashboardChanged struct {

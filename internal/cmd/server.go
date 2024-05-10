@@ -8,12 +8,12 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/app_specific"
-	"github.com/turbot/pipe-fittings/v2/cmdconfig"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/error_helpers"
-	"github.com/turbot/pipe-fittings/v2/modconfig"
-	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
@@ -21,7 +21,6 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"gopkg.in/olahol/melody.v1"
 )
 
 func serverCmd() *cobra.Command {

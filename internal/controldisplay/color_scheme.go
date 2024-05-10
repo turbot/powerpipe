@@ -5,8 +5,8 @@ import (
 	"reflect"
 
 	"github.com/logrusorgru/aurora"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/utils"
 )
 
 type colorFunc func(interface{}) aurora.Value

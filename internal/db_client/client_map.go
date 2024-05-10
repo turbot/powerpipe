@@ -2,7 +2,7 @@ package db_client
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/backend"
 	"sync"
 )
 

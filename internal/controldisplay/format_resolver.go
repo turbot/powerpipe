@@ -4,9 +4,9 @@ import (
 	"fmt"
 
 	"github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/export"
-	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/export"
+	"github.com/turbot/pipe-fittings/filepaths"
 )
 
 type FormatResolver struct {

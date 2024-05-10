@@ -2,10 +2,10 @@ package cmdconfig
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/turbot/pipe-fittings/v2/app_specific"
-	"github.com/turbot/pipe-fittings/v2/cmdconfig"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/filepaths"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"golang.org/x/exp/maps"
 )

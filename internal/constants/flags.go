@@ -1,8 +1,7 @@
 package constants
 
 import (
-	"github.com/thediveo/enumflag/v2"
-	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/constants"
 )
 
 type OutputMode enumflag.Flag

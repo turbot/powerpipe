@@ -3,8 +3,8 @@ package controlstatus
 import (
 	"context"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/statushooks"
 )
 
 // SnapshotControlHooks is a struct which implements ControlHooks, and displays the control progress as a status message

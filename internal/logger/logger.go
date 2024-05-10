@@ -2,7 +2,7 @@ package logger
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/v2/sanitize"
+	"github.com/turbot/pipe-fittings/sanitize"
 	"io"
 	"log/slog"
 	"os"
@@ -10,9 +10,9 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/app_specific"
-	"github.com/turbot/pipe-fittings/v2/constants"
-	"github.com/turbot/pipe-fittings/v2/constants/runtime"
+	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/constants/runtime"
 )
 
 func Initialize() {
