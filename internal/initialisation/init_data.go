@@ -131,9 +131,9 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	if viper.GetBool(constants.ArgModInstall) {
 		statushooks.SetStatus(ctx, "Installing workspace dependencies")
 		slog.Info("Installing workspace dependencies")
+		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
 		// arg pull should always be set (to a default at least) if ArgModInstall is set
-		updateStrategy := viper.GetString(constants.ArgPull)
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod, updateStrategy)
+		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 		// use force install so that errors are ignored during installation
 		// (we are validating prereqs later)
 		opts.Force = true
