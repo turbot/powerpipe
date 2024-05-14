@@ -11,7 +11,7 @@ To reference a mod in the local file system:
 powerpipe mod install ../mods/local_mod_folder
 ```
 
-- Add `--pull` flag to `mod`, `dashboard` and `benchmark` commands to control the mod update strategy. ([#285](https://github.com/turbot/powerpipe/issues/285)). Possible update strategies are:
+- Add `--pull` flag to `mod`, `dashboard` and `benchmark` commands to control the mod update strategy. ([#352](https://github.com/turbot/powerpipe/issues/352)). Possible update strategies are:
 
   - `full` - check branch and tags for both latest and accuracy
   - `latest` - update everything to latest, but only branches - not tags - are commit checked (which is the same as latest)
