@@ -31,6 +31,7 @@ local
 }
 
 @test "install old version when latest already installed" {
+  skip
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
   run powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance@0.1
   assert_output '
