@@ -72,7 +72,7 @@ func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
 	cmdconfig.OnCmd(cmd).
 		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", ")))
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.OutputModeIds), ", ")))
 
 	return cmd
 }
@@ -91,7 +91,7 @@ func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
 	cmdconfig.OnCmd(cmd).
 		AddVarFlag(enumflag.New(&outputMode, constants.ArgOutput, localconstants.OutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.OutputModeIds), ", ")))
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.OutputModeIds), ", ")))
 
 	return cmd
 }

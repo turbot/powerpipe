@@ -47,6 +47,9 @@ func dashboardRunCmd() *cobra.Command {
 The current mod is the working directory, or the directory specified by the --mod-location flag.`,
 	}
 
+	// variable used to assign the output mode flag
+	var updateStrategy = constants.ModUpdateIdLatest
+
 	cmdconfig.OnCmd(cmd).
 		AddCloudFlags().
 		AddModLocationFlag().
@@ -58,9 +61,12 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the dashboard").
+		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
+			constants.ArgPull,
+			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
 		AddVarFlag(enumflag.New(&dashboardOutputMode, constants.ArgOutput, localconstants.DashboardOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgProgress, true, "Display dashboard execution progress respected when a dashboard name argument is passed").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path for the steampipe user for a dashboard session (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path for a dashboard session (comma-separated)").

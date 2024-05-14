@@ -1,3 +1,23 @@
+## v0.3.0 [2024-05-14]
+_Whats new_
+- Add support for installing mods from a branch or from the local file system. ([#285](https://github.com/turbot/powerpipe/issues/285))
+
+To install from a branch:
+```
+powerpipe mod install github.com/turbot/steampipe-mod-aws-well-architected#main
+```
+To reference a mod in the local file system:
+```
+powerpipe mod install ../mods/local_mod_folder
+```
+
+- Add `--pull` flag to `mod`, `dashboard` and `benchmark` commands to control the mod update strategy. ([#285](https://github.com/turbot/powerpipe/issues/285)). Possible update strategies are:
+
+  - `full` - check branch and tags for both latest and accuracy
+  - `latest` - update everything to latest, but only branches - not tags - are commit checked (which is the same as latest)
+  - `development` - update branches and broken constraints to latest, leave satisfied constraints unchanged
+  - `minimal` - only update broken constraints, do not check branches for new commits
+
 ## v0.2.0 [2024-04-26]
 _Whats new_
 - It is now possible to set a timeout for benchmark and dashboard execution. These can be set:

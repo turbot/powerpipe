@@ -86,12 +86,3 @@ var CheckOutputModeIds = map[CheckOutputMode][]string{
 	CheckOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
 	CheckOutputModeNone:          {constants.OutputFormatNone},
 }
-
-func FlagValues[T comparable](mappings map[T][]string) []string {
-	var res = make([]string, 0, len(mappings))
-	for _, v := range mappings {
-		res = append(res, v[0])
-	}
-	return res
-
-}

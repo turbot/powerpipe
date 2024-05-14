@@ -51,6 +51,9 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		Long:             checkCmdLong(typeName),
 	}
 
+	// variable used to assign the output mode flag
+	var updateStrategy = constants.ModUpdateIdLatest
+
 	builder := cmdconfig.OnCmd(cmd)
 	builder.
 		AddCloudFlags().
@@ -60,6 +63,9 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
+		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
+			constants.ArgPull,
+			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
@@ -73,7 +79,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&checkOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(localconstants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
 		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").

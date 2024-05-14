@@ -155,7 +155,6 @@ func (api *APIService) Start() error {
 	apiLimiter.SetBurst(viper.GetInt("web.rate.burst"))
 
 	RegisterPublicAPI(apiPrefixGroup)
-	api.RegisterModApiEndpoints(apiPrefixGroup)
 
 	// put in handing for the dashboard for the mod
 	assetsDirectory := filepaths.EnsureDashboardAssetsDir()
