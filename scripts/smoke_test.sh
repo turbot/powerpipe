@@ -8,8 +8,8 @@
 /usr/local/bin/powerpipe --version # check version
 
 # create new empty dir for mod operations
-mkdir -p mod_test
-cd mod_test
+mkdir -p /home/steampipe/mod_test
+cd /home/steampipe/mod_test
 pwd
 
 /usr/local/bin/powerpipe mod install github.com/turbot/steampipe-mod-net-insights # verify mod install 
