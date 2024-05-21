@@ -8,9 +8,16 @@
 /usr/local/bin/powerpipe --version # check version
 
 # create new empty dir for mod operations
-mkdir -p /home/steampipe/mod_test
-cd /home/steampipe/mod_test
-pwd
+# the file path is different for darwin and linux
+if [ "$(uname -s)" = "Darwin" ]; then
+  mkdir -p /Users/runner/mod_test
+  cd /Users/runner/mod_test
+  pwd
+else
+  mkdir -p /home/steampipe/mod_test
+  cd /home/steampipe/mod_test
+  pwd
+fi
 
 /usr/local/bin/powerpipe mod install github.com/turbot/steampipe-mod-net-insights # verify mod install 
 /usr/local/bin/powerpipe mod list # verify mod list
@@ -24,9 +31,9 @@ pwd
 
 # the file path is different for darwin and linux
 if [ "$(uname -s)" = "Darwin" ]; then
-  /usr/local/bin/powerpipe control run net_insights.control.dns_mx_at_least_two --export /Users/runner/query.pps # verify file export
-  cat /Users/runner/query.pps | jq '.end_time' # verify file created is readable
+  /usr/local/bin/powerpipe control run net_insights.control.dns_mx_at_least_two --export query.pps # verify file export
+  cat /Users/runner/mod_test/query.pps | jq '.end_time' # verify file created is readable
 else
-  /usr/local/bin/powerpipe control run net_insights.control.dns_mx_at_least_two --export /home/steampipe/query.pps # verify file export
-  cat /home/steampipe/query.pps | jq '.end_time' # verify file created is readable
+  /usr/local/bin/powerpipe control run net_insights.control.dns_mx_at_least_two --export query.pps # verify file export
+  cat /home/steampipe/mod_test/query.pps | jq '.end_time' # verify file created is readable
 fi
