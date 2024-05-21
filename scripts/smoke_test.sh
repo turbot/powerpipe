@@ -7,7 +7,12 @@
 
 /usr/local/bin/powerpipe --version # check version
 
-/usr/local/bin/powerpipe mod install github.com/turbot/steampipe-mod-net-insights # verify mod install 
+# create new empty dir for mod operations
+mkdir -p mod_test
+cd mod_test
+pwd
+
+/usr/local/bin/powerpipe mod install s.com/turbot/steampipe-mod-net-insights # verify mod install 
 /usr/local/bin/powerpipe mod list # verify mod list
 /usr/local/bin/powerpipe mod uninstall github.com/turbot/steampipe-mod-net-insights # verify mod uninstall
 /usr/local/bin/powerpipe mod list # verify mod list after uninstalling

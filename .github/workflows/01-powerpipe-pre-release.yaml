@@ -240,7 +240,7 @@ jobs:
       - name: Stop and Remove Container
         run: |
           docker stop ubuntu-24-test
-          docker rm ubuntu-24-tests
+          docker rm ubuntu-24-test
 
   build_assets:
     name: Build and Release Dashboard Assets
