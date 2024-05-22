@@ -251,7 +251,7 @@ jobs:
         uses: actions/checkout@v4
   
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -292,7 +292,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -333,7 +333,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: build-artifact-linux-arm
           path: ./artifacts
@@ -384,7 +384,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Darwin Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v3
         with:
           name: build-artifact-darwin-arm
           path: ~/artifacts
