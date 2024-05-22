@@ -11,7 +11,7 @@ export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
 /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
 
 # Extract the powerpipe binary
-tar -xzf /artifacts/linux.tar.gz -C /usr/local/bin
+tar -xzf /powerpipe/dist/powerpipe.linux.arm64.tar.gz -C /usr/local/bin
 
 # Make the binaries executable
 chmod +x /usr/local/bin/steampipe
@@ -20,6 +20,9 @@ chmod +x /usr/local/bin/powerpipe
 # Create user, since steampipe cannot be run as root
 useradd -m steampipe
 
+# Verify jq installation
+jq --version
+
 # Make the scripts executable
-chown steampipe:steampipe /scripts/smoke_test.sh
-chmod +x /scripts/smoke_test.sh
+chown steampipe:steampipe /powerpipe/scripts/smoke_test.sh
+chmod +x /powerpipe/scripts/smoke_test.sh

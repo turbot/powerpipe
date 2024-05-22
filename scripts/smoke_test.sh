@@ -5,6 +5,12 @@
 # Ensure the PATH includes the directory where jq is installed
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
 
+# Print PATH for debugging
+echo "PATH is: $PATH"
+
+# Check jq is available
+which jq
+
 /usr/local/bin/steampipe plugin install net # install the net plugin
 /usr/local/bin/steampipe service start # start the steampipe service
 
