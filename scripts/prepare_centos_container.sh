@@ -4,18 +4,21 @@
 
 # update yum and install required packages
 yum install -y epel-release
-yum install -y tar ca-certificates jq
+yum install -y tar ca-certificates jq curl
 
-# Extract the steampipe binary
+# install steampipe latest
+/bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+
+# Extract the powerpipe binary
 tar -xzf /artifacts/linux.tar.gz -C /usr/local/bin
+
+# Make the binaries executable
+chmod +x /usr/local/bin/steampipe
+chmod +x /usr/local/bin/powerpipe
 
 # Create user, since steampipe cannot be run as root
 useradd -m steampipe
-          
-# Ensure the binary is executable and owned by steampipe and is executable
-chown steampipe:steampipe /usr/local/bin/steampipe
-chmod +x /usr/local/bin/steampipe
 
-# Ensure the script is executable
+# Make the scripts executable
 chown steampipe:steampipe /scripts/smoke_test.sh
 chmod +x /scripts/smoke_test.sh

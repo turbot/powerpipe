@@ -9,7 +9,7 @@ apt-get install -y tar ca-certificates jq curl
 # install steampipe latest
 /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
 
-# Extract the steampipe binary
+# Extract the powerpipe binary
 tar -xzf /artifacts/linux.tar.gz -C /usr/local/bin
 
 # Make the binaries executable

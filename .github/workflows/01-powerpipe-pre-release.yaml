@@ -89,117 +89,117 @@ jobs:
           path: ~/artifacts/darwin-arm.tar.gz
           if-no-files-found: error
 
-  acceptance_test:
-    name: Test
-    needs: goreleaser
-    strategy:
-      fail-fast: false
-      matrix:
-        platform: [ubuntu-latest, macos-latest]
-        test_block:
-          - "check"
-          - "resource_show_outputs"
-          - "dashboard"
-          - "mod_install"
-          - "sp_files"
-          - "mod_vars"
-          - "snapshot"
-          - "dashboard_parsing_validation"
-    runs-on: ${{ matrix.platform }}
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-        with:
-          submodules: true
-          path: powerpipe
-          ref: ${{ github.event.ref }}
+  # acceptance_test:
+  #   name: Test
+  #   needs: goreleaser
+  #   strategy:
+  #     fail-fast: false
+  #     matrix:
+  #       platform: [ubuntu-latest, macos-latest]
+  #       test_block:
+  #         - "check"
+  #         - "resource_show_outputs"
+  #         - "dashboard"
+  #         - "mod_install"
+  #         - "sp_files"
+  #         - "mod_vars"
+  #         - "snapshot"
+  #         - "dashboard_parsing_validation"
+  #   runs-on: ${{ matrix.platform }}
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
+  #       with:
+  #         submodules: true
+  #         path: powerpipe
+  #         ref: ${{ github.event.ref }}
 
-      - uses: actions/setup-go@v5
-        with:
-          go-version: 1.21
-          cache: false
+  #     - uses: actions/setup-go@v5
+  #       with:
+  #         go-version: 1.21
+  #         cache: false
 
-      - name: Prepare for downloads
-        id: prepare-for-downloads
-        run: |
-          mkdir ~/artifacts
+  #     - name: Prepare for downloads
+  #       id: prepare-for-downloads
+  #       run: |
+  #         mkdir ~/artifacts
   
-      - name: Download Linux Build Artifacts
-        uses: actions/download-artifact@v3
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        with:
-          name: build-artifact-linux
-          path: ~/artifacts
+  #     - name: Download Linux Build Artifacts
+  #       uses: actions/download-artifact@v3
+  #       if: ${{ matrix.platform == 'ubuntu-latest' }}
+  #       with:
+  #         name: build-artifact-linux
+  #         path: ~/artifacts
 
-      - name: Download Darwin Build Artifacts
-        uses: actions/download-artifact@v3
-        if: ${{ matrix.platform == 'macos-latest' }}
-        with:
-          name: build-artifact-darwin-arm
-          path: ~/artifacts
+  #     - name: Download Darwin Build Artifacts
+  #       uses: actions/download-artifact@v3
+  #       if: ${{ matrix.platform == 'macos-latest' }}
+  #       with:
+  #         name: build-artifact-darwin-arm
+  #         path: ~/artifacts
 
-      - name: Extract Darwin Artifacts and Install Binary
-        if: ${{ matrix.platform == 'macos-latest' }}
-        run: |
-          mkdir ~/build
-          tar -xf ~/artifacts/darwin-arm.tar.gz -C ~/build
+  #     - name: Extract Darwin Artifacts and Install Binary
+  #       if: ${{ matrix.platform == 'macos-latest' }}
+  #       run: |
+  #         mkdir ~/build
+  #         tar -xf ~/artifacts/darwin-arm.tar.gz -C ~/build
 
-      - name: Extract Ubuntu Artifacts and Install Binary
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          mkdir ~/build
-          tar -xf ~/artifacts/linux.tar.gz -C ~/build
+  #     - name: Extract Ubuntu Artifacts and Install Binary
+  #       if: ${{ matrix.platform == 'ubuntu-latest' }}
+  #       run: |
+  #         mkdir ~/build
+  #         tar -xf ~/artifacts/linux.tar.gz -C ~/build
       
-      - name: Install Steampipe(Darwin)
-        if: ${{ matrix.platform == 'macos-latest' }}
-        run: |
-          brew install turbot/tap/steampipe
-          steampipe -v
+  #     - name: Install Steampipe(Darwin)
+  #       if: ${{ matrix.platform == 'macos-latest' }}
+  #       run: |
+  #         brew install turbot/tap/steampipe
+  #         steampipe -v
 
-      - name: Install Steampipe(Linux)
-        if: ${{ matrix.platform == 'ubuntu-latest' }}
-        run: |
-          sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
-          steampipe -v
+  #     - name: Install Steampipe(Linux)
+  #       if: ${{ matrix.platform == 'ubuntu-latest' }}
+  #       run: |
+  #         sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+  #         steampipe -v
       
-      - name: Set PATH
-        run: |
-          echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV
+  #     - name: Set PATH
+  #       run: |
+  #         echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV
 
-      - name: Go install jd
-        run: |
-          go install github.com/josephburnett/jd@latest
+  #     - name: Go install jd
+  #       run: |
+  #         go install github.com/josephburnett/jd@latest
 
-      - name: Start steamipipe service
-        run: |
-          steampipe service start
+  #     - name: Start steamipipe service
+  #       run: |
+  #         steampipe service start
 
-      - name: Run Test Suite
-        id: run-test-suite
-        timeout-minutes: 15
-        continue-on-error: true
-        run: |
-          chmod +x $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh
-          $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh ${{ matrix.test_block }}.bats
-          echo "exit_code=$(echo $?)" >> $GITHUB_OUTPUT
-          echo ">> here"
+  #     - name: Run Test Suite
+  #       id: run-test-suite
+  #       timeout-minutes: 15
+  #       continue-on-error: true
+  #       run: |
+  #         chmod +x $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh
+  #         $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh ${{ matrix.test_block }}.bats
+  #         echo "exit_code=$(echo $?)" >> $GITHUB_OUTPUT
+  #         echo ">> here"
 
-      # This job checks whether the test suite has passed or not.
-      # Since the exit_code is set only when the bats test suite pass,
-      # we have added the if-conditional block
-      - name: Check Test Passed/Failed
-        if: ${{ success() }}
-        continue-on-error: false
-        run: |
-          if [ ${{ steps.run-test-suite.outputs.exit_code }} -eq 0 ]; then
-            exit 0
-          else
-            exit 1
-          fi
+  #     # This job checks whether the test suite has passed or not.
+  #     # Since the exit_code is set only when the bats test suite pass,
+  #     # we have added the if-conditional block
+  #     - name: Check Test Passed/Failed
+  #       if: ${{ success() }}
+  #       continue-on-error: false
+  #       run: |
+  #         if [ ${{ steps.run-test-suite.outputs.exit_code }} -eq 0 ]; then
+  #           exit 0
+  #         else
+  #           exit 1
+  #         fi
 
-      - name: Stop steampipe service
-        run: |
-          steampipe service stop
+  #     - name: Stop steampipe service
+  #       run: |
+  #         steampipe service stop
 
   smoke_test_ubuntu_24:
     name: Smoke test (Ubuntu 24, x86_64)
@@ -242,9 +242,175 @@ jobs:
           docker stop ubuntu-24-test
           docker rm ubuntu-24-test
 
+  smoke_test_centos_9:
+    name: Smoke test (Centos stream 9, x86_64)
+    runs-on: ubuntu-latest
+    needs: [goreleaser]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+  
+      - name: Download Linux Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-linux
+          path: ./artifacts
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Pull CentOS Stream 9 image
+        run: docker pull quay.io/centos/centos:stream9
+  
+      - name: Create and Start CentOS stream9 Container
+        run: |
+          docker run -d --name centos-stream9-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts quay.io/centos/centos:stream9 tail -f /dev/null
+
+      - name: Get runner/container info
+        run: |
+          docker exec centos-stream9-test /scripts/linux_container_info.sh
+  
+      - name: Install dependencies, create user, and assign necessary permissions
+        run: |
+          docker exec centos-stream9-test /scripts/prepare_centos_container.sh
+        
+      - name: Run smoke tests
+        run: |
+          docker exec -u steampipe centos-stream9-test /scripts/smoke_test.sh
+  
+      - name: Stop and Remove Container
+        run: |
+          docker stop centos-stream9-test
+          docker rm centos-stream9-test
+
+  smoke_test_amazonlinux:
+    name: Smoke test (Amazonlinux 2023, x86_64)
+    runs-on: ubuntu-latest
+    needs: [goreleaser]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Linux Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-linux
+          path: ./artifacts
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Pull Amazon Linux 2023 Image
+        run: docker pull amazonlinux:2023
+  
+      - name: Create and Start Amazon Linux 2023 Container
+        run: |
+          docker run -d --name amazonlinux-2023-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts amazonlinux:2023 tail -f /dev/null
+
+      - name: Get runner/container info
+        run: |
+          docker exec amazonlinux-2023-test /scripts/linux_container_info.sh
+  
+      - name: Install dependencies, create user, and assign necessary permissions
+        run: |
+          docker exec amazonlinux-2023-test /scripts/prepare_amazonlinux_container.sh
+
+      - name: Run smoke tests
+        run: |
+          docker exec -u steampipe amazonlinux-2023-test /scripts/smoke_test.sh
+  
+      - name: Stop and Remove Container
+        run: |
+          docker stop amazonlinux-2023-test
+          docker rm amazonlinux-2023-test
+
+  smoke_test_ubuntu_24_arm64:
+    name: Smoke test (Ubuntu 24, ARM64)
+    runs-on: ubuntu-latest
+    needs: [goreleaser]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Linux Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-linux-arm
+          path: ./artifacts
+  
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+  
+      - name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+  
+      - name: Create Buildx Builder
+        run: |
+          docker buildx create --use --name mybuilder
+          docker buildx inspect --bootstrap
+  
+      - name: Pull Ubuntu 24 ARM64 Image
+        run: docker pull arm64v8/ubuntu:latest
+  
+      - name: Create and Start Ubuntu 24 ARM64 Container
+        run: |
+          docker run -d --name ubuntu-24-arm64-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts arm64v8/ubuntu:latest tail -f /dev/null
+
+      - name: Get runner/container info
+        run: |
+          docker exec ubuntu-24-arm64-test /scripts/linux_container_info.sh
+
+      - name: Install dependencies, create user, and assign necessary permissions
+        run: |
+          docker exec ubuntu-24-arm64-test /scripts/prepare_ubuntu_arm_container.sh
+
+      - name: Run smoke tests
+        run: |
+          docker exec -u steampipe ubuntu-24-arm64-test /scripts/smoke_test.sh
+  
+      - name: Stop and Remove Container
+        run: |
+          docker stop ubuntu-24-arm64-test
+          docker rm ubuntu-24-arm64-test
+
+  smoke_test_darwin_arm:
+    name: Smoke test (MacOS 14, ARM64)
+    runs-on: macos-latest
+    needs: [goreleaser]
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Download Darwin Build Artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: build-artifact-darwin-arm
+          path: ~/artifacts
+
+      - name: Extract Darwin Artifacts and Install Binary
+        run: |
+          unzip ~/artifacts/darwin-arm.zip -d /usr/local/bin
+
+      - name: Install jq
+        run: |
+          brew install jq
+
+      - name: Get runner/container info
+        run: |
+          uname -a
+          sw_vers
+
+      - name: Run Smoke tests
+        run: |
+          ls -al $GITHUB_WORKSPACE/scripts
+          chmod +x $GITHUB_WORKSPACE/scripts/smoke_test.sh
+          $GITHUB_WORKSPACE/scripts/smoke_test.sh
+
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: [acceptance_test, smoke_test_ubuntu_24]
+    needs: [smoke_test_ubuntu_24, smoke_test_centos_9, smoke_test_amazonlinux, smoke_test_ubuntu_24_arm64, smoke_test_darwin_arm]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}

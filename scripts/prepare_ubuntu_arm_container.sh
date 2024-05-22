@@ -4,13 +4,17 @@
 
 # update apt and install required packages
 apt-get update
-apt-get install -y tar ca-certificates jq
+apt-get install -y tar ca-certificates jq curl
 
-# Extract the steampipe binary
+# install steampipe latest
+/bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+
+# Extract the powerpipe binary
 tar -xzf /artifacts/linux-arm.tar.gz -C /usr/local/bin
 
-# Make the binary executable
+# Make the binaries executable
 chmod +x /usr/local/bin/steampipe
+chmod +x /usr/local/bin/powerpipe
 
 # Create user, since steampipe cannot be run as root
 useradd -m steampipe
