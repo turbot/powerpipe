@@ -5,7 +5,7 @@
 set -e
 
 # update yum and install required packages
-yum install -y epel-release tar ca-certificates jq curl
+yum install -y epel-release tar ca-certificates jq curl --allowerasing
 
 export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
 
