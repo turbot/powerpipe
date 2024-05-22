@@ -1,9 +1,13 @@
 #!/bin/sh
 # This is a a script to install dependencies/packages, create user, and assign necessary permissions in the amazonlinux 2023 container.
-# Used in release smoke tests. 
+# Used in release smoke tests.
+
+set -e
 
 # update yum and install required packages
 yum install -y shadow-utils tar gzip ca-certificates jq curl
+
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
 
 # install steampipe latest
 /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"

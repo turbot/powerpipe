@@ -393,6 +393,11 @@ jobs:
         run: |
           tar -xf ~/artifacts/darwin-arm.tar.gz -C /usr/local/bin/
 
+      - name: Install Steampipe(Darwin)
+        run: |
+          sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+          steampipe -v
+
       - name: Install jq
         run: |
           brew install jq

@@ -2,6 +2,8 @@
 # This is a a script to install dependencies/packages, create user, and assign necessary permissions in the centos 9 container.
 # Used in release smoke tests. 
 
+set -e
+
 # update yum and install required packages
 yum install -y epel-release tar ca-certificates jq curl
 
