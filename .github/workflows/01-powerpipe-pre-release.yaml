@@ -391,7 +391,7 @@ jobs:
 
       - name: Extract Darwin Artifacts and Install Binary
         run: |
-          unzip ~/artifacts/darwin-arm.zip -d /usr/local/bin
+          tar -xzf /artifacts/darwin-arm.tar.gz -C /usr/local/bin
 
       - name: Install jq
         run: |

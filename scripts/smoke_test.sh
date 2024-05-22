@@ -2,8 +2,11 @@
 # This is a script with set of commands to smoke test a powerpipe build.
 # The plan is to gradually add more tests to this script.
 
-/usr/local/bin/steampipe service start # start the steampipe service
+# Ensure the PATH includes the directory where jq is installed
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
+
 /usr/local/bin/steampipe plugin install net # install the net plugin
+/usr/local/bin/steampipe service start # start the steampipe service
 
 /usr/local/bin/powerpipe --version # check version
 

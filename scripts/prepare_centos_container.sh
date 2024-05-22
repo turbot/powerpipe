@@ -3,8 +3,9 @@
 # Used in release smoke tests. 
 
 # update yum and install required packages
-yum install -y epel-release
-yum install -y tar ca-certificates jq curl
+yum install -y epel-release tar ca-certificates jq curl
+
+export PATH=$PATH:/usr/local/bin:/usr/bin:/bin
 
 # install steampipe latest
 /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"

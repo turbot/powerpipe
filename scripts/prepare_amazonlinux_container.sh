@@ -11,13 +11,14 @@ yum install -y shadow-utils tar gzip ca-certificates jq curl
 # Extract the powerpipe binary
 tar -xzf /artifacts/linux.tar.gz -C /usr/local/bin
 
-# Make the binaries executable
-chmod +x /usr/local/bin/steampipe
-chmod +x /usr/local/bin/powerpipe
-
 # Create user, since steampipe cannot be run as root
 useradd -m steampipe
-          
+
+# Make the binaries executable
+chown steampipe:steampipe /usr/local/bin/steampipe
+chmod +x /usr/local/bin/steampipe
+chmod +x /usr/local/bin/powerpipe
+ 
 # Make the scripts executable
 chown steampipe:steampipe /scripts/smoke_test.sh
 chmod +x /scripts/smoke_test.sh
