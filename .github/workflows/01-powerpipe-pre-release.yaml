@@ -391,8 +391,7 @@ jobs:
 
       - name: Extract Darwin Artifacts and Install Binary
         run: |
-          mkdir ~/build
-          tar -xf ~/artifacts/darwin-arm.tar.gz -C ~/build
+          tar -xf ~/artifacts/darwin-arm.tar.gz -C /usr/local/bin/
 
       - name: Install jq
         run: |
@@ -402,10 +401,6 @@ jobs:
         run: |
           uname -a
           sw_vers
-
-      - name: Set PATH
-        run: |
-          echo "PATH=$PATH:$HOME/build" >> $GITHUB_ENV
 
       - name: Run Smoke tests
         run: |
