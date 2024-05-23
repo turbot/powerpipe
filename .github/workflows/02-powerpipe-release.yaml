@@ -395,9 +395,9 @@ jobs:
           docker stop ubuntu-24-arm64-test
           docker rm ubuntu-24-arm64-test
 
-  smoke_test_darwin_arm:
-    name: Smoke test (MacOS 14, ARM64)
-    runs-on: macos-latest
+  smoke_test_darwin_amd:
+    name: Smoke test (MacOS 14, x86_64)
+    runs-on: macos-13
     needs: [goreleaser]
     steps:
       - name: Checkout
@@ -406,12 +406,12 @@ jobs:
       - name: Download Darwin Build Artifact
         uses: actions/download-artifact@v3
         with:
-          name: build-artifact-darwin-arm
+          name: build-artifact-darwin
           path: ~/artifacts
 
       - name: Extract Darwin Artifacts and Install Binary
         run: |
-          tar -xf ~/artifacts/darwin-arm.tar.gz -C /usr/local/bin/
+          tar -xf ~/artifacts/darwin.tar.gz -C /usr/local/bin/
 
       - name: Install Steampipe(Darwin)
         run: |
@@ -435,7 +435,7 @@ jobs:
 
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: [acceptance_test, smoke_test_ubuntu_24, smoke_test_centos_9, smoke_test_amazonlinux, smoke_test_ubuntu_24_arm64, smoke_test_darwin_arm]
+    needs: [acceptance_test, smoke_test_ubuntu_24, smoke_test_centos_9, smoke_test_amazonlinux, smoke_test_ubuntu_24_arm64, smoke_test_darwin_amd]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
