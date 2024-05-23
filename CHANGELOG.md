@@ -1,3 +1,8 @@
+## v0.3.1 [2024-05-23]
+_Bug fixes_
+- Respect the app version defined `powerpipe` block of the mod `require` block.([#405](https://github.com/turbot/pipe-fittings/issues/405))
+
+
 ## v0.3.0 [2024-05-14]
 _Whats new_
 - Add support for installing mods from a branch or from the local file system. ([#285](https://github.com/turbot/powerpipe/issues/285))
