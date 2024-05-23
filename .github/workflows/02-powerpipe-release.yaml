@@ -396,7 +396,7 @@ jobs:
           docker rm ubuntu-24-arm64-test
 
   smoke_test_darwin_amd:
-    name: Smoke test (MacOS 14, x86_64)
+    name: Smoke test (MacOS 13, x86_64)
     runs-on: macos-13
     needs: [goreleaser]
     steps:
