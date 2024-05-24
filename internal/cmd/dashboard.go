@@ -47,8 +47,8 @@ func dashboardRunCmd() *cobra.Command {
 The current mod is the working directory, or the directory specified by the --mod-location flag.`,
 	}
 
-	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdLatest
+	// when running mod install before the dashboard execution, we use the minimal update strategy
+	var updateStrategy = constants.ModUpdateIdMinimal
 
 	cmdconfig.OnCmd(cmd).
 		AddCloudFlags().
