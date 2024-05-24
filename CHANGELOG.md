@@ -1,7 +1,7 @@
 ## v0.3.1 [2024-05-23]
 _Bug fixes_
-- Respect the app version defined `powerpipe` block of the mod `require` block.([#405](https://github.com/turbot/pipe-fittings/issues/405))
-
+- Respect the app version defined `powerpipe` block of the mod `require` block. ([#405](https://github.com/turbot/pipe-fittings/issues/405))
+- Dashboard UI should handle graph categories containing `resource_name` rather than `name`. ([#360](https://github.com/turbot/powerpipe/issues/360))
 
 ## v0.3.0 [2024-05-14]
 _Whats new_

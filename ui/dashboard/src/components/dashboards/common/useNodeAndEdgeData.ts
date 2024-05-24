@@ -71,7 +71,7 @@ const populateCategoryWithDefaults = (
   themeColors: KeyValueStringPairs,
 ): Category => {
   return {
-    name: category.name,
+    name: category.name || category.resource_name,
     color: getColorOverride(category.color, themeColors),
     depth: category.depth,
     properties: category.properties,

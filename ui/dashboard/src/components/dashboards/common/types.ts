@@ -52,6 +52,7 @@ export type CategoryFold = {
 
 export type Category = {
   name?: string;
+  resource_name?: string;
   color?: ColorOverride;
   depth?: number;
   properties?: CategoryProperties;
