@@ -86,6 +86,7 @@ const Child = ({
         <Panel
           definition={panelDefinition}
           parentType={parentType}
+          showControls={showPanelControls}
           showPanelStatus={
             format === "LEGACY" ||
             panelDefinition.status === "cancelled" ||
@@ -129,6 +130,7 @@ const Child = ({
         <Panel
           definition={panelDefinition}
           parentType={parentType}
+          showControls={showPanelControls}
           showPanelStatus={
             format === "LEGACY" ||
             panelDefinition.status === "cancelled" ||

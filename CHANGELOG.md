@@ -1,3 +1,7 @@
+## v0.3.2 [TBD]
+_Bug fixes_
+- Dashboard flow/hierarchy components should show panel controls. ([#363](https://github.com/turbot/powerpipe/issues/363))
+
 ## v0.3.1 [2024-05-23]
 _Bug fixes_
 - Respect the app version defined `powerpipe` block of the mod `require` block. ([#405](https://github.com/turbot/pipe-fittings/issues/405))
