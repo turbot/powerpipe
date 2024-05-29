@@ -1,6 +1,7 @@
 ## v0.3.2 [TBD]
 _Bug fixes_
 - Dashboard flow/hierarchy components should show panel controls. ([#363](https://github.com/turbot/powerpipe/issues/363))
+- Dashboard graph should not crash if an invalid edge category color is provided. ([#364](https://github.com/turbot/powerpipe/issues/364))
 
 ## v0.3.1 [2024-05-23]
 _Bug fixes_

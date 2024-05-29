@@ -47,7 +47,11 @@ const FloatingEdge = ({
     targetY: ty,
   });
 
-  const colorRgb = colorToRgb(color, themeColors);
+  let colorRgb = colorToRgb(color, themeColors);
+
+  if (!colorRgb) {
+    colorRgb = colorToRgb(themeColors.foreground, themeColors);
+  }
 
   const edgeLabel = (
     <span
