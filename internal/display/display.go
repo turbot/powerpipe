@@ -225,7 +225,7 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 
 type resultMetadata struct {
 	RowsFetched int    `json:"rows_fetched"`
-	Duration    string `json:"duration"`
+	Duration    string `json:"duration_ms"`
 }
 type jsonOutput struct {
 	Rows     []map[string]interface{} `json:"rows"`
