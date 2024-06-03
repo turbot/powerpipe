@@ -79,11 +79,11 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&checkOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DashboardOutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.CheckOutputModeIds), ", "))).
 		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringFlag(constants.ArgSnapshotLocation, "", "The location to write snapshots - either a local file path or a Turbot Pipes workspace").
 		AddStringFlag(constants.ArgSnapshotTitle, "", "The title to give a snapshot").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, pps (snapshot), asff").
 		AddStringSliceFlag(constants.ArgSearchPath, nil, "Set a custom search_path (comma-separated)").
 		AddStringSliceFlag(constants.ArgSearchPathPrefix, nil, "Set a prefix to the current search path (comma-separated)").
 		AddIntFlag(constants.ArgBenchmarkTimeout, 0, "Set the benchmark execution timeout")
