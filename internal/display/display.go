@@ -21,6 +21,7 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/queryresult"
 )
 
@@ -224,12 +225,19 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 }
 
 type resultMetadata struct {
-	RowsFetched int    `json:"rows_fetched"`
-	Duration    string `json:"duration_ms"`
+	RowsReturned int    `json:"rows_returned"`
+	Duration     string `json:"duration_ms"`
 }
 type jsonOutput struct {
+	Columns  []columnOutput           `json:"columns"`
 	Rows     []map[string]interface{} `json:"rows"`
 	Metadata resultMetadata           `json:"metadata"`
+}
+
+type columnOutput struct {
+	Name         string `json:"name"`
+	DataType     string `json:"data_type"`
+	OriginalName string `json:"original_name,omitempty"`
 }
 
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
@@ -240,12 +248,40 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		},
 	}
 
-	// define function to add each row to the JSON output
+	// track unique column names
+	uniqueColumns := make(map[string]struct{})
+	columnNameMap := make(map[string]string)
+
+	// add columns to the JSON output
+	for _, col := range result.Cols {
+		newName := col.Name
+		if _, exists := uniqueColumns[newName]; exists {
+			originalName := newName
+			newName = fmt.Sprintf("%s_%s", newName, utils.RandomString(4))
+			columnNameMap[originalName] = newName
+		}
+		uniqueColumns[newName] = struct{}{}
+
+		colOut := columnOutput{
+			Name:     newName,
+			DataType: strings.ToLower(col.DataType),
+		}
+		if newName != col.Name {
+			colOut.OriginalName = col.Name
+		}
+		op.Columns = append(op.Columns, colOut)
+	}
+
+	// Define function to add each row to the JSON output
 	rowFunc := func(row []interface{}, result *queryresult.Result) {
 		record := map[string]interface{}{}
 		for idx, col := range result.Cols {
 			value, _ := ParseJSONOutputColumnValue(row[idx], col)
-			record[col.Name] = value
+			columnName := col.Name
+			if newName, exists := columnNameMap[columnName]; exists {
+				record[newName] = value // add the value under the new name
+			}
+			record[col.Name] = value // add the value under the original name
 		}
 		op.Rows = append(op.Rows, record)
 	}
@@ -256,7 +292,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		rowErrors++
 		return rowErrors
 	}
-	op.Metadata.RowsFetched = len(op.Rows)
+	op.Metadata.RowsReturned = len(op.Rows)
 
 	// display the JSON
 	encoder := json.NewEncoder(os.Stdout)
