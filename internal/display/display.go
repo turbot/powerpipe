@@ -240,38 +240,6 @@ type columnDef struct {
 	OriginalName string `json:"original_name,omitempty"`
 }
 
-type uniqueNameGenerator struct {
-	lookup map[string]struct{}
-}
-
-// ctor
-func newUniqueNameGenerator() *uniqueNameGenerator {
-	return &uniqueNameGenerator{
-		lookup: make(map[string]struct{}),
-	}
-}
-
-// getUniqueName returns a unique name based on the input name
-func (g *uniqueNameGenerator) getUniqueName(name string) string {
-	// ensure a unique column name
-	for {
-		// check the lookup to see if this name exists
-		if _, exists := g.lookup[name]; !exists {
-			// name is unique - we are done
-			break
-		}
-		// name is not unique - generate a new name
-		// store the original name
-		originalName := name
-
-		// generate a new name
-		name = fmt.Sprintf("%s_%s", originalName, utils.RandomString(4))
-	}
-	// add the unique name into the lookup
-	g.lookup[name] = struct{}{}
-	return name
-}
-
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
 	rowErrors := 0
 	var op = jsonOutput{
@@ -281,12 +249,12 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 	}
 
 	// create a unique name generator
-	nameGenerator := newUniqueNameGenerator()
+	nameGenerator := utils.NewUniqueNameGenerator()
 
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
 		c := columnDef{
-			Name:     nameGenerator.getUniqueName(col.Name),
+			Name:     nameGenerator.GetUniqueName(col.Name),
 			DataType: strings.ToLower(col.DataType),
 		}
 
