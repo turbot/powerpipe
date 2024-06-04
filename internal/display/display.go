@@ -229,15 +229,47 @@ type resultMetadata struct {
 	Duration     string `json:"duration_ms"`
 }
 type jsonOutput struct {
-	Columns  []columnOutput           `json:"columns"`
+	Columns  []columnDef              `json:"columns"`
 	Rows     []map[string]interface{} `json:"rows"`
 	Metadata resultMetadata           `json:"metadata"`
 }
 
-type columnOutput struct {
+type columnDef struct {
 	Name         string `json:"name"`
 	DataType     string `json:"data_type"`
 	OriginalName string `json:"original_name,omitempty"`
+}
+
+type uniqueNameGenerator struct {
+	lookup map[string]struct{}
+}
+
+// ctor
+func newUniqueNameGenerator() *uniqueNameGenerator {
+	return &uniqueNameGenerator{
+		lookup: make(map[string]struct{}),
+	}
+}
+
+// getUniqueName returns a unique name based on the input name
+func (g *uniqueNameGenerator) getUniqueName(name string) string {
+	// ensure a unique column name
+	for {
+		// check the lookup to see if this name exists
+		if _, exists := g.lookup[name]; !exists {
+			// name is unique - we are done
+			break
+		}
+		// name is not unique - generate a new name
+		// store the original name
+		originalName := name
+
+		// generate a new name
+		name = fmt.Sprintf("%s_%s", originalName, utils.RandomString(4))
+	}
+	// add the unique name into the lookup
+	g.lookup[name] = struct{}{}
+	return name
 }
 
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
@@ -248,28 +280,22 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		},
 	}
 
-	// track unique column names
-	uniqueColumns := make(map[string]struct{})
-	columnNameMap := make(map[string]string)
+	// create a unique name generator
+	nameGenerator := newUniqueNameGenerator()
 
-	// add columns to the JSON output
+	// add column defs to the JSON output
 	for _, col := range result.Cols {
-		newName := col.Name
-		if _, exists := uniqueColumns[newName]; exists {
-			originalName := newName
-			newName = fmt.Sprintf("%s_%s", newName, utils.RandomString(4))
-			columnNameMap[originalName] = newName
-		}
-		uniqueColumns[newName] = struct{}{}
-
-		colOut := columnOutput{
-			Name:     newName,
+		c := columnDef{
+			Name:     nameGenerator.getUniqueName(col.Name),
 			DataType: strings.ToLower(col.DataType),
 		}
-		if newName != col.Name {
-			colOut.OriginalName = col.Name
+
+		// if the column name has changed, store the original
+		if c.Name != col.Name {
+			c.OriginalName = col.Name
 		}
-		op.Columns = append(op.Columns, colOut)
+		// add to the column def array
+		op.Columns = append(op.Columns, c)
 	}
 
 	// Define function to add each row to the JSON output
@@ -277,12 +303,12 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		record := map[string]interface{}{}
 		for idx, col := range result.Cols {
 			value, _ := ParseJSONOutputColumnValue(row[idx], col)
-			columnName := col.Name
-			if newName, exists := columnNameMap[columnName]; exists {
-				record[newName] = value // add the value under the new name
-			}
-			record[col.Name] = value // add the value under the original name
+			// get the column def
+			c := op.Columns[idx]
+			// add the value under the unique column name
+			record[c.Name] = value
 		}
+
 		op.Rows = append(op.Rows, record)
 	}
 
