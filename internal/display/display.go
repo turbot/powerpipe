@@ -21,7 +21,6 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/queryresult"
 )
 
@@ -248,19 +247,15 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		},
 	}
 
-	// create a unique name generator
-	nameGenerator := utils.NewUniqueNameGenerator()
+	//// create a unique name generator
+	//nameGenerator := utils.NewUniqueNameGenerator()
 
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
 		c := columnDef{
-			Name:     nameGenerator.GetUniqueName(col.Name),
-			DataType: strings.ToLower(col.DataType),
-		}
-
-		// if the column name has changed, store the original
-		if c.Name != col.Name {
-			c.OriginalName = col.Name
+			Name:         col.Name,
+			OriginalName: col.OriginalName,
+			DataType:     strings.ToLower(col.DataType),
 		}
 		// add to the column def array
 		op.Columns = append(op.Columns, c)
