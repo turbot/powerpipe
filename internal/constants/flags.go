@@ -35,12 +35,15 @@ const (
 	QueryOutputModeNone
 )
 
+// powerpipe snapshot
+const OutputFormatPpSnapshotShort = "pps"
+
 var QueryOutputModeIds = map[QueryOutputMode][]string{
 	QueryOutputModeCsv:           {constants.OutputFormatCSV},
 	QueryOutputModeJson:          {constants.OutputFormatJSON},
 	QueryOutputModeLine:          {constants.OutputFormatLine},
 	QueryOutputModeSnapshot:      {constants.OutputFormatSnapshot},
-	QueryOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
+	QueryOutputModeSnapshotShort: {OutputFormatPpSnapshotShort},
 	QueryOutputModeTable:         {constants.OutputFormatTable},
 	QueryOutputModeNone:          {constants.OutputFormatNone},
 }
@@ -83,6 +86,6 @@ var CheckOutputModeIds = map[CheckOutputMode][]string{
 	CheckOutputModeMd:            {constants.OutputFormatMD},
 	CheckOutputModeTest:          {constants.OutputFormatText},
 	CheckOutputModeSnapshot:      {constants.OutputFormatSnapshot},
-	CheckOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
+	CheckOutputModeSnapshotShort: {OutputFormatPpSnapshotShort},
 	CheckOutputModeNone:          {constants.OutputFormatNone},
 }

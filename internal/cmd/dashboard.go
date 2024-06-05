@@ -54,7 +54,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddCloudFlags().
 		AddModLocationFlag().
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: sps (snapshot)").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: pps (snapshot)").
 		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).

@@ -54,7 +54,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
 		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, sps (snapshot), asff").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, pps (snapshot), asff").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
