@@ -2,12 +2,13 @@ package controldisplay
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"io"
 	"os"
 	"testing"
 
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
@@ -39,8 +40,8 @@ var formatterTestCase = []testCase{
 	{
 		input: "snapshot",
 		expected: testFormatter{
-			alias:     "pps",
-			extension: constants.SnapshotExtension,
+			alias:     localconstants.OutputFormatPpSnapshotShort,
+			extension: localconstants.SnapshotExtension,
 			name:      constants.OutputFormatSnapshot,
 		},
 	},
