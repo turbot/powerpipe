@@ -224,12 +224,19 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 }
 
 type resultMetadata struct {
-	RowsFetched int    `json:"rows_fetched"`
-	Duration    string `json:"duration_ms"`
+	RowsReturned int    `json:"rows_returned"`
+	Duration     string `json:"duration_ms"`
 }
 type jsonOutput struct {
+	Columns  []columnDef              `json:"columns"`
 	Rows     []map[string]interface{} `json:"rows"`
 	Metadata resultMetadata           `json:"metadata"`
+}
+
+type columnDef struct {
+	Name         string `json:"name"`
+	DataType     string `json:"data_type"`
+	OriginalName string `json:"original_name,omitempty"`
 }
 
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
@@ -240,13 +247,28 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		},
 	}
 
-	// define function to add each row to the JSON output
+	// add column defs to the JSON output
+	for _, col := range result.Cols {
+		c := columnDef{
+			Name:         col.Name,
+			OriginalName: col.OriginalName,
+			DataType:     strings.ToLower(col.DataType),
+		}
+		// add to the column def array
+		op.Columns = append(op.Columns, c)
+	}
+
+	// Define function to add each row to the JSON output
 	rowFunc := func(row []interface{}, result *queryresult.Result) {
 		record := map[string]interface{}{}
 		for idx, col := range result.Cols {
 			value, _ := ParseJSONOutputColumnValue(row[idx], col)
-			record[col.Name] = value
+			// get the column def
+			c := op.Columns[idx]
+			// add the value under the unique column name
+			record[c.Name] = value
 		}
+
 		op.Rows = append(op.Rows, record)
 	}
 
@@ -256,7 +278,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		rowErrors++
 		return rowErrors
 	}
-	op.Metadata.RowsFetched = len(op.Rows)
+	op.Metadata.RowsReturned = len(op.Rows)
 
 	// display the JSON
 	encoder := json.NewEncoder(os.Stdout)
