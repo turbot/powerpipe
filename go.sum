@@ -858,8 +858,8 @@ github.com/tkrajina/go-reflector v0.5.6 h1:hKQ0gyocG7vgMD2M3dRlYN6WBBOmdoOzJ6njQ
 github.com/tkrajina/go-reflector v0.5.6/go.mod h1:ECbqLgccecY5kPmPmXg1MrHW585yMcDkVl6IvJe64T4=
 github.com/turbot/go-kit v0.10.0-rc.0 h1:kd+jp2ibbIV33Hc8SsMAN410Dl9Pz6SJ40axbKUlSoA=
 github.com/turbot/go-kit v0.10.0-rc.0/go.mod h1:fFQqR59I5z5JeeBLfK1PjSifn4Oprs3NiQx0CxeSJxs=
-github.com/turbot/pipe-fittings v1.3.3 h1:dVOt0Bi5+bSeC+f9P9LpliKBKOdbQjBWhmE2bIeeues=
-github.com/turbot/pipe-fittings v1.3.3/go.mod h1:pE4h/OSvqeRjvBDVcacbnnd6V5yweVOAVMspe7KBk5o=
+github.com/turbot/pipe-fittings v1.3.4 h1:y8z+PZd0rm/qOqF0LG403JNXk/Ls6xgm+ZOTknc1rWc=
+github.com/turbot/pipe-fittings v1.3.4/go.mod h1:pE4h/OSvqeRjvBDVcacbnnd6V5yweVOAVMspe7KBk5o=
 github.com/turbot/steampipe-cloud-sdk-go v0.6.0 h1:ufAxOpKS1uq7eejuE5sfEu1+d7QAd0RBjl8Bn6+mIs8=
 github.com/turbot/steampipe-cloud-sdk-go v0.6.0/go.mod h1:M42TMBdMim4bV1YTMxhKyzfSGSMo4CXUkm3wt9w7t1Y=
 github.com/turbot/steampipe-plugin-code v0.7.0 h1:SROYIo/TI/Q/YNfXK+sAIS71umypUFm1Uz851TmoJkM=
