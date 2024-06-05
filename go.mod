@@ -11,7 +11,7 @@ require (
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.17.0
 	github.com/gin-contrib/static v1.1.2
-	github.com/gin-gonic/gin v1.9.1
+	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.21.0
 	github.com/hashicorp/go-hclog v1.6.2 // indirect
 	github.com/hashicorp/go-version v1.6.0 // indirect
@@ -249,7 +249,7 @@ require (
 	google.golang.org/genproto/googleapis/api v0.0.0-20240311132316-a219d84964c2 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20240401170217-c3f982113cda // indirect
 	google.golang.org/grpc v1.63.2 // indirect
-	google.golang.org/protobuf v1.34.0 // indirect
+	google.golang.org/protobuf v1.34.1 // indirect
 	gopkg.in/ini.v1 v1.67.0 // indirect
 	gopkg.in/warnings.v0 v0.1.2 // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
