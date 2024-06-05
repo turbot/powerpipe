@@ -247,9 +247,6 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 		},
 	}
 
-	//// create a unique name generator
-	//nameGenerator := utils.NewUniqueNameGenerator()
-
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
 		c := columnDef{
