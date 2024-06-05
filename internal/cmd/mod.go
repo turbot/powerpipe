@@ -94,8 +94,9 @@ Examples:
   powerpipe mod install --dry-run`,
 	}
 
-	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdLatest
+	// default update strategy to minimal for mod install
+	// (TODO we may overide this if there is a targetted mod)
+	var updateStrategy = constants.ModUpdateIdMinimal
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
@@ -139,7 +140,6 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 
 	// if any mod names were passed as args, convert into formed mod names
 	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	installOpts.UpdateStrategy = viper.GetString(constants.ArgPull)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
@@ -279,8 +279,6 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 	}
 
 	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	// set the update strategy
-	opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 
 	// do this update
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)

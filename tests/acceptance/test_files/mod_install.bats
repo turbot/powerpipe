@@ -19,7 +19,7 @@ local
 @test "install latest and then run install" {
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
   run powerpipe mod install
-  assert_output 'All mods are up to date'
+  assert_output 'All targetted mods are up to date'
 }
 
 @test "install mod and list" {

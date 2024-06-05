@@ -51,8 +51,8 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		Long:             checkCmdLong(typeName),
 	}
 
-	// variable used to assign the output mode flag
-	var updateStrategy = constants.ModUpdateIdLatest
+	// when running mod install before the benchmark execution, we use the minimal update strategy
+	var updateStrategy = constants.ModUpdateIdMinimal
 
 	builder := cmdconfig.OnCmd(cmd)
 	builder.

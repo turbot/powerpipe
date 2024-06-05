@@ -127,7 +127,8 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 		i.ShutdownTelemetry = shutdownTelemetry
 	}
 
-	// install mod dependencies if needed
+	// install mod dependencies if needed (this defaults to true for dashboard and check commands
+	// and will always be false for query command)
 	if viper.GetBool(constants.ArgModInstall) {
 		statushooks.SetStatus(ctx, "Installing workspace dependencies")
 		slog.Info("Installing workspace dependencies")
