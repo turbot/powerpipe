@@ -1,7 +1,13 @@
 ## v0.3.2 [TBD]
 _Bug fixes_
-- Dashboard flow/hierarchy components should show panel controls. ([#363](https://github.com/turbot/powerpipe/issues/363))
+- When generating a snapshot  from a benchmark run, the row data is empty any of the rows are in error. ([#366](https://github.com/turbot/powerpipe/issues/366))
+- Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
+- Update mod install to only install or update mods which are command targets (and their dependencies). Set default pull mode for install is latest if there is a target, and minimal if no target is given. ([#381](https://github.com/turbot/powerpipe/issues/381))
+- Fix incorrect help message for output in powerpipe benchmark/control run. ([#367](https://github.com/turbot/powerpipe/issues/367))
+- Fix issue where `POWERPIPE_PORT` env var was not being honoured. ([#362](https://github.com/turbot/powerpipe/issues/362))
+- Update timing metadata output to rename `duration` field to `duration_ms` for consistency with steampipe. ([#368](https://github.com/turbot/powerpipe/issues/368))
 - Dashboard graph should not crash if an invalid edge category color is provided. ([#364](https://github.com/turbot/powerpipe/issues/364))
+- Dashboard flow/hierarchy components should show panel controls. ([#363](https://github.com/turbot/powerpipe/issues/363))
 
 ## v0.3.1 [2024-05-23]
 _Bug fixes_
