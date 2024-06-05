@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/turbot/pipe-fittings/constants"
+	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
@@ -38,7 +39,7 @@ func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.Exe
 }
 
 func (f *SnapshotFormatter) FileExtension() string {
-	return constants.SnapshotExtension
+	return localconstants.SnapshotExtension
 }
 
 func (f SnapshotFormatter) Name() string {
@@ -46,5 +47,5 @@ func (f SnapshotFormatter) Name() string {
 }
 
 func (f *SnapshotFormatter) Alias() string {
-	return "pps"
+	return localconstants.OutputFormatPpSnapshotShort
 }
