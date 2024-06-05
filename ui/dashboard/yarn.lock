@@ -2738,7 +2738,7 @@
     core-js-pure "^3.0.0"
     regenerator-runtime "^0.13.4"
 
-"@babel/runtime@^7.0.0", "@babel/runtime@^7.13.10", "@babel/runtime@^7.3.1", "@babel/runtime@^7.5.0", "@babel/runtime@^7.7.6":
+"@babel/runtime@^7.0.0", "@babel/runtime@^7.13.10", "@babel/runtime@^7.3.1", "@babel/runtime@^7.5.0":
   version "7.13.10"
   resolved "https://registry.npmjs.org/@babel/runtime/-/runtime-7.13.10.tgz"
   integrity sha512-4QPkjJq6Ns3V/RgpEahRk+AGfL0eO6RHHtTWoNNr5mO49G6B5+X6d6THgWEAvTrznU5xYpbAlVKRYcsCgh/Akw==
@@ -4642,17 +4642,17 @@
   resolved "https://registry.yarnpkg.com/@storybook/node-logger/-/node-logger-8.1.5.tgz#c0c064b3ebdc0b3c97b7f449ed96ab59c484cab6"
   integrity sha512-9qwPX/uGhdHaVjeVUSwJUSbKX7g9goyhGYdKVuCEyl7vHR9Kp7Zkag2sEHmVdd9ixTea3jk2GZQEbnBDNQNGnw==
 
-"@storybook/preset-create-react-app@4.1.2":
-  version "4.1.2"
-  resolved "https://registry.yarnpkg.com/@storybook/preset-create-react-app/-/preset-create-react-app-4.1.2.tgz#65bdfd3e32d84e06ad4db2bb491534cd6bcd2dbb"
-  integrity sha512-5uBZPhuyXx4APgLZnhiZ/PqYYprBua5CabQCfAlk+/9V4vSpX+ww+XP4Rl8Ifc/nf/HktgwtJFH4HXrZGRKC4w==
+"@storybook/preset-create-react-app@8.1.5":
+  version "8.1.5"
+  resolved "https://registry.yarnpkg.com/@storybook/preset-create-react-app/-/preset-create-react-app-8.1.5.tgz#818a6b3b069717818af827eb278fda780c6b337a"
+  integrity sha512-Y1Kg6VuXUfR1Yk999DIY+hy+D5mnfHJuLS/SLMQ0fhz1QNHV+9/xZNbOiBXdwTmdqtsu9VUCIaU1aoG5IhZvDw==
   dependencies:
     "@pmmmwh/react-refresh-webpack-plugin" "^0.5.1"
-    "@storybook/react-docgen-typescript-plugin" canary
-    "@types/babel__core" "^7.1.7"
-    babel-plugin-react-docgen "^4.1.0"
+    "@storybook/react-docgen-typescript-plugin" "1.0.6--canary.9.0c3f3b7.0"
+    "@storybook/types" "8.1.5"
+    "@types/semver" "^7.5.6"
     pnp-webpack-plugin "^1.7.0"
-    semver "^7.3.5"
+    semver "^7.5.4"
 
 "@storybook/preview-api@8.1.5":
   version "8.1.5"
@@ -4696,17 +4696,17 @@
     unfetch "^4.2.0"
     util-deprecate "^1.0.2"
 
-"@storybook/react-docgen-typescript-plugin@canary":
-  version "1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0"
-  resolved "https://registry.npmjs.org/@storybook/react-docgen-typescript-plugin/-/react-docgen-typescript-plugin-1.0.2-canary.6.9d540b91e815f8fc2f8829189deb00553559ff63.0.tgz"
-  integrity sha512-eVg3BxlOm2P+chijHBTByr90IZVUtgRW56qEOLX7xlww2NBuKrcavBlcmn+HH7GIUktquWkMPtvy6e0W0NgA5w==
+"@storybook/react-docgen-typescript-plugin@1.0.6--canary.9.0c3f3b7.0":
+  version "1.0.6--canary.9.0c3f3b7.0"
+  resolved "https://registry.yarnpkg.com/@storybook/react-docgen-typescript-plugin/-/react-docgen-typescript-plugin-1.0.6--canary.9.0c3f3b7.0.tgz#7f10f3c641f32e4513a8b6ffb5036933e7059534"
+  integrity sha512-KUqXC3oa9JuQ0kZJLBhVdS4lOneKTOopnNBK4tUAgoxWQ3u/IjzdueZjFr7gyBrXMoU6duutk3RQR9u8ZpYJ4Q==
   dependencies:
     debug "^4.1.1"
     endent "^2.0.1"
     find-cache-dir "^3.3.1"
     flat-cache "^3.0.4"
     micromatch "^4.0.2"
-    react-docgen-typescript "^2.1.1"
+    react-docgen-typescript "^2.2.2"
     tslib "^2.0.0"
 
 "@storybook/react-dom-shim@8.1.5":
@@ -5091,7 +5091,7 @@
   resolved "https://registry.yarnpkg.com/@types/aria-query/-/aria-query-5.0.1.tgz#3286741fb8f1e1580ac28784add4c7a1d49bdfbc"
   integrity sha512-XTIieEY+gvJ39ChLcB4If5zHtPxt3Syj5rgZR+e1ctpmK8NjPf0zFqsz4JpLJT0xla9GFDKjy8Cpu331nrmE1Q==
 
-"@types/babel__core@^7.0.0", "@types/babel__core@^7.1.7":
+"@types/babel__core@^7.0.0":
   version "7.1.12"
   resolved "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.1.12.tgz"
   integrity sha512-wMTHiiTiBAAPebqaPiPDLFA4LYPKr6Ph0Xq/6rq1Ur3v66HXyG+clfR9CNETkD7MQS8ZHvpQOtA53DLws5WAEQ==
@@ -5729,6 +5729,11 @@
   version "0.16.1"
   resolved "https://registry.npmjs.org/@types/scheduler/-/scheduler-0.16.1.tgz"
   integrity sha512-EaCxbanVeyxDRTQBkdLb3Bvl/HK7PBK6UJjsSixB0iHKoWxE5uu2Q/DgtpOhPIojN0Zl1whvOd7PoHs2P0s5eA==
+
+"@types/semver@^7.5.6":
+  version "7.5.8"
+  resolved "https://registry.yarnpkg.com/@types/semver/-/semver-7.5.8.tgz#8268a8c57a3e4abd25c165ecd36237db7948a55e"
+  integrity sha512-I8EUhyrgfLrcTkzV3TSsGyl1tSuPrEDzr0yd5m90UgNxQkyDXULk3b6MlQqTCpZpNtWe1K0hzclnZkTcLBe2UQ==
 
 "@types/send@*":
   version "0.17.4"
@@ -6675,13 +6680,6 @@ ast-types-flow@^0.0.7:
   resolved "https://registry.npmjs.org/ast-types-flow/-/ast-types-flow-0.0.7.tgz"
   integrity sha1-9wtzXGvKGlycItmCw+Oef+ujva0=
 
-ast-types@^0.14.2:
-  version "0.14.2"
-  resolved "https://registry.npmjs.org/ast-types/-/ast-types-0.14.2.tgz"
-  integrity sha512-O0yuUDnZeQDL+ncNGlJ78BiO4jnYI3bvMsD5prT0/nsgijG/LpNBIr63gTjVTNsiGkgQhiyCShTgxt8oXOrklA==
-  dependencies:
-    tslib "^2.0.1"
-
 ast-types@^0.16.1:
   version "0.16.1"
   resolved "https://registry.yarnpkg.com/ast-types/-/ast-types-0.16.1.tgz#7a9da1617c9081bc121faafe91711b4c8bb81da2"
@@ -6910,15 +6908,6 @@ babel-plugin-polyfill-regenerator@^0.3.0:
   integrity sha512-dhAPTDLGoMW5/84wkgwiLRwMnio2i1fUe53EuvtKMv0pn2p3S8OCoV1xAzfJPl0KOX7IB89s2ib85vbYiea3jg==
   dependencies:
     "@babel/helper-define-polyfill-provider" "^0.3.0"
-
-babel-plugin-react-docgen@^4.1.0:
-  version "4.2.1"
-  resolved "https://registry.npmjs.org/babel-plugin-react-docgen/-/babel-plugin-react-docgen-4.2.1.tgz"
-  integrity sha512-UQ0NmGHj/HAqi5Bew8WvNfCk8wSsmdgNd8ZdMjBCICtyCJCq9LiqgqvjCYe570/Wg7AQArSq1VQ60Dd/CHN7mQ==
-  dependencies:
-    ast-types "^0.14.2"
-    lodash "^4.17.15"
-    react-docgen "^5.0.0"
 
 babel-plugin-transform-react-remove-prop-types@^0.4.24:
   version "0.4.24"
@@ -7783,7 +7772,7 @@ commander@11.1.0:
   resolved "https://registry.yarnpkg.com/commander/-/commander-11.1.0.tgz#62fdce76006a68e5c1ab3314dc92e800eb83d906"
   integrity sha512-yPVavfyCcRhmorC7rWlkHn15b4wDVgVmBA7kV4QVBsF7kv/9TKJAbAXVTxvTnwP8HHKjRCJDClKbciiYS7p0DQ==
 
-commander@^2.19.0, commander@^2.20.0:
+commander@^2.20.0:
   version "2.20.3"
   resolved "https://registry.yarnpkg.com/commander/-/commander-2.20.3.tgz#fd485e84c03eb4881c20722ba48035e8531aeb33"
   integrity sha512-GpVkmM8vF2vQUkj2LvZmD35JxeJOLCwJ9cUkugyk2nuhbv3+mJvpLYYt+0+USMxE+oj+ey/lJEnhZw75x/OMcQ==
@@ -13366,7 +13355,7 @@ minimalistic-crypto-utils@^1.0.1:
   resolved "https://registry.npmjs.org/minimalistic-crypto-utils/-/minimalistic-crypto-utils-1.0.1.tgz"
   integrity sha1-9sAMHAsIIkblxNmd+4x8CDsrWCo=
 
-minimatch@3.0.4, minimatch@^3.0.2, minimatch@^3.0.4:
+minimatch@3.0.4, minimatch@^3.0.4:
   version "3.0.4"
   resolved "https://registry.npmjs.org/minimatch/-/minimatch-3.0.4.tgz"
   integrity sha512-yJHVQEhyqPLUTgt9B83PXu6W3rx4MvvHvSUvToogpwoGDOUQ+yDrR0HRot+yOCdCO7u4hX3pWft6kWBBcqh0UA==
@@ -13529,13 +13518,6 @@ no-case@^3.0.4:
   dependencies:
     lower-case "^2.0.2"
     tslib "^2.0.3"
-
-node-dir@^0.1.10:
-  version "0.1.17"
-  resolved "https://registry.npmjs.org/node-dir/-/node-dir-0.1.17.tgz"
-  integrity sha1-X1Zl2TNRM1yqvvjxxVRRbPXx5OU=
-  dependencies:
-    minimatch "^3.0.2"
 
 node-fetch@^2.0.0:
   version "2.7.0"
@@ -15315,24 +15297,10 @@ react-dev-utils@^12.0.1:
     strip-ansi "^6.0.1"
     text-table "^0.2.0"
 
-react-docgen-typescript@^2.1.1:
+react-docgen-typescript@^2.2.2:
   version "2.2.2"
-  resolved "https://registry.npmjs.org/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz"
+  resolved "https://registry.yarnpkg.com/react-docgen-typescript/-/react-docgen-typescript-2.2.2.tgz#4611055e569edc071204aadb20e1c93e1ab1659c"
   integrity sha512-tvg2ZtOpOi6QDwsb3GZhOjDkkX0h8Z2gipvTg6OVMUyoYoURhEiRNePT8NZItTVCDh39JJHnLdfCOkzoLbFnTg==
-
-react-docgen@^5.0.0:
-  version "5.3.1"
-  resolved "https://registry.npmjs.org/react-docgen/-/react-docgen-5.3.1.tgz"
-  integrity sha512-YG7YujVTwlLslr2Ny8nQiUfbBuEwKsLHJdQTSdEga1eY/nRFh/7LjCWUn6ogYhu2WDKg4z+6W/BJtUi+DPUIlA==
-  dependencies:
-    "@babel/core" "^7.7.5"
-    "@babel/runtime" "^7.7.6"
-    ast-types "^0.14.2"
-    commander "^2.19.0"
-    doctrine "^3.0.0"
-    neo-async "^2.6.1"
-    node-dir "^0.1.10"
-    strip-indent "^3.0.0"
 
 react-dom@18.2.0:
   version "18.2.0"
@@ -16263,12 +16231,10 @@ semver@^6.0.0, semver@^6.1.1, semver@^6.1.2, semver@^6.3.0, semver@^6.3.1:
   resolved "https://registry.yarnpkg.com/semver/-/semver-6.3.1.tgz#556d2ef8689146e46dcea4bfdd095f3434dffcb4"
   integrity sha512-BR7VvDCVHO+q2xBEWskxS6DJE1qRnb7DxzUrogb71CWoSficBxYsiAGd+Kl0mmq/MprG9yArRkyrQxTO6XjMzA==
 
-semver@^7.2.1, semver@^7.3.2, semver@^7.3.5, semver@^7.3.7:
-  version "7.6.0"
-  resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.0.tgz#1a46a4db4bffcccd97b743b5005c8325f23d4e2d"
-  integrity sha512-EnwXhrlwXMk9gKu5/flx5sv/an57AkRplG3hTK68W7FRDN+k+OWBj65M7719OkA82XLBxrcX0KSHj+X5COhOVg==
-  dependencies:
-    lru-cache "^6.0.0"
+semver@^7.2.1, semver@^7.3.2, semver@^7.3.5, semver@^7.3.7, semver@^7.5.4:
+  version "7.6.2"
+  resolved "https://registry.yarnpkg.com/semver/-/semver-7.6.2.tgz#1e3b34759f896e8f14d6134732ce798aeb0c6e13"
+  integrity sha512-FNAIBWCx9qcRhoHcgcJ0gvU7SN1lYU2ZXuSfl04bSC5OpvDHFyJCjdNHomPXxjQlCBU67YW64PzY7/VIEH7F2w==
 
 send@0.18.0:
   version "0.18.0"
