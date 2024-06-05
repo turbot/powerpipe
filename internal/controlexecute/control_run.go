@@ -313,14 +313,7 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 				r.createdOrderedResultRows()
 				return
 			}
-			// if the row is in error then we terminate the run
-			if row.Error != nil {
-				// set error status (parent summary will be set from parent defer)
-				r.setError(ctx, row.Error)
-				return
-			}
-
-			// so all is ok - create another result row
+			// create a result row
 			result, err := NewResultRow(r, row, r.queryResult.Cols)
 			if err != nil {
 				r.setError(ctx, err)
