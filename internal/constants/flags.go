@@ -37,12 +37,13 @@ const (
 
 // powerpipe snapshot
 const OutputFormatPpSnapshotShort = "pps"
+const OutputFormatPpSnapshot = "snapshot"
 
 var QueryOutputModeIds = map[QueryOutputMode][]string{
 	QueryOutputModeCsv:           {constants.OutputFormatCSV},
 	QueryOutputModeJson:          {constants.OutputFormatJSON},
 	QueryOutputModeLine:          {constants.OutputFormatLine},
-	QueryOutputModeSnapshot:      {constants.OutputFormatSnapshot},
+	QueryOutputModeSnapshot:      {OutputFormatPpSnapshot},
 	QueryOutputModeSnapshotShort: {OutputFormatPpSnapshotShort},
 	QueryOutputModeTable:         {constants.OutputFormatTable},
 	QueryOutputModeNone:          {constants.OutputFormatNone},
@@ -57,7 +58,7 @@ const (
 )
 
 var DashboardOutputModeIds = map[DashboardOutputMode][]string{
-	DashboardOutputModeSnapshot:      {constants.OutputFormatSnapshot},
+	DashboardOutputModeSnapshot:      {OutputFormatPpSnapshot},
 	DashboardOutputModeSnapshotShort: {constants.OutputFormatSnapshotShort},
 	DashboardOutputModeNone:          {constants.OutputFormatNone},
 }
