@@ -94,6 +94,8 @@ func NewResultRow(run *ControlRun, row *localqueryresult.RowResult, cols []*quer
 	if row.Error != nil {
 		res.Status = constants.ControlError
 		res.Reason = error_helpers.TransformErrorToSteampipe(row.Error).Error()
+
+		//nolint:nilerr // no need to return the error - we have created an error row
 		return res, nil
 	}
 
