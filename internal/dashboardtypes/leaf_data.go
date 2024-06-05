@@ -16,25 +16,32 @@ func NewLeafData(result *localqueryresult.SyncQueryResult) *LeafData {
 		Rows:    make([]map[string]interface{}, len(result.Rows)),
 		Columns: result.Cols,
 	}
-
-	// create a unique name generator
-	nameGenerator := utils.NewUniqueNameGenerator()
+	// handle duplicate column names
+	leafData.ensureUniqueColumnName()
 
 	for rowIdx, row := range result.Rows {
 		rowData := make(map[string]interface{}, len(result.Cols))
 		for i, data := range row.(*localqueryresult.RowResult).Data {
-			// ensure column name is unique
+			// get unique column name from column defs
 			columnName := leafData.Columns[i].Name
-			uniqueName := nameGenerator.GetUniqueName(columnName)
-			if uniqueName != columnName {
-				// if the column name has changed, store the original
-				leafData.Columns[i].OriginalName = columnName
-				leafData.Columns[i].Name = uniqueName
-			}
-			rowData[uniqueName] = data
+			rowData[columnName] = data
 		}
 
 		leafData.Rows[rowIdx] = rowData
 	}
 	return leafData
+}
+
+func (leafData *LeafData) ensureUniqueColumnName() {
+	// create a unique name generator
+	nameGenerator := utils.NewUniqueNameGenerator()
+
+	for i, col := range leafData.Columns {
+		uniqueName := nameGenerator.GetUniqueName(col.Name)
+		if uniqueName != col.Name {
+			// if the column name has changed, store the original
+			leafData.Columns[i].Name = uniqueName
+			leafData.Columns[i].OriginalName = col.Name
+		}
+	}
 }
