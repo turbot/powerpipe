@@ -21,11 +21,12 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/pipe-fittings/queryresult"
+	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 )
 
 // ShowQueryOutput displays the output using the proper formatter as applicable
-func ShowQueryOutput(ctx context.Context, result *queryresult.Result) int {
+func ShowQueryOutput(ctx context.Context, result *localqueryresult.Result) int {
 	rowErrors := 0
 
 	switch cmdconfig.Viper().GetString(constants.ArgOutput) {
@@ -160,7 +161,7 @@ func getTerminalColumnsRequiredForString(str string) int {
 	return colsRequired
 }
 
-func displayLine(ctx context.Context, result *queryresult.Result) int {
+func displayLine(ctx context.Context, result *localqueryresult.Result) int {
 
 	maxColNameLength, rowErrors := 0, 0
 	for _, col := range result.Cols {
@@ -172,7 +173,7 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 	itemIdx := 0
 
 	// define a function to display each row
-	rowFunc := func(row []interface{}, result *queryresult.Result) {
+	rowFunc := func(row []interface{}, result *localqueryresult.Result) {
 		recordAsString, _ := ColumnValuesAsString(row, result.Cols)
 		requiredTerminalColumnsForValuesOfRecord := 0
 		for _, colValue := range recordAsString {
@@ -228,18 +229,12 @@ type resultMetadata struct {
 	Duration     string `json:"duration_ms"`
 }
 type jsonOutput struct {
-	Columns  []columnDef              `json:"columns"`
+	Columns  []queryresult.ColumnDef  `json:"columns"`
 	Rows     []map[string]interface{} `json:"rows"`
 	Metadata resultMetadata           `json:"metadata"`
 }
 
-type columnDef struct {
-	Name         string `json:"name"`
-	DataType     string `json:"data_type"`
-	OriginalName string `json:"original_name,omitempty"`
-}
-
-func displayJSON(ctx context.Context, result *queryresult.Result) int {
+func displayJSON(ctx context.Context, result *localqueryresult.Result) int {
 	rowErrors := 0
 	var op = jsonOutput{
 		Metadata: resultMetadata{
@@ -249,24 +244,24 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
-		c := columnDef{
-			Name:         col.Name,
-			OriginalName: col.OriginalName,
-			DataType:     strings.ToLower(col.DataType),
+		c := queryresult.ColumnDef{
+			Name:       col.Name,
+			UniqueName: col.UniqueName,
+			DataType:   strings.ToLower(col.DataType),
 		}
 		// add to the column def array
 		op.Columns = append(op.Columns, c)
 	}
 
 	// Define function to add each row to the JSON output
-	rowFunc := func(row []interface{}, result *queryresult.Result) {
+	rowFunc := func(row []interface{}, result *localqueryresult.Result) {
 		record := map[string]interface{}{}
 		for idx, col := range result.Cols {
 			value, _ := ParseJSONOutputColumnValue(row[idx], col)
 			// get the column def
 			c := op.Columns[idx]
 			// add the value under the unique column name
-			record[c.Name] = value
+			record[c.GetUniqueName()] = value
 		}
 
 		op.Rows = append(op.Rows, record)
@@ -291,7 +286,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 	return rowErrors
 }
 
-func displayCSV(ctx context.Context, result *queryresult.Result) int {
+func displayCSV(ctx context.Context, result *localqueryresult.Result) int {
 	rowErrors := 0
 	csvWriter := csv.NewWriter(os.Stdout)
 	csvWriter.Comma = []rune(cmdconfig.Viper().GetString(constants.ArgSeparator))[0]
@@ -302,7 +297,7 @@ func displayCSV(ctx context.Context, result *queryresult.Result) int {
 
 	// print the data as it comes
 	// define function display each csv row
-	rowFunc := func(row []interface{}, result *queryresult.Result) {
+	rowFunc := func(row []interface{}, result *localqueryresult.Result) {
 		rowAsString, _ := ColumnValuesAsString(row, result.Cols, WithNullString(""))
 		_ = csvWriter.Write(rowAsString)
 	}
@@ -321,7 +316,7 @@ func displayCSV(ctx context.Context, result *queryresult.Result) int {
 	return rowErrors
 }
 
-func displayTable(ctx context.Context, result *queryresult.Result) int {
+func displayTable(ctx context.Context, result *localqueryresult.Result) int {
 	rowErrors := 0
 	// the buffer to put the output data in
 	outbuf := bytes.NewBufferString("")
@@ -350,7 +345,7 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	}
 
 	// define a function to execute for each row
-	rowFunc := func(row []interface{}, result *queryresult.Result) {
+	rowFunc := func(row []interface{}, result *localqueryresult.Result) {
 		rowAsString, _ := ColumnValuesAsString(row, result.Cols)
 		rowObj := table.Row{}
 		for _, col := range rowAsString {
@@ -385,10 +380,10 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	return rowErrors
 }
 
-type displayResultsFunc func(row []interface{}, result *queryresult.Result)
+type displayResultsFunc func(row []interface{}, result *localqueryresult.Result)
 
 // call func displayResult for each row of results
-func iterateResults(result *queryresult.Result, displayResult displayResultsFunc) error {
+func iterateResults(result *localqueryresult.Result, displayResult displayResultsFunc) error {
 	for row := range *result.RowChan {
 		if row == nil {
 			return nil
@@ -407,7 +402,7 @@ func shouldShowQueryTiming() bool {
 	return viper.GetBool(constants.ArgTiming) && outputFormat == constants.OutputFormatTable
 }
 
-func PrintTiming(timingMetadata *queryresult.TimingMetadata) {
+func PrintTiming(timingMetadata *localqueryresult.TimingMetadata) {
 	durationString := getDurationString(timingMetadata.Duration)
 	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
 }
