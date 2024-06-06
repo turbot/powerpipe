@@ -4,7 +4,7 @@ go 1.21.0
 
 toolchain go1.21.3
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
+//replace github.com/turbot/pipe-fittings => ../pipe-fittings
 require (
 	github.com/Masterminds/semver/v3 v3.2.1
 	github.com/briandowns/spinner v1.23.0 // indirect
@@ -25,7 +25,7 @@ require (
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/turbot/go-kit v0.10.0-rc.0
 	// unique_name
-	github.com/turbot/pipe-fittings v1.3.5-rc.2.0.20240606091259-800b98bdbde3
+	github.com/turbot/pipe-fittings v1.3.5-rc.2.0.20240606104334-c5a38892c3fb
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.1
 	github.com/turbot/terraform-components v0.0.0-20231108031935-358f803c1a8b // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
