@@ -25,9 +25,9 @@ func NewLeafData(result *localqueryresult.SyncQueryResult) *LeafData {
 		rowData := make(map[string]interface{}, len(result.Cols))
 		for i, data := range row.(*localqueryresult.RowResult).Data {
 			// get unique column name from column defs
-			// (NOTE: this may be either the origina column name - if there are no duplicates,
+			// (NOTE: this may be either the original column name - if there are no duplicates,
 			// or a specially generated unique name if there are duplicates)
-			columnName := leafData.Columns[i].GetUniqueName()
+			columnName := leafData.Columns[i].Name
 			rowData[columnName] = data
 		}
 
@@ -40,14 +40,16 @@ func (leafData *LeafData) ensureUniqueColumnName() error {
 	// create a unique name generator
 	nameGenerator := utils.NewUniqueNameGenerator()
 
-	for i, col := range leafData.Columns {
+	for _, col := range leafData.Columns {
 		uniqueName, err := nameGenerator.GetUniqueName(col.Name)
 		if err != nil {
 			return fmt.Errorf("error generating unique column name: %w", err)
 		}
+		// if the column name has changed, store the original name and update the column name to be the unique name
 		if uniqueName != col.Name {
-			// if the column name has changed, store the modified name as UniqueName
-			leafData.Columns[i].UniqueName = uniqueName
+			// set the original name first, BEFORE mutating name
+			col.OriginalName = col.Name
+			col.Name = uniqueName
 		}
 	}
 	return nil

@@ -245,10 +245,11 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
+		// create a new column def, converting the data type to lowercase
 		c := pfq.ColumnDef{
-			Name:       col.Name,
-			UniqueName: col.UniqueName,
-			DataType:   strings.ToLower(col.DataType),
+			Name:         col.Name,
+			OriginalName: col.OriginalName,
+			DataType:     strings.ToLower(col.DataType),
 		}
 		// add to the column def array
 		op.Columns = append(op.Columns, c)
@@ -262,7 +263,7 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 			// get the column def
 			c := op.Columns[idx]
 			// add the value under the unique column name
-			record[c.GetUniqueName()] = value
+			record[c.Name] = value
 		}
 
 		op.Rows = append(op.Rows, record)
