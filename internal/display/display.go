@@ -186,16 +186,20 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 		lineFormat := fmt.Sprintf("%%-%ds | %%s\n", maxColNameLength)
 		multiLineFormat := fmt.Sprintf("%%-%ds | %%-%ds", maxColNameLength, requiredTerminalColumnsForValuesOfRecord)
 
-		fmt.Printf("-[ RECORD %-2d ]%s\n", (itemIdx + 1), strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
+		fmt.Printf("-[ RECORD %-2d ]%s\n", itemIdx+1, strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
+
+		// get the column names (this takes into account the original name)
+		columnNames := ColumnNames(result.Cols)
+
 		for idx, column := range recordAsString {
 			lines := strings.Split(column, "\n")
 			if len(lines) == 1 {
-				fmt.Printf(lineFormat, result.Cols[idx].Name, lines[0]) //nolint:forbidigo // intentional use of fmt
+				fmt.Printf(lineFormat, columnNames[idx], lines[0]) //nolint:forbidigo // intentional use of fmt
 			} else {
 				for lineIdx, line := range lines {
 					if lineIdx == 0 {
 						// the first line
-						fmt.Printf(multiLineFormat, result.Cols[idx].Name, line) //nolint:forbidigo // intentional use of fmt
+						fmt.Printf(multiLineFormat, columnNames[idx], line) //nolint:forbidigo // intentional use of fmt
 					} else {
 						// next lines
 						fmt.Printf(multiLineFormat, "", line) //nolint:forbidigo // intentional use of fmt
@@ -329,13 +333,15 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	t.SetStyle(table.StyleDefault)
 	t.Style().Format.Header = text.FormatDefault
 
-	colConfigs := []table.ColumnConfig{}
+	var colConfigs []table.ColumnConfig
 	headers := make(table.Row, len(result.Cols))
 
-	for idx, column := range result.Cols {
-		headers[idx] = column.Name
+	// get the column names (this takes into account the original name)
+	columnNames := ColumnNames(result.Cols)
+	for idx, columnName := range columnNames {
+		headers[idx] = columnName
 		colConfigs = append(colConfigs, table.ColumnConfig{
-			Name:     column.Name,
+			Name:     columnName,
 			Number:   idx + 1,
 			WidthMax: constants.MaxColumnWidth,
 		})

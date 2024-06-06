@@ -14,7 +14,12 @@ import (
 func ColumnNames(columns []*queryresult.ColumnDef) []string {
 	var colNames = make([]string, len(columns))
 	for i, c := range columns {
-		colNames[i] = c.Name
+		// respect original name
+		if c.OriginalName != "" {
+			colNames[i] = c.OriginalName
+		} else {
+			colNames[i] = c.Name
+		}
 	}
 
 	return colNames
