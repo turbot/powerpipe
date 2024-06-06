@@ -35,6 +35,7 @@ export type BasePrimitiveProps = {
 
 export type LeafNodeDataColumn = {
   name: string;
+  original_name?: string;
   data_type: string;
 };
 

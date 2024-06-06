@@ -34,6 +34,7 @@ export type TableColumnWrap = "all" | "none";
 
 type TableColumnInfo = {
   Header: string;
+  title: string;
   accessor: string;
   name: string;
   data_type: string;
@@ -55,8 +56,12 @@ const getColumns = (
   const columns: TableColumnInfo[] = cols.map((col) => {
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
-    if (properties && properties.columns && properties.columns[col.name]) {
-      const c = properties.columns[col.name];
+    if (
+      properties &&
+      properties.columns &&
+      properties.columns[col.original_name || col.name]
+    ) {
+      const c = properties.columns[col.original_name || col.name];
       if (c.display === "none") {
         hiddenColumns.push(col.name);
       }
@@ -69,9 +74,10 @@ const getColumns = (
     }
 
     const colInfo: TableColumnInfo = {
-      Header: col.name,
+      Header: col.original_name || col.name,
+      title: col.original_name || col.name,
       accessor: col.name,
-      name: col.name,
+      name: col.original_name || col.name,
       data_type: col.data_type,
       wrap: colWrap,
       // Boolean data types do not sort under the default alphanumeric sorting logic of react-table
@@ -125,7 +131,7 @@ const CellValue = ({
       setError(null);
       return;
     }
-    const renderedTemplateForColumn = renderedTemplateObj[column.name];
+    const renderedTemplateForColumn = renderedTemplateObj[column.accessor];
     if (!renderedTemplateForColumn) {
       setHref(null);
       setError(null);
@@ -147,14 +153,14 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight"
-        title={showTitle ? `${column.name}=null` : undefined}
+        title={showTitle ? `${column.title}=null` : undefined}
       >
         <>null</>
       </ExternalLink>
     ) : (
       <span
         className="text-foreground-lightest"
-        title={showTitle ? `${column.name}=null` : undefined}
+        title={showTitle ? `${column.title}=null` : undefined}
       >
         <>null</>
       </span>
@@ -221,14 +227,14 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight"
-        title={showTitle ? `${column.name}=${value.toString()}` : undefined}
+        title={showTitle ? `${column.title}=${value.toString()}` : undefined}
       >
         <>{value.toString()}</>
       </ExternalLink>
     ) : (
       <span
         className={classNames(value ? null : "text-foreground-light")}
-        title={showTitle ? `${column.name}=${value.toString()}` : undefined}
+        title={showTitle ? `${column.title}=${value.toString()}` : undefined}
       >
         <>{value.toString()}</>
       </span>
@@ -239,12 +245,12 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight"
-        title={showTitle ? `${column.name}=${asJsonString}` : undefined}
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
       >
         <>{asJsonString}</>
       </ExternalLink>
     ) : (
-      <span title={showTitle ? `${column.name}=${asJsonString}` : undefined}>
+      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
         {asJsonString}
       </span>
     );
@@ -254,7 +260,7 @@ const CellValue = ({
         <ExternalLink
           className="link-highlight tabular-nums"
           to={value}
-          title={showTitle ? `${column.name}=${value}` : undefined}
+          title={showTitle ? `${column.title}=${value}` : undefined}
         >
           {value}
         </ExternalLink>
@@ -267,7 +273,7 @@ const CellValue = ({
         <ExternalLink
           className="tabular-nums"
           to={mdMatch[2]}
-          title={showTitle ? `${column.name}=${value}` : undefined}
+          title={showTitle ? `${column.title}=${value}` : undefined}
         >
           {mdMatch[1]}
         </ExternalLink>
@@ -278,14 +284,14 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </ExternalLink>
     ) : (
       <span
         className="tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </span>
@@ -295,14 +301,14 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value.toLocaleString()}
       </ExternalLink>
     ) : (
       <span
         className="tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value.toLocaleString()}
       </span>
@@ -314,14 +320,14 @@ const CellValue = ({
       <ExternalLink
         to={href}
         className="link-highlight tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </ExternalLink>
     ) : (
       <span
         className="tabular-nums"
-        title={showTitle ? `${column.name}=${value}` : undefined}
+        title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </span>
@@ -386,7 +392,7 @@ const TableView = ({
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string]),
+          .map((col) => [col.accessor, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -519,10 +525,12 @@ const LineView = (props: TableProps) => {
     const newColumns: TableColumnInfo[] = [];
     props.data.columns.forEach((col) => {
       const columnOverrides =
-        props.properties?.columns && props.properties.columns[col.name];
+        props.properties?.columns &&
+        props.properties.columns[col.original_name || col.name];
       const newColDef: TableColumnInfo = {
         ...col,
-        Header: col.name,
+        Header: col.original_name || col.name,
+        title: col.original_name || col.name,
         accessor: col.name,
         display: columnOverrides?.display ? columnOverrides.display : "all",
         wrap: columnOverrides?.wrap ? columnOverrides.wrap : "none",
@@ -545,7 +553,7 @@ const LineView = (props: TableProps) => {
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string]),
+          .map((col) => [col.accessor, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -572,9 +580,9 @@ const LineView = (props: TableProps) => {
                 return null;
               }
               return (
-                <div key={`${col.name}-${rowIndex}`}>
+                <div key={`${col.accessor}-${rowIndex}`}>
                   <span className="block text-sm text-table-head truncate">
-                    {col.name}
+                    {col.title}
                   </span>
                   <span
                     className={classNames(
@@ -586,7 +594,7 @@ const LineView = (props: TableProps) => {
                       column={col}
                       rowIndex={rowIndex}
                       rowTemplateData={rowTemplateData}
-                      value={row[col.name]}
+                      value={row[col.accessor]}
                       showTitle
                     />
                   </span>
