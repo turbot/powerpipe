@@ -70,7 +70,7 @@ const getColumns = (
 
     const colInfo: TableColumnInfo = {
       Header: col.name,
-      accessor: col.name,
+      accessor: col.unique_name || col.name,
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
@@ -83,6 +83,7 @@ const getColumns = (
     }
     return colInfo;
   });
+  console.log({ cols, columns });
   return { columns, hiddenColumns };
 };
 
@@ -125,7 +126,7 @@ const CellValue = ({
       setError(null);
       return;
     }
-    const renderedTemplateForColumn = renderedTemplateObj[column.name];
+    const renderedTemplateForColumn = renderedTemplateObj[column.accessor];
     if (!renderedTemplateForColumn) {
       setHref(null);
       setError(null);
@@ -545,7 +546,7 @@ const LineView = (props: TableProps) => {
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string]),
+          .map((col) => [col.accessor, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -572,7 +573,7 @@ const LineView = (props: TableProps) => {
                 return null;
               }
               return (
-                <div key={`${col.name}-${rowIndex}`}>
+                <div key={`${col.accessor}-${rowIndex}`}>
                   <span className="block text-sm text-table-head truncate">
                     {col.name}
                   </span>
@@ -586,7 +587,7 @@ const LineView = (props: TableProps) => {
                       column={col}
                       rowIndex={rowIndex}
                       rowTemplateData={rowTemplateData}
-                      value={row[col.name]}
+                      value={row[col.accessor]}
                       showTitle
                     />
                   </span>
