@@ -70,7 +70,7 @@
     "@tailwindcss/typography": "0.5.10",
     "@testing-library/jest-dom": "6.4.1",
     "@testing-library/react": "14.2.0",
-    "@tsconfig/create-react-app": "2.0.2",
+    "@tsconfig/create-react-app": "2.0.4",
     "@types/echarts": "4.9.22",
     "@types/jest": "29.5.12",
     "@types/lodash": "4.17.4",
