@@ -12,14 +12,16 @@ type LeafData struct {
 	Rows    []map[string]interface{} `json:"rows"`
 }
 
-func NewLeafData(result *localqueryresult.SyncQueryResult) *LeafData {
+func NewLeafData(result *localqueryresult.SyncQueryResult) (*LeafData, error) {
 	leafData := &LeafData{
 		Rows:    make([]map[string]interface{}, len(result.Rows)),
 		Columns: result.Cols,
 	}
 	// handle duplicate column names - this checks all column names and ensures they are unique
 	// if they are not, assign a unique name to the column
-	leafData.ensureUniqueColumnName()
+	if err := leafData.ensureUniqueColumnName(); err != nil {
+		return nil, err
+	}
 
 	for rowIdx, row := range result.Rows {
 		rowData := make(map[string]interface{}, len(result.Cols))
@@ -33,7 +35,7 @@ func NewLeafData(result *localqueryresult.SyncQueryResult) *LeafData {
 
 		leafData.Rows[rowIdx] = rowData
 	}
-	return leafData
+	return leafData, nil
 }
 
 func (leafData *LeafData) ensureUniqueColumnName() error {

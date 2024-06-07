@@ -189,7 +189,7 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 		fmt.Printf("-[ RECORD %-2d ]%s\n", itemIdx+1, strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
 
 		// get the column names (this takes into account the original name)
-		columnNames := ColumnNames(result.Cols)
+		columnNames := columnNames(result.Cols)
 
 		for idx, column := range recordAsString {
 			lines := strings.Split(column, "\n")
@@ -298,7 +298,7 @@ func displayCSV(ctx context.Context, result *queryresult.Result) int {
 	csvWriter.Comma = []rune(cmdconfig.Viper().GetString(constants.ArgSeparator))[0]
 
 	if cmdconfig.Viper().GetBool(constants.ArgHeader) {
-		_ = csvWriter.Write(ColumnNames(result.Cols))
+		_ = csvWriter.Write(columnNames(result.Cols))
 	}
 
 	// print the data as it comes
@@ -337,7 +337,7 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	headers := make(table.Row, len(result.Cols))
 
 	// get the column names (this takes into account the original name)
-	columnNames := ColumnNames(result.Cols)
+	columnNames := columnNames(result.Cols)
 	for idx, columnName := range columnNames {
 		headers[idx] = columnName
 		colConfigs = append(colConfigs, table.ColumnConfig{
