@@ -1,7 +1,9 @@
-## v0.3.2 [TBD]
+## v0.4.0 [2024-06-07]
+_Whats new_
+- Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
+
 _Bug fixes_
 - When generating a snapshot  from a benchmark run, the row data is empty any of the rows are in error. ([#366](https://github.com/turbot/powerpipe/issues/366))
-- Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
 - Update mod install to only install or update mods which are command targets (and their dependencies). Set default pull mode for install is latest if there is a target, and minimal if no target is given. ([#381](https://github.com/turbot/powerpipe/issues/381))
 - Fix incorrect help message for output in powerpipe benchmark/control run. ([#367](https://github.com/turbot/powerpipe/issues/367))
 - Fix issue where `POWERPIPE_PORT` env var was not being honoured. ([#362](https://github.com/turbot/powerpipe/issues/362))
