@@ -21,6 +21,7 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	pfq "github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/powerpipe/internal/queryresult"
 )
 
@@ -185,16 +186,20 @@ func displayLine(ctx context.Context, result *queryresult.Result) int {
 		lineFormat := fmt.Sprintf("%%-%ds | %%s\n", maxColNameLength)
 		multiLineFormat := fmt.Sprintf("%%-%ds | %%-%ds", maxColNameLength, requiredTerminalColumnsForValuesOfRecord)
 
-		fmt.Printf("-[ RECORD %-2d ]%s\n", (itemIdx + 1), strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
+		fmt.Printf("-[ RECORD %-2d ]%s\n", itemIdx+1, strings.Repeat("-", 75)) //nolint:forbidigo // intentional use of fmt
+
+		// get the column names (this takes into account the original name)
+		columnNames := columnNames(result.Cols)
+
 		for idx, column := range recordAsString {
 			lines := strings.Split(column, "\n")
 			if len(lines) == 1 {
-				fmt.Printf(lineFormat, result.Cols[idx].Name, lines[0]) //nolint:forbidigo // intentional use of fmt
+				fmt.Printf(lineFormat, columnNames[idx], lines[0]) //nolint:forbidigo // intentional use of fmt
 			} else {
 				for lineIdx, line := range lines {
 					if lineIdx == 0 {
 						// the first line
-						fmt.Printf(multiLineFormat, result.Cols[idx].Name, line) //nolint:forbidigo // intentional use of fmt
+						fmt.Printf(multiLineFormat, columnNames[idx], line) //nolint:forbidigo // intentional use of fmt
 					} else {
 						// next lines
 						fmt.Printf(multiLineFormat, "", line) //nolint:forbidigo // intentional use of fmt
@@ -227,16 +232,11 @@ type resultMetadata struct {
 	RowsReturned int    `json:"rows_returned"`
 	Duration     string `json:"duration_ms"`
 }
+
 type jsonOutput struct {
-	Columns  []columnDef              `json:"columns"`
+	Columns  []pfq.ColumnDef          `json:"columns"`
 	Rows     []map[string]interface{} `json:"rows"`
 	Metadata resultMetadata           `json:"metadata"`
-}
-
-type columnDef struct {
-	Name         string `json:"name"`
-	DataType     string `json:"data_type"`
-	OriginalName string `json:"original_name,omitempty"`
 }
 
 func displayJSON(ctx context.Context, result *queryresult.Result) int {
@@ -249,7 +249,8 @@ func displayJSON(ctx context.Context, result *queryresult.Result) int {
 
 	// add column defs to the JSON output
 	for _, col := range result.Cols {
-		c := columnDef{
+		// create a new column def, converting the data type to lowercase
+		c := pfq.ColumnDef{
 			Name:         col.Name,
 			OriginalName: col.OriginalName,
 			DataType:     strings.ToLower(col.DataType),
@@ -297,7 +298,7 @@ func displayCSV(ctx context.Context, result *queryresult.Result) int {
 	csvWriter.Comma = []rune(cmdconfig.Viper().GetString(constants.ArgSeparator))[0]
 
 	if cmdconfig.Viper().GetBool(constants.ArgHeader) {
-		_ = csvWriter.Write(ColumnNames(result.Cols))
+		_ = csvWriter.Write(columnNames(result.Cols))
 	}
 
 	// print the data as it comes
@@ -332,13 +333,15 @@ func displayTable(ctx context.Context, result *queryresult.Result) int {
 	t.SetStyle(table.StyleDefault)
 	t.Style().Format.Header = text.FormatDefault
 
-	colConfigs := []table.ColumnConfig{}
+	var colConfigs []table.ColumnConfig
 	headers := make(table.Row, len(result.Cols))
 
-	for idx, column := range result.Cols {
-		headers[idx] = column.Name
+	// get the column names (this takes into account the original name)
+	columnNames := columnNames(result.Cols)
+	for idx, columnName := range columnNames {
+		headers[idx] = columnName
 		colConfigs = append(colConfigs, table.ColumnConfig{
-			Name:     column.Name,
+			Name:     columnName,
 			Number:   idx + 1,
 			WidthMax: constants.MaxColumnWidth,
 		})

@@ -248,8 +248,11 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 	}
 	slog.Debug("LeafRun complete", "name", r.resource.Name())
 
-	r.Data = dashboardtypes.NewLeafData(queryResult)
+	r.Data, err = dashboardtypes.NewLeafData(queryResult)
+	if err != nil {
+		return err
 
+	}
 	return nil
 }
 
