@@ -11,6 +11,7 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
+  EXECUTION_SCHEMA_VERSION_20240607,
   EXECUTION_STARTED_SCHEMA_VERSION_LATEST,
 } from "@powerpipe/constants/versions";
 import { migratePanelStatuses } from "./dashboardEventHandlers";
@@ -46,10 +47,32 @@ const executedStartedMigrations = [
     up: function (
       current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionStartedEvent {
-      // Nothing to do here as this event is already in the latest supported schema
       return {
         ...(current as DashboardExecutionStartedEvent),
         schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240130,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionStartedEvent {
+      return {
+        ...(current as DashboardExecutionStartedEvent),
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240607,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionStartedEvent {
+      // Nothing to do here as this event is already in the latest supported schema
+      return {
+        ...(current as DashboardExecutionStartedEvent),
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
       };
     },
   },
@@ -102,10 +125,10 @@ const executedCompletedMigrations = [
       } = current;
       return {
         action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
         execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
           panels: migratePanelStatuses(
             panels,
             EXECUTION_SCHEMA_VERSION_20220929,
@@ -128,10 +151,10 @@ const executedCompletedMigrations = [
       } = current;
       return {
         action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
         execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
           panels: migratePanelStatuses(
             panels,
             EXECUTION_SCHEMA_VERSION_20221222,
@@ -143,6 +166,32 @@ const executedCompletedMigrations = [
   },
   {
     version: EXECUTION_SCHEMA_VERSION_20240130,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      // The shape is already correct - just need to bump the version
+      const {
+        action,
+        execution_id,
+        snapshot: { schema_version, panels = {}, ...snapshotRest },
+      } = current;
+      return {
+        action,
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        execution_id,
+        snapshot: {
+          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          panels: migratePanelStatuses(
+            panels,
+            EXECUTION_SCHEMA_VERSION_20240130,
+          ),
+          ...snapshotRest,
+        },
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240607,
     up: function (
       current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
@@ -265,6 +314,39 @@ const snapshotDataToExecutionCompleteMigrations = [
         schema_version: EXECUTION_SCHEMA_VERSION_20240130,
         snapshot: {
           schema_version: EXECUTION_SCHEMA_VERSION_20240130,
+          layout,
+          panels,
+          inputs,
+          variables,
+          search_path,
+          start_time,
+          end_time,
+          metadata,
+        },
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20240607,
+    toExecutionComplete: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      const {
+        layout,
+        panels,
+        inputs,
+        variables,
+        search_path,
+        start_time,
+        end_time,
+        metadata,
+      } = current;
+      return {
+        action: DashboardActions.EXECUTION_COMPLETE,
+        execution_id: "",
+        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        snapshot: {
+          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
           layout,
           panels,
           inputs,
