@@ -77,7 +77,7 @@ const getColumns = (
       Header: col.original_name || col.name,
       title: col.original_name || col.name,
       accessor: col.name,
-      name: col.original_name || col.name,
+      name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
       // Boolean data types do not sort under the default alphanumeric sorting logic of react-table
@@ -131,7 +131,8 @@ const CellValue = ({
       setError(null);
       return;
     }
-    const renderedTemplateForColumn = renderedTemplateObj[column.accessor];
+    const renderedTemplateForColumn = renderedTemplateObj[column.name];
+
     if (!renderedTemplateForColumn) {
       setHref(null);
       setError(null);
@@ -392,7 +393,7 @@ const TableView = ({
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.accessor, col.href_template as string]),
+          .map((col) => [col.name, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -553,7 +554,7 @@ const LineView = (props: TableProps) => {
       const templates = Object.fromEntries(
         columns
           .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.accessor, col.href_template as string]),
+          .map((col) => [col.name, col.href_template as string]),
       );
       if (isEmpty(templates)) {
         setRowTemplateData([]);
@@ -580,7 +581,7 @@ const LineView = (props: TableProps) => {
                 return null;
               }
               return (
-                <div key={`${col.accessor}-${rowIndex}`}>
+                <div key={`${col.name}-${rowIndex}`}>
                   <span className="block text-sm text-table-head truncate">
                     {col.title}
                   </span>
@@ -594,7 +595,7 @@ const LineView = (props: TableProps) => {
                       column={col}
                       rowIndex={rowIndex}
                       rowTemplateData={rowTemplateData}
-                      value={row[col.accessor]}
+                      value={row[col.name]}
                       showTitle
                     />
                   </span>
