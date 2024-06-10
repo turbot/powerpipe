@@ -1,6 +1,7 @@
 ## v0.4.0 [2024-06-10]
 _Whats new_
 - Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
+- Update snapshot schema and dashboard event schema versions to `20240607`.  ([#406](https://github.com/turbot/powerpipe/issues/406))
 
 _Bug fixes_
 - When generating a snapshot  from a benchmark run, the row data is empty any of the rows are in error. ([#366](https://github.com/turbot/powerpipe/issues/366))
