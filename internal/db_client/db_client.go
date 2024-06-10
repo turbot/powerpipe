@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
+	"log/slog"
 )
 
 // DbClient wraps over `sql.DB` and gives an interface to the database
@@ -42,7 +42,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.C
 		}
 	}()
 
-	// process options - searhc path may have been passed in
+	// process options - search path may have been passed in
 	config := backend.NewConnectConfig(opts)
 	config.MaxOpenConns = MaxDbConnections()
 	// if no search path override passed in as an option, use the viper config
@@ -51,6 +51,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.C
 			SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
 			SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
 		}
+		slog.Debug("NewDbClient - no search path override passed in, using viper config", "search path", config.SearchPathConfig.String())
 	}
 
 	if err := client.connect(ctx, backend.WithConfig(config)); err != nil {

@@ -349,6 +349,8 @@ func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString
 		return client, nil
 	}
 
+	slog.Debug("DashboardExecutionTree getClient: creating client", "search path", searchPathConfig.String())
+
 	// otherwise get or create one
 	client, err := e.clientMap.GetOrCreate(ctx, connectionString, searchPathConfig)
 	if err != nil {

@@ -3,6 +3,7 @@ package db_client
 import (
 	"context"
 	"github.com/turbot/pipe-fittings/backend"
+	"log/slog"
 	"sync"
 )
 
@@ -64,6 +65,8 @@ func (e *ClientMap) Get(connectionString string, searchPathConfig backend.Search
 func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*DbClient, error) {
 	key := buildClientMapKey(connectionString, searchPathConfig)
 
+	slog.Debug("ClientMap GetOrCreate", "search path", searchPathConfig.String())
+
 	// get read lock
 	e.clientsMut.RLock()
 	client := e.clients[key]
@@ -73,9 +76,16 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 		return client, nil
 	}
 
+	slog.Debug("ClientMap GetOrCreate: acquiring write lock")
 	// get write lock
 	e.clientsMut.Lock()
-	defer e.clientsMut.Unlock()
+	defer func() {
+		e.clientsMut.Unlock()
+		slog.Debug("ClientMap GetOrCreate: complete - releasing write lock")
+
+	}()
+
+	slog.Debug("ClientMap GetOrCreate: got write lock")
 
 	// try again (race condition)
 	client = e.clients[key]
