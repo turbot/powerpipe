@@ -1,4 +1,4 @@
-## v0.4.0 [2024-06-07]
+## v0.4.0 [2024-06-10]
 _Whats new_
 - Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
 

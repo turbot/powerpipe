@@ -4,6 +4,7 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
+  EXECUTION_SCHEMA_VERSION_20240607,
 } from "@powerpipe/constants/versions";
 import { PanelDefinition, PanelsMap } from "@powerpipe/types";
 
@@ -22,6 +23,7 @@ const migratePanelStatus = (
       };
     case EXECUTION_SCHEMA_VERSION_20221222:
     case EXECUTION_SCHEMA_VERSION_20240130:
+    case EXECUTION_SCHEMA_VERSION_20240607:
       // Nothing to do - already the latest statuses
       return panel;
     default:

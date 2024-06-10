@@ -3,6 +3,7 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
+  EXECUTION_SCHEMA_VERSION_20240607,
 } from "@powerpipe/constants/versions";
 import { PanelDefinition } from "@powerpipe/types";
 import {
@@ -37,6 +38,7 @@ const stripSnapshotDataForExport = (snapshot) => {
     case EXECUTION_SCHEMA_VERSION_20220929:
     case EXECUTION_SCHEMA_VERSION_20221222:
     case EXECUTION_SCHEMA_VERSION_20240130:
+    case EXECUTION_SCHEMA_VERSION_20240607:
       const { panels, ...restSnapshot } = stripObjectProperties(snapshot);
       const newPanels = {};
       for (const [name, panel] of Object.entries(panels)) {
