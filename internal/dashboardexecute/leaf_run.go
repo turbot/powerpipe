@@ -220,7 +220,7 @@ func (*LeafRun) IsSnapshotPanel() {}
 
 // if this leaf run has a query or sql, execute it now
 func (r *LeafRun) executeQuery(ctx context.Context) error {
-	slog.Debug("LeafRun SQL resolved, executing", "name", r.resource.Name())
+	slog.Debug("LeafRun executeQuery: SQL resolved, executing", "name", r.resource.Name())
 
 	// check for context errors
 	if err := ctx.Err(); err != nil {
@@ -237,13 +237,15 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 		return err
 	}
 
+	slog.Debug("LeafRun executeQuery: got client", "name", r.resource.Name())
+
 	startTime := time.Now()
 	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
 	if err != nil {
 		if err.Error() == context.DeadlineExceeded.Error() {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
 		}
-		slog.Debug("LeafRun query failed", "name", r.resource.Name(), "error", err.Error())
+		slog.Warn("LeafRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
 	}
 	slog.Debug("LeafRun complete", "name", r.resource.Name())
