@@ -38,10 +38,10 @@ query.sp'
   # check lock file correct
   version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version
   assert_equal "$version" "1.0.0"
-  version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"]["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version
+  version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version
   assert_equal "$version_2" "2.0.0"
   version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version
-  assert_equal "$version_3" '"1.0.0"'
+  assert_equal "$version_3" "1.0.0"
 }
 
 # operation: install
@@ -74,11 +74,11 @@ query.sp'
 
   # check lock file correct
   version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
-  assert_equal "$version" '"1.0.0"'
+  assert_equal "$version" "1.0.0"
   version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_2" '"2.0.0"'
+  assert_equal "$version_2" "2.0.0"
   version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_3" '"1.0.0"'
+  assert_equal "$version_3" "1.0.0"
 }
 
 # operation: install
@@ -121,11 +121,11 @@ query.sp'
 
   # check lock file correct
   version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
-  assert_equal "$version" '"1.0.0"'
+  assert_equal "$version" "1.0.0"
   version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_2" '"2.0.0"'
+  assert_equal "$version_2" "2.0.0"
   version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_3" '"1.0.0"'
+  assert_equal "$version_3" "1.0.0"
 }
 
 # operation: install
@@ -162,11 +162,11 @@ query.sp'
 
   # check lock file correct
   version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
-  assert_equal "$version" '"1.0.0"'
+  assert_equal "$version" "1.0.0"
   version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_2" '"2.0.0"'
+  assert_equal "$version_2" "2.0.0"
   version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
-  assert_equal "$version_3" '"1.0.0"'
+  assert_equal "$version_3" "1.0.0"
 }
 
 function setup() {
