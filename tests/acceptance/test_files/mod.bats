@@ -40,7 +40,7 @@ query.sp'
   assert_equal "$version" "1.0.0"
   version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"]["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version
   assert_equal "$version_2" "2.0.0"
-  version_3=$(jq '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version
+  version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version
   assert_equal "$version_3" '"1.0.0"'
 }
 
@@ -73,11 +73,11 @@ mod.sp
 query.sp'
 
   # check lock file correct
-  version=$(cat .mod.cache.json | jq '.local["github.com/pskrbasu/powerpipe-mod-1"].version') # check top level mod version - should be unchanged
+  version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
   assert_equal "$version" '"1.0.0"'
-  version_2=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version') # check dependency mod version - should be unchanged
+  version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_2" '"2.0.0"'
-  version_3=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version') # check dependency mod version - should be unchanged
+  version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_3" '"1.0.0"'
 }
 
@@ -120,11 +120,11 @@ mod.sp
 query.sp'
 
   # check lock file correct
-  version=$(cat .mod.cache.json | jq '.local["github.com/pskrbasu/powerpipe-mod-1"].version') # check top level mod version - should be unchanged
+  version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
   assert_equal "$version" '"1.0.0"'
-  version_2=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version') # check dependency mod version - should be unchanged
+  version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_2" '"2.0.0"'
-  version_3=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version') # check dependency mod version - should be unchanged
+  version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_3" '"1.0.0"'
 }
 
@@ -161,11 +161,11 @@ mod.sp
 query.sp'
 
   # check lock file correct
-  version=$(cat .mod.cache.json | jq '.local["github.com/pskrbasu/powerpipe-mod-1"].version') # check top level mod version - should be unchanged
+  version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version - should be unchanged
   assert_equal "$version" '"1.0.0"'
-  version_2=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version') # check dependency mod version - should be unchanged
+  version_2=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-1@v1.0.0"].["github.com/pskrbasu/powerpipe-mod-2"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_2" '"2.0.0"'
-  version_3=$(cat .mod.cache.json | jq '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version') # check dependency mod version - should be unchanged
+  version_3=$(jq -r '.["github.com/pskrbasu/powerpipe-mod-2@v2.0.0"].["github.com/pskrbasu/powerpipe-mod-3"].version' .mod.cache.json) # check dependency mod version - should be unchanged
   assert_equal "$version_3" '"1.0.0"'
 }
 
