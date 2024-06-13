@@ -28,6 +28,12 @@ function cleanup_work_dir() {
     name=$(echo $tests | jq -c ".[${i}]" | jq -r ".name")
     dir=$(echo $tests | jq -c ".[${i}]" | jq -r ".dir")
     cmd=$(echo $tests | jq -c ".[${i}]" | jq -r ".cmd")
+    expected_output=$(echo $tests | jq -c ".[${i}]" | jq -r ".expected_output")
+    expected_folder_structure=$(echo $tests | jq -c ".[${i}]" | jq -r ".expected_folder_structure")
+    expected_mod_files=$(echo $tests | jq -c ".[${i}]" | jq -r ".expected_mod_files")
+    top_version=$(echo $tests | jq -c ".[${i}]" | jq -r ".top_level_mod_version")
+    mod1_version=$(echo $tests | jq -c ".[${i}]" | jq -r ".dependent_mod_1_version")
+    mod2_version=$(echo $tests | jq -c ".[${i}]" | jq -r ".dependent_mod_2_version")
 
     echo ""
     echo "Running test: $name"
@@ -47,14 +53,14 @@ function cleanup_work_dir() {
     echo $output
 
     # check command output matches the expected output
-    assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+    assert_output "$(cat $TEST_DATA_DIR/$expected_output)"
 
     # check the folder structure matches the expected structure
     run ls .powerpipe/mods/github.com/pskrbasu/
-    assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+    assert_output "$(cat $TEST_DATA_DIR/$expected_folder_structure)"
 
     # check the files match the expected
     run ls .powerpipe/mods/github.com/pskrbasu/powerpipe-mod-1@v1.0.0
-    assert_output "$(cat $TEST_DATA_DIR/mod_files.txt)"
+    assert_output "$(cat $TEST_DATA_DIR/$expected_mod_files)"
   done
 }
