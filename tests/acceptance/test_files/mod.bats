@@ -62,5 +62,8 @@ function cleanup_work_dir() {
     # check the files match the expected
     run ls .powerpipe/mods/github.com/pskrbasu/powerpipe-mod-1@v1.0.0
     assert_output "$(cat $TEST_DATA_DIR/$expected_mod_files)"
+
+    # cleanup the work folder
+    cleanup_work_dir
   done
 }
