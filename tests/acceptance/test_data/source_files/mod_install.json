@@ -1,0 +1,10 @@
+[
+  {
+    "name": "install mod (pull mode default) - top level not meet version constraints",
+    "dir": "mod_installed_does_not_meet_version_constraint",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "top_level_mod_version": "1.0.0",
+    "dependent_mod_1_version": "2.0.0",
+    "dependent_mod_2_version": "1.0.0"
+  }
+]
