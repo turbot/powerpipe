@@ -1,0 +1,1 @@
+This folder should always remain empty
