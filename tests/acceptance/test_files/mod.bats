@@ -35,7 +35,7 @@ powerpipe-mod-3@v1.0.0'
 mod.sp
 query.sp'
 
-  # check lock file correct
+  # check lock file correct (--arg has been used in jq since the ubuntu shell does not support special characters correctly)
   mod1='github.com/pskrbasu/powerpipe-mod-1@v1.0.0'
   mod2='github.com/pskrbasu/powerpipe-mod-2@v2.0.0'
   version=$(jq -r '.local["github.com/pskrbasu/powerpipe-mod-1"].version' .mod.cache.json) # check top level mod version

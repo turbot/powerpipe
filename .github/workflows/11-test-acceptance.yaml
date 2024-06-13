@@ -82,6 +82,12 @@ jobs:
           - "mod_vars"
           - "snapshot"
           - "dashboard_parsing_validation"
+        exclude:
+          - platform: ubuntu-latest
+            test_block: mod
+        include:
+          - platform: macos-latest
+            test_block: mod
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
