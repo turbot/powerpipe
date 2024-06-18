@@ -67,6 +67,404 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
 }
 
+# operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date
+@test "install mod (pull mode default) - top installed but retagged in repo" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the commit hash of top level mod to simulate retagging
+  $TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod (pull mode full) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date
+@test "install mod (pull mode full) - top already installed" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update
+@test "install mod (pull mode full) - top level not meet version constraints" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the version of top level mod
+  $TEST_SCRIPTS_DIR/update_top_level_mod_version.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: update
+@test "install mod (pull mode full) - top installed but retagged in repo" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the commit hash of top level mod to simulate retagging
+  $TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: new version available that satisfies constraint; expected: update
+@test "install mod (pull mode full) - new version available that satisfies constraint" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the version of top level mod
+  $TEST_SCRIPTS_DIR/update_top_level_mod_version.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod (pull mode latest) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date
+@test "install mod (pull mode latest) - top already installed" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update
+@test "install mod (pull mode latest) - top level not meet version constraints" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the version of top level mod
+  $TEST_SCRIPTS_DIR/update_top_level_mod_version.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date
+@test "install mod (pull mode latest) - top installed but retagged in repo" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the commit hash of top level mod to simulate retagging
+  $TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod (pull mode development) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date
+@test "install mod (pull mode development) - top already installed" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update
+@test "install mod (pull mode development) - top level not meet version constraints" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the version of top level mod
+  $TEST_SCRIPTS_DIR/update_top_level_mod_version.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date
+@test "install mod (pull mode development) - top installed but retagged in repo" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the commit hash of top level mod to simulate retagging
+  $TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod (pull mode minimal) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date
+@test "install mod (pull mode minimal) - top already installed" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update
+@test "install mod (pull mode minimal) - top level not meet version constraints" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the version of top level mod
+  $TEST_SCRIPTS_DIR/update_top_level_mod_version.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date
+@test "install mod (pull mode minimal) - top installed but retagged in repo" {
+  cd "$tmp_dir"
+  # mod already installed
+  powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
+
+  
+  # update the commit hash of top level mod to simulate retagging
+  $TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh
+
+  # run install command
+  run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
 
 function setup() {
   # create the work folder to run the tests
