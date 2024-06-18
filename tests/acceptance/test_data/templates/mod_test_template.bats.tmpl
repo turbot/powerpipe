@@ -1,0 +1,41 @@
+load "$LIB_BATS_ASSERT/load.bash"
+load "$LIB_BATS_SUPPORT/load.bash"
+
+{{range .}}
+# {{ .Description }}
+@test "{{.Name}}" {
+  cd "$tmp_dir"
+  # {{ .SetupComment }}
+  {{ if .Setup}}{{.Setup}}{{- end}}
+
+  {{ if .OperationComment }}
+  # {{.OperationComment }}
+  {{- end}}
+  {{- if .Operation}}
+  {{.Operation}}
+  {{- end}}
+
+  # run install command
+  run {{.Cmd}}
+
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedOutput}})"
+
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedFolderStructure}})"
+}
+{{end}}
+
+function setup() {
+  # create the work folder to run the tests
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}"
+}
+
+function teardown() {
+  # cleanup the work folder
+  rm -rf "${tmp_dir}"
+}

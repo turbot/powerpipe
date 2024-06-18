@@ -1,0 +1,34 @@
+[
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode default) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt",
+    "expected_mod_files": "mod_files.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode default) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt",
+    "expected_mod_files": "mod_files.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode default) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt",
+    "expected_mod_files": "mod_files.txt"
+  }
+]
