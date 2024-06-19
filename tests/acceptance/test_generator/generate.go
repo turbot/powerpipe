@@ -1,8 +1,10 @@
-package bats_generator
+package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"fmt"
+	"io"
+	"log"
 	"os"
 	"text/template"
 )
@@ -28,14 +30,17 @@ func GenerateBatsFile(batsTemplatePath string, jsonPath string, outputPath strin
 	}
 	defer jsonFile.Close()
 
-	byteValue, _ := ioutil.ReadAll(jsonFile)
+	byteValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		return err
+	}
 	var testCases []TestCase
 	if err := json.Unmarshal(byteValue, &testCases); err != nil {
 		return err
 	}
 
 	// Read the template file
-	templateContent, err := ioutil.ReadFile(batsTemplatePath)
+	templateContent, err := os.ReadFile(batsTemplatePath)
 	if err != nil {
 		return err
 	}
@@ -56,4 +61,17 @@ func GenerateBatsFile(batsTemplatePath string, jsonPath string, outputPath strin
 	}
 
 	return nil
+}
+
+func main() {
+	batsTemplatePath := "tests/acceptance/test_data/templates/mod_test_template.bats.tmpl"
+	jsonPath := "tests/acceptance/test_data/templates/test_cases.json"
+	outputPath := "tests/acceptance/test_files/mod.bats"
+
+	err := GenerateBatsFile(batsTemplatePath, jsonPath, outputPath)
+	if err != nil {
+		log.Fatalf("Failed to generate Bats test file: %s", err)
+	}
+
+	fmt.Println("Bats test file generated successfully!")
 }
