@@ -18,14 +18,24 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run {{.Cmd}}
 
+  {{ if .ExpectedOutput }}
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedOutput}})"
+  {{- end}}
 
+  {{ if .ExpectedOutputPartial }}
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/{{.ExpectedOutputPartial}})"
+  {{- end}}
+
+  {{ if .ExpectedFolderStructure }}
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
   assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedFolderStructure}})"
+  {{- end}}
 }
 {{end}}
 

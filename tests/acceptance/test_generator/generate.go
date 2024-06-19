@@ -18,6 +18,7 @@ type TestCase struct {
 	Operation               string `json:"operation"`
 	Cmd                     string `json:"cmd"`
 	ExpectedOutput          string `json:"expected_output"`
+	ExpectedOutputPartial   string `json:"expected_output_partial"`
 	ExpectedFolderStructure string `json:"expected_folder_structure"`
 	ExpectedModFiles        string `json:"expected_mod_files"`
 }

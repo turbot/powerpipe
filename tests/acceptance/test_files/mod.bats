@@ -13,10 +13,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -34,10 +38,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -57,10 +65,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -80,10 +92,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -101,10 +117,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -122,10 +142,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -145,10 +169,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -168,10 +196,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -191,10 +223,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -212,10 +248,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -233,10 +273,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -256,10 +300,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -279,10 +327,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -300,10 +352,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -321,10 +377,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -344,10 +404,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -367,10 +431,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -388,10 +456,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -409,10 +481,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -432,10 +508,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -455,10 +535,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -476,10 +560,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -497,10 +585,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -520,10 +612,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -541,10 +637,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -562,10 +662,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -585,10 +689,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -606,10 +714,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -627,10 +739,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -650,10 +766,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -671,10 +791,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -692,10 +816,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -715,10 +843,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -736,10 +868,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods_branch.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -757,10 +893,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -780,10 +920,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -801,10 +945,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -822,10 +970,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -845,10 +997,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -866,10 +1022,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -887,10 +1047,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -910,10 +1074,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/top_level_mod_upgraded.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -931,10 +1099,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -952,10 +1124,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -975,10 +1151,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -996,10 +1176,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -1017,10 +1201,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -1040,10 +1228,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -1061,10 +1253,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/installed_3_mods.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -1082,10 +1278,14 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
@@ -1105,14 +1305,228 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # run install command
   run powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal
 
+  
   # check the stdout mod tree
   echo "Verifying the mod tree output"
   assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
 
+  
+
+  
   # check the folder structure (all 3 mods should be present and also check mod contents)
   echo "Verifying the mod folder structure"
   run ls .powerpipe/mods/github.com/pskrbasu/
   assert_output "$(cat $TEST_DATA_DIR/mod_folder_structure.txt)"
+}
+
+# operation: install; pull-mode: default(minimal); top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod from local file (pull mode default) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/installed_3_mods_partial.txt)"
+
+  
+}
+
+# operation: install; pull-mode: default(minimal); top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date
+@test "install mod from local file (pull mode default) - top level mod installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  
+
+  
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod from local file (pull mode full) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull full
+
+  
+
+  
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/installed_3_mods_partial.txt)"
+
+  
+}
+
+# operation: install; pull-mode: full; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date
+@test "install mod from local file (pull mode full) - top level mod installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull full
+
+  
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  
+
+  
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod from local file (pull mode latest) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull latest
+
+  
+
+  
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/installed_3_mods_partial.txt)"
+
+  
+}
+
+# operation: install; pull-mode: latest; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date
+@test "install mod from local file (pull mode latest) - top level mod installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull latest
+
+  
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  
+
+  
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod from local file (pull mode development) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull development
+
+  
+
+  
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/installed_3_mods_partial.txt)"
+
+  
+}
+
+# operation: install; pull-mode: development; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date
+@test "install mod from local file (pull mode development) - top level mod installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull development
+
+  
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  
+
+  
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
+@test "install mod from local file (pull mode minimal) - no mods installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull minimal
+
+  
+
+  
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/installed_3_mods_partial.txt)"
+
+  
+}
+
+# operation: install; pull-mode: minimal; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date
+@test "install mod from local file (pull mode minimal) - top level mod installed" {
+  cd "$tmp_dir"
+  # no mods installed
+  powerpipe mod install $MODS_DIR/test_mods/mod_installed
+
+  
+
+  # run install command
+  run powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull minimal
+
+  
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/mod_up_to_date.txt)"
+
+  
+
+  
 }
 
 
