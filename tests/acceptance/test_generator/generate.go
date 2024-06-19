@@ -66,7 +66,7 @@ func GenerateBatsFile(batsTemplatePath string, jsonPath string, outputPath strin
 
 func main() {
 	batsTemplatePath := "tests/acceptance/test_data/templates/mod_test_template.bats.tmpl"
-	jsonPath := "tests/acceptance/test_data/templates/test_cases.json"
+	jsonPath := "tests/acceptance/test_data/source_files/mod_test_cases.json"
 	outputPath := "tests/acceptance/test_files/mod.bats"
 
 	err := GenerateBatsFile(batsTemplatePath, jsonPath, outputPath)

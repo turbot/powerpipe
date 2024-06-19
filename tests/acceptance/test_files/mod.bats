@@ -1,6 +1,10 @@
 load "$LIB_BATS_ASSERT/load.bash"
 load "$LIB_BATS_SUPPORT/load.bash"
 
+# These set of tests are generated from the test cases in mod_test_cases.json file in source_files. 
+# DO NOT UPDATE these tests manually. 
+# To update/add tests to this file, update the mod_test_cases.json file and run `make build-tests` from powerpipe root dir.
+
 
 # operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods
 @test "install mod (pull mode default) - no mods installed" {
