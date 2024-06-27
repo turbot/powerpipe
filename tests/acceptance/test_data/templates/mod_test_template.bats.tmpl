@@ -1,0 +1,55 @@
+load "$LIB_BATS_ASSERT/load.bash"
+load "$LIB_BATS_SUPPORT/load.bash"
+
+# These set of tests are generated from the test cases in mod_test_cases.json file in source_files. 
+# DO NOT UPDATE these tests manually. 
+# To update/add tests to this file, update the mod_test_cases.json file and run `make build-tests` from powerpipe root dir.
+
+{{range .}}
+# {{ .Description }}
+@test "{{.Name}}" {
+  cd "$tmp_dir"
+  # {{ .SetupComment }}
+  {{ if .Setup}}{{.Setup}}{{- end}}
+
+  {{ if .OperationComment }}
+  # {{.OperationComment }}
+  {{- end}}
+  {{- if .Operation}}
+  {{.Operation}}
+  {{- end}}
+
+  # run install command
+  run {{.Cmd}}
+
+  {{ if .ExpectedOutput }}
+  # check the stdout mod tree
+  echo "Verifying the mod tree output"
+  assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedOutput}})"
+  {{- end}}
+
+  {{ if .ExpectedOutputPartial }}
+  # check the partial output since the absolute path is not known
+  echo "Verifying the mod tree output"
+  assert_output  --partial "$(cat $TEST_DATA_DIR/{{.ExpectedOutputPartial}})"
+  {{- end}}
+
+  {{ if .ExpectedFolderStructure }}
+  # check the folder structure (all 3 mods should be present and also check mod contents)
+  echo "Verifying the mod folder structure"
+  run ls .powerpipe/mods/github.com/pskrbasu/
+  assert_output "$(cat $TEST_DATA_DIR/{{.ExpectedFolderStructure}})"
+  {{- end}}
+}
+{{end}}
+
+function setup() {
+  # create the work folder to run the tests
+  tmp_dir="$(mktemp -d)"
+  mkdir -p "${tmp_dir}"
+}
+
+function teardown() {
+  # cleanup the work folder
+  rm -rf "${tmp_dir}"
+}

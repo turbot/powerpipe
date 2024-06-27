@@ -76,6 +76,7 @@ jobs:
           - "check"
           - "resource_show_outputs"
           - "dashboard"
+          - "mod"
           - "mod_install"
           - "sp_files"
           - "mod_vars"
