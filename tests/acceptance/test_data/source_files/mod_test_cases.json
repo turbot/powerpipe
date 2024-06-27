@@ -1,0 +1,938 @@
+[
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode default) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode default) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode default) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "install mod (pull mode default) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode full) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode full) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode full) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: update",
+    "name": "install mod (pull mode full) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: new version available that satisfies constraint; expected: update",
+    "name": "install mod (pull mode full) - new version available that satisfies constraint",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode latest) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode latest) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode latest) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "install mod (pull mode latest) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode development) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode development) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode development) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "install mod (pull mode development) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod (pull mode minimal) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod (pull mode minimal) - top already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "install mod (pull mode minimal) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "install mod (pull mode minimal) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from branch (pull mode default) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "expected_output": "installed_3_mods_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from branch (pull mode default) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "install mod from branch (pull mode default) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from branch (pull mode full) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full",
+    "expected_output": "installed_3_mods_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from branch (pull mode full) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "install mod from branch (pull mode full) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull full",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from branch (pull mode latest) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest",
+    "expected_output": "installed_3_mods_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from branch (pull mode latest) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "install mod from branch (pull mode latest) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull latest",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from branch (pull mode development) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development",
+    "expected_output": "installed_3_mods_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from branch (pull mode development) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "install mod from branch (pull mode development) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull development",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from branch (pull mode minimal) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal",
+    "expected_output": "installed_3_mods_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from branch (pull mode minimal) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected:all mods are up to date",
+    "name": "install mod from branch (pull mode minimal) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from tag (pull mode default) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode default) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default (latest); top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode default) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagged",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from tag (pull mode full) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode full) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: update top level mod",
+    "name": "install mod from tag (pull mode full) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagged",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from tag (pull mode latest) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode latest) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode latest) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagged",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from tag (pull mode development) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode development) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode development) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagged",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from tag (pull mode minimal) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal",
+    "expected_output": "installed_3_mods.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode minimal) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repo; expected: all mods are up to date",
+    "name": "install mod from tag (pull mode minimal) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagged",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default(minimal); top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from local file (pull mode default) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "expected_output_partial": "installed_3_mods_partial.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: default(minimal); top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date",
+    "name": "install mod from local file (pull mode default) - top level mod installed",
+    "setup_comment": "no mods installed",
+    "setup": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "expected_output": "mod_up_to_date.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from local file (pull mode full) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull full",
+    "expected_output_partial": "installed_3_mods_partial.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: full; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date",
+    "name": "install mod from local file (pull mode full) - top level mod installed",
+    "setup_comment": "no mods installed",
+    "setup": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull full",
+    "expected_output": "mod_up_to_date.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from local file (pull mode latest) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull latest",
+    "expected_output_partial": "installed_3_mods_partial.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: latest; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date",
+    "name": "install mod from local file (pull mode latest) - top level mod installed",
+    "setup_comment": "no mods installed",
+    "setup": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull latest",
+    "expected_output": "mod_up_to_date.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from local file (pull mode development) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull development",
+    "expected_output_partial": "installed_3_mods_partial.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: development; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date",
+    "name": "install mod from local file (pull mode development) - top level mod installed",
+    "setup_comment": "no mods installed",
+    "setup": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull development",
+    "expected_output": "mod_up_to_date.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: no mods installed; expected: install all mods",
+    "name": "install mod from local file (pull mode minimal) - no mods installed",
+    "setup_comment": "no mods installed",
+    "setup": "",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull minimal",
+    "expected_output_partial": "installed_3_mods_partial.txt"
+  },
+  {
+    "description": "operation: install; pull-mode: minimal; top-level-mod constraint: file; l1 constraint: version; l2 constraint: version; scenario: top level mod installed; expected: all mods are up to date",
+    "name": "install mod from local file (pull mode minimal) - top level mod installed",
+    "setup_comment": "no mods installed",
+    "setup": "powerpipe mod install $MODS_DIR/test_mods/mod_installed",
+    "cmd": "powerpipe mod install $MODS_DIR/test_mods/mod_installed --pull minimal",
+    "expected_output": "mod_up_to_date.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod (pull mode default) - latest already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "update mod (pull mode default) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "update mod (pull mode default) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod (pull mode full) - latest already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "update mod (pull mode full) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: update",
+    "name": "update mod (pull mode full) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod (pull mode development) - latest already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "update mod (pull mode development) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "update mod (pull mode development) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod (pull mode latest) - latest already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "update mod (pull mode latest) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "update mod (pull mode latest) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod (pull mode minimal) - latest already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but does not meet version constraints; expected: update",
+    "name": "update mod (pull mode minimal) - top level not meet version constraints",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the version of top level mod",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_version.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: version; l1 constraint: version; l2 constraint: version; scenario: top installed but retagged in repos; expected: all mods are up to date",
+    "name": "update mod (pull mode minimal) - top installed but retagged in repo",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate retagging",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode default) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from branch (pull mode default) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode full) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from branch (pull mode full) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode latest) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from branch (pull mode latest) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode development) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode development) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "top_level_mod_upgraded_branch.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode minimal) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: branch; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: all mods are up to date",
+    "name": "update mod from branch (pull mode minimal) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1#new",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure_branch.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from tag (pull mode default) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: default (latest); top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from tag (pull mode default) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from tag (pull mode full) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: full; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from tag (pull mode full) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull full",
+    "expected_output": "top_level_mod_upgraded.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from tag (pull mode latest) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: latest; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from tag (pull mode latest) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull latest",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from tag (pull mode development) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: development; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from tag (pull mode development) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull development",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top level mod already installed; expected: all mods are up to date",
+    "name": "update mod from tag (pull mode minimal) - top level mod already installed",
+    "setup_comment": "mod already installed",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  },
+  {
+    "description": "operation: update; pull-mode: minimal; top-level-mod constraint: tag; l1 constraint: version; l2 constraint: version; scenario: top installed but new commit is available; expected: update top level mod",
+    "name": "update mod from tag (pull mode minimal) - top installed but new commit is available",
+    "setup": "powerpipe mod install github.com/pskrbasu/powerpipe-mod-1@v1.0.0",
+    "setup_comment": "mod already installed",
+    "operation_comment": "update the commit hash of top level mod to simulate old commit",
+    "operation": "$TEST_SCRIPTS_DIR/update_top_level_mod_commit.sh",
+    "cmd": "powerpipe mod update github.com/pskrbasu/powerpipe-mod-1 --pull minimal",
+    "expected_output": "mod_up_to_date.txt",
+    "expected_folder_structure": "mod_folder_structure.txt"
+  }
+]
