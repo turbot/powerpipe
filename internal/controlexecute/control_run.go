@@ -62,7 +62,7 @@ type ControlRun struct {
 	// execution duration
 	Duration time.Duration `json:"-"`
 	// parent result group
-	Group *ResultGroup `json:"-"`
+	Parents []*ResultGroup `json:"-"`
 	// execution tree
 	Tree *ExecutionTree `json:"-"`
 	// save run error as string for JSON export
@@ -95,14 +95,13 @@ func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree
 		Display:       control.GetDisplay(),
 		Type:          control.GetType(),
 
-		Severity:  typehelpers.SafeString(control.Severity),
-		Title:     typehelpers.SafeString(control.Title),
-		rowMap:    make(map[string]ResultRows),
-		Summary:   &controlstatus.StatusSummary{},
-		Tree:      executionTree,
-		RunStatus: dashboardtypes.RunInitialized,
-
-		Group:      group,
+		Severity:   typehelpers.SafeString(control.Severity),
+		Title:      typehelpers.SafeString(control.Title),
+		rowMap:     make(map[string]ResultRows),
+		Summary:    &controlstatus.StatusSummary{},
+		Tree:       executionTree,
+		RunStatus:  dashboardtypes.RunInitialized,
+		Parents:    []*ResultGroup{group},
 		NodeType:   schema.BlockTypeControl,
 		doneChan:   make(chan bool, 1),
 		Properties: make(map[string]any),
@@ -211,14 +210,14 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 
 	// function to cleanup and update status after control run completion
 	defer func() {
-		// update the result group status with our status - this will be passed all the way up the execution tree
-		r.Group.updateSummary(r.Summary)
-		if len(r.Severity) != 0 {
-			r.Group.updateSeverityCounts(r.Severity, r.Summary)
-		}
 		r.Duration = time.Since(startTime)
-		if r.Group != nil {
-			r.Group.onChildDone()
+		// update all our parents with our status - this will be passed all the way up the execution tree
+		for _, parent := range r.Parents {
+			parent.updateSummary(r.Summary)
+			parent.onChildDone()
+			if len(r.Severity) != 0 {
+				parent.updateSeverityCounts(r.Severity, r.Summary)
+			}
 		}
 	}()
 
@@ -343,7 +342,9 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 		}
 	}
 	// add keys to group
-	r.Group.addDimensionKeys(r.DimensionKeys...)
+	for _, parent := range r.Parents {
+		parent.addDimensionKeys(r.DimensionKeys...)
+	}
 	return dimensionsSchema
 }
 

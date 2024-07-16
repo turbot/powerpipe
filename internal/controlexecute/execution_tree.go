@@ -19,8 +19,8 @@ import (
 // ExecutionTree is a structure representing the control execution hierarchy
 type ExecutionTree struct {
 	Root *ResultGroup `json:"root"`
-	// flat list of all control runs
-	ControlRuns []*ControlRun                  `json:"-"`
+	// map of all control runs, keyed by FULL name
+	ControlRuns map[string]*ControlRun         `json:"-"`
 	StartTime   time.Time                      `json:"start_time"`
 	EndTime     time.Time                      `json:"end_time"`
 	Progress    *controlstatus.ControlProgress `json:"progress"`
@@ -81,6 +81,15 @@ func (*ExecutionTree) IsExportSourceData() {}
 func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
+		// check if we have a run already
+		if _, ok := e.ControlRuns[control.FullName]; ok {
+			slog.Debug("control run already exists, adding parent ot existing run", "control", control.FullName)
+			// just add this group as a parent
+			e.ControlRuns[control.Name()].Parents = append(e.ControlRuns[control.Name()].Parents, group)
+			return nil
+		}
+		// so twe do not have a control run for this control yet
+
 		// create new ControlRun with treeItem as the parent
 		controlRun, err := NewControlRun(control, group, e)
 		if err != nil {
@@ -90,7 +99,7 @@ func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Contr
 		group.addControl(controlRun)
 
 		// also add it into the execution tree control run list
-		e.ControlRuns = append(e.ControlRuns, controlRun)
+		e.ControlRuns[control.FullName] = controlRun
 	}
 	return nil
 }
