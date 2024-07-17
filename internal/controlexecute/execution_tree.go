@@ -81,9 +81,10 @@ func (*ExecutionTree) IsExportSourceData() {}
 func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
+		e.ControlRuns = make(map[string]*ControlRun)
 		// check if we have a run already
 		if _, ok := e.ControlRuns[control.FullName]; ok {
-			slog.Debug("control run already exists, adding parent ot existing run", "control", control.FullName)
+			slog.Debug("control run already exists, adding parent to existing run", "control", control.FullName)
 			// just add this group as a parent
 			e.ControlRuns[control.Name()].Parents = append(e.ControlRuns[control.Name()].Parents, group)
 			return nil
