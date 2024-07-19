@@ -173,6 +173,12 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
+	// if finished, we dont set the error, this can happen because the same control run might have multiple parents
+	if r.Finished() {
+		slog.Debug("not setting the control run to error, already finished", "name", r.Control.Name(), "status", r.RunStatus, "error", err)
+		return
+	}
+
 	if err.Error() == context.DeadlineExceeded.Error() {
 		// had the control started?
 		if r.RunStatus == dashboardtypes.RunRunning {
@@ -204,6 +210,12 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	slog.Debug("begin ControlRun.Start", "name", r.Control.Name())
 	defer slog.Debug("end ControlRun.Start", "name", r.Control.Name())
 
+	// check if the status has been set to running
+	if !r.trySetStateRunning(ctx) {
+		slog.Debug("control status has been set to running", "name", r.Control.Name())
+		return
+	}
+
 	control := r.Control
 
 	startTime := time.Now()
@@ -220,9 +232,6 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 			}
 		}
 	}()
-
-	// set our status
-	r.setRunStatus(ctx, dashboardtypes.RunRunning)
 
 	// update the current running control in the Progress renderer
 	r.Tree.Progress.OnControlStart(ctx, r)
@@ -381,14 +390,29 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 	r.RunStatus = status
 	r.stateLock.Unlock()
 
-	// if status is started, set start time
-	if status == dashboardtypes.RunRunning {
-		r.startTime = time.Now()
-	}
 	if r.Finished() {
 		// close the doneChan - we don't need it anymore
 		close(r.doneChan)
 	}
+}
+
+func (r *ControlRun) trySetStateRunning(ctx context.Context) bool {
+	// lock the statuslock
+	r.stateLock.Lock()
+
+	defer r.stateLock.Unlock()
+
+	// check the status - if we are not ready(i.e we are running already), return
+	if r.RunStatus != dashboardtypes.RunInitialized {
+		slog.Debug("control run is not initialized", "name", r.Control.Name(), "status", r.RunStatus)
+		return false
+	}
+
+	// set status to running and set start time
+	r.RunStatus = dashboardtypes.RunRunning
+	r.startTime = time.Now()
+
+	return true
 }
 
 func (r *ControlRun) populateProperties() error {

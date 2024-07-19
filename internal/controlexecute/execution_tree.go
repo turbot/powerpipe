@@ -37,8 +37,9 @@ type ExecutionTree struct {
 func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
-		Workspace: workspace,
-		client:    client,
+		Workspace:   workspace,
+		client:      client,
+		ControlRuns: make(map[string]*ControlRun),
 	}
 
 	// if backend supports search path, get it
@@ -81,26 +82,29 @@ func (*ExecutionTree) IsExportSourceData() {}
 func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
-		e.ControlRuns = make(map[string]*ControlRun)
 		// check if we have a run already
-		if _, ok := e.ControlRuns[control.FullName]; ok {
+		var controlRun *ControlRun
+		controlRun, ok := e.ControlRuns[control.FullName]
+		if ok {
 			slog.Debug("control run already exists, adding parent to existing run", "control", control.FullName)
 			// just add this group as a parent
 			e.ControlRuns[control.Name()].Parents = append(e.ControlRuns[control.Name()].Parents, group)
-			return nil
-		}
-		// so twe do not have a control run for this control yet
 
-		// create new ControlRun with treeItem as the parent
-		controlRun, err := NewControlRun(control, group, e)
-		if err != nil {
-			return err
+		} else {
+			slog.Debug("control run already exists, adding parent to existing run", "control", control.FullName)
+			// so we do not have a control run for this control yet
+			// create new ControlRun with treeItem as the parent
+			var err error
+			controlRun, err = NewControlRun(control, group, e)
+			if err != nil {
+				return err
+			}
+			// add it to the map
+			e.ControlRuns[control.FullName] = controlRun
 		}
+		slog.Debug("adding control to group", "control", control.FullName, "group", group.Title)
 		// add it into the group
 		group.addControl(controlRun)
-
-		// also add it into the execution tree control run list
-		e.ControlRuns[control.FullName] = controlRun
 	}
 	return nil
 }
