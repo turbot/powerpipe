@@ -90,7 +90,7 @@ type ControlRunInstance struct {
 
 func (cr *ControlRun) CloneAndSetParent(parent *ResultGroup) ControlRunInstance {
 	res := ControlRunInstance{
-		ControlRun: *cr, //nolint:govet
+		ControlRun: *cr, //nolint:govet // we want to copy the struct
 		Group:      parent,
 	}
 	for _, r := range cr.Rows {
@@ -99,7 +99,7 @@ func (cr *ControlRun) CloneAndSetParent(parent *ResultGroup) ControlRunInstance 
 			ControlRun: &res,
 		})
 	}
-	return res //nolint:govet
+	return res //nolint:govet // we want the struct
 }
 
 func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
