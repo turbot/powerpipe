@@ -62,7 +62,7 @@ type ControlRun struct {
 	// execution duration
 	Duration time.Duration `json:"-"`
 	// parent result group
-	Group *ResultGroup `json:"-"`
+	Parents []*ResultGroup `json:"-"`
 	// execution tree
 	Tree *ExecutionTree `json:"-"`
 	// save run error as string for JSON export
@@ -75,6 +75,34 @@ type ControlRun struct {
 	doneChan    chan bool
 	attempts    int
 	startTime   time.Time
+}
+
+// ResultRowInstance is used in ControlRunInstance, to store the single ResultRow and
+// the ControlRunInstance data
+type ResultRowInstance struct {
+	ResultRow
+	ControlRun *ControlRunInstance `json:"-"`
+}
+
+// ControlRunInstance is used to store control runs for each parent (in case of multiple parents)
+type ControlRunInstance struct {
+	ControlRun
+	Group *ResultGroup `json:"-"`
+	Rows  []*ResultRowInstance
+}
+
+func NewControlRunInstance(cr *ControlRun, parent *ResultGroup) ControlRunInstance {
+	res := ControlRunInstance{
+		ControlRun: *cr, //nolint:govet // we want to copy the struct
+		Group:      parent,
+	}
+	for _, r := range cr.Rows {
+		res.Rows = append(res.Rows, &ResultRowInstance{
+			ResultRow:  *r,
+			ControlRun: &res,
+		})
+	}
+	return res //nolint:govet // we want the struct
 }
 
 func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
@@ -95,14 +123,13 @@ func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree
 		Display:       control.GetDisplay(),
 		Type:          control.GetType(),
 
-		Severity:  typehelpers.SafeString(control.Severity),
-		Title:     typehelpers.SafeString(control.Title),
-		rowMap:    make(map[string]ResultRows),
-		Summary:   &controlstatus.StatusSummary{},
-		Tree:      executionTree,
-		RunStatus: dashboardtypes.RunInitialized,
-
-		Group:      group,
+		Severity:   typehelpers.SafeString(control.Severity),
+		Title:      typehelpers.SafeString(control.Title),
+		rowMap:     make(map[string]ResultRows),
+		Summary:    &controlstatus.StatusSummary{},
+		Tree:       executionTree,
+		RunStatus:  dashboardtypes.RunInitialized,
+		Parents:    []*ResultGroup{group},
 		NodeType:   schema.BlockTypeControl,
 		doneChan:   make(chan bool, 1),
 		Properties: make(map[string]any),
@@ -174,6 +201,12 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 	if err == nil {
 		return
 	}
+	// if finished, we dont set the error, this can happen because the same control run might have multiple parents
+	if r.Finished() {
+		slog.Debug("not setting the control run to error, already finished", "name", r.Control.Name(), "status", r.RunStatus, "error", err)
+		return
+	}
+
 	if err.Error() == context.DeadlineExceeded.Error() {
 		// had the control started?
 		if r.RunStatus == dashboardtypes.RunRunning {
@@ -205,25 +238,29 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	slog.Debug("begin ControlRun.Start", "name", r.Control.Name())
 	defer slog.Debug("end ControlRun.Start", "name", r.Control.Name())
 
+	// check if the control is already running/completed/error, if so return no need
+	// to execute the control again
+	if !r.trySetStateRunning(ctx) {
+		slog.Debug("control status has been set to running", "name", r.Control.Name(), "status", r.RunStatus)
+		return
+	}
+
 	control := r.Control
 
 	startTime := time.Now()
 
 	// function to cleanup and update status after control run completion
 	defer func() {
-		// update the result group status with our status - this will be passed all the way up the execution tree
-		r.Group.updateSummary(r.Summary)
-		if len(r.Severity) != 0 {
-			r.Group.updateSeverityCounts(r.Severity, r.Summary)
-		}
 		r.Duration = time.Since(startTime)
-		if r.Group != nil {
-			r.Group.onChildDone()
+		// update all our parents with our status - this will be passed all the way up the execution tree
+		for _, parent := range r.Parents {
+			parent.updateSummary(r.Summary)
+			parent.onChildDone()
+			if len(r.Severity) != 0 {
+				parent.updateSeverityCounts(r.Severity, r.Summary)
+			}
 		}
 	}()
-
-	// set our status
-	r.setRunStatus(ctx, dashboardtypes.RunRunning)
 
 	// update the current running control in the Progress renderer
 	r.Tree.Progress.OnControlStart(ctx, r)
@@ -343,7 +380,9 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 		}
 	}
 	// add keys to group
-	r.Group.addDimensionKeys(r.DimensionKeys...)
+	for _, parent := range r.Parents {
+		parent.addDimensionKeys(r.DimensionKeys...)
+	}
 	return dimensionsSchema
 }
 
@@ -380,14 +419,31 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 	r.RunStatus = status
 	r.stateLock.Unlock()
 
-	// if status is started, set start time
-	if status == dashboardtypes.RunRunning {
-		r.startTime = time.Now()
-	}
 	if r.Finished() {
 		// close the doneChan - we don't need it anymore
 		close(r.doneChan)
 	}
+}
+
+// trySetStateRunning will set the state to running and return true
+// will return false if ControlRunStatus is not initialized(i.e running/complete/error)
+func (r *ControlRun) trySetStateRunning(ctx context.Context) bool {
+	// lock the statuslock
+	r.stateLock.Lock()
+
+	defer r.stateLock.Unlock()
+
+	// check the status - if we are not initialized(i.e we are running already or completed), return
+	if r.RunStatus != dashboardtypes.RunInitialized {
+		slog.Debug("control run state is not initialized", "name", r.Control.Name(), "status", r.RunStatus)
+		return false
+	}
+
+	// set status to running and set start time
+	r.RunStatus = dashboardtypes.RunRunning
+	r.startTime = time.Now()
+
+	return true
 }
 
 func (r *ControlRun) populateProperties() error {

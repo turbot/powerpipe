@@ -1,0 +1,4 @@
+group_id,title,description,control_id,control_title,control_description,reason,resource,status,severity,pg_sleep
+functionality_test_mod.benchmark.test1,Benchmark 1,Benchmark 1,control.delay,Control to sleep,Control to sleep,test,pp,ok,high,
+functionality_test_mod.benchmark.test2,Benchmark 2,Benchmark 2,control.delay,Control to sleep,Control to sleep,test,pp,ok,high,
+functionality_test_mod.benchmark.test3,Benchmark 3,Benchmark 3,control.delay,Control to sleep,Control to sleep,test,pp,ok,high,

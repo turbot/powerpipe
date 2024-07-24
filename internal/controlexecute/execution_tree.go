@@ -19,8 +19,8 @@ import (
 // ExecutionTree is a structure representing the control execution hierarchy
 type ExecutionTree struct {
 	Root *ResultGroup `json:"root"`
-	// flat list of all control runs
-	ControlRuns []*ControlRun                  `json:"-"`
+	// map of all control runs, keyed by FULL name
+	ControlRuns map[string]*ControlRun         `json:"-"`
 	StartTime   time.Time                      `json:"start_time"`
 	EndTime     time.Time                      `json:"end_time"`
 	Progress    *controlstatus.ControlProgress `json:"progress"`
@@ -29,7 +29,9 @@ type ExecutionTree struct {
 	// the current session search path
 	SearchPath []string             `json:"-"`
 	Workspace  *workspace.Workspace `json:"-"`
-	client     *db_client.DbClient
+	// ControlRunInstances is a list of control runs for each parent.
+	ControlRunInstances []*ControlRunInstance `json:"-"`
+	client              *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
 	controlNameFilterMap map[string]struct{}
 }
@@ -37,8 +39,9 @@ type ExecutionTree struct {
 func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
-		Workspace: workspace,
-		client:    client,
+		Workspace:   workspace,
+		client:      client,
+		ControlRuns: make(map[string]*ControlRun),
 	}
 
 	// if backend supports search path, get it
@@ -73,6 +76,20 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	return executionTree, nil
 }
 
+// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
+func (tree *ExecutionTree) PopulateControlRunInstances() {
+	var controlRunInstances []*ControlRunInstance
+
+	for _, controlRun := range tree.ControlRuns {
+		for _, parent := range controlRun.Parents {
+			flatControlRun := NewControlRunInstance(controlRun, parent)
+			controlRunInstances = append(controlRunInstances, &flatControlRun)
+		}
+	}
+
+	tree.ControlRunInstances = controlRunInstances
+}
+
 // IsExportSourceData implements ExportSourceData
 func (*ExecutionTree) IsExportSourceData() {}
 
@@ -81,16 +98,29 @@ func (*ExecutionTree) IsExportSourceData() {}
 func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
-		// create new ControlRun with treeItem as the parent
-		controlRun, err := NewControlRun(control, group, e)
-		if err != nil {
-			return err
+		// check if we have a run already
+		var controlRun *ControlRun
+		controlRun, ok := e.ControlRuns[control.FullName]
+		if ok {
+			slog.Debug("control run already exists, adding parent to existing run", "control", control.FullName)
+			// just add this group as a parent
+			e.ControlRuns[control.Name()].Parents = append(e.ControlRuns[control.Name()].Parents, group)
+
+		} else {
+			slog.Debug("control run already exists, adding parent to existing run", "control", control.FullName)
+			// so we do not have a control run for this control yet
+			// create new ControlRun with treeItem as the parent
+			var err error
+			controlRun, err = NewControlRun(control, group, e)
+			if err != nil {
+				return err
+			}
+			// add it to the map
+			e.ControlRuns[control.FullName] = controlRun
 		}
+		slog.Debug("adding control to group", "control", control.FullName, "group", group.Title)
 		// add it into the group
 		group.addControl(controlRun)
-
-		// also add it into the execution tree control run list
-		e.ControlRuns = append(e.ControlRuns, controlRun)
 	}
 	return nil
 }
