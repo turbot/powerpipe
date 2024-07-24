@@ -30,8 +30,8 @@ type ExecutionTree struct {
 	SearchPath []string             `json:"-"`
 	Workspace  *workspace.Workspace `json:"-"`
 	// Flat map for CSV data
-	FlatControlRuns []*FlatControlRun `json:"-"`
-	client          *db_client.DbClient
+	ControlRunInstances []*ControlRunInstance `json:"-"`
+	client              *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
 	controlNameFilterMap map[string]struct{}
 }
@@ -76,17 +76,18 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	return executionTree, nil
 }
 
-func (tree *ExecutionTree) PopulateFlatControlRuns() {
-	var flatControlRuns []*FlatControlRun
+// PopulateControlRunInstances creates a flat list of ControlRunInstances
+func (tree *ExecutionTree) PopulateControlRunInstances() {
+	var controlRunInstances []*ControlRunInstance
 
 	for _, controlRun := range tree.ControlRuns {
 		for _, parent := range controlRun.Parents {
 			flatControlRun := controlRun.CloneAndSetParent(parent)
-			flatControlRuns = append(flatControlRuns, &flatControlRun)
+			controlRunInstances = append(controlRunInstances, &flatControlRun)
 		}
 	}
 
-	tree.FlatControlRuns = flatControlRuns
+	tree.ControlRunInstances = controlRunInstances
 }
 
 // IsExportSourceData implements ExportSourceData

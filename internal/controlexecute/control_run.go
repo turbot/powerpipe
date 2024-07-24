@@ -77,87 +77,29 @@ type ControlRun struct {
 	startTime   time.Time
 }
 
-type FlatControlRun struct {
-	// properties from control
-	ControlId     string            `json:"-"`
-	FullName      string            `json:"name"`
-	Title         string            `json:"title,omitempty"`
-	Description   string            `json:"description,omitempty"`
-	Documentation string            `json:"documentation,omitempty"`
-	Tags          map[string]string `json:"tags,omitempty"`
-	Display       string            `json:"display,omitempty"`
-	Type          string            `json:"display_type,omitempty"`
-
-	// this will be serialised under 'properties'
-	Severity string `json:"-"`
-
-	// "control"
-	NodeType string `json:"panel_type"`
-
-	// the control being run
-	Control *modconfig.Control `json:"-"`
-	// this is populated by retrieving Control properties with the snapshot tag
-	Properties map[string]any `json:"properties,omitempty"`
-
-	// control summary
-	Summary   *controlstatus.StatusSummary `json:"summary"`
-	RunStatus dashboardtypes.RunStatus     `json:"status"`
-	// result rows
-	Rows ResultRows `json:"-"`
-
-	// the results in snapshot format
-	Data *dashboardtypes.LeafData `json:"data"`
-
-	// a list of distinct dimension keys from the results of this control
-	DimensionKeys []string `json:"-"`
-
-	// execution duration
-	Duration time.Duration `json:"-"`
-	// parent result group
-	Parent *ResultGroup `json:"-"`
-	// execution tree
-	Tree *ExecutionTree `json:"-"`
-	// save run error as string for JSON export
-	RunErrorString string `json:"error,omitempty"`
-	runError       error
-	// the query result stream
-	queryResult *localqueryresult.Result
-	rowMap      map[string]ResultRows
-	doneChan    chan bool
-	attempts    int
-	startTime   time.Time
+type ResultRowInstance struct {
+	ResultRow
+	ControlRun *ControlRunInstance `json:"-"`
 }
 
-func (cr *ControlRun) CloneAndSetParent(parent *ResultGroup) FlatControlRun {
-	return FlatControlRun{
-		ControlId:      cr.ControlId,
-		FullName:       cr.FullName,
-		Title:          cr.Title,
-		Description:    cr.Description,
-		Documentation:  cr.Documentation,
-		Tags:           cr.Tags,
-		Display:        cr.Display,
-		Type:           cr.Type,
-		Severity:       cr.Severity,
-		NodeType:       cr.NodeType,
-		Control:        cr.Control,
-		Properties:     cr.Properties,
-		Summary:        cr.Summary,
-		RunStatus:      cr.RunStatus,
-		Rows:           cr.Rows,
-		Data:           cr.Data,
-		DimensionKeys:  cr.DimensionKeys,
-		Duration:       cr.Duration,
-		Parent:         parent,
-		Tree:           cr.Tree,
-		RunErrorString: cr.RunErrorString,
-		runError:       cr.runError,
-		queryResult:    cr.queryResult,
-		rowMap:         cr.rowMap,
-		doneChan:       cr.doneChan,
-		attempts:       cr.attempts,
-		startTime:      cr.startTime,
+type ControlRunInstance struct {
+	ControlRun
+	Group *ResultGroup `json:"-"`
+	Rows  []*ResultRowInstance
+}
+
+func (cr *ControlRun) CloneAndSetParent(parent *ResultGroup) ControlRunInstance {
+	res := ControlRunInstance{
+		ControlRun: *cr,
+		Group:      parent,
 	}
+	for _, r := range cr.Rows {
+		res.Rows = append(res.Rows, &ResultRowInstance{
+			ResultRow:  *r,
+			ControlRun: &res,
+		})
+	}
+	return res
 }
 
 func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
