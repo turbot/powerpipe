@@ -29,7 +29,7 @@ type ExecutionTree struct {
 	// the current session search path
 	SearchPath []string             `json:"-"`
 	Workspace  *workspace.Workspace `json:"-"`
-	// Flat map for CSV data
+	// ControlRunInstances is a list of control runs for each parent.
 	ControlRunInstances []*ControlRunInstance `json:"-"`
 	client              *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
@@ -76,13 +76,13 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	return executionTree, nil
 }
 
-// PopulateControlRunInstances creates a flat list of ControlRunInstances
+// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
 func (tree *ExecutionTree) PopulateControlRunInstances() {
 	var controlRunInstances []*ControlRunInstance
 
 	for _, controlRun := range tree.ControlRuns {
 		for _, parent := range controlRun.Parents {
-			flatControlRun := controlRun.CloneAndSetParent(parent)
+			flatControlRun := NewControlRunInstance(controlRun, parent)
 			controlRunInstances = append(controlRunInstances, &flatControlRun)
 		}
 	}

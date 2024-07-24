@@ -77,18 +77,21 @@ type ControlRun struct {
 	startTime   time.Time
 }
 
+// ResultRowInstance is used in ControlRunInstance, to store the single ResultRow and
+// the ControlRunInstance data
 type ResultRowInstance struct {
 	ResultRow
 	ControlRun *ControlRunInstance `json:"-"`
 }
 
+// ControlRunInstance is used to store control runs for each parent (in case of multiple parents)
 type ControlRunInstance struct {
 	ControlRun
 	Group *ResultGroup `json:"-"`
 	Rows  []*ResultRowInstance
 }
 
-func (cr *ControlRun) CloneAndSetParent(parent *ResultGroup) ControlRunInstance {
+func NewControlRunInstance(cr *ControlRun, parent *ResultGroup) ControlRunInstance {
 	res := ControlRunInstance{
 		ControlRun: *cr, //nolint:govet // we want to copy the struct
 		Group:      parent,
@@ -235,9 +238,10 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 	slog.Debug("begin ControlRun.Start", "name", r.Control.Name())
 	defer slog.Debug("end ControlRun.Start", "name", r.Control.Name())
 
-	// check if the status has been set to running
+	// check if the control is already running/completed/error, if so return no need
+	// to execute the control again
 	if !r.trySetStateRunning(ctx) {
-		slog.Debug("control status has been set to running", "name", r.Control.Name())
+		slog.Debug("control status has been set to running", "name", r.Control.Name(), "status", r.RunStatus)
 		return
 	}
 
@@ -421,15 +425,17 @@ func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.Run
 	}
 }
 
+// trySetStateRunning will set the state to running and return true
+// will return false if ControlRunStatus is not initialized(i.e running/complete/error)
 func (r *ControlRun) trySetStateRunning(ctx context.Context) bool {
 	// lock the statuslock
 	r.stateLock.Lock()
 
 	defer r.stateLock.Unlock()
 
-	// check the status - if we are not ready(i.e we are running already), return
+	// check the status - if we are not initialized(i.e we are running already or completed), return
 	if r.RunStatus != dashboardtypes.RunInitialized {
-		slog.Debug("control run is not initialized", "name", r.Control.Name(), "status", r.RunStatus)
+		slog.Debug("control run state is not initialized", "name", r.Control.Name(), "status", r.RunStatus)
 		return false
 	}
 

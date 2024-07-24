@@ -252,7 +252,13 @@ func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlex
 	}
 
 	// populate the control run instances
-	// flatten the control run with parents information in the execution tree, for ease of use in csv template
+	// if a control is included by multiple benchmarks, a single ControlRun is created, and executed only once,
+	// and the Parents property contains a list of all ResultGroups (i.e. benchmarks) which include the control.
+	// When rendering the CSV data, the template renders a set of results rows for every instance of the control,
+	// i.e. for every parent.
+	// So - build a list of ControlRunInstances, by expanding the list of control runs for each parent.
+	// (A ControlRunInstance is the same as a ControlRun but has a single parent - thus if a ControlRun has 3 parents,
+	// we will build a list of 3 ControlRunInstances)
 	tree.PopulateControlRunInstances()
 
 	err = displayControlResults(checkCtx, tree, initData.OutputFormatter)
