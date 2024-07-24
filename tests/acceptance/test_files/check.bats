@@ -125,7 +125,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 @test "powerpipe benchmark run - export json (control re-used/ multiple parents)" {
   cd $FUNCTIONALITY_TEST_MOD
   run powerpipe benchmark run control_reused --export test.json --progress=false
-  assert_equal "$(cat test.json)" "$(cat $TEST_DATA_DIR/expected_check_json_multiple_parents.csv)"
+  assert_equal "$(cat test.json)" "$(cat $TEST_DATA_DIR/expected_check_json_multiple_parents.json)"
   rm -f test.json
   cd -
 }
