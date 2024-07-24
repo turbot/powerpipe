@@ -29,7 +29,9 @@ type ExecutionTree struct {
 	// the current session search path
 	SearchPath []string             `json:"-"`
 	Workspace  *workspace.Workspace `json:"-"`
-	client     *db_client.DbClient
+	// Flat map for CSV data
+	FlatControlRuns []*FlatControlRun `json:"-"`
+	client          *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
 	controlNameFilterMap map[string]struct{}
 }
@@ -72,6 +74,19 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 	executionTree.Progress = controlstatus.NewControlProgress(len(executionTree.ControlRuns))
 
 	return executionTree, nil
+}
+
+func (tree *ExecutionTree) PopulateFlatControlRuns() {
+	var flatControlRuns []*FlatControlRun
+
+	for _, controlRun := range tree.ControlRuns {
+		for _, parent := range controlRun.Parents {
+			flatControlRun := controlRun.CloneAndSetParent(parent)
+			flatControlRuns = append(flatControlRuns, &flatControlRun)
+		}
+	}
+
+	tree.FlatControlRuns = flatControlRuns
 }
 
 // IsExportSourceData implements ExportSourceData

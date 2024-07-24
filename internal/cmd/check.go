@@ -194,6 +194,9 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 			return
 		}
 
+		// flatten the parents information in the execution tree, for ease of use in csv template
+		namedTree.tree.PopulateFlatControlRuns()
+
 		// append the total number of alarms and errors for multiple runs
 		totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
 		totalErrors = namedTree.tree.Root.Summary.Status.Error
