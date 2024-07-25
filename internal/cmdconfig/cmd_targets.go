@@ -2,8 +2,9 @@ package cmdconfig
 
 import (
 	"fmt"
-	"golang.org/x/exp/maps"
 	"strings"
+
+	"golang.org/x/exp/maps"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -76,13 +77,20 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Wo
 			return nil, sperr.New("both command line args and query invocation args are set")
 		}
 	}
-	// set args for targer
+	// set query args for target
 	if queryArgs != nil {
 		// if the target is a query provider set the args
-		// (if the target is a dashboard, which i snot a query provider,
+		// (if the target is a dashboard, which is not a query provider,
 		// we read the args from viper separately and use to populate the inputs)
 		if qp, ok := any(target).(modconfig.QueryProvider); ok {
 			qp.SetArgs(queryArgs)
+		}
+	}
+	// now set the command line args
+	if !commandLineQueryArgs.Empty() {
+		// if the target is a query provider set the args
+		if qp, ok := any(target).(modconfig.QueryProvider); ok {
+			qp.SetArgs(commandLineQueryArgs)
 		}
 	}
 	return []modconfig.ModTreeItem{target}, nil
