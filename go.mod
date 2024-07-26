@@ -39,7 +39,7 @@ require github.com/sethvargo/go-retry v0.2.4 // indirect
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
-	github.com/didip/tollbooth/v7 v7.0.1
+	github.com/didip/tollbooth/v7 v7.0.2
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/size v1.0.1
 	github.com/go-sql-driver/mysql v1.8.1
@@ -121,7 +121,7 @@ require (
 	github.com/go-logr/logr v1.4.1 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-ole/go-ole v1.2.6 // indirect
-	github.com/go-pkgz/expirable-cache v0.1.0 // indirect
+	github.com/go-pkgz/expirable-cache/v3 v3.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
 	github.com/goccy/go-json v0.10.2 // indirect
