@@ -1,3 +1,8 @@
+## v0.4.1 [2024-07-26]
+_Bug fixes_
+- Fix issue where the `--arg` flag was not working for control and query runs. ([#439](https://github.com/turbot/powerpipe/issues/439))
+- Fix data inconsistency issue in snapshot output when the same control was included in multiple benchmarks. ([#436](https://github.com/turbot/powerpipe/issues/436))
+
 ## v0.4.0 [2024-06-10]
 _Whats new_
 - Update JSON output to handle duplicate column names - append a unique suffix to duplicate column names. ([#375](https://github.com/turbot/powerpipe/issues/375))
