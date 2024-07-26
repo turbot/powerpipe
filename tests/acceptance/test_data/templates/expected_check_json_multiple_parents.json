@@ -1,0 +1,177 @@
+{
+  "group_id": "root_result_group",
+  "title": "Top Benchmark",
+  "description": "",
+  "tags": {},
+  "summary": {
+    "status": {
+      "alarm": 0,
+      "ok": 3,
+      "info": 0,
+      "skip": 0,
+      "error": 0
+    }
+  },
+  "groups": [
+    {
+      "group_id": "functionality_test_mod.benchmark.control_reused",
+      "title": "Top Benchmark",
+      "description": "Benchmark with 3 children benchmarks which run the same control",
+      "tags": {},
+      "summary": {
+        "status": {
+          "alarm": 0,
+          "ok": 3,
+          "info": 0,
+          "skip": 0,
+          "error": 0
+        }
+      },
+      "groups": [
+        {
+          "group_id": "functionality_test_mod.benchmark.test1",
+          "title": "Benchmark 1",
+          "description": "Benchmark 1",
+          "tags": {},
+          "summary": {
+            "status": {
+              "alarm": 0,
+              "ok": 1,
+              "info": 0,
+              "skip": 0,
+              "error": 0
+            }
+          },
+          "groups": [],
+          "controls": [
+            {
+              "summary": {
+                "alarm": 0,
+                "ok": 1,
+                "info": 0,
+                "skip": 0,
+                "error": 0
+              },
+              "results": [
+                {
+                  "reason": "test",
+                  "resource": "pp",
+                  "status": "ok",
+                  "dimensions": [
+                    {
+                      "key": "pg_sleep",
+                      "value": ""
+                    }
+                  ]
+                }
+              ],
+              "control_id": "control.delay",
+              "description": "Control to sleep",
+              "severity": "high",
+              "tags": {},
+              "title": "Control to sleep",
+              "run_status": 4,
+              "run_error": ""
+            }
+          ]
+        },
+        {
+          "group_id": "functionality_test_mod.benchmark.test2",
+          "title": "Benchmark 2",
+          "description": "Benchmark 2",
+          "tags": {},
+          "summary": {
+            "status": {
+              "alarm": 0,
+              "ok": 1,
+              "info": 0,
+              "skip": 0,
+              "error": 0
+            }
+          },
+          "groups": [],
+          "controls": [
+            {
+              "summary": {
+                "alarm": 0,
+                "ok": 1,
+                "info": 0,
+                "skip": 0,
+                "error": 0
+              },
+              "results": [
+                {
+                  "reason": "test",
+                  "resource": "pp",
+                  "status": "ok",
+                  "dimensions": [
+                    {
+                      "key": "pg_sleep",
+                      "value": ""
+                    }
+                  ]
+                }
+              ],
+              "control_id": "control.delay",
+              "description": "Control to sleep",
+              "severity": "high",
+              "tags": {},
+              "title": "Control to sleep",
+              "run_status": 4,
+              "run_error": ""
+            }
+          ]
+        },
+        {
+          "group_id": "functionality_test_mod.benchmark.test3",
+          "title": "Benchmark 3",
+          "description": "Benchmark 3",
+          "tags": {},
+          "summary": {
+            "status": {
+              "alarm": 0,
+              "ok": 1,
+              "info": 0,
+              "skip": 0,
+              "error": 0
+            }
+          },
+          "groups": [],
+          "controls": [
+            {
+              "summary": {
+                "alarm": 0,
+                "ok": 1,
+                "info": 0,
+                "skip": 0,
+                "error": 0
+              },
+              "results": [
+                {
+                  "reason": "test",
+                  "resource": "pp",
+                  "status": "ok",
+                  "dimensions": [
+                    {
+                      "key": "pg_sleep",
+                      "value": ""
+                    }
+                  ]
+                }
+              ],
+              "control_id": "control.delay",
+              "description": "Control to sleep",
+              "severity": "high",
+              "tags": {},
+              "title": "Control to sleep",
+              "run_status": 4,
+              "run_error": ""
+            }
+          ]
+        }
+      ],
+      "controls": null
+    }
+  ],
+  "controls": null
+} 

@@ -103,7 +103,8 @@ jobs:
           - "mod"
           - "mod_install"
           - "sp_files"
-          - "mod_vars"
+          - "var_resolution"
+          - "params_and_args"
           - "snapshot"
           - "dashboard_parsing_validation"
     runs-on: ${{ matrix.platform }}

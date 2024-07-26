@@ -35,6 +35,8 @@ updates:
     commit-message:
       prefix: "[dep][dash]"
       include: "scope"
+    allow:
+      - dependency-type: "production"
     pull-request-branch-name:
       separator: "-"
     assignees:
