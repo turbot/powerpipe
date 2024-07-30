@@ -1,3 +1,5 @@
+version: 2
+
 builds:
   - id: powerpipe-linux-arm64
     binary: powerpipe
@@ -77,7 +79,7 @@ checksum:
   name_template: "checksums.txt"
 
 changelog:
-  skip: true
+  disable: true
 
 release:
   prerelease: auto
@@ -90,7 +92,7 @@ brews:
       owner: turbot
       name: homebrew-tap
       branch: powerpipe-brew
-    folder: Formula
+    directory: Formula
     url_template: "https://github.com/turbot/powerpipe/releases/download/{{ .Tag }}/{{ .ArtifactName }}"
     homepage: "https://powerpipe.io/"
     description: "Dashboards for DevOps. Visualize cloud configurations. Assess security posture against a massive library of benchmarks. Build custom dashboards with code."
