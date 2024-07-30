@@ -1,6 +1,6 @@
 OUTPUT_DIR?=/usr/local/bin
 PACKAGE_NAME          := github.com/turbot/powerpipe
-GOLANG_CROSS_VERSION  ?= v1.21.5
+GOLANG_CROSS_VERSION  ?= v1.22.5
 
 .PHONY: build
 build:

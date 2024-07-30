@@ -1,8 +1,6 @@
 module github.com/turbot/powerpipe
 
-go 1.21.0
-
-toolchain go1.21.3
+go 1.22.5
 
 //replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
