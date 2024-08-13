@@ -1,8 +1,7 @@
 module github.com/turbot/powerpipe
 
 go 1.21.0
-
-toolchain go1.21.3
+toolchain go1.22.5
 
 //replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
@@ -25,7 +24,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.4.1
+	github.com/turbot/pipe-fittings v1.5.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.1
 	github.com/turbot/terraform-components v0.0.0-20231108031935-358f803c1a8b // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
