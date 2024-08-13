@@ -2,6 +2,7 @@ package dashboardtypes
 
 import (
 	"fmt"
+
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/utils"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
@@ -42,8 +43,8 @@ func (leafData *LeafData) ensureUniqueColumnName() error {
 	// create a unique name generator
 	nameGenerator := utils.NewUniqueNameGenerator()
 
-	for _, col := range leafData.Columns {
-		uniqueName, err := nameGenerator.GetUniqueName(col.Name)
+	for colIdx, col := range leafData.Columns {
+		uniqueName, err := nameGenerator.GetUniqueName(col.Name, colIdx)
 		if err != nil {
 			return fmt.Errorf("error generating unique column name: %w", err)
 		}
