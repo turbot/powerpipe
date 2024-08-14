@@ -228,6 +228,11 @@ func (r *ControlRun) setError(ctx context.Context, err error) {
 
 }
 func (r *ControlRun) skip(ctx context.Context) {
+	// if finished, we don't skip, this can happen because the same control run might have multiple parents
+	if r.Finished() {
+		slog.Debug("not setting the control run to skip, already finished", "name", r.Control.Name(), "status", r.RunStatus)
+		return
+	}
 	r.setRunStatus(ctx, dashboardtypes.RunComplete)
 }
 

@@ -130,6 +130,13 @@ load "$LIB_BATS_SUPPORT/load.bash"
   cd -
 }
 
+@test "powerpipe benchmark run - dry run (control re-used/ multiple parents)" {
+  cd $FUNCTIONALITY_TEST_MOD
+  run powerpipe benchmark run control_reused --dry-run
+  assert_success
+  cd -
+}
+
 @test "powerpipe control run - export csv - pipe separator" {
   cd $CONTROL_RENDERING_TEST_MOD
   run powerpipe control run sample_control_mixed_results_1 --export test.csv --separator="|" --progress=false

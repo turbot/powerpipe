@@ -1,3 +1,11 @@
+## v0.4.2 [2024-08-14]
+_Whats new_
+- Compiled with Go 1.22. ([#448](https://github.com/turbot/powerpipe/issues/448))
+
+_Bug fixes_
+- Fix issue where CLI notifications were interfering with the Powerpipe JSON outputs resulting in invalid JSON outputs. ([#452](https://github.com/turbot/powerpipe/issues/452))
+- Fix issue where powerpipe crashed when running a benchmark with `--dry-run` flag set. ([#455](https://github.com/turbot/powerpipe/issues/455))
+
 ## v0.4.1 [2024-07-26]
 _Bug fixes_
 - Fix issue where the `--arg` flag was not working for control and query runs. ([#439](https://github.com/turbot/powerpipe/issues/439))
