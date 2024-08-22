@@ -18,5 +18,5 @@ load "$LIB_BATS_SUPPORT/load.bash"
   run powerpipe query run query.json_casting --database duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb --output csv
   echo $output
   # check output
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_duckdb_backend_json_casting.json)"
+  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_duckdb_backend_json_casting.csv)"
 }
