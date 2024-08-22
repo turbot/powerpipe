@@ -4,6 +4,18 @@ query "total_employee" {
   EOQ
 }
 
+query "json_casting" {
+  sql = <<-EOQ
+    SELECT preferences::JSON FROM employee;
+  EOQ
+}
+
+query "extensions" {
+  sql = <<-EOQ
+    select extension_name, installed from duckdb_extensions();
+  EOQ
+}
+
 query "params_only" {
   sql = <<-EOQ
     SELECT CONCAT($1::text, ' ', $2::text, ' ', $3::text) as "Params" FROM employee;
