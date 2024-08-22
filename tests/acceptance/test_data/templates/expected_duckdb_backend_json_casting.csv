@@ -1,0 +1,4 @@
+"CAST(preferences AS ""JSON"")"
+"{""theme"": ""dark"", ""notifications"": true}"
+"{""theme"": ""light"", ""notifications"": true}"
+"{""theme"": ""dark"", ""notifications"": true}"
