@@ -1,3 +1,10 @@
+## v0.4.3 [2024-08-22]
+_Whats new_
+- Add `json` extension support for duckdb backends. ([#467](https://github.com/turbot/powerpipe/issues/467))
+
+_Bug fixes_
+- Fix incorrect mod name in powerpipe help command output. ([#471](https://github.com/turbot/powerpipe/issues/471))
+
 ## v0.4.2 [2024-08-14]
 _Whats new_
 - Compiled with Go 1.22. ([#448](https://github.com/turbot/powerpipe/issues/448))
