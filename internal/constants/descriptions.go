@@ -11,7 +11,7 @@ Common commands:
 	
   # Install a mod from the hub - https://hub.powerpipe.io
   powerpipe mod init
-  powerpipe mod install github.com/turbot/powerpipe-mod-aws-compliance
+  powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
 
   # View dashboards at http://localhost:9033
   powerpipe server
