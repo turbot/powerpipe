@@ -5,7 +5,7 @@ go 1.22.4
 //replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
 require (
-	github.com/Masterminds/semver/v3 v3.2.1
+	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.17.0
 	github.com/gin-contrib/static v1.1.2
