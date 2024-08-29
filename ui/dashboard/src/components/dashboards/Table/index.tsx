@@ -469,7 +469,8 @@ const TableView = ({
                       "px-4 py-4 align-top content-center text-sm",
                       isNumericCol(cell.column.data_type) ? "text-right" : "",
                       cell.column.wrap === "all"
-                        ? "break-keep"
+                        ? (cell.column.data_type.toLowerCase() === "jsonb"
+                        ? "whitespace-pre" : "break-keep") 
                         : "whitespace-nowrap",
                     )}
                   >
