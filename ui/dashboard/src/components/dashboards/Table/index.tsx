@@ -589,7 +589,11 @@ const LineView = (props: TableProps) => {
                   <span
                     className={classNames(
                       "block",
-                      col.wrap === "all" ? "break-keep" : "truncate",
+                      col.wrap === "all" ? (
+                        col.data_type.toLowerCase() === "jsonb"
+                          ? "whitespace-pre"
+                          : "break-keep"
+                      ) : "truncate",
                     )}
                   >
                     <MemoCellValue
