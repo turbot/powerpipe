@@ -13,6 +13,7 @@ import (
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -195,7 +196,7 @@ func (i *InitData[T]) resolveTargets(args []string) {
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
-	var pluginVersionMap = &modconfig.PluginVersionMap{
+	var pluginVersionMap = &plugin.PluginVersionMap{
 		Database: client.Backend.ConnectionString(),
 		Backend:  client.Backend.Name(),
 	}
