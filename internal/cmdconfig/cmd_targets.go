@@ -4,14 +4,13 @@ import (
 	"fmt"
 	"strings"
 
-	"golang.org/x/exp/maps"
-
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"golang.org/x/exp/maps"
 )
 
 func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
