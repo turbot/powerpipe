@@ -3,6 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
@@ -11,7 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/utils"

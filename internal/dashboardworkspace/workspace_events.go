@@ -2,12 +2,12 @@ package dashboardworkspace
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"log/slog"
 	"reflect"
 	"sync/atomic"
 	"time"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 )
 
