@@ -51,13 +51,11 @@ const ThemeProvider = ({ children }) => {
   };
 
   const [storybookTheme, setStorybookTheme] = useState(getTheme());
-  const [isDarkMode, setIsDarkMode] = useState(false);
   const [withFooterPadding, setWithFooterPadding] = useState(true);
   const [wrapperRef, setWrapperRef] = useState(null);
   const doSetWrapperRef = (element) => setWrapperRef(() => element);
 
   let theme: Theme;
-  // let storybookTheme = "light";
 
   useEffect(() => {
     const onStorageChange = () => {
@@ -71,11 +69,7 @@ const ThemeProvider = ({ children }) => {
     };
   }, []);
 
-  useEffect(() => {
-    setIsDarkMode(() => storybookTheme === "dark");
-  }, [storybookTheme]);
-
-  if (isDarkMode) {
+  if (storybookTheme === "dark") {
     theme = Themes[ThemeNames.STEAMPIPE_DARK];
   } else {
     theme = Themes[ThemeNames.STEAMPIPE_DEFAULT];
