@@ -25,6 +25,11 @@ module.exports = {
 
       webpackConfig = set(
         webpackConfig,
+        "resolve.fallback.buffer",
+        require.resolve("buffer"),
+      );
+      webpackConfig = set(
+        webpackConfig,
         "resolve.fallback.crypto",
         require.resolve("crypto-browserify"),
       );
@@ -37,6 +42,11 @@ module.exports = {
         webpackConfig,
         "resolve.fallback.stream",
         require.resolve("stream-browserify"),
+      );
+      webpackConfig = set(
+        webpackConfig,
+        "resolve.fallback.vm",
+        require.resolve("vm-browserify"),
       );
       webpackConfig = set(webpackConfig, "resolve.fallback.fs", false);
       webpackConfig = set(webpackConfig, "experiments.asyncWebAssembly", true);

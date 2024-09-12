@@ -2,7 +2,7 @@ import Text from "./index";
 import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
 
 const story = {
-  title: "Primitives/Text",
+  title: "Primitives/Image",
   component: Text,
 };
 
