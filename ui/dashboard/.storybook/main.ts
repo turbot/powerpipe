@@ -41,9 +41,5 @@ module.exports = {
     options: {},
   },
 
-  features: {
-    storyStoreV7: false,
-  },
-
   docs: {},
 };
