@@ -11,8 +11,8 @@
     "eject": "react-scripts eject",
     "prettify": "prettier --write \"src/**/*.{js,jsx,ts,tsx,json,css,scss,md}\"",
     "analyze": "source-map-explorer 'build/static/js/*.js'",
-    "storybook": "yarn run setup-material-symbols && NODE_OPTIONS=--openssl-legacy-provider start-storybook -p 6006 -s public",
-    "build-storybook": "build-storybook -s public"
+    "storybook": "yarn run setup-material-symbols && NODE_OPTIONS=--openssl-legacy-provider storybook dev -p 6006",
+    "build-storybook": "storybook build -s public"
   },
   "dependencies": {
     "@headlessui/react": "2.1.7",
@@ -54,17 +54,17 @@
     "web-vitals": "4.2.3"
   },
   "devDependencies": {
+    "@chromatic-com/storybook": "2.0.1",
     "@craco/craco": "7.1.0",
-    "@storybook/addon-actions": "6.5.16",
-    "@storybook/addon-essentials": "8.1.5",
-    "@storybook/addon-links": "6.5.16",
-    "@storybook/addons": "6.5.16",
-    "@storybook/builder-webpack5": "6.5.16",
-    "@storybook/manager-webpack5": "6.5.16",
-    "@storybook/node-logger": "6.5.16",
-    "@storybook/preset-create-react-app": "8.1.5",
-    "@storybook/react": "8.1.5",
-    "@storybook/theming": "6.5.16",
+    "@storybook/addon-actions": "8.3.0",
+    "@storybook/addon-essentials": "8.3.0",
+    "@storybook/addon-links": "8.3.0",
+    "@storybook/node-logger": "8.3.0",
+    "@storybook/preset-create-react-app": "8.3.0",
+    "@storybook/preview-api": "8.3.0",
+    "@storybook/react": "8.3.0",
+    "@storybook/react-webpack5": "8.3.0",
+    "@storybook/theming": "8.3.0",
     "@tailwindcss/forms": "0.5.9",
     "@tailwindcss/line-clamp": "0.4.4",
     "@tailwindcss/typography": "0.5.15",
@@ -79,7 +79,9 @@
     "@types/react": "18.3.5",
     "@types/react-dom": "18.3.0",
     "autoprefixer": "10.4.20",
+    "buffer": "6.0.3",
     "circular-dependency-plugin": "5.2.2",
+    "crypto-browserify": "3.12.0",
     "if-node-version": "1.1.1",
     "lint-staged": "15.2.10",
     "npm-run-all": "4.1.5",
@@ -88,10 +90,13 @@
     "prop-types": "15.8.1",
     "react-scripts": "5.0.1",
     "source-map-explorer": "2.5.3",
-    "storybook-addon-react-router-v6": "0.3.5",
-    "storybook-dark-mode": "2.1.1",
+    "storybook": "8.3.0",
+    "storybook-addon-react-router-v6": "2.0.15",
+    "storybook-dark-mode": "4.0.2",
+    "stream-browserify": "3.0.0",
     "tailwindcss": "3.4.11",
-    "typescript": "4.5.5"
+    "typescript": "4.5.5",
+    "vm-browserify": "1.1.2"
   },
   "eslintConfig": {
     "extends": [
