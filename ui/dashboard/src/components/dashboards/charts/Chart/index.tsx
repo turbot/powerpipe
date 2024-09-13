@@ -1,5 +1,6 @@
 import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import has from "lodash/has";
+import isEmpty from "lodash/isEmpty";
 import merge from "lodash/merge";
 import Placeholder from "@powerpipe/components/dashboards/Placeholder";
 import React, { useEffect, useRef, useState } from "react";
@@ -38,6 +39,9 @@ const getThemeColorsWithPointOverrides = (
   dataset: any[][],
   themeColorValues,
 ) => {
+  if (isEmpty(themeColorValues)) {
+    return [];
+  }
   switch (type) {
     case "donut":
     case "pie": {

@@ -1,7 +1,7 @@
 import { getChartColors } from "@powerpipe/components/dashboards/common";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import { useDashboard } from "./useDashboard";
 import { useCallback, useEffect, useState } from "react";
+import { useDashboard } from "./useDashboard";
 
 const useChartThemeColors = () => {
   const {
@@ -63,9 +63,9 @@ const useChartThemeColors = () => {
   const [random, setRandom] = useState<number | null>(null);
 
   useEffect(() => {
-    setThemeColors(getThemeColors());
+    setThemeColors(() => getThemeColors());
     // getThemeColors uses a ref that can sit outside the hook dependencies
-  }, [getThemeColors, random, theme.name, setThemeColors]);
+  }, [getThemeColors, random, theme.name]);
 
   useEffect(() => {
     setRandom(Math.random() * Math.random());
