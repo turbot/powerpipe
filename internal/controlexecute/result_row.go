@@ -11,7 +11,6 @@ import (
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 )
 
 type ResultRows []*ResultRow
@@ -78,7 +77,7 @@ func (r *ResultRow) AddDimension(c *queryresult.ColumnDef, val interface{}) {
 	})
 }
 
-func NewResultRow(run *ControlRun, row *localqueryresult.RowResult, cols []*queryresult.ColumnDef) (*ResultRow, error) {
+func NewResultRow(run *ControlRun, row *queryresult.RowResult, cols []*queryresult.ColumnDef) (*ResultRow, error) {
 	// validate the required columns exist in the result
 	if err := validateColumns(cols); err != nil {
 		return nil, err
