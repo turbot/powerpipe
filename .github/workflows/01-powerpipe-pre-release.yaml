@@ -487,7 +487,7 @@ jobs:
       - name: YARN Install
         working-directory: ./powerpipe/ui/dashboard
         run: |-
-          unset CI
+          corepack enable
           yarn install
 
       - name: Generate dashboard UI icons
@@ -498,13 +498,13 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./powerpipe/ui/dashboard
         run: |
+          corepack enable
           yarn install
-          CI=true yarn test
+          yarn test
 
       - name: YARN Build
         working-directory: ./powerpipe/ui/dashboard
         run: |-
-          unset CI
           yarn build
         env:
           REACT_APP_HEAP_ID: ${{ secrets.HEAP_ANALYTICS_PRODUCTION_ID }}
