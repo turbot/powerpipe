@@ -3,8 +3,12 @@ const fs = require("fs-extra");
 const upperFirst = require("lodash/upperFirst");
 
 (async () => {
+  console.log(process.cwd());
+  const current = await fs.readdir(process.cwd());
+  console.log(current);
   const nodeModulesPath = "@material-symbols/svg-300/rounded";
   const dir = await fs.readdir("./node_modules/" + nodeModulesPath);
+  console.log(dir);
   let generatedFile = "// @ts-nocheck\n";
   const outlineIcons = {};
   const solidIcons = {};
