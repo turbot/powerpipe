@@ -498,8 +498,6 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./powerpipe/ui/dashboard
         run: |
-          corepack enable
-          yarn install
           yarn test
 
       - name: YARN Build
