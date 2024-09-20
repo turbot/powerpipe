@@ -490,6 +490,7 @@ jobs:
       - name: YARN Install
         working-directory: ./powerpipe/ui/dashboard
         run: |-
+          unset CI
           corepack enable
           yarn install
 
@@ -501,11 +502,12 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./powerpipe/ui/dashboard
         run: |
-          yarn test
+          CI=true yarn test
 
       - name: YARN Build
         working-directory: ./powerpipe/ui/dashboard
         run: |-
+          unset CI
           yarn build
         env:
           REACT_APP_HEAP_ID: ${{ secrets.HEAP_ANALYTICS_PRODUCTION_ID }}

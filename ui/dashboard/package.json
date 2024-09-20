@@ -4,7 +4,7 @@
   "private": true,
   "main": "index.js",
   "scripts": {
-    "setup-material-symbols": "node setupMaterialSymbols.js",
+    "setup-material-symbols": "node scripts/setupMaterialSymbols.js",
     "start": "if-node-version '>= 17' && craco --openssl-legacy-provider start || craco start",
     "build": "if-node-version '>= 17' && GENERATE_SOURCEMAP=false craco --openssl-legacy-provider build || GENERATE_SOURCEMAP=false craco build",
     "test": "craco test",
