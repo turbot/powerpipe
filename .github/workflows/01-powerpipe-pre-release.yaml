@@ -488,6 +488,7 @@ jobs:
         working-directory: ./powerpipe/ui/dashboard
         run: |-
           unset CI
+          corepack enable
           yarn install
 
       - name: Generate dashboard UI icons
@@ -498,7 +499,6 @@ jobs:
       - name: Run Unit Tests
         working-directory: ./powerpipe/ui/dashboard
         run: |
-          yarn install
           CI=true yarn test
 
       - name: YARN Build
