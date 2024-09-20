@@ -38,14 +38,6 @@ type CheckGroupingTypeSelectProps = {
   update: (index: number, updatedItem: CheckDisplayGroup) => void;
 };
 
-type CheckGroupingValueSelectProps = {
-  index: number;
-  item: CheckDisplayGroup;
-  type: CheckDisplayGroupType;
-  update: (index: number, updatedItem: CheckDisplayGroup) => void;
-  value: string | undefined;
-};
-
 const CheckGroupingTypeSelect = ({
   config,
   index,
@@ -67,7 +59,7 @@ const CheckGroupingTypeSelect = ({
   const allFilters = useMemo(
     () =>
       Object.entries(filterValues || {})
-        .reduce((acc: any[], [key, value]): any[] => {
+        .reduce((acc: any[], [key]): any[] => {
           if (filterValues[key]?.hasOwnProperty("key")) {
             let group: any = {
               label: filterTypeMap[key],
@@ -143,56 +135,6 @@ const CheckGroupingTypeSelect = ({
           return acc.concat(curr);
         }, [])
         .find((t) => t.value === type)}
-    />
-  );
-};
-
-const CheckGroupingValueSelect = ({
-  index,
-  item,
-  type,
-  value,
-  update,
-}: CheckGroupingValueSelectProps) => {
-  const [currentValue, setCurrentValue] = useState(value);
-  const { context: filterValues } = useDashboardControls();
-
-  useDeepCompareEffect(() => {
-    update(index, {
-      ...item,
-      value: currentValue,
-    });
-  }, [currentValue, index, item]);
-
-  const values = useMemo(() => {
-    return Object.keys(filterValues[type].key || {}).map((k) => ({
-      value: k,
-      label: k,
-    }));
-  }, [filterValues, type]);
-
-  const styles = useSelectInputStyles();
-
-  return (
-    <Select
-      className="basic-single"
-      classNamePrefix="select"
-      components={{
-        // @ts-ignore
-        MultiValueLabel: MultiValueLabelWithTags,
-        // @ts-ignore
-        Option: OptionWithTags,
-        // @ts-ignore
-        SingleValue: SingleValueWithTags,
-      }}
-      // @ts-ignore as this element definitely exists
-      menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) => setCurrentValue((t as SelectOption).value)}
-      options={values}
-      inputId={`${type}.input`}
-      placeholder="Select a group key…"
-      styles={styles}
-      value={values.find((t) => t.value === value)}
     />
   );
 };

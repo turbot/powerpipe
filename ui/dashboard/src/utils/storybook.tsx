@@ -52,6 +52,7 @@ export const PanelStoryDecorator = ({
 
   return (
     <DashboardContext.Provider
+      // @ts-ignore
       value={{
         versionMismatchCheck: false,
         metadata: {
@@ -61,6 +62,7 @@ export const PanelStoryDecorator = ({
             short_name: "storybook",
           },
           installed_mods: {},
+          search_path: {},
           telemetry: "none",
         },
         availableDashboardsLoaded: true,

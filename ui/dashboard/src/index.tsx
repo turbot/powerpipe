@@ -1,6 +1,5 @@
 import App from "./App";
 import ErrorBoundary from "./components/ErrorBoundary";
-import React from "react";
 import { AnalyticsProvider } from "./hooks/useAnalytics";
 import { BreakpointProvider } from "./hooks/useBreakpoint";
 import { BrowserRouter as Router } from "react-router-dom";

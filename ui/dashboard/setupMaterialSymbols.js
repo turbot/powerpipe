@@ -28,7 +28,7 @@ const upperFirst = require("lodash/upperFirst");
         component: importName,
       };
     }
-    generatedFile += `import { ReactComponent as ${importName} } from "${nodeModulesPath}/${file}";\n`;
+    generatedFile += `import ${importName} from "${nodeModulesPath}/${file}?react";\n`;
   }
   generatedFile += "\n";
   generatedFile += "const icons = {\n";

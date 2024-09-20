@@ -1,12 +1,12 @@
 import { getComponent } from "../dashboards";
 // @ts-ignore
-import { ReactComponent as Logo } from "./logos/powerpipe-logo.svg";
+import Logo from "./logos/powerpipe-logo.svg?react";
 // @ts-ignore
-import { ReactComponent as LogoDarkmode } from "./logos/powerpipe-logo-darkmode.svg";
+import LogoDarkmode from "./logos/powerpipe-logo-darkmode.svg?react";
 // @ts-ignore
-import { ReactComponent as LogoWordmark } from "./logos/powerpipe-logo-wordmark.svg";
+import LogoWordmark from "./logos/powerpipe-logo-wordmark.svg?react";
 // @ts-ignore
-import { ReactComponent as LogoWordmarkDarkmode } from "./logos/powerpipe-logo-wordmark-darkmode.svg";
+import LogoWordmarkDarkmode from "./logos/powerpipe-logo-wordmark-darkmode.svg?react";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 

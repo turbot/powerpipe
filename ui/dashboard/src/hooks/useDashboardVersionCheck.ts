@@ -8,7 +8,7 @@ const useDashboardVersionCheck = (state: IDashboardContext) => {
     let mismatchedVersions = false;
     if (state.versionMismatchCheck) {
       const cliVersionRaw = state.metadata?.cli?.version;
-      const uiVersionRaw = process.env.REACT_APP_VERSION;
+      const uiVersionRaw = import.meta.env.VITE_APP_VERSION;
       const hasVersionsSet = !!cliVersionRaw && !!uiVersionRaw;
       cliVersion = !!cliVersionRaw
         ? cliVersionRaw.startsWith("v")

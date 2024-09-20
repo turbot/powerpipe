@@ -100,14 +100,14 @@ const useAnalyticsProvider = () => {
     }
 
     const enabled =
-      process.env.NODE_ENV === "production" &&
+      import.meta.env.PROD &&
       metadata.telemetry === "info" &&
-      !!process.env.REACT_APP_HEAP_ID;
+      !!import.meta.env.VITE_APP_HEAP_ID;
 
     // @ts-ignore
     if (enabled && window.heap && window.heap.load) {
       // @ts-ignore
-      window.heap.load(process.env.REACT_APP_HEAP_ID);
+      window.heap.load(import.meta.env.VITE_APP_HEAP_ID);
     }
 
     setEnabled(enabled);
