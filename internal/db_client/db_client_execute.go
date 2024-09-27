@@ -32,7 +32,7 @@ func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*loc
 }
 
 // ExecuteSync executes a query against this client and wait for the result
-func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*localqueryresult.SyncQueryResult, error) {
+func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*queryresult.SyncQueryResult, error) {
 	// acquire a connection
 	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
@@ -47,9 +47,9 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 }
 
 // execute a query against this client and wait for the result
-func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (*localqueryresult.SyncQueryResult, error) {
+func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (*queryresult.SyncQueryResult, error) {
 	if query == "" {
-		return &localqueryresult.SyncQueryResult{}, nil
+		return &queryresult.SyncQueryResult{}, nil
 	}
 
 	result, err := c.executeOnConnection(ctx, dbConn, nil, query, args...)
@@ -57,7 +57,7 @@ func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn
 		return nil, error_helpers.WrapError(err)
 	}
 
-	syncResult := &localqueryresult.SyncQueryResult{Cols: result.Cols}
+	syncResult := &queryresult.SyncQueryResult{Cols: result.Cols}
 	for row := range result.RowChan {
 		select {
 		case <-ctx.Done():

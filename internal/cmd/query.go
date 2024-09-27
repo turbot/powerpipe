@@ -145,7 +145,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:
 		// do nothing
-	case constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort:
+	case constants.OutputFormatSnapshot, constants.OutputFormatPowerpipeSnapshotShort:
 		// if the format is snapshot, just dump it out
 		jsonOutput, err := json.MarshalIndent(snap, "", "  ")
 		if err != nil {
