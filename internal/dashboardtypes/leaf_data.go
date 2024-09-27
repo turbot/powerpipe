@@ -26,7 +26,7 @@ func NewLeafData(result *localqueryresult.SyncQueryResult) (*LeafData, error) {
 
 	for rowIdx, row := range result.Rows {
 		rowData := make(map[string]interface{}, len(result.Cols))
-		for i, data := range row.(*localqueryresult.RowResult).Data {
+		for i, data := range row.(*queryresult.RowResult).Data {
 			// get unique column name from column defs
 			// (NOTE: this may be either the original column name - if there are no duplicates,
 			// or a specially generated unique name if there are duplicates)

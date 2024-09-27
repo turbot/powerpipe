@@ -19,10 +19,10 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/task"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/workspace_profile"
 	"github.com/turbot/powerpipe/internal/logger"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
@@ -115,7 +115,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
 	// load workspace profile from the configured install dir
-	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]()
+	loader, err := cmdconfig.GetWorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]()
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
@@ -161,7 +161,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	return validateConfig()
 }
 
-func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]) error {
+func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]) error {
 	/*
 	   saved cloud token
 	   pipes_token in default workspace

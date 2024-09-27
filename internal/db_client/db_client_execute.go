@@ -58,7 +58,7 @@ func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn
 	}
 
 	syncResult := &localqueryresult.SyncQueryResult{Cols: result.Cols}
-	for row := range *result.RowChan {
+	for row := range result.RowChan {
 		select {
 		case <-ctx.Done():
 		default:

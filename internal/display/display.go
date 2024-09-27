@@ -9,7 +9,6 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -96,7 +95,7 @@ func getColumnSettings(headers []string, rows [][]string, opts *ShowWrappedTable
 	sumOfAllCols := 0
 
 	// account for the spaces around the value of a column and separators
-	spaceAccounting := ((len(headers) * 3) + 1)
+	spaceAccounting := (len(headers) * 3) + 1
 
 	for idx, colName := range headers {
 		headerRow[idx] = colName
@@ -137,8 +136,8 @@ func getColumnSettings(headers []string, rows [][]string, opts *ShowWrappedTable
 	// get the max cols width
 	maxCols := GetMaxCols()
 	if sumOfAllCols > maxCols {
-		colConfigs[len(colConfigs)-1].WidthMax = (maxCols - sumOfRest - spaceAccounting)
-		colConfigs[len(colConfigs)-1].WidthMin = (maxCols - sumOfRest - spaceAccounting)
+		colConfigs[len(colConfigs)-1].WidthMax = maxCols - sumOfRest - spaceAccounting
+		colConfigs[len(colConfigs)-1].WidthMin = maxCols - sumOfRest - spaceAccounting
 		if opts.Truncate {
 			colConfigs[len(colConfigs)-1].WidthMaxEnforcer = helpers.TruncateString
 		}
@@ -392,7 +391,7 @@ type displayResultsFunc func(row []interface{}, result *queryresult.Result)
 
 // call func displayResult for each row of results
 func iterateResults(result *queryresult.Result, displayResult displayResultsFunc) error {
-	for row := range *result.RowChan {
+	for row := range result.RowChan {
 		if row == nil {
 			return nil
 		}
@@ -403,24 +402,4 @@ func iterateResults(result *queryresult.Result, displayResult displayResultsFunc
 	}
 	// we will not get here
 	return nil
-}
-
-func shouldShowQueryTiming() bool {
-	outputFormat := viper.GetString(constants.ArgOutput)
-	return viper.GetBool(constants.ArgTiming) && outputFormat == constants.OutputFormatTable
-}
-
-func PrintTiming(timingMetadata *queryresult.TimingMetadata) {
-	durationString := getDurationString(timingMetadata.Duration)
-	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
-}
-
-func getDurationString(duration time.Duration) string {
-	// Calculate duration since startTime and round down to the nearest millisecond
-	durationInMS := duration / time.Millisecond
-	//nolint:durationcheck // we want to print the duration in milliseconds
-	duration = durationInMS * time.Millisecond
-
-	durationString := duration.String()
-	return durationString
 }

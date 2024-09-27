@@ -12,12 +12,13 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
-	cmdconfig "github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -154,7 +155,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	fmt.Println(summary) //nolint:forbidigo // intended output
 }
 
-func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
+func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
 	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
 
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
@@ -171,7 +172,7 @@ func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 		slog.Warn("database does not support Steampipe plugins so plugin requirements cannot be validated", "database", client.Backend.Name())
 		return nil
 	}
-	return modconfig.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
+	return plugin.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
 }
 
 func modUninstallCmd() *cobra.Command {

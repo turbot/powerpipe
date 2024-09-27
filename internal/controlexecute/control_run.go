@@ -347,7 +347,7 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 		case <-ctx.Done():
 			r.setError(ctx, ctx.Err())
 			return
-		case row := <-*r.queryResult.RowChan:
+		case row := <-r.queryResult.RowChan:
 			// nil row means control run is complete
 			if row == nil {
 				// nil row means we are done
