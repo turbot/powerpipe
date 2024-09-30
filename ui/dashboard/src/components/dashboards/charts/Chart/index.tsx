@@ -28,6 +28,7 @@ import { FlowType } from "@powerpipe/components/dashboards/flows/types";
 import { getChartComponent } from "@powerpipe/components/dashboards/charts";
 import { GraphType } from "@powerpipe/components/dashboards/graphs/types";
 import { HierarchyType } from "@powerpipe/components/dashboards/hierarchies/types";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
@@ -752,7 +753,12 @@ type ChartComponentProps = {
   type: ChartType | FlowType | GraphType | HierarchyType;
 };
 
-const handleClick = async (params: any, navigate, renderTemplates) => {
+const handleClick = async (
+  params: any,
+  navigate,
+  renderTemplates,
+  searchPathPrefix,
+) => {
   const componentType = params.componentType;
   if (componentType !== "series") {
     return;
@@ -769,12 +775,17 @@ const handleClick = async (params: any, navigate, renderTemplates) => {
         [params.data],
       );
       let rowRenderResult = renderedResults[0];
-      navigate(rowRenderResult.graph_node.result);
+      const withSearchPathPrefix = injectSearchPathPrefix(
+        rowRenderResult.graph_node.result,
+        searchPathPrefix,
+      );
+      navigate(withSearchPathPrefix);
   }
 };
 
 const Chart = ({ options, type }: ChartComponentProps) => {
   const [echarts, setEcharts] = useState<any | null>(null);
+  const { searchPathPrefix } = useDashboard();
   const navigate = useNavigate();
   const chartRef = useRef<ReactEChartsCore>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -804,7 +815,8 @@ const Chart = ({ options, type }: ChartComponentProps) => {
   }
 
   const eventsDict = {
-    click: (params) => handleClick(params, navigate, renderTemplates),
+    click: (params) =>
+      handleClick(params, navigate, renderTemplates, searchPathPrefix),
   };
 
   const PlaceholderComponent = Placeholder.component;

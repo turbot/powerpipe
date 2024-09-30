@@ -23,10 +23,12 @@ import {
   SortAscendingIcon,
   SortDescendingIcon,
 } from "@powerpipe/constants/icons";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
 import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSortBy, useTable } from "react-table";
 
 export type TableColumnDisplay = "all" | "none";
@@ -119,6 +121,7 @@ const CellValue = ({
   showTitle = false,
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
+  const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,7 +142,11 @@ const CellValue = ({
       return;
     }
     if (renderedTemplateForColumn.result) {
-      setHref(renderedTemplateForColumn.result);
+      const withSearchPathPrefix = injectSearchPathPrefix(
+        renderedTemplateForColumn.result,
+        searchPathPrefix,
+      );
+      setHref(withSearchPathPrefix);
       setError(null);
     } else if (renderedTemplateForColumn.error) {
       setHref(null);
