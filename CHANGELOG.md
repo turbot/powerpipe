@@ -1,3 +1,7 @@
+## v0.4.4 [2024-10-01]
+_Bug fixes_
+- Fixed the issue where the search path setting was not being retained while navigating to a different dashboard. ([#325](https://github.com/turbot/powerpipe/issues/325))
+
 ## v0.4.3 [2024-08-22]
 _Whats new_
 - Add `json` extension support for duckdb backends. ([#467](https://github.com/turbot/powerpipe/issues/467))
