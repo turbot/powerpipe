@@ -23,10 +23,12 @@ import {
   SortAscendingIcon,
   SortDescendingIcon,
 } from "@powerpipe/constants/icons";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
 import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSortBy, useTable } from "react-table";
 
 export type TableColumnDisplay = "all" | "none";
@@ -119,6 +121,7 @@ const CellValue = ({
   showTitle = false,
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
+  const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
@@ -139,7 +142,11 @@ const CellValue = ({
       return;
     }
     if (renderedTemplateForColumn.result) {
-      setHref(renderedTemplateForColumn.result);
+      const withSearchPathPrefix = injectSearchPathPrefix(
+        renderedTemplateForColumn.result,
+        searchPathPrefix,
+      );
+      setHref(withSearchPathPrefix);
       setError(null);
     } else if (renderedTemplateForColumn.error) {
       setHref(null);
@@ -417,32 +424,42 @@ const TableView = ({
         )}
       >
         <thead className="text-table-head border-b border-divide">
-          {headerGroups.map((headerGroup) => (
-            <tr {...headerGroup.getHeaderGroupProps()}>
-              {headerGroup.headers.map((column) => (
-                <th
-                  {...column.getHeaderProps(column.getSortByToggleProps())}
-                  scope="col"
-                  className={classNames(
-                    "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                    isNumericCol(column.data_type) ? "text-right" : null,
-                  )}
-                >
-                  {column.render("Header")}
-                  {column.isSortedDesc ? (
-                    <SortDescendingIcon className="inline-block h-4 w-4" />
-                  ) : (
-                    <SortAscendingIcon
+          {headerGroups.map((headerGroup) => {
+            const { key, ...otherHeaderGroupProps } =
+              headerGroup.getHeaderGroupProps();
+            return (
+              <tr key={key} {...otherHeaderGroupProps}>
+                {headerGroup.headers.map((column) => {
+                  const { key, ...otherHeaderProps } = column.getHeaderProps(
+                    column.getSortByToggleProps(),
+                  );
+                  return (
+                    <th
+                      key={key}
+                      {...otherHeaderProps}
+                      scope="col"
                       className={classNames(
-                        "inline-block h-4 w-4",
-                        !column.isSorted ? "invisible" : null,
+                        "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                        isNumericCol(column.data_type) ? "text-right" : null,
                       )}
-                    />
-                  )}
-                </th>
-              ))}
-            </tr>
-          ))}
+                    >
+                      {column.render("Header")}
+                      {column.isSortedDesc ? (
+                        <SortDescendingIcon className="inline-block h-4 w-4" />
+                      ) : (
+                        <SortAscendingIcon
+                          className={classNames(
+                            "inline-block h-4 w-4",
+                            !column.isSorted ? "invisible" : null,
+                          )}
+                        />
+                      )}
+                    </th>
+                  );
+                })}
+              </tr>
+            );
+          })}
         </thead>
         <tbody
           {...getTableBodyProps()}
@@ -460,27 +477,32 @@ const TableView = ({
           )}
           {rows.map((row, index) => {
             prepareRow(row);
+            const { key, ...otherRowProps } = row.getRowProps();
             return (
-              <tr {...row.getRowProps()}>
-                {row.cells.map((cell) => (
-                  <td
-                    {...cell.getCellProps()}
-                    className={classNames(
-                      "px-4 py-4 align-top content-center text-sm",
-                      isNumericCol(cell.column.data_type) ? "text-right" : "",
-                      cell.column.wrap === "all"
-                        ? "break-keep"
-                        : "whitespace-nowrap",
-                    )}
-                  >
-                    <MemoCellValue
-                      column={cell.column}
-                      rowIndex={index}
-                      rowTemplateData={rowTemplateData}
-                      value={cell.value}
-                    />
-                  </td>
-                ))}
+              <tr key={key} {...otherRowProps}>
+                {row.cells.map((cell) => {
+                  const { key, ...otherCellProps } = cell.getCellProps();
+                  return (
+                    <td
+                      key={key}
+                      {...otherCellProps}
+                      className={classNames(
+                        "px-4 py-4 align-top content-center text-sm",
+                        isNumericCol(cell.column.data_type) ? "text-right" : "",
+                        cell.column.wrap === "all"
+                          ? "break-keep"
+                          : "whitespace-nowrap",
+                      )}
+                    >
+                      <MemoCellValue
+                        column={cell.column}
+                        rowIndex={index}
+                        rowTemplateData={rowTemplateData}
+                        value={cell.value}
+                      />
+                    </td>
+                  );
+                })}
               </tr>
             );
           })}

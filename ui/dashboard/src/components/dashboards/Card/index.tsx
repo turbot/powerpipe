@@ -15,6 +15,7 @@ import {
   CardType,
 } from "../data/CardDataProcessor";
 import { classNames } from "@powerpipe/utils/styles";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { PanelDefinition, PanelProperties } from "@powerpipe/types";
 import { getComponent, registerComponent } from "../index";
 import {
@@ -23,6 +24,7 @@ import {
   getWrapperClasses,
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 const Table = getComponent("table");
@@ -157,6 +159,7 @@ const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
 const Card = (props: CardProps) => {
   const ExternalLink = getComponent("external_link");
   const state = useCardState(props);
+  const { searchPathPrefix } = useDashboard();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
     state.href || null,
@@ -198,7 +201,11 @@ const Card = (props: CardProps) => {
         setRenderedHref(null);
         setRenderError(null);
       } else if (renderedResults[0].card.result) {
-        setRenderedHref(renderedResults[0].card.result as string);
+        const withSearchPathPrefix = injectSearchPathPrefix(
+          renderedResults[0].card.result,
+          searchPathPrefix,
+        );
+        setRenderedHref(withSearchPathPrefix);
         setRenderError(null);
       } else if (renderedResults[0].card.error) {
         setRenderError(renderedResults[0].card.error as string);

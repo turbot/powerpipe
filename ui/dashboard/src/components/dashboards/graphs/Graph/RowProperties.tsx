@@ -10,6 +10,8 @@ import {
 import { classNames } from "@powerpipe/utils/styles";
 import { ErrorIcon } from "@powerpipe/constants/icons";
 import { getComponent } from "@powerpipe/components/dashboards";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
 type RowPropertiesTitleProps = {
@@ -50,6 +52,7 @@ const RowPropertyItemValue = ({
   wrap,
 }: RowPropertyItemProps) => {
   const ExternalLink = getComponent("external_link");
+  const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   useEffect(() => {
@@ -65,7 +68,11 @@ const RowPropertyItemValue = ({
       return;
     }
     if (renderedTemplateForProperty.result) {
-      setHref(renderedTemplateForProperty.result);
+      const withSearchPathPrefix = injectSearchPathPrefix(
+        renderedTemplateForProperty.result,
+        searchPathPrefix,
+      );
+      setHref(withSearchPathPrefix);
       setError(null);
     } else if (renderedTemplateForProperty.error) {
       setHref(null);
