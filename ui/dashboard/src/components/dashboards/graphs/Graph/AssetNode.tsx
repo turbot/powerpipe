@@ -19,7 +19,9 @@ import { classNames } from "@powerpipe/utils/styles";
 import { ExpandedNodeInfo, useGraph } from "../common/useGraph";
 import { getComponent } from "@powerpipe/components/dashboards";
 import { Handle } from "reactflow";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, ReactNode, useEffect, useMemo, useState } from "react";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type AssetNodeProps = {
   id: string;
@@ -242,6 +244,7 @@ const AssetNode = ({
 }: AssetNodeProps) => {
   const { collapseNodes, expandNode, expandedNodes, renderResults } =
     useGraph();
+  const { searchPathPrefix } = useDashboard();
   const ExternalLink = getComponent("external_link");
   const iconType = useDashboardIconType(icon);
   const [renderedHref, setRenderedHref] = useState<string | null>(null);
@@ -254,10 +257,14 @@ const AssetNode = ({
     if (!renderResult.result) {
       return;
     }
-    if (renderResult.result === renderedHref) {
+    const withSearchPathPrefix = injectSearchPathPrefix(
+      renderResult.result,
+      searchPathPrefix,
+    );
+    if (withSearchPathPrefix === renderedHref) {
       return;
     }
-    setRenderedHref(renderResult.result);
+    setRenderedHref(withSearchPathPrefix);
   }, [id, renderedHref, renderResults]);
 
   const isExpandedNode = useMemo(
