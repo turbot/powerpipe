@@ -557,6 +557,9 @@ const DashboardProvider = ({
     const newParams = {
       ...state.selectedDashboardInputs,
     };
+    if (!!searchPathPrefix.length) {
+      newParams.search_path_prefix = searchPathPrefix.join(",");
+    }
     setSearchParams(newParams, {
       replace: !shouldRecordHistory,
     });
@@ -567,6 +570,7 @@ const DashboardProvider = ({
     setSearchParams,
     state.dataMode,
     state.recordInputsHistory,
+    state.searchPathPrefix,
     state.selectedDashboard,
     state.selectedDashboardInputs,
   ]);
