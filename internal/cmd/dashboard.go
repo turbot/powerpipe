@@ -190,7 +190,7 @@ func validateDashboardArgs(ctx context.Context) error {
 
 func displaySnapshot(snapshot *steampipeconfig.SteampipeSnapshot) {
 	switch viper.GetString(constants.ArgOutput) {
-	case constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort:
+	case constants.OutputFormatSnapshot, constants.OutputFormatPowerpipeSnapshotShort:
 		// just display result
 		snapshotText, err := json.MarshalIndent(snapshot, "", "  ")
 		error_helpers.FailOnError(err)
