@@ -24,6 +24,7 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace_profile"
 	"github.com/turbot/powerpipe/internal/logger"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -121,6 +122,12 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	}
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
+
+	config, ew := powerpipeconfig.LoadPowerpipeConfig(filepaths.EnsureConfigDir())
+	if ew.GetError() != nil {
+		return ew
+	}
+	powerpipeconfig.GlobalConfig = config
 
 	// set-up viper with defaults from the env and default workspace profile
 

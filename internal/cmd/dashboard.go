@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -55,7 +54,8 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddModLocationFlag().
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: pps (snapshot)").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use --connection")).
+		AddStringFlag(constants.ArgConnection, localconstants.DefaultConnection, "The connection to use").
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
@@ -185,7 +185,7 @@ func validateDashboardArgs(ctx context.Context) error {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
 	}
 
-	return nil
+	return localcmdconfig.ValidateConnectionArg()
 }
 
 func displaySnapshot(snapshot *steampipeconfig.SteampipeSnapshot) {
