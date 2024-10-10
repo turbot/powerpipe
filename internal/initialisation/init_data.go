@@ -157,7 +157,7 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	i.Workspace.CloudMetadata = cloudMetadata
 
 	// create default client
-	// set the dashboard database and search patch config
+	// set the database and search patch config
 	database, searchPathConfig := db_client.GetDefaultDatabaseConfig()
 
 	// create client

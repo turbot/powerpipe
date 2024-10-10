@@ -2,7 +2,6 @@ package initialisation
 
 import (
 	"context"
-
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/cloud"
@@ -13,7 +12,6 @@ import (
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
 	database := viper.GetString(constants.ArgDatabase)
-	connectionString := database
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
 
@@ -31,12 +29,9 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 		if cloudMetadata, err = cloud.GetCloudMetadata(ctx, database, cloudToken); err != nil {
 			return nil, err
 		}
-		// read connection string out of cloudMetadata
-		connectionString = cloudMetadata.ConnectionString
+		// now update the connection string in viper database flag with the cloud metadata conneciotn string
+		viper.Set(constants.ArgDatabase, cloudMetadata.ConnectionString)
 	}
-
-	// now set the connection string in viper
-	viper.Set(constants.ArgDatabase, connectionString)
 
 	return cloudMetadata, nil
 }

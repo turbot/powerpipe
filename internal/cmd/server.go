@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -44,7 +43,8 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use --connection")).
+		AddStringFlag(constants.ArgConnection, localconstants.DefaultConnection, "The connection to use").
 		AddIntFlag(constants.ArgDashboardTimeout, 0, "Set a the dashboard execution timeout")
 
 	return cmd
@@ -61,6 +61,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
+	error_helpers.FailOnError(validateServerArgs())
 	// retrieve server params
 	serverPort := dashboardserver.ListenPort(viper.GetInt(constants.ArgPort))
 	error_helpers.FailOnError(serverPort.IsValid())
@@ -106,4 +107,8 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	dashboardserver.OutputMessage(ctx, "Press Ctrl+C to exit")
 
 	<-ctx.Done()
+}
+
+func validateServerArgs() error {
+	return localcmdconfig.ValidateConnectionArg()
 }

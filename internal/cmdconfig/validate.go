@@ -3,6 +3,7 @@ package cmdconfig
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/connection"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -11,7 +12,40 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 )
+
+// ValidateConnectionArg validates the connection and database arg
+// if both or neither are set, returns an error
+// if connection is set, verify it is in the config and update the database arg with the connection string
+func ValidateConnectionArg() error {
+	// exactly one of 'database' or 'connection' must be set
+	databaseArg := viper.GetString(constants.ArgDatabase)
+	connectionArg := viper.GetString(constants.ArgConnection)
+	if databaseArg == "" && connectionArg == "" {
+		return fmt.Errorf("either '--%s' or '--%s' must be set", constants.ArgDatabase, constants.ArgConnection)
+	}
+	if databaseArg != "" && connectionArg != "" {
+		return fmt.Errorf("only one of '--%s' or '--%s' may be set", constants.ArgDatabase, constants.ArgConnection)
+	}
+	// if connection arg is set, verify it is in the config
+	if connectionArg != "" {
+		conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[connectionArg]
+		if !ok {
+			return fmt.Errorf("connection '%s' not found in config", connectionArg)
+		}
+
+		csp, ok := conn.(connection.ConnectionStringProvider)
+		if !ok {
+			// unexpected - all registered connections should implement this interface
+			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", connectionArg)
+		}
+
+		// update viper Database arg with the connection string
+		viper.Set(constants.ArgDatabase, csp.GetConnectionString())
+	}
+	return nil
+}
 
 func ValidateSnapshotArgs(ctx context.Context) error {
 	// only 1 of 'share' and 'snapshot' may be set
