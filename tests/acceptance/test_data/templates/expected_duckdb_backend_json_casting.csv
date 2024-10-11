@@ -1,3 +1,4 @@
+Flag --database has been deprecated, please use use a variable or param
 "CAST(preferences AS ""JSON"")"
 "{""theme"": ""dark"", ""notifications"": true}"
 "{""theme"": ""light"", ""notifications"": true}"
