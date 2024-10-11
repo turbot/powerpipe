@@ -33,11 +33,10 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
 		}
 	}
-	if qp, ok := resource.(modconfig.QueryProvider); ok {
-		// if the query provider has a database, use it
-		if qp.GetDatabase() != nil {
-			database = *qp.GetDatabase()
-		}
+
+	// if the resource has a database set, use it
+	if resource.GetDatabase() != nil {
+		database = *resource.GetDatabase()
 	}
 
 	return database, searchPathConfig, nil
