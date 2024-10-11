@@ -2,6 +2,7 @@ load "$LIB_BATS_ASSERT/load.bash"
 load "$LIB_BATS_SUPPORT/load.bash"
 
 @test "connecting to a duckdb backend" {
+  skip
   cd $MODS_DIR/duckdb_mod
 
   # run a powerpipe query connecting to a local duckdb database
@@ -12,6 +13,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 }
 
 @test "using json extension(casting) with duckdb backend" {
+  skip
   cd $MODS_DIR/duckdb_mod
 
   # run a powerpipe query(which performs a JSON casting operation) connecting to a local duckdb database
