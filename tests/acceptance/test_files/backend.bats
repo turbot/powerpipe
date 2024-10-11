@@ -8,7 +8,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
   run powerpipe query run query.total_employee --database duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb --output csv
   echo $output
   # check output
-  assert_equal "$output" "$(cat $TEST_DATA_DIR/expected_duckdb_backend_total_employee.csv)"
+  assert_equal "$output" "$(cat $TEST_DATA_DIR/0)"
 }
 
 @test "using json extension(casting) with duckdb backend" {
