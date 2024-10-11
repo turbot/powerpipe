@@ -17,6 +17,7 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
@@ -202,7 +203,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
+			// TODO KAI verify we are ok to NOT send the cloud metadata here
+			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.CloudMetadata{}) //s.workspace.CloudMetadata)
 			if payloadError != nil {
 				return
 			}
@@ -343,7 +345,8 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), s.workspace.CloudMetadata)
+			// TODO KAI verify we are ok to NOT send the cloud metadata here
+			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.CloudMetadata{}) //s.workspace.CloudMetadata)
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}

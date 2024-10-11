@@ -159,14 +159,15 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	}
 
 	// retrieve cloud metadata
-	cloudMetadata, err := getCloudMetadata(ctx)
+	// TODO REMOVE/change
+	_, err = getCloudMetadata(ctx)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
 	// set cloud metadata (may be nil)
-	i.Workspace.CloudMetadata = cloudMetadata
+	//i.Workspace.CloudMetadata = cloudMetadata
 
 	// create default client
 	// set the database and search patch config

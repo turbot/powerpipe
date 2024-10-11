@@ -23,9 +23,8 @@ func ValidateConnectionArg() error {
 	// if connection arg is set, verify it is in the config
 	if databaseArg != "" {
 		connectionString := databaseArg
-		conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[databaseArg]
 		if strings.HasPrefix(databaseArg, "connection.") {
-			conn, ok = powerpipeconfig.GlobalConfig.PipelingConnections[strings.TrimPrefix(databaseArg, "connection.")]
+			conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[strings.TrimPrefix(databaseArg, "connection.")]
 			if !ok {
 				return fmt.Errorf("connection '%s' not found", databaseArg)
 			}
