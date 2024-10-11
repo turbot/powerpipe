@@ -196,7 +196,7 @@ func validateQueryArgs(ctx context.Context) error {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
 	}
 
-	return localcmdconfig.ValidateConnectionArg()
+	return localcmdconfig.ValidateDatabaseArg()
 }
 
 func queryExporters() []export.Exporter {

@@ -15,12 +15,11 @@ import (
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 )
 
-// ValidateConnectionArg validates the connection and database arg
+// ValidateDatabaseArg validates the connection and database arg
 // if both or neither are set, returns an error
 // if connection is set, verify it is in the config and update the database arg with the connection string
-func ValidateConnectionArg() error {
+func ValidateDatabaseArg() error {
 	databaseArg := viper.GetString(constants.ArgDatabase)
-	// if connection arg is set, verify it is in the config
 	if databaseArg != "" {
 		connectionString := databaseArg
 		if strings.HasPrefix(databaseArg, "connection.") {
