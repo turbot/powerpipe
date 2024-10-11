@@ -109,5 +109,5 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 }
 
 func validateServerArgs() error {
-	return localcmdconfig.ValidateConnectionArg()
+	return localcmdconfig.ValidateDatabaseArg()
 }

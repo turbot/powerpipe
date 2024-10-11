@@ -3,7 +3,6 @@
     "auto_generated": false,
     "description": "",
     "end_line_number": 4,
-    "file_name": "/Users/kai/Dev/github/turbot/powerpipe/tests/acceptance/test_data/mods/introspection_table_mod/resources.pp",
     "is_anonymous": false,
     "mod_name": "introspection_table_mod",
     "path": [

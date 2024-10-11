@@ -364,7 +364,7 @@ func validateCheckArgs(ctx context.Context) error {
 		return fmt.Errorf("only 1 of '--%s' and '--%s' may be set", constants.ArgWhere, constants.ArgTag)
 	}
 
-	return localcmdconfig.ValidateConnectionArg()
+	return localcmdconfig.ValidateDatabaseArg()
 }
 
 func shouldPrintCheckTiming() bool {

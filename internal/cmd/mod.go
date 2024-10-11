@@ -159,7 +159,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 }
 
 func validateModArgs() error {
-	return localcmdconfig.ValidateConnectionArg()
+	return localcmdconfig.ValidateDatabaseArg()
 }
 
 func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
