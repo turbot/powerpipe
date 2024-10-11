@@ -15,6 +15,8 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
 
+	// TODO KAI we need to handle this being set for any resource
+
 	// so a backend was set - is it a connection string or a database name
 	workspaceDatabaseIsConnectionString := backend.HasBackend(database)
 	if !workspaceDatabaseIsConnectionString {

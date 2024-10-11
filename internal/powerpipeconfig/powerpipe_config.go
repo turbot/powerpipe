@@ -3,7 +3,9 @@ package powerpipeconfig
 import (
 	"context"
 	"github.com/turbot/pipe-fittings/app_specific"
+	"github.com/turbot/powerpipe/internal/constants"
 	"log/slog"
+	"strings"
 	"sync"
 
 	"github.com/fsnotify/fsnotify"
@@ -27,7 +29,8 @@ type PowerpipeConfig struct {
 	OnFileWatcherError func(context.Context, error)
 	OnFileWatcherEvent func(context.Context, *PowerpipeConfig)
 
-	loadLock *sync.Mutex
+	loadLock          *sync.Mutex
+	DefaultConnection connection.ConnectionStringProvider
 }
 
 func NewPowerpipeConfig() *PowerpipeConfig {
@@ -37,9 +40,13 @@ func NewPowerpipeConfig() *PowerpipeConfig {
 		return nil
 	}
 
+	// populate default connection
+	defaultConnectionName := strings.TrimPrefix(constants.DefaultConnection, "connection.")
+
 	return &PowerpipeConfig{
 		PipelingConnections: defaultPipelingConnections,
 		loadLock:            &sync.Mutex{},
+		DefaultConnection:   defaultPipelingConnections[defaultConnectionName].(connection.ConnectionStringProvider),
 	}
 }
 

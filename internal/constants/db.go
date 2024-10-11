@@ -2,5 +2,5 @@ package constants
 
 const (
 	DatabaseDefaultQueryTimeout = 300
-	DefaultConnection           = "steampipe.default"
+	DefaultConnection           = "connection.steampipe.default"
 )
