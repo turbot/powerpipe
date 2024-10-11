@@ -59,7 +59,6 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		app_specific.EnvUpdateCheck:       {ConfigVar: []string{constants.ArgUpdateCheck}, VarType: cmdconfig.EnvVarTypeBool},
 		app_specific.EnvSnapshotLocation:  {ConfigVar: []string{constants.ArgSnapshotLocation}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvDatabase:          {ConfigVar: []string{constants.ArgDatabase}, VarType: cmdconfig.EnvVarTypeString},
-		app_specific.EnvConnection:        {ConfigVar: []string{constants.ArgConnection}, VarType: cmdconfig.EnvVarTypeString},
 		app_specific.EnvDisplayWidth:      {ConfigVar: []string{constants.ArgDisplayWidth}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvMaxParallel:       {ConfigVar: []string{constants.ArgMaxParallel}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvQueryTimeout:      {ConfigVar: []string{constants.ArgDatabaseQueryTimeout}, VarType: cmdconfig.EnvVarTypeInt},

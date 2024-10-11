@@ -19,30 +19,27 @@ import (
 // if both or neither are set, returns an error
 // if connection is set, verify it is in the config and update the database arg with the connection string
 func ValidateConnectionArg() error {
-	// exactly one of 'database' or 'connection' must be set
 	databaseArg := viper.GetString(constants.ArgDatabase)
-	connectionArg := viper.GetString(constants.ArgConnection)
-	if databaseArg == "" && connectionArg == "" {
-		return fmt.Errorf("either '--%s' or '--%s' must be set", constants.ArgDatabase, constants.ArgConnection)
-	}
-	if databaseArg != "" && connectionArg != "" {
-		return fmt.Errorf("only one of '--%s' or '--%s' may be set", constants.ArgDatabase, constants.ArgConnection)
-	}
 	// if connection arg is set, verify it is in the config
-	if connectionArg != "" {
-		conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[connectionArg]
-		if !ok {
-			return fmt.Errorf("connection '%s' not found in config", connectionArg)
-		}
+	if databaseArg != "" {
+		connectionString := databaseArg
+		conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[databaseArg]
+		if strings.HasPrefix(databaseArg, "connection.") {
+			conn, ok = powerpipeconfig.GlobalConfig.PipelingConnections[strings.TrimPrefix(databaseArg, "connection.")]
+			if !ok {
+				return fmt.Errorf("connection '%s' not found", databaseArg)
+			}
 
-		csp, ok := conn.(connection.ConnectionStringProvider)
-		if !ok {
-			// unexpected - all registered connections should implement this interface
-			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", connectionArg)
+			csp, ok := conn.(connection.ConnectionStringProvider)
+			if !ok {
+				// unexpected - all registered connections should implement this interface
+				return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", databaseArg)
+			}
+			connectionString = csp.GetConnectionString()
+			powerpipeconfig.GlobalConfig.DefaultConnection = csp
 		}
-
 		// update viper Database arg with the connection string
-		viper.Set(constants.ArgDatabase, csp.GetConnectionString())
+		viper.Set(constants.ArgDatabase, connectionString)
 	}
 	return nil
 }

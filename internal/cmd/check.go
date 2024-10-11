@@ -57,8 +57,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	builder.
 		AddCloudFlags().
 		AddModLocationFlag().
-		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use --connection")).
-		AddStringFlag(constants.ArgConnection, localconstants.DefaultConnection, "The connection to use").
+		AddStringFlag(constants.ArgDatabase, localconstants.DefaultConnection, "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable or param")).
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
