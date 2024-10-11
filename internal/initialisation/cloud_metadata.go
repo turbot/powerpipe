@@ -12,11 +12,12 @@ import (
 
 func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, error) {
 	database := viper.GetString(constants.ArgDatabase)
+	if database == "" {
+		// nothing configured - nothing to do here
+		return nil, nil
+	}
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
-
-	// TODO KAI we need to handle this being set for any resource
-
 	// so a backend was set - is it a connection string or a database name
 	workspaceDatabaseIsConnectionString := backend.HasBackend(database)
 	if !workspaceDatabaseIsConnectionString {

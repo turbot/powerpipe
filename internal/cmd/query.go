@@ -51,7 +51,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
-		AddStringFlag(constants.ArgDatabase, localconstants.DefaultConnection, "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use --connection")).
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable or param")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, pps (snapshot), asff").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
