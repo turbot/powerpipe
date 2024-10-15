@@ -85,6 +85,7 @@ jobs:
           - "params_and_args"
           - "snapshot"
           - "dashboard_parsing_validation"
+          - "database_precedence"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
