@@ -43,7 +43,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	// if the database is a cloud workspace, resolve the connection string
 	if steampipeconfig.IsCloudWorkspaceIdentifier(database) {
 		var err error
-		defaultDatabase, err = GetCloudWorkspaceConnectionString(database)
+		database, err = GetCloudWorkspaceConnectionString(database)
 		if err != nil {
 			return "", backend.SearchPathConfig{}, err
 		}
