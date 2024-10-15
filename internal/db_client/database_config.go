@@ -3,8 +3,11 @@ package db_client
 import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -24,14 +27,6 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		}
 
 		// if the mod requirement has a search path, prefix or database, set it in viper,
-		// overriding whatever value sth, use it
-		// TODO should we only respect overriden search path and search path prefix if the db is overriden?
-		//if modRequirement.OriginalSearchPath != nil {
-		//	searchPathConfig.OriginalSearchPath = modRequirement.OriginalSearchPath
-		//}
-		//if modRequirement.SearchPathPrefix != nil {
-		//	searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
-		//}
 		if modRequirement.Database != nil {
 			// if database is overriden, also use overriden search path and search path prefix (even if empty)
 			database = *modRequirement.Database
@@ -40,13 +35,26 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		}
 	}
 
-	return database, searchPathConfig, nil
+	// if the resource has a database set, use it
+	if resource.GetDatabase() != nil {
+		database = *resource.GetDatabase()
+	}
 
+	// if the database is a cloud workspace, resolve the connection string
+	if steampipeconfig.IsCloudWorkspaceIdentifier(database) {
+		var err error
+		database, err = GetCloudWorkspaceConnectionString(database)
+		if err != nil {
+			return "", backend.SearchPathConfig{}, err
+		}
+	}
+
+	return database, searchPathConfig, nil
 }
 
-// GetDefaultDatabaseConfig builds the default database and searchPathConfig for the dashboard execution tree
+// GetDefaultDatabaseConfig builds the default database and searchPathConfig
 // NOTE: if the dashboardUI has overridden the search path, opts wil be passed in to set the overridden value
-func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.SearchPathConfig) {
+func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.SearchPathConfig, error) {
 	var cfg backend.ConnectConfig
 	for _, opt := range opts {
 		opt(&cfg)
@@ -57,10 +65,36 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.Se
 		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
 		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
 	}
+
 	// has the search path been overridden?
 	if !cfg.SearchPathConfig.Empty() {
 		defaultSearchPathConfig = cfg.SearchPathConfig
 	}
+
 	defaultDatabase := viper.GetString(constants.ArgDatabase)
-	return defaultDatabase, defaultSearchPathConfig
+
+	// if no database is set, use the default connection
+	if defaultDatabase == "" {
+		defaultDatabase = powerpipeconfig.GlobalConfig.DefaultConnection.GetConnectionString()
+		// if no search path has been set, use the default connection
+		if defaultSearchPathConfig.Empty() {
+			if spp, ok := powerpipeconfig.GlobalConfig.DefaultConnection.(connection.SearchPathProvider); ok {
+				defaultSearchPathConfig = backend.SearchPathConfig{
+					SearchPath:       spp.GetSearchPath(),
+					SearchPathPrefix: spp.GetSearchPathPrefix(),
+				}
+			}
+		}
+	}
+
+	// if the database is a cloud workspace, resolve the connection string
+	if steampipeconfig.IsCloudWorkspaceIdentifier(defaultDatabase) {
+		var err error
+		defaultDatabase, err = GetCloudWorkspaceConnectionString(defaultDatabase)
+		if err != nil {
+			return "", backend.SearchPathConfig{}, err
+		}
+	}
+
+	return defaultDatabase, defaultSearchPathConfig, nil
 }

@@ -20,6 +20,7 @@ import (
 	"github.com/turbot/pipe-fittings/parse"
 	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/utils"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/display"
@@ -101,7 +102,7 @@ Examples:
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable or param")).
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
@@ -123,6 +124,8 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 			// exitCode = constants.ExitCodeUnknownErrorPanic
 		}
 	}()
+
+	error_helpers.FailOnError(validateModArgs())
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
@@ -155,8 +158,18 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	fmt.Println(summary) //nolint:forbidigo // intended output
 }
 
+func validateModArgs() error {
+	return localcmdconfig.ValidateDatabaseArg()
+}
+
 func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
-	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")
+		}
+		return nil
+	}
 
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
 	if err != nil {

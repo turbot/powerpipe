@@ -36,6 +36,7 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+          ref: v1.6.x
 
        # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
@@ -108,6 +109,7 @@ jobs:
           - "params_and_args"
           - "snapshot"
           - "dashboard_parsing_validation"
+          - "database_precedence"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
@@ -555,6 +557,7 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+          ref: v1.6.x
 
       - name: Tag Release
         run: |

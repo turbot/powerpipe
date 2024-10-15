@@ -24,6 +24,7 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace_profile"
 	"github.com/turbot/powerpipe/internal/logger"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -122,6 +123,13 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
 
+	var config, ew = powerpipeconfig.LoadPowerpipeConfig(filepaths.EnsureConfigDir())
+	if ew.GetError() != nil {
+		return ew
+	}
+
+	powerpipeconfig.GlobalConfig = config
+
 	// set-up viper with defaults from the env and default workspace profile
 
 	cmdconfig.BootstrapViper(loader, cmd,
@@ -142,8 +150,9 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// if an explicit workspace profile was set, add to viper as highest precedence default
 	// NOTE: if install_dir/mod_location are set these will already have been passed to viper by BootstrapViper
 	// since the "ConfiguredProfile" is passed in through a cmdline flag, it will always take precedence
-	if loader.ConfiguredProfile != nil {
-		cmdconfig.SetDefaultsFromConfig(loader.ConfiguredProfile.ConfigMap(cmd))
+	wp := loader.ConfiguredProfile
+	if wp != nil {
+		cmdconfig.SetDefaultsFromConfig(wp.ConfigMap(cmd))
 	}
 
 	// now env vars have been processed, set filepaths.PipesInstallDir
@@ -155,6 +164,15 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	err = setPipesTokenDefault(loader)
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
+	}
+
+	// if the configured workspace is a cloud workspace, create cloud metadata and set the default connection
+	if wp != nil && wp.IsCloudWorkspace() {
+		defaultConnection, ew := wp.GetCloudMetadata()
+		if ew.GetError() != nil {
+			return ew
+		}
+		config.DefaultConnection = defaultConnection
 	}
 
 	// now validate all config values have appropriate values

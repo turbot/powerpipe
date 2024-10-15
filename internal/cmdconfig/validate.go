@@ -3,6 +3,7 @@ package cmdconfig
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/connection"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -11,7 +12,36 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 )
+
+// ValidateDatabaseArg validates the connection and database arg
+// if both or neither are set, returns an error
+// if connection is set, verify it is in the config and update the database arg with the connection string
+func ValidateDatabaseArg() error {
+	databaseArg := viper.GetString(constants.ArgDatabase)
+	if databaseArg == "" {
+		return nil
+	}
+	if strings.HasPrefix(databaseArg, "connection.") {
+		conn, ok := powerpipeconfig.GlobalConfig.PipelingConnections[strings.TrimPrefix(databaseArg, "connection.")]
+		if !ok {
+			return fmt.Errorf("connection '%s' not found", databaseArg)
+		}
+
+		csp, ok := conn.(connection.ConnectionStringProvider)
+		if !ok {
+			// unexpected - all registered connections should implement this interface
+			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", databaseArg)
+		}
+		connectionString := csp.GetConnectionString()
+		powerpipeconfig.GlobalConfig.DefaultConnection = csp
+		// update viper Database arg with the connection string
+		viper.Set(constants.ArgDatabase, connectionString)
+	}
+
+	return nil
+}
 
 func ValidateSnapshotArgs(ctx context.Context) error {
 	// only 1 of 'share' and 'snapshot' may be set
