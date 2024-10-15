@@ -18,10 +18,10 @@ func getCloudMetadata(ctx context.Context) (*steampipeconfig.CloudMetadata, erro
 	}
 
 	var cloudMetadata *steampipeconfig.CloudMetadata
-	// so a backend was set - is it a connection string or a database name
+	// so a backend was set - is it a connection string or a cloud workspace name
 	workspaceDatabaseIsConnectionString := backend.HasBackend(database)
 	if !workspaceDatabaseIsConnectionString {
-		// it must be a database name - verify the cloud token was provided
+		// it must be a cloud workspace name - verify the cloud token was provided
 		cloudToken := viper.GetString(constants.ArgPipesToken)
 		if cloudToken == "" {
 			return nil, error_helpers.MissingCloudTokenError()

@@ -163,7 +163,13 @@ func validateModArgs() error {
 }
 
 func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
-	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")
+		}
+		return nil
+	}
 
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
 	if err != nil {
