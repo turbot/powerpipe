@@ -6,6 +6,7 @@ import (
 	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -39,13 +40,21 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		database = *resource.GetDatabase()
 	}
 
-	return database, searchPathConfig, nil
+	// if the database is a cloud workspace, resolve the connection string
+	if steampipeconfig.IsCloudWorkspaceIdentifier(database) {
+		var err error
+		defaultDatabase, err = GetCloudWorkspaceConnectionString(database)
+		if err != nil {
+			return "", backend.SearchPathConfig{}, err
+		}
+	}
 
+	return database, searchPathConfig, nil
 }
 
-// GetDefaultDatabaseConfig builds the default database and searchPathConfig for the dashboard execution tree
+// GetDefaultDatabaseConfig builds the default database and searchPathConfig
 // NOTE: if the dashboardUI has overridden the search path, opts wil be passed in to set the overridden value
-func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.SearchPathConfig) {
+func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.SearchPathConfig, error) {
 	var cfg backend.ConnectConfig
 	for _, opt := range opts {
 		opt(&cfg)
@@ -77,5 +86,15 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.Se
 			}
 		}
 	}
-	return defaultDatabase, defaultSearchPathConfig
+
+	// if the database is a cloud workspace, resolve the connection string
+	if steampipeconfig.IsCloudWorkspaceIdentifier(defaultDatabase) {
+		var err error
+		defaultDatabase, err = GetCloudWorkspaceConnectionString(defaultDatabase)
+		if err != nil {
+			return "", backend.SearchPathConfig{}, err
+		}
+	}
+
+	return defaultDatabase, defaultSearchPathConfig, nil
 }

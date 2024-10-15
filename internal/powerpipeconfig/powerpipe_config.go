@@ -31,6 +31,10 @@ type PowerpipeConfig struct {
 
 	loadLock          *sync.Mutex
 	DefaultConnection connection.ConnectionStringProvider
+	// cache the conneciton strings for cloud workspaces (is this ok???
+	cloudConnectionStrings map[string]string
+	// lock
+	cloudConnectionStringLock *sync.RWMutex
 }
 
 func NewPowerpipeConfig() *PowerpipeConfig {
@@ -44,9 +48,11 @@ func NewPowerpipeConfig() *PowerpipeConfig {
 	defaultConnectionName := strings.TrimPrefix(constants.DefaultConnection, "connection.")
 
 	return &PowerpipeConfig{
-		PipelingConnections: defaultPipelingConnections,
-		loadLock:            &sync.Mutex{},
-		DefaultConnection:   defaultPipelingConnections[defaultConnectionName].(connection.ConnectionStringProvider),
+		PipelingConnections:       defaultPipelingConnections,
+		loadLock:                  &sync.Mutex{},
+		cloudConnectionStringLock: &sync.RWMutex{},
+		DefaultConnection:         defaultPipelingConnections[defaultConnectionName].(connection.ConnectionStringProvider),
+		cloudConnectionStrings:    make(map[string]string),
 	}
 }
 
@@ -131,4 +137,19 @@ func (c *PowerpipeConfig) handleFileWatcherEvent(ctx context.Context) {
 		}
 	}
 
+}
+
+func (c *PowerpipeConfig) GetCloudConnectionString(workspace string) (string, bool) {
+	c.cloudConnectionStringLock.RLock()
+	defer c.cloudConnectionStringLock.RUnlock()
+
+	connStr, ok := c.cloudConnectionStrings[workspace]
+	return connStr, ok
+}
+
+func (c *PowerpipeConfig) SetCloudConnectionString(workspace, connStr string) {
+	c.cloudConnectionStringLock.Lock()
+	defer c.cloudConnectionStringLock.Unlock()
+
+	c.cloudConnectionStrings[workspace] = connStr
 }

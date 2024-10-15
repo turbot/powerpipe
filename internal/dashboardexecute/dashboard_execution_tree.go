@@ -61,9 +61,11 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 	executionTree.id = fmt.Sprintf("%p", executionTree)
 
 	// set the dashboard database and search patch config
-	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig(opts...)
+	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig(opts...)
+	if err != nil {
+		return nil, err
+	}
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(rootResource, workspace.Mod, defaultDatabase, defaultSearchPathConfig)
-
 	if err != nil {
 		return nil, err
 	}

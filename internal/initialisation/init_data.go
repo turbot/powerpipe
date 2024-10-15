@@ -158,20 +158,15 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 		}
 	}
 
-	// retrieve cloud metadata
-	// TODO REMOVE/change
-	_, err = getCloudMetadata(ctx)
+	// determine whether
+
+	// create default client
+	// set the database and search patch config
+	database, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
-
-	// set cloud metadata (may be nil)
-	//i.Workspace.CloudMetadata = cloudMetadata
-
-	// create default client
-	// set the database and search patch config
-	database, searchPathConfig := db_client.GetDefaultDatabaseConfig()
 
 	// create client
 	var opts []backend.ConnectOption
