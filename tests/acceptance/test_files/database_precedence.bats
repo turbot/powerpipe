@@ -16,8 +16,8 @@ load "$LIB_BATS_SUPPORT/load.bash"
   assert_output --partial "cache_enabled"
 }
 
-# database specified in mod definition - so the mod level database gets the highest precedence
-@test "database specified in mod definition" {
+# database(sqlite) specified in mod definition(connection ref) - so the mod level database gets the highest precedence
+@test "database specified in mod definition(connection ref)" {
   # add the sqlite connection
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
@@ -37,4 +37,169 @@ EOF
 
   # check output that the mod level database is used
   assert_output --partial "Total Albums"
+}
+
+# TODO - remove this test once deprecated --database flag is removed
+# no database specified in mod or within mod resources
+# database(sqlite) specified in --database argument - so that gets the highest precedence
+@test "database specified in --database arg(connection string)" {
+
+  # checkout the mod with no database specified in mod.pp
+  cd $MODS_DIR/mod_with_no_db
+
+  # run a powerpipe query to verify that the database(sqlite) specified in --database argument is used
+  run powerpipe query run query.sqlite_db_query --database sqlite:///$MODS_DIR/sqlite_mod/chinook.db --output csv
+  echo $output
+
+  # check output that the database specified in --database argument is used
+  assert_output --partial "Total Albums"
+}
+
+# TODO - remove this test once deprecated --database flag is removed
+# database(sqlite) specified in mod definition
+# database(duckdb) specified in --database argument(connection string) - so that gets the highest precedence
+@test "database specified in mod definition and --database arg(connection string)" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db
+
+  # run a powerpipe query to verify that the database(duckdb) specified in --database argument is used
+  run powerpipe query run query.duckdb_db_query --database duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb --output csv
+  echo $output
+
+  # check output that the database specified in --database argument is used
+  assert_output --partial "Total Employees"
+}
+
+# TODO - remove this test once deprecated --database flag is removed
+# database(sqlite) specified in mod definition
+# database(duckdb) specified in --database argument(connection ref) - so that gets the highest precedence
+@test "database specified in mod definition and --database arg(connection ref)" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # add the duckdb connection
+  # write the duckdb connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
+connection "duckdb" "employees" {
+  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db
+
+  # run a powerpipe query to verify that the database(duckdb) specified in --database argument is used
+  run powerpipe query run query.duckdb_db_query --database connection.duckdb.employees --output csv
+  echo $output
+
+  # check output that the database specified in --database argument is used over the one specified in mod definition
+  assert_output --partial "Total Employees"
+}
+
+# database specified in mod definition through a var
+# default value of database var is sqlite(connection ref)
+# so the mod level database gets the highest precedence
+@test "database specified through variable in mod" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var
+
+  # run a powerpipe query to verify that the database specified through variable in mod is used
+  run powerpipe query run query.sqlite_db_query --output csv
+  echo $output
+
+  # check output that the database specified through default value of variable in mod is used
+  assert_output --partial "Total Albums"
+}
+
+# database specified in mod definition through a var
+# default value of database var is sqlite(connection ref)
+# database also specified at runtime through --var argument
+# so the database passed through --var gets the highest precedence
+@test "database specified through variable in mod and passed through --var arg" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # add the duckdb connection
+  # write the duckdb connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
+connection "duckdb" "employees" {
+  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var
+
+  # run a powerpipe query to verify that the database specified through variable in mod is used
+  run powerpipe query run query.duckdb_db_query --output csv --var database=connection.duckdb.employees
+  echo $output
+
+  # check output that the database specified through default value of variable in mod is used
+  assert_output --partial "Total Employees"
+}
+
+# database specified in mod definition through a var
+# default value of database var is sqlite(connection ref)
+# database also specified at runtime through  powerpipe.ppvars file
+# so the database passed through powerpipe.ppvars file gets the highest precedence
+@test "database specified through variable in mod and passed through .ppvars file" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # add the duckdb connection
+  # write the duckdb connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
+connection "duckdb" "employees" {
+  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+
+  # write the .ppvars file with the database variable
+  cat << EOF > $MODS_DIR/mod_with_db_var/powerpipe.ppvars
+database=connection.duckdb.employees
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var
+
+  # run a powerpipe query to verify that the database specified through variable in mod is used
+  run powerpipe query run query.duckdb_db_query --output csv
+  echo $output
+
+  # check output that the database specified through default value of variable in mod is used
+  assert_output --partial "Total Employees"
+
+  # cleanup the .ppvars file
+  rm $MODS_DIR/mod_with_db_var/powerpipe.ppvars
 }
