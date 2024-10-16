@@ -41,7 +41,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	}
 
 	// if the database is a cloud workspace, resolve the connection string
-	if steampipeconfig.IsCloudWorkspaceIdentifier(database) {
+	if steampipeconfig.IsPipesWorkspaceIdentifier(database) {
 		var err error
 		database, err = GetCloudWorkspaceConnectionString(database)
 		if err != nil {
@@ -88,7 +88,7 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.Se
 	}
 
 	// if the database is a cloud workspace, resolve the connection string
-	if steampipeconfig.IsCloudWorkspaceIdentifier(defaultDatabase) {
+	if steampipeconfig.IsPipesWorkspaceIdentifier(defaultDatabase) {
 		var err error
 		defaultDatabase, err = GetCloudWorkspaceConnectionString(defaultDatabase)
 		if err != nil {

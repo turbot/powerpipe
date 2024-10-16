@@ -4,12 +4,12 @@ import (
 	"bufio"
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/pipes"
 	"log"
 	"os"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -43,7 +43,7 @@ func runLoginCmd(cmd *cobra.Command, _ []string) {
 	log.Printf("[TRACE] login, cloud host %s", viper.Get(constants.ArgPipesHost))
 	log.Printf("[TRACE] opening login web page")
 	// start login flow - this will open a web page prompting user to login, and will give the user a code to enter
-	var id, err = cloud.WebLogin(ctx)
+	var id, err = pipes.WebLogin(ctx)
 	if err != nil {
 		error_helpers.ShowError(ctx, err)
 		exitCode = constants.ExitCodeLoginCloudConnectionFailed
@@ -58,7 +58,7 @@ func runLoginCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// save token
-	err = cloud.SaveToken(token)
+	err = pipes.SaveToken(token)
 	if err != nil {
 		error_helpers.ShowError(ctx, err)
 		exitCode = constants.ExitCodeLoginCloudConnectionFailed
@@ -81,7 +81,7 @@ func getToken(ctx context.Context, id string) (loginToken string, err error) {
 		if code != "" {
 			log.Printf("[TRACE] get login token")
 			// use this code to get a login token and store it
-			loginToken, err = cloud.GetLoginToken(ctx, id, code)
+			loginToken, err = pipes.GetLoginToken(ctx, id, code)
 			if err == nil {
 				return loginToken, nil
 			}
@@ -105,7 +105,7 @@ func getToken(ctx context.Context, id string) (loginToken string, err error) {
 }
 
 func displayLoginMessage(ctx context.Context, token string) {
-	userName, err := cloud.GetUserName(ctx, token)
+	userName, err := pipes.GetUserName(ctx, token)
 	error_helpers.FailOnError(sperr.WrapWithMessage(err, "failed to read user name"))
 
 	//nolint:forbidigo // intentional

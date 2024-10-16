@@ -179,7 +179,7 @@ type ServerMetadata struct {
 	Mod           *ModMetadata                   `json:"mod,omitempty"`
 	InstalledMods map[string]*ModMetadata        `json:"installed_mods,omitempty"`
 	CLI           DashboardCLIMetadata           `json:"cli"`
-	Cloud         *steampipeconfig.CloudMetadata `json:"cloud,omitempty"`
+	Cloud         *steampipeconfig.PipesMetadata `json:"cloud,omitempty"`
 	Telemetry     string                         `json:"telemetry"`
 	SearchPath    *SearchPathMetadata            `json:"search_path"`
 }

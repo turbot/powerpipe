@@ -21,7 +21,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *steampipeconfig.CloudMetadata) ([]byte, error) {
+func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -79,7 +79,7 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 	}
 	// if telemetry is enabled, send cloud metadata
 	if payload.Metadata.Telemetry != constants.TelemetryNone {
-		payload.Metadata.Cloud = cloudMetadata
+		payload.Metadata.Cloud = pipesMetadata
 	}
 
 	return json.Marshal(payload)
