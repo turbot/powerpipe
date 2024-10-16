@@ -12,13 +12,13 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -210,7 +210,7 @@ func publishSnapshotIfNeeded(ctx context.Context, snapshot *steampipeconfig.Stea
 		return nil
 	}
 
-	message, err := cloud.PublishSnapshot(ctx, snapshot, shouldShare)
+	message, err := pipes.PublishSnapshot(ctx, snapshot, shouldShare)
 	if err != nil {
 		// reword "402 Payment Required" error
 		return handlePublishSnapshotError(err)

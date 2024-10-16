@@ -14,12 +14,12 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
 	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/task"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace_profile"
@@ -168,7 +168,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 
 	// if the configured workspace is a cloud workspace, create cloud metadata and set the default connection
 	if wp != nil && wp.IsCloudWorkspace() {
-		defaultConnection, ew := wp.GetCloudMetadata()
+		defaultConnection, ew := wp.GetPipesMetadata()
 		if ew.GetError() != nil {
 			return ew
 		}
@@ -188,7 +188,7 @@ func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profil
 	*/
 	// set viper defaults in order of increasing precedence
 	// 1) saved cloud token
-	savedToken, err := cloud.LoadToken()
+	savedToken, err := pipes.LoadToken()
 	if err != nil {
 		return err
 	}
