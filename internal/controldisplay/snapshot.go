@@ -3,11 +3,11 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
 
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/statushooks"
+	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
@@ -69,7 +69,7 @@ func PublishSnapshot(ctx context.Context, e *controlexecute.ExecutionTree, shoul
 		return err
 	}
 
-	message, err := cloud.PublishSnapshot(ctx, snapshot, shouldShare)
+	message, err := pipes.PublishSnapshot(ctx, snapshot, shouldShare)
 	if err != nil {
 		return err
 	}
