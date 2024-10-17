@@ -203,3 +203,33 @@ EOF
   # cleanup the .ppvars file
   rm $MODS_DIR/mod_with_db_var/powerpipe.ppvars
 }
+
+# database specified in mod require through a var
+@test "database specified through variable in dependency mod require block" {
+  skip "not working"
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # add the duckdb connection
+  # write the duckdb connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
+connection "duckdb" "employees" {
+  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp dependant mod require block
+  cd $MODS_DIR/mod_with_db_in_require
+
+  # run a powerpipe query to verify that the database specified through mod require block is used
+  run powerpipe query run query.sqlite_db_query --output csv
+  echo $output
+
+  # check output that the database specified through default value of mod require block is used
+  assert_output --partial "Total Albums"
+}
