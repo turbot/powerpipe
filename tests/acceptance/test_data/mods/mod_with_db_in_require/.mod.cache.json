@@ -1,0 +1,11 @@
+{
+  "local": {
+    "github.com/pskrbasu/powerpipe-mod-db-var": {
+      "version": "0.1.0",
+      "name": "github.com/pskrbasu/powerpipe-mod-db-var",
+      "git_ref": "refs/tags/v0.1.0",
+      "struct_version": 20240429,
+      "alias": "mod_with_db_var"
+    }
+  }
+}
