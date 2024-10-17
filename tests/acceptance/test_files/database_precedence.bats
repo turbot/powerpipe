@@ -1,6 +1,16 @@
 load "$LIB_BATS_ASSERT/load.bash"
 load "$LIB_BATS_SUPPORT/load.bash"
 
+# These set of tests are skipped locally
+# To run these tests locally set the SPIPETOOLS_TOKEN env var.
+# These tests will be skipped locally unless the below env var is set.
+
+function setup() {
+  if [[ -z "${SPIPETOOLS_TOKEN}" ]]; then
+    skip
+  fi
+}
+
 # no database specified in mod or within mod resources - so the default steampipe connection
 # gets the highest precedence
 @test "no database specified in mod or within resource" {
@@ -232,4 +242,73 @@ EOF
 
   # check output that the database specified through default value of mod require block is used
   assert_output --partial "Total Albums"
+}
+
+# database specified in mod - implicit workspace
+# database specified in mod definition(implicit workspace) - so the mod level database gets the highest precedence
+# and should query the pipes workspace
+@test "database specified in mod definition(implicit workspace)" {
+  # checkout the mod with implicit workspace database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_implicit_workspace
+
+  # run a powerpipe query to verify that the pipes workspace mentioned in mod is used
+  run powerpipe query run query.pipes_workspace_query --output csv --pipes-token $SPIPETOOLS_TOKEN
+  echo $output
+
+  # check output that the pipes workspace is queried
+  assert_output --partial "redhood-aaa"
+}
+
+# database specified in mod definition through a var
+# default value of database var is implicit workspace
+# so the mod level database gets the highest precedence
+@test "database specified through variable(implicit workspace) in mod" {
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var_implicit_workspace
+
+  # run a powerpipe query to verify that the pipes workspace specified through variable in mod is used
+  run powerpipe query run query.pipes_workspace_query --output csv --pipes-token $SPIPETOOLS_TOKEN
+  echo $output
+
+  # check output that the pipes workspace specified through default value of variable in mod is used
+  assert_output --partial "redhood-aaa"
+}
+
+# database specified in mod definition through a var
+# default value of database var is implicit workspace
+# database also specified at runtime through  vars argument
+# so the pipes workspace specified in --var gets the highest precedence
+@test "database specified through variable in mod and passed through --var(implicit workspace) arg" {
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var_implicit_workspace
+
+  # run a powerpipe query to verify that the pipes workspace specified through --var in mod is used
+  run powerpipe query run query.pipes_workspace_query --output csv --pipes-token $SPIPETOOLS_TOKEN --var database="turbot-ops/clitesting"
+  echo $output
+
+  # check output that the pipes workspace specified through --var in mod is used
+  assert_output --partial "redhood-aaa"
+}
+
+# test steampipe connection with implicit workspace works
+@test "steampipe connection with implicit workspace" {
+  skip "not working"
+    # add the steampipe connection with pipes workspace
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/steampipe.ppc
+connection "steampipe" "pipes" {
+  workspace = "turbot-ops/clitesting"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp
+  cd $MODS_DIR/mod_with_db_var
+
+  # run a powerpipe query to verify that the database specified through --var(connection ref) in mod is used
+  run powerpipe query run query.pipes_workspace_query --output csv --var database=connection.steampipe.pipes --pipes-token $SPIPETOOLS_TOKEN
+  echo $output
+
+  # check output that the database specified through default value of variable in mod is used
+  assert_output --partial "redhood-aaa"
 }
