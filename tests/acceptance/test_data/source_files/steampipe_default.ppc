@@ -1,0 +1,6 @@
+connection "steampipe" "default" {
+  username    = "steampipe"
+  host        = "localhost"
+  port        = 9193
+  database    = "steampipe"
+}
