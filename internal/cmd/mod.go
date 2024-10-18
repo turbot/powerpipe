@@ -97,7 +97,7 @@ Examples:
 	}
 
 	// default update strategy to minimal for mod install
-	// (TODO we may overide this if there is a targetted mod)
+	// (TODO we may overide this if there is a targeted mod)
 	var updateStrategy = constants.ModUpdateIdMinimal
 
 	cmdconfig.OnCmd(cmd).

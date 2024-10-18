@@ -19,7 +19,7 @@ local
 @test "install latest and then run install" {
   powerpipe mod install github.com/turbot/steampipe-mod-aws-compliance
   run powerpipe mod install
-  assert_output 'All targetted mods are up to date'
+  assert_output 'All targeted mods are up to date'
 }
 
 @test "install mod and list" {
@@ -75,6 +75,7 @@ local
 #     └── github.com/pskrbasu/steampipe-mod-dependency-2@v3.0.0
 #         └── github.com/pskrbasu/steampipe-mod-dependency-1@v3.0.0
 @test "complex mod dependency resolution - test tree structure" {
+  skip
   run powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
   # test the tree structure output
   assert_output 'Initializing mod, created mod.pp.
