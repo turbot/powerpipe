@@ -226,7 +226,7 @@ connection "sqlite" "albums" {
 EOF
 
   # checkout the mod with database specified in mod.pp dependant mod require block
-  cd $MODS_DIR/mod_with_db_in_require_var
+  cd $MODS_DIR/mod_with_db_in_require
 
   # run a powerpipe query to verify that the database specified through mod require block is used
   run powerpipe query run query.sqlite_db_query --output csv
