@@ -1,6 +1,6 @@
 <a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
 
-[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.steampipe.io/mods?objectives=dashboard) &nbsp;
+[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.powerpipe.io) &nbsp;
 [![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
 [![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com)
 
@@ -34,18 +34,16 @@ See the [documentation](https://powerpipe.io/docs) for:
 
 ## Install Powerpipe
 
-The <a href="https://powerpipe.io/downloads">downloads</a> page shows you how, but tl;dr:
+Install Powerpipe from the [downloads](https://powerpipe.io/downloads) page:
 
-Linux or WSL
-
-```sh
-sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
-```
-
-MacOS
-
+MacOS:
 ```sh
 brew install turbot/tap/powerpipe
+```
+
+Linux or Windows (WSL):
+```sh
+sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
 Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
