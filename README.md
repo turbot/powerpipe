@@ -36,13 +36,13 @@ See the [documentation](https://powerpipe.io/docs) for:
 
 Install Powerpipe from the [downloads](https://powerpipe.io/downloads) page:
 
-MacOS:
 ```sh
+# MacOS
 brew install turbot/tap/powerpipe
 ```
 
-Linux or Windows (WSL):
 ```sh
+# Linux or Windows (WSL)
 sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
