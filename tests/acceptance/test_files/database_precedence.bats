@@ -214,6 +214,28 @@ EOF
   rm $MODS_DIR/mod_with_db_var/powerpipe.ppvars
 }
 
+# database specified in mod require block
+@test "database specified in dependency mod require block" {
+  skip "not working"
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # checkout the mod with database specified in mod.pp dependant mod require block
+  cd $MODS_DIR/mod_with_db_in_require_var
+
+  # run a powerpipe query to verify that the database specified through mod require block is used
+  run powerpipe query run query.sqlite_db_query --output csv
+  echo $output
+
+  # check output that the database specified through default value of mod require block is used
+  assert_output --partial "Total Albums"
+}
+
 # database specified in mod require through a var
 @test "database specified through variable in dependency mod require block" {
   skip "not working"
@@ -234,7 +256,7 @@ connection "duckdb" "employees" {
 EOF
 
   # checkout the mod with database specified in mod.pp dependant mod require block
-  cd $MODS_DIR/mod_with_db_in_require
+  cd $MODS_DIR/mod_with_db_in_require_var
 
   # run a powerpipe query to verify that the database specified through mod require block is used
   run powerpipe query run query.sqlite_db_query --output csv
@@ -292,27 +314,6 @@ EOF
   assert_output --partial "redhood-aaa"
 }
 
-# test steampipe connection with implicit workspace works
-@test "steampipe connection with implicit workspace" {
-  skip "not working"
-    # add the steampipe connection with pipes workspace
-  cat << EOF > $POWERPIPE_INSTALL_DIR/config/steampipe.ppc
-connection "steampipe" "pipes" {
-  workspace = "turbot-ops/clitesting"
-}
-EOF
-
-  # checkout the mod with database specified in mod.pp
-  cd $MODS_DIR/mod_with_db_var
-
-  # run a powerpipe query to verify that the database specified through --var(connection ref) in mod is used
-  run powerpipe query run query.pipes_workspace_query --output csv --var database=connection.steampipe.pipes --pipes-token $SPIPETOOLS_TOKEN
-  echo $output
-
-  # check output that the database specified through default value of variable in mod is used
-  assert_output --partial "redhood-aaa"
-}
-
 # database specified in resource
 # database specified in resource - so the resource level database gets the highest precedence
 @test "database specified in resource" {
@@ -350,7 +351,6 @@ EOF
   assert_output --partial "Total Employees"
 }
 
-# TODO - remove this test once deprecated --database flag is removed
 # database specified in mod
 # database specified in resource
 # so the database specified in resource gets the highest precedence
@@ -383,6 +383,45 @@ EOF
 
   # run a powerpipe query to verify that the database specified in resource is used
   run powerpipe query run query.duckdb_db_query --output csv
+  echo $output
+
+  # check output that the database specified in resource is used
+  assert_output --partial "Total Employees"
+}
+
+# TODO - remove this test once deprecated --database flag is removed
+# database specified in mod
+# database specified in resource
+# so the database specified in resource gets the highest precedence
+@test "database specified in mod and also in resource, also passed through --database arg" {
+  # add the sqlite connection
+  # write the sqlite connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
+connection "sqlite" "albums" {
+  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+}
+EOF
+
+  # add the duckdb connection
+  # write the duckdb connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
+connection "duckdb" "employees" {
+  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+
+  # checkout the mod with database specified in resource and in mod
+  cd $MODS_DIR/mod_with_db_in_mod_and_resource
+
+  # run a powerpipe query to verify that the database specified in resource is used
+  run powerpipe query run query.sqlite_db_query  --database connection.steampipe.default --output csv
+  echo $output
+
+  # check output that the database specified in resource is used
+  assert_output --partial "Total Albums"
+
+  # run a powerpipe query to verify that the database specified in resource is used
+  run powerpipe query run query.duckdb_db_query --database connection.steampipe.default --output csv
   echo $output
 
   # check output that the database specified in resource is used
