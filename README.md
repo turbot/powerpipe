@@ -42,7 +42,7 @@ brew install turbot/tap/powerpipe
 ```
 
 ```sh
-# Linux or Windows (WSL)
+# Linux or Windows (WSL2)
 sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
