@@ -216,7 +216,6 @@ EOF
 
 # database specified in mod require block
 @test "database specified in dependency mod require block" {
-  skip "not working"
   # add the sqlite connection
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
@@ -238,7 +237,6 @@ EOF
 
 # database specified in mod require through a var
 @test "database specified through variable in dependency mod require block" {
-  skip "not working"
   # add the sqlite connection
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
