@@ -102,7 +102,18 @@ func (r *LeafRun) resolveDatabaseConfig() error {
 	if err != nil {
 		return err
 	}
-
+	// if the resource specifies a database, use that
+	if c, ok := r.resource.(modconfig.DatabaseItem); ok {
+		if resourceDatabase := c.GetDatabase(); resourceDatabase != nil {
+			database = *resourceDatabase
+		}
+		if resourceSearchPath := c.GetSearchPath(); len(resourceSearchPath) > 0 {
+			searchPathConfig.SearchPath = resourceSearchPath
+		}
+		if resourceSearchPathPrefix := c.GetSearchPathPrefix(); len(resourceSearchPathPrefix) > 0 {
+			searchPathConfig.SearchPathPrefix = resourceSearchPathPrefix
+		}
+	}
 	r.database = database
 	r.searchPathConfig = searchPathConfig
 	return nil

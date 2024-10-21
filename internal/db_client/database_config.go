@@ -42,18 +42,6 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		}
 	}
 
-	// if the resource has a database set, use it
-	if resource.GetDatabase() != nil {
-		database = *resource.GetDatabase()
-	}
-	// if the resource has a search path set, use it
-	if resourceSearchPath := resource.GetSearchPath(); len(resourceSearchPath) > 0 {
-		searchPathConfig.SearchPath = resourceSearchPath
-	}
-	if resourceSearchPathPrefix := resource.GetSearchPathPrefix(); len(resourceSearchPathPrefix) > 0 {
-		searchPathConfig.SearchPathPrefix = resourceSearchPathPrefix
-	}
-
 	// if the database is a cloud workspace, resolve the connection string
 	if steampipeconfig.IsPipesWorkspaceIdentifier(database) {
 		var err error
