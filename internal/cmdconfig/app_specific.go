@@ -83,5 +83,4 @@ func registerConnections() {
 		connection.NewSqliteConnection,
 		connection.NewDuckDbConnection,
 	)
-
 }
