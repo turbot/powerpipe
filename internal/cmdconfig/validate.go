@@ -36,6 +36,16 @@ func ValidateDatabaseArg() error {
 		powerpipeconfig.GlobalConfig.DefaultConnection = csp
 		// update viper Database arg with the connection string
 		viper.Set(constants.ArgDatabase, connectionString)
+		// if no search path is set, set it to the connection's default search path
+		if spp, ok := conn.(connection.SearchPathProvider); ok {
+			if viper.GetString(constants.ArgSearchPath) == "" {
+				viper.Set(constants.ArgSearchPath, spp.GetSearchPath())
+			}
+
+			if viper.GetString(constants.ArgSearchPathPrefix) == "" {
+				viper.Set(constants.ArgSearchPathPrefix, spp.GetSearchPathPrefix())
+			}
+		}
 	}
 
 	return nil
