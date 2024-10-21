@@ -29,7 +29,7 @@ func serverCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run:   runServerCmd,
 		Short: "Start Powerpipe dashboard server",
-		Long: `Run the Powerpipe server, including the dashbaord server and the API. 
+		Long: `Run the Powerpipe server, including the dashboard server and the API. 
 		
 Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 	}
@@ -43,7 +43,7 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
 		AddStringArrayFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
-		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable or param")).
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable if the mod supports it")).
 		AddIntFlag(constants.ArgDashboardTimeout, 0, "Set a the dashboard execution timeout")
 
 	return cmd
