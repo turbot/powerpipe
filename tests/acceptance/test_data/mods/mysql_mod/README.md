@@ -13,6 +13,15 @@ This is a simple mod used for testing Powerpipe's ability to connect to a MySQL 
 #### Connect using mysql ####
 
 Start your MySQL server and connect to it.
+Create a table(something like this to test the queries):
+mysql> SELECT * FROM employees;
++----+---------+------+---------+
+| id | name    | age  | salary  |
++----+---------+------+---------+
+|  1 | Alice   |   25 | 50000.5 |
+|  2 | Bob     |   30 | 60000.8 |
+|  3 | Charlie |   35 | 55000.2 |
++----+---------+------+---------+
 
 #### Connect using powerpipe ####
 
