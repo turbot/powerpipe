@@ -89,10 +89,11 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.Se
 
 	// if no database is set, use the default connection
 	if defaultDatabase == "" {
-		defaultDatabase = powerpipeconfig.GlobalConfig.DefaultConnection.GetConnectionString()
+		defaultConnection := powerpipeconfig.GlobalConfig.GetDefaultConnection()
+		defaultDatabase = defaultConnection.GetConnectionString()
 		// if no search path has been set, use the default connection
 		if defaultSearchPathConfig.Empty() {
-			if spp, ok := powerpipeconfig.GlobalConfig.DefaultConnection.(connection.SearchPathProvider); ok {
+			if spp, ok := defaultConnection.(connection.SearchPathProvider); ok {
 				defaultSearchPathConfig = backend.SearchPathConfig{
 					SearchPath:       spp.GetSearchPath(),
 					SearchPathPrefix: spp.GetSearchPathPrefix(),

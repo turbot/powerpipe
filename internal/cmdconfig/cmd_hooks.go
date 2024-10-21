@@ -172,7 +172,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 		if ew.GetError() != nil {
 			return ew
 		}
-		config.DefaultConnection = defaultConnection
+		config.SetDefaultConnection(defaultConnection)
 	}
 
 	// now validate all config values have appropriate values

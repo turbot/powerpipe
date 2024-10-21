@@ -33,7 +33,6 @@ func ValidateDatabaseArg() error {
 			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", databaseArg)
 		}
 		connectionString := csp.GetConnectionString()
-		powerpipeconfig.GlobalConfig.DefaultConnection = csp
 		// update viper Database arg with the connection string
 		viper.Set(constants.ArgDatabase, connectionString)
 		// if no search path is set, set it to the connection's default search path

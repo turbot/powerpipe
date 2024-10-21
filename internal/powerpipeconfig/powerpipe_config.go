@@ -1,13 +1,12 @@
 package powerpipeconfig
 
 import (
+	"github.com/turbot/powerpipe/internal/constants"
 	"log/slog"
-	"strings"
 	"sync"
 
 	"github.com/turbot/pipe-fittings/app_specific_connection"
 	"github.com/turbot/pipe-fittings/connection"
-	"github.com/turbot/powerpipe/internal/constants"
 )
 
 type PowerpipeConfig struct {
@@ -16,7 +15,6 @@ type PowerpipeConfig struct {
 
 	PipelingConnections map[string]connection.PipelingConnection
 
-	DefaultConnection connection.ConnectionStringProvider
 	// cache the connection strings for cloud workspaces (is this ok???
 	cloudConnectionStrings map[string]string
 	// lock
@@ -31,14 +29,17 @@ func NewPowerpipeConfig() *PowerpipeConfig {
 	}
 
 	// populate default connection
-	defaultConnectionName := strings.TrimPrefix(constants.DefaultConnection, "connection.")
 
 	return &PowerpipeConfig{
 		PipelingConnections:       defaultPipelingConnections,
 		cloudConnectionStringLock: &sync.RWMutex{},
-		DefaultConnection:         defaultPipelingConnections[defaultConnectionName].(connection.ConnectionStringProvider),
-		cloudConnectionStrings:    make(map[string]string),
+
+		cloudConnectionStrings: make(map[string]string),
 	}
+}
+
+func (c *PowerpipeConfig) GetDefaultConnection() connection.ConnectionStringProvider {
+	return c.PipelingConnections[constants.DefaultConnection].(connection.ConnectionStringProvider)
 }
 
 func (c *PowerpipeConfig) Equals(other *PowerpipeConfig) bool {
@@ -73,4 +74,8 @@ func (c *PowerpipeConfig) SetCloudConnectionString(workspace, connStr string) {
 	defer c.cloudConnectionStringLock.Unlock()
 
 	c.cloudConnectionStrings[workspace] = connStr
+}
+
+func (c *PowerpipeConfig) SetDefaultConnection(defaultConnection pipe) {
+
 }
