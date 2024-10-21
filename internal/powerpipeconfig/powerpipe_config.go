@@ -41,11 +41,6 @@ func NewPowerpipeConfig() *PowerpipeConfig {
 	}
 }
 
-func (c *PowerpipeConfig) updateResources(other *PowerpipeConfig) {
-	c.PipelingConnections = other.PipelingConnections
-
-}
-
 func (c *PowerpipeConfig) Equals(other *PowerpipeConfig) bool {
 
 	if len(c.PipelingConnections) != len(other.PipelingConnections) {
