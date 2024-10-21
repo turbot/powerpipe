@@ -176,7 +176,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	}
 
 	// now validate all config values have appropriate values
-	return validateConfig()
+	return validateConfig(loader.GetActiveWorkspaceProfile())
 }
 
 func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]) error {
@@ -209,9 +209,8 @@ func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profil
 	return nil
 }
 
-// now validate  config values have appropriate values
-// (currently validates telemetry)
-func validateConfig() error_helpers.ErrorAndWarnings {
+// now validate config values have appropriate values
+func validateConfig(activeWorkspace *workspace_profile.PowerpipeWorkspaceProfile) error_helpers.ErrorAndWarnings {
 	var res = error_helpers.ErrorAndWarnings{}
 	telemetry := viper.GetString(constants.ArgTelemetry)
 	if !helpers.StringSliceContains(constants.TelemetryLevels, telemetry) {
@@ -221,6 +220,16 @@ func validateConfig() error_helpers.ErrorAndWarnings {
 	if _, legacyDiagnosticsSet := os.LookupEnv(plugin.EnvLegacyDiagnosticsLevel); legacyDiagnosticsSet {
 		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated - use %s", plugin.EnvLegacyDiagnosticsLevel, plugin.EnvDiagnosticsLevel))
 	}
+
+	// database deprecation warnings
+	if _, dbEnvSet := os.LookupEnv(app_specific.EnvDatabase); dbEnvSet {
+		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated- use a variable if the mod supports it", app_specific.EnvDatabase))
+	}
+	// check active workspace profile
+	if activeWorkspace != nil && activeWorkspace.Database != nil {
+		res.AddWarning(fmt.Sprintf("workspace property 'database' is deprecated - use a variable if the mod supports it (%s:%d-%d)", activeWorkspace.DeclRange.Filename, activeWorkspace.DeclRange.Start.Line, activeWorkspace.DeclRange.End.Line))
+	}
+
 	res.Error = plugin.ValidateDiagnosticsEnvVar()
 
 	return res

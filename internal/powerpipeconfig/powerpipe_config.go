@@ -31,7 +31,7 @@ type PowerpipeConfig struct {
 
 	loadLock          *sync.Mutex
 	DefaultConnection connection.ConnectionStringProvider
-	// cache the conneciton strings for cloud workspaces (is this ok???
+	// cache the connection strings for cloud workspaces (is this ok???
 	cloudConnectionStrings map[string]string
 	// lock
 	cloudConnectionStringLock *sync.RWMutex
