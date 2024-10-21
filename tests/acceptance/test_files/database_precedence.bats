@@ -32,7 +32,7 @@ function setup() {
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -73,7 +73,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -96,7 +96,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -104,7 +104,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -127,7 +127,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -151,7 +151,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -159,7 +159,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  connection_string = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -183,7 +183,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -191,7 +191,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -220,7 +220,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -241,7 +241,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -249,7 +249,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -319,7 +319,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -327,7 +327,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -357,7 +357,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -365,7 +365,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
@@ -396,7 +396,7 @@ EOF
   # write the sqlite connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/sqlite_conn.ppc
 connection "sqlite" "albums" {
-  connection_string = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  file_name = "$MODS_DIR/sqlite_mod/chinook.db"
 }
 EOF
 
@@ -404,7 +404,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
