@@ -50,7 +50,7 @@ func LoadPowerpipeConfig(configPaths ...string) (res *PowerpipeConfig, errorsAnd
 		}
 
 		if len(diags) > 0 && lastErrorLength == len(diags) {
-			return nil, error_helpers.DiagsToErrorsAndWarnings("Failed to load Flowpipe config", diags)
+			return nil, error_helpers.DiagsToErrorsAndWarnings("Failed to load Powerpipe config", diags)
 		}
 
 		lastErrorLength = len(diags)
