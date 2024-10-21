@@ -3,6 +3,8 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -25,7 +27,6 @@ import (
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"log/slog"
 )
 
 type InitData[T modconfig.ModTreeItem] struct {
