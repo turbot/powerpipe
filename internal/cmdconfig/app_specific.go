@@ -80,6 +80,7 @@ func SetAppSpecificConstants() {
 
 func registerConnections() {
 	app_specific_connection.RegisterConnections(
+		connection.NewMysqlConnection,
 		connection.NewSteampipePgConnection,
 		connection.NewPostgresConnection,
 		connection.NewSqliteConnection,
