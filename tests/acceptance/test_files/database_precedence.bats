@@ -228,7 +228,7 @@ EOF
   cd $MODS_DIR/mod_with_db_in_require
 
   # run a powerpipe query to verify that the database specified through mod require block is used
-  run powerpipe query run query.sqlite_db_query --output csv
+  run powerpipe query run mod_with_db_var.query.sqlite_db_query --output csv
   echo $output
 
   # check output that the database specified through default value of mod require block is used
@@ -257,7 +257,7 @@ EOF
   cd $MODS_DIR/mod_with_db_in_require_var
 
   # run a powerpipe query to verify that the database specified through mod require block is used
-  run powerpipe query run query.sqlite_db_query --output csv
+  run powerpipe query run mod_with_db_var.query.sqlite_db_query --output csv
   echo $output
 
   # check output that the database specified through default value of mod require block is used
