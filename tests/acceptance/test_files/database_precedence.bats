@@ -159,7 +159,7 @@ EOF
   # write the duckdb connection with $MODS_DIR placeholder directly into the config file
   cat << EOF > $POWERPIPE_INSTALL_DIR/config/duckdb_conn.ppc
 connection "duckdb" "employees" {
-  connection_string = "$MODS_DIR/duckdb_mod/employee.duckdb"
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
 }
 EOF
 
