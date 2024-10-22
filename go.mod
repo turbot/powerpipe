@@ -2,7 +2,7 @@ module github.com/turbot/powerpipe
 
 go 1.22.4
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
+// replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
@@ -23,8 +23,8 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0 // indirect
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.5.4
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.10.4
+	github.com/turbot/pipe-fittings v1.6.2
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.0
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.14.4 // indirect
@@ -38,7 +38,6 @@ require github.com/sethvargo/go-retry v0.3.0 // indirect
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/didip/tollbooth/v7 v7.0.2
-	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/size v1.0.1
 	github.com/go-sql-driver/mysql v1.8.1
@@ -104,11 +103,12 @@ require (
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dgraph-io/ristretto v0.1.1 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
-	github.com/eko/gocache/lib/v4 v4.1.5 // indirect
+	github.com/eko/gocache/lib/v4 v4.1.6 // indirect
 	github.com/eko/gocache/store/bigcache/v4 v4.2.1 // indirect
 	github.com/eko/gocache/store/ristretto/v4 v4.2.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
+	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
