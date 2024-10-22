@@ -230,11 +230,11 @@ func validateConfig(activeWorkspace *workspace_profile.PowerpipeWorkspaceProfile
 
 	// database deprecation warnings
 	if _, dbEnvSet := os.LookupEnv(app_specific.EnvDatabase); dbEnvSet {
-		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated- use a variable if the mod supports it", app_specific.EnvDatabase))
+		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated, see https://powerpipe.io/docs/run#selecting-a-database for the new syntax", app_specific.EnvDatabase))
 	}
 	// check active workspace profile
 	if activeWorkspace != nil && activeWorkspace.Database != nil {
-		res.AddWarning(fmt.Sprintf("workspace property 'database' is deprecated - use a variable if the mod supports it (%s:%d-%d)", activeWorkspace.DeclRange.Filename, activeWorkspace.DeclRange.Start.Line, activeWorkspace.DeclRange.End.Line))
+		res.AddWarning(fmt.Sprintf("workspace property 'database' is deprecated, see https://powerpipe.io/docs/run#selecting-a-database for the new syntax. (%s:%d-%d)", activeWorkspace.DeclRange.Filename, activeWorkspace.DeclRange.Start.Line, activeWorkspace.DeclRange.End.Line))
 	}
 
 	res.Error = plugin.ValidateDiagnosticsEnvVar()
