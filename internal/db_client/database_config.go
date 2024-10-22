@@ -41,7 +41,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
 		}
 		// if the parent mod has a database set, use it
-		if modDb := resource.GetMod().ModDatabase; modDb != nil {
+		if modDb := resource.GetMod().Database; modDb != nil {
 			database = *modDb
 		}
 		if modSearchPath := resource.GetMod().SearchPath; len(modSearchPath) > 0 {

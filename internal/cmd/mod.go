@@ -102,7 +102,7 @@ Examples:
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
-		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable if the mod supports it")).
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("--variable database=<database> if the mod supports it (https://powerpipe.io/docs/run#selecting-a-database)")).
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
