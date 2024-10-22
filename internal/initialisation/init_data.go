@@ -74,8 +74,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	i.Result.Warnings = errAndWarnings.Warnings
 
 	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.ModDatabase != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.ModDatabase)
+	if !viper.IsSet(constants.ArgDatabase) && w.Mod.Database != nil {
+		viper.Set(constants.ArgDatabase, *w.Mod.Database)
 	}
 
 	// now do the actual initialisation
