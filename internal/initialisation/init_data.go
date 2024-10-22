@@ -3,6 +3,8 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -25,7 +27,6 @@ import (
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"log/slog"
 )
 
 type InitData[T modconfig.ModTreeItem] struct {
@@ -73,8 +74,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	i.Result.Warnings = errAndWarnings.Warnings
 
 	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.Database != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.Database)
+	if !viper.IsSet(constants.ArgDatabase) && w.Mod.ModDatabase != nil {
+		viper.Set(constants.ArgDatabase, *w.Mod.ModDatabase)
 	}
 
 	// now do the actual initialisation

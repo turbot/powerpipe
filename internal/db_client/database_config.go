@@ -15,6 +15,13 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	database := defaultDatabase
 	searchPathConfig := defaultSearchPathConfig
 
+	// if there is no default search path, check if the mod has a search path
+	// (it's database field may refer to a connection with a search path)
+	if searchPathConfig.Empty() {
+		searchPathConfig.SearchPath = workspaceMod.GetSearchPath()
+		searchPathConfig.SearchPathPrefix = workspaceMod.GetSearchPathPrefix()
+	}
+
 	// NOTE: if the resource is in a dependency mod, check whether database or search path has been specified for it
 	depName := resource.GetMod().DependencyName
 
@@ -33,11 +40,29 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 			searchPathConfig.SearchPath = modRequirement.SearchPath
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
 		}
+		// if the parent mod has a database set, use it
+		if modDb := resource.GetMod().ModDatabase; modDb != nil {
+			database = *modDb
+		}
+		if modSearchPath := resource.GetMod().SearchPath; len(modSearchPath) > 0 {
+			searchPathConfig.SearchPath = modSearchPath
+		}
+		if modSearchPathPrefix := resource.GetMod().SearchPathPrefix; len(modSearchPathPrefix) > 0 {
+			searchPathConfig.SearchPathPrefix = modSearchPathPrefix
+		}
+
 	}
 
 	// if the resource has a database set, use it
 	if resource.GetDatabase() != nil {
 		database = *resource.GetDatabase()
+	}
+	// if the resource has a search path set, use it
+	if resourceSearchPath := resource.GetSearchPath(); len(resourceSearchPath) > 0 {
+		searchPathConfig.SearchPath = resourceSearchPath
+	}
+	if resourceSearchPathPrefix := resource.GetSearchPathPrefix(); len(resourceSearchPathPrefix) > 0 {
+		searchPathConfig.SearchPathPrefix = resourceSearchPathPrefix
 	}
 
 	// if the database is a cloud workspace, resolve the connection string
@@ -75,10 +100,11 @@ func GetDefaultDatabaseConfig(opts ...backend.ConnectOption) (string, backend.Se
 
 	// if no database is set, use the default connection
 	if defaultDatabase == "" {
-		defaultDatabase = powerpipeconfig.GlobalConfig.DefaultConnection.GetConnectionString()
+		defaultConnection := powerpipeconfig.GlobalConfig.GetDefaultConnection()
+		defaultDatabase = defaultConnection.GetConnectionString()
 		// if no search path has been set, use the default connection
 		if defaultSearchPathConfig.Empty() {
-			if spp, ok := powerpipeconfig.GlobalConfig.DefaultConnection.(connection.SearchPathProvider); ok {
+			if spp, ok := defaultConnection.(connection.SearchPathProvider); ok {
 				defaultSearchPathConfig = backend.SearchPathConfig{
 					SearchPath:       spp.GetSearchPath(),
 					SearchPathPrefix: spp.GetSearchPathPrefix(),

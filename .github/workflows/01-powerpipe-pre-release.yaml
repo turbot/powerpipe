@@ -19,6 +19,7 @@ env:
   ASSET_IMAGE_NAME: assets
   POWERPIPE_UPDATE_CHECK: false
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+  SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
 
 jobs:
   goreleaser:
