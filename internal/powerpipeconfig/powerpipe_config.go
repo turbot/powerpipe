@@ -42,6 +42,10 @@ func (c *PowerpipeConfig) GetDefaultConnection() connection.ConnectionStringProv
 	return c.PipelingConnections[constants.DefaultConnection].(connection.ConnectionStringProvider)
 }
 
+func (c *PowerpipeConfig) SetDefaultConnection(defaultConnection connection.PipelingConnection) {
+	c.PipelingConnections[constants.DefaultConnection] = defaultConnection
+}
+
 func (c *PowerpipeConfig) Equals(other *PowerpipeConfig) bool {
 
 	if len(c.PipelingConnections) != len(other.PipelingConnections) {
@@ -74,8 +78,4 @@ func (c *PowerpipeConfig) SetCloudConnectionString(workspace, connStr string) {
 	defer c.cloudConnectionStringLock.Unlock()
 
 	c.cloudConnectionStrings[workspace] = connStr
-}
-
-func (c *PowerpipeConfig) SetDefaultConnection(defaultConnection pipe) {
-
 }
