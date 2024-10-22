@@ -1,3 +1,13 @@
+## v1.0.0 [2024-10-22]
+_Whats new_
+- `connection` resource to manage credentials. [Documentation](https://powerpipe.io/docs/reference/config-files/connection).
+- `database` property has been added to [mod](https://powerpipe.io/docs/powerpipe-hcl/mod). 
+
+_Deprecations_
+- Deprecated `database` CLI arg. See [Setting the Database](https://powerpipe.io/docs/run#selecting-a-database) for the new syntax to set the database.
+- Deprecated `POWERPIPE_DATABASE` env var. See [Setting the Database](https://powerpipe.io/docs/run#selecting-a-database) for the new syntax to set the database.
+- Deprecated `database` workspace profile arg. See [Setting the Database](https://powerpipe.io/docs/run#selecting-a-database) for the new syntax to set the database.
+
 ## v0.4.4 [2024-10-01]
 _Bug fixes_
 - Fixed the issue where the search path setting was not being retained while navigating to a different dashboard. ([#325](https://github.com/turbot/powerpipe/issues/325))
