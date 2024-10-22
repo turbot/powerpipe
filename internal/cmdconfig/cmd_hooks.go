@@ -174,7 +174,8 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 		if ew.GetError() != nil {
 			return ew
 		}
-		defaultConnection := connection.NewSteampipePgConnection(wp.ProfileName, hcl.Range{}).(*connection.SteampipePgConnection)
+		// create new default connection
+		defaultConnection := connection.NewSteampipePgConnection("default", hcl.Range{}).(*connection.SteampipePgConnection)
 		defaultConnection.ConnectionString = &pipesMetadata.ConnectionString
 		// TODO temp for now we must call validate to populate the defaults
 		_ = defaultConnection.Validate()

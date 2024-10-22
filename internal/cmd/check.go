@@ -57,7 +57,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	builder.
 		AddCloudFlags().
 		AddModLocationFlag().
-		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("use a variable if the mod supports it")).
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", cmdconfig.FlagOptions.Deprecated("--variable database=<database> if the mod supports it (https://powerpipe.io/docs/run#selecting-a-database)")).
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
