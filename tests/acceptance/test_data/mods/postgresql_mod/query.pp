@@ -40,6 +40,12 @@ query "salary" {
   EOQ
 }
 
+query "search_path" {
+  sql = <<-EOQ
+    SHOW search_path;
+  EOQ
+}
+
 // query "total_employee" {
 //   sql = <<-EOQ
 //     SELECT COUNT(*) AS "Total Employees", CONCAT(? , ' ', ? , ' ', ?) as "Params" FROM employee;

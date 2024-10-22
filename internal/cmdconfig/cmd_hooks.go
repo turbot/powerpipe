@@ -9,12 +9,14 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
@@ -168,11 +170,15 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 
 	// if the configured workspace is a cloud workspace, create cloud metadata and set the default connection
 	if wp != nil && wp.IsCloudWorkspace() {
-		defaultConnection, ew := wp.GetPipesMetadata()
+		pipesMetadata, ew := wp.GetPipesMetadata()
 		if ew.GetError() != nil {
 			return ew
 		}
-		config.DefaultConnection = defaultConnection
+		defaultConnection := connection.NewSteampipePgConnection(wp.ProfileName, hcl.Range{}).(*connection.SteampipePgConnection)
+		defaultConnection.ConnectionString = &pipesMetadata.ConnectionString
+		// TODO temp for now we must call validate to populate the defaults
+		_ = defaultConnection.Validate()
+		config.SetDefaultConnection(defaultConnection)
 	}
 
 	// now validate all config values have appropriate values

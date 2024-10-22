@@ -11,6 +11,7 @@ on:
 
 env:
   POWERPIPE_UPDATE_CHECK: false
+  SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
 
 jobs:
   goreleaser:
