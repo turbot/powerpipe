@@ -12,13 +12,15 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
-	cmdconfig "github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
 	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/utils"
+	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/display"
@@ -95,12 +97,12 @@ Examples:
 	}
 
 	// default update strategy to minimal for mod install
-	// (TODO we may overide this if there is a targetted mod)
+	// (TODO we may overide this if there is a targeted mod)
 	var updateStrategy = constants.ModUpdateIdMinimal
 
 	cmdconfig.OnCmd(cmd).
 		AddBoolFlag(constants.ArgDryRun, false, "Show which mods would be installed/updated/uninstalled without modifying them").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddBoolFlag(constants.ArgForce, false, "Install mods even if plugin/cli version requirements are not met (cannot be used with --dry-run)").
 		AddBoolFlag(constants.ArgHelp, false, "Help for install", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgPrune, true, "Remove unused dependencies after installation is complete").
@@ -122,6 +124,8 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 			// exitCode = constants.ExitCodeUnknownErrorPanic
 		}
 	}()
+
+	error_helpers.FailOnError(validateModArgs())
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
@@ -154,8 +158,18 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	fmt.Println(summary) //nolint:forbidigo // intended output
 }
 
-func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
-	defaultDatabase, _ := db_client.GetDefaultDatabaseConfig()
+func validateModArgs() error {
+	return localcmdconfig.ValidateDatabaseArg()
+}
+
+func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
+	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")
+		}
+		return nil
+	}
 
 	client, err := db_client.NewDbClient(ctx, defaultDatabase)
 	if err != nil {
@@ -171,7 +185,7 @@ func getPluginVersions(ctx context.Context) *modconfig.PluginVersionMap {
 		slog.Warn("database does not support Steampipe plugins so plugin requirements cannot be validated", "database", client.Backend.Name())
 		return nil
 	}
-	return modconfig.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
+	return plugin.NewPluginVersionMap(client.Backend.Name(), client.Backend.ConnectionString(), steampipeBackend.PluginVersions)
 }
 
 func modUninstallCmd() *cobra.Command {

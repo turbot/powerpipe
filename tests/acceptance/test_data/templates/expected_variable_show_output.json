@@ -19,7 +19,6 @@
     "resource_name": "sample_var_1",
     "source_definition": "variable \"sample_var_1\"{\n\ttype = string\n\tdefault = \"steampipe_var\"\n}",
     "start_line_number": 1,
-    "type": "string",
     "type_string": "string",
     "value": "steampipe_var",
     "value_default": "steampipe_var"

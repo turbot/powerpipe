@@ -11,6 +11,35 @@ query "total_employee" {
     default = "default_parameter_2"
   }
 }
+
+// query bigint
+query "total" {
+  sql = <<-EOQ
+    SELECT COUNT(*) as total FROM employees;
+  EOQ
+}
+
+// query string
+query "name" {
+  sql = <<-EOQ
+    SELECT name FROM employees;
+  EOQ
+}
+
+// query small int
+query "age" {
+  sql = <<-EOQ
+    SELECT age FROM employees;
+  EOQ
+}
+
+// query float
+query "salary" {
+  sql = <<-EOQ
+    SELECT salary FROM employees;
+  EOQ
+}
+
 // query "total_employee" {
 //   sql = <<-EOQ
 //     SELECT COUNT(*) AS "Total Employees", CONCAT(? , ' ', ? , ' ', ?) as "Params" FROM employee;

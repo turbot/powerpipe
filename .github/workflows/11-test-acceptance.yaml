@@ -11,6 +11,7 @@ on:
 
 env:
   POWERPIPE_UPDATE_CHECK: false
+  SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
 
 jobs:
   goreleaser:
@@ -28,6 +29,7 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+          ref: v1.6.x
 
        # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
@@ -84,6 +86,7 @@ jobs:
           - "params_and_args"
           - "snapshot"
           - "dashboard_parsing_validation"
+          - "database_precedence"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout

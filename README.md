@@ -1,50 +1,105 @@
-<a href="https://powerpipe.io?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
+<a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
 
-[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.steampipe.io/mods?objectives=dashboard?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) &nbsp;
-[![slack](https://img.shields.io/badge/slack-2297-blue)](https://turbot.com/community/join?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme) &nbsp;
-[![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com?utm_id=gspreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme)
+[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.powerpipe.io) &nbsp;
+[![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
+[![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com)
 
-Powerpipe is **dashboards and benchmarks as code**. Use it to visualize any data source, and run compliance benchmarks and controls, for effective decision-making and ongoing compliance monitoring.
+[Powerpipe](https://powerpipe.io) is **Dashboards for DevOps**. Use it to visualize any data source, and run compliance benchmarks and controls, for effective decision-making and ongoing compliance monitoring.
 
-**Benchmarks** - [5,000+ open-source controls](https://hub.powerpipe.io) from CIS, NIST, PCI, HIPAA, FedRamp and more. [Run instantly on your machine](https://powerpipe.io/docs#run-security-and-compliance-benchmarks) or as part of your deployment pipeline.
+**Dashboards and reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
 
-**Relationship Diagrams** - The only dashboarding tool designed from the ground up to [visualize DevOps data](https://powerpipe.io/docs#visualize-cloud-infrastructure). Explore your cloud, understand relationships, drill down to the details.
+**Benchmarks**. We offer [5,000+ open-source controls](https://hub.powerpipe.io) from CIS, NIST, PCI, HIPAA, FedRamp and more. [Run instantly on your machine](https://powerpipe.io/docs#run-security-and-compliance-benchmarks) or as part of your deployment pipeline.
 
-**Dashboards & Reports** - High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
+**Relationship diagrams**. The only dashboarding tool designed from the ground up to [visualize DevOps data](https://powerpipe.io/docs#visualize-cloud-infrastructure). Explore your cloud, understand relationships, drill down to the details.
 
-**Code, not clicks** - Our dashboards are [code](https://powerpipe.io/docs/powerpipe-hcl): version-controlled, composable, shareable, easy to edit — designed for the way you work. [Join](https://turbot.com/community/join) our open-source community!
+**Code, not clicks**. Our dashboards are [code](https://powerpipe.io/docs/build): version-controlled, composable, shareable, easy to edit — designed for the way you work. 
 
 ## Demo time!
 
 **[Watch on YouTube →](https://www.youtube.com/watch?v=-h6RSpvR0FE)**
 
-[![Powerpipe demo](https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png)](https://www.youtube.com/watch?v=-h6RSpvR0FE)
+<a href="https://www.youtube.com/watch?v=-h6RSpvR0FE"><img alt="powerpipe demo" width=500 src="https://powerpipe.io/images/powerpipe_hero_video_thumbnail.png"></a>
+
+## Documentation
+
+See the [documentation](https://powerpipe.io/docs) for:
+
+- [Viewing dashboards](https://powerpipe.io/docs/run/dashboard)
+- [Running benchmarks](https://powerpipe.io/docs/run/benchmark)
+- [CLI commands](https://powerpipe.io/docs/reference/cli)
+- [HCL reference](https://powerpipe.io/docs/powerpipe-hcl)
+- [Configuration](https://powerpipe.io/docs/reference/config-files)
+- [Building mods](https://powerpipe.io/docs/build)
+
 
 ## Install Powerpipe
 
-The <a href="https://powerpipe.io/downloads?utm_id=gfpreadme&utm_source=github&utm_medium=repo&utm_campaign=github&utm_content=readme">downloads</a> page shows you how, but tl;dr:
-
-Linux or WSL
+Install Powerpipe from the [downloads](https://powerpipe.io/downloads) page:
 
 ```sh
+# MacOS
+brew install turbot/tap/powerpipe
+```
+
+```sh
+# Linux or Windows (WSL2)
 sudo /bin/sh -c "$(curl -fsSL https://powerpipe.io/install/powerpipe.sh)"
 ```
 
-MacOS
+Now, [set up and visualize your first dashboard →](https://powerpipe.io/docs)
+
+## Powerpipe mods: dashboards and benchmarks
+
+Powerpipe [mods](https://hub.powerpipe.io) are sets of pre-built dashboards that visualize your resources and benchmarks that check your cloud resources for compliance. Ready to use mods are available for [AWS](https://hub.powerpipe.io/?q=aws), [Azure](https://hub.powerpipe.io/?q=azure), [GCP](https://hub.powerpipe.io/?q=gcp), [GitHub](https://hub.powerpipe.io/?q=github), [Kubernetes](https://hub.powerpipe.io/?q=kubernetes), [Terraform](https://hub.powerpipe.io/?q=terraform), [M365](https://hub.powerpipe.io/mods/turbot/microsoft365_compliance) and much more to cover common use cases for [security & compliance](https://hub.powerpipe.io/?objectives=compliance), [cost management](https://hub.powerpipe.io/?objectives=cost), [shift-left scanning](https://hub.powerpipe.io/?categories=iac), and [asset inventory and insights](https://hub.powerpipe.io/?objectives=dashboard).
+
+Many mods are written for Steampipe and its plugin ecosystem. But Powerpipe is database-agnostic, and we provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
+
+## Developing
+
+If you want to help develop the core Powerpipe binary, these are the steps to build it.
+
+<details>
+<summary>Clone</summary>
+
+Clone [github.com/powerpipe](https://github.com/turbot/powerpipe) and [github.com/turbot/pipe-fittings](https://github.com/turbot/pipe-fittings):
 
 ```sh
-brew tap turbot/tap
-brew install powerpipe
+git clone git@github.com:turbot/powerpipe
+git clone git@github.com:turbot/pipe-fittings
 ```
 
-## Dashboards for DevOps
+</details>
 
-See our documentation for examples of how to use Powerpipe to [visualize cloud infrastructure](https://powerpipe.io/docs#visualize-cloud-infrastructure) and [run security and compliance benchmarks](https://powerpipe.io/docs#run-security-and-compliance-benchmarks). These examples use [mods](https://hub.powerpipe.io/?engines=steampipe) written for Steampipe and its plugin ecosystem.
+<details>
+<summary>Build</summary>
 
-Note, though, that Powerpipe is database-agnostic. We also provide samples for dashboards that use other data sources via [Postgres, SQLite, DuckDB, and MySQL](https://hub.powerpipe.io/?engines=postgres,duckdb,sqlite,mysql).
+```sh
+cd powerpipe
+make
+```
 
+The Powerpipe binary lands in `/usr/local/bin` unless you specify an alternate `OUTPUT_DIR`.
 
-## Open source & contributing
+</details>
+
+<details>
+<summary>Check the install</summary>
+
+```sh
+powerpipe --version
+
+powerpipe --help
+```
+</details>
+
+If you're interested in developing [Powerpipe mods](https://hub.powerpipe.io), see our [documentation for mod developers](https://powerpipe.io/docs/build).
+
+## Turbot Pipes
+
+Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud.
+
+## Open source and contributing
+
 This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/agpl-3.0.html) license. Please see our [code of conduct](https://github.com/turbot/.github/blob/main/CODE_OF_CONDUCT.md). Contributors must sign our [Contributor License Agreement](https://turbot.com/open-source#cla) as part of their first pull request. We look forward to collaborating with you!
 
 [Powerpipe](https://powerpipe.io) is a product produced from this open source software, exclusively by [Turbot HQ, Inc](https://turbot.com). It is distributed under our commercial terms. Others are allowed to make their own distribution of the software, but cannot use any of the Turbot trademarks, cloud services, etc. You can learn more in our [Open Source FAQ](https://turbot.com/open-source).
@@ -52,7 +107,3 @@ This repository is published under the [AGPL 3.0](https://www.gnu.org/licenses/a
 ## Get involved
 
 **[Join #powerpipe on Slack →](https://turbot.com/community/join)**
-
-Want to help but don't know where to start? Pick up one of the `help wanted` issues:
-* [Powerpipe](https://github.com/turbot/powerpipe/issues?q=is%3Aopen+is%3Aissue+label%3A%22help+wanted%22)
-

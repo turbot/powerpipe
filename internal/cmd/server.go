@@ -8,7 +8,6 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -30,7 +29,7 @@ func serverCmd() *cobra.Command {
 		Args:  cobra.NoArgs,
 		Run:   runServerCmd,
 		Short: "Start Powerpipe dashboard server",
-		Long: `Run the Powerpipe server, including the dashbaord server and the API. 
+		Long: `Run the Powerpipe server, including the dashboard server and the API. 
 		
 Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 	}
@@ -42,9 +41,9 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddIntFlag(constants.ArgPort, dashboardserver.DashboardServerDefaultPort, "Web server port").
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
-		AddStringSliceFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
+		AddStringArrayFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDashboardTimeout, 0, "Set a the dashboard execution timeout")
 
 	return cmd
@@ -61,6 +60,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
+	error_helpers.FailOnError(validateServerArgs())
 	// retrieve server params
 	serverPort := dashboardserver.ListenPort(viper.GetInt(constants.ArgPort))
 	error_helpers.FailOnError(serverPort.IsValid())
@@ -106,4 +106,8 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	dashboardserver.OutputMessage(ctx, "Press Ctrl+C to exit")
 
 	<-ctx.Done()
+}
+
+func validateServerArgs() error {
+	return localcmdconfig.ValidateDatabaseArg()
 }

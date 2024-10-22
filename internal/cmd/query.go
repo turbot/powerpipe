@@ -13,7 +13,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -52,7 +51,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		// NOTE: use StringArrayFlag for ArgQueryInput, not StringSliceFlag
 		// Cobra will interpret values passed to a StringSliceFlag as CSV, where args passed to StringArrayFlag are not parsed and used raw
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, pps (snapshot), asff").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
@@ -145,7 +144,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:
 		// do nothing
-	case constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort:
+	case constants.OutputFormatSnapshot, constants.OutputFormatPowerpipeSnapshotShort:
 		// if the format is snapshot, just dump it out
 		jsonOutput, err := json.MarshalIndent(snap, "", "  ")
 		if err != nil {
@@ -197,7 +196,7 @@ func validateQueryArgs(ctx context.Context) error {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
 	}
 
-	return nil
+	return localcmdconfig.ValidateDatabaseArg()
 }
 
 func queryExporters() []export.Exporter {

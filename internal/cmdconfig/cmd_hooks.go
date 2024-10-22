@@ -9,21 +9,24 @@ import (
 	"strings"
 	"time"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/task"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/workspace_profile"
 	"github.com/turbot/powerpipe/internal/logger"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -115,12 +118,19 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
 	// load workspace profile from the configured install dir
-	loader, err := cmdconfig.GetWorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]()
+	loader, err := cmdconfig.GetWorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]()
 	if err != nil {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
+
+	var config, ew = powerpipeconfig.LoadPowerpipeConfig(filepaths.EnsureConfigDir())
+	if ew.GetError() != nil {
+		return ew
+	}
+
+	powerpipeconfig.GlobalConfig = config
 
 	// set-up viper with defaults from the env and default workspace profile
 
@@ -142,8 +152,9 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// if an explicit workspace profile was set, add to viper as highest precedence default
 	// NOTE: if install_dir/mod_location are set these will already have been passed to viper by BootstrapViper
 	// since the "ConfiguredProfile" is passed in through a cmdline flag, it will always take precedence
-	if loader.ConfiguredProfile != nil {
-		cmdconfig.SetDefaultsFromConfig(loader.ConfiguredProfile.ConfigMap(cmd))
+	wp := loader.ConfiguredProfile
+	if wp != nil {
+		cmdconfig.SetDefaultsFromConfig(wp.ConfigMap(cmd))
 	}
 
 	// now env vars have been processed, set filepaths.PipesInstallDir
@@ -157,11 +168,25 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 		return error_helpers.NewErrorsAndWarning(err)
 	}
 
+	// if the configured workspace is a cloud workspace, create cloud metadata and set the default connection
+	if wp != nil && wp.IsCloudWorkspace() {
+		pipesMetadata, ew := wp.GetPipesMetadata()
+		if ew.GetError() != nil {
+			return ew
+		}
+		// create new default connection
+		defaultConnection := connection.NewSteampipePgConnection("default", hcl.Range{}).(*connection.SteampipePgConnection)
+		defaultConnection.ConnectionString = &pipesMetadata.ConnectionString
+		// TODO temp for now we must call validate to populate the defaults
+		_ = defaultConnection.Validate()
+		config.SetDefaultConnection(defaultConnection)
+	}
+
 	// now validate all config values have appropriate values
-	return validateConfig()
+	return validateConfig(loader.GetActiveWorkspaceProfile())
 }
 
-func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modconfig.PowerpipeWorkspaceProfile]) error {
+func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]) error {
 	/*
 	   saved cloud token
 	   pipes_token in default workspace
@@ -170,7 +195,7 @@ func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modcon
 	*/
 	// set viper defaults in order of increasing precedence
 	// 1) saved cloud token
-	savedToken, err := cloud.LoadToken()
+	savedToken, err := pipes.LoadToken()
 	if err != nil {
 		return err
 	}
@@ -191,9 +216,8 @@ func setPipesTokenDefault(loader *steampipeconfig.WorkspaceProfileLoader[*modcon
 	return nil
 }
 
-// now validate  config values have appropriate values
-// (currently validates telemetry)
-func validateConfig() error_helpers.ErrorAndWarnings {
+// now validate config values have appropriate values
+func validateConfig(activeWorkspace *workspace_profile.PowerpipeWorkspaceProfile) error_helpers.ErrorAndWarnings {
 	var res = error_helpers.ErrorAndWarnings{}
 	telemetry := viper.GetString(constants.ArgTelemetry)
 	if !helpers.StringSliceContains(constants.TelemetryLevels, telemetry) {
@@ -203,6 +227,16 @@ func validateConfig() error_helpers.ErrorAndWarnings {
 	if _, legacyDiagnosticsSet := os.LookupEnv(plugin.EnvLegacyDiagnosticsLevel); legacyDiagnosticsSet {
 		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated - use %s", plugin.EnvLegacyDiagnosticsLevel, plugin.EnvDiagnosticsLevel))
 	}
+
+	// database deprecation warnings
+	if _, dbEnvSet := os.LookupEnv(app_specific.EnvDatabase); dbEnvSet {
+		res.AddWarning(fmt.Sprintf("Environment variable %s is deprecated, see https://powerpipe.io/docs/run#selecting-a-database for the new syntax", app_specific.EnvDatabase))
+	}
+	// check active workspace profile
+	if activeWorkspace != nil && activeWorkspace.Database != nil {
+		res.AddWarning(fmt.Sprintf("workspace property 'database' is deprecated, see https://powerpipe.io/docs/run#selecting-a-database for the new syntax. (%s:%d-%d)", activeWorkspace.DeclRange.Filename, activeWorkspace.DeclRange.Start.Line, activeWorkspace.DeclRange.End.Line))
+	}
+
 	res.Error = plugin.ValidateDiagnosticsEnvVar()
 
 	return res

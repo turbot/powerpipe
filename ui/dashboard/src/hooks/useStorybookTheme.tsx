@@ -1,10 +1,4 @@
-import React, { createContext, useContext, useState } from "react";
-import addons, { mockChannel } from "@storybook/addons";
-import { useDarkMode } from "storybook-dark-mode";
-
-if (!addons.hasChannel()) {
-  addons.setChannel(mockChannel());
-}
+import React, { createContext, useContext, useEffect, useState } from "react";
 
 export type Theme = {
   name: string;
@@ -42,13 +36,40 @@ type IThemeContext = {
 const ThemeContext = createContext<IThemeContext | undefined>(undefined);
 
 const ThemeProvider = ({ children }) => {
+  const getTheme = () => {
+    try {
+      const rawStorybookTheme =
+        window.localStorage.getItem("sb-addon-themes-3");
+      if (!rawStorybookTheme) {
+        return;
+      }
+      const parsed = JSON.parse(rawStorybookTheme);
+      return parsed?.current || "light";
+    } catch {
+      return "light";
+    }
+  };
+
+  const [storybookTheme, setStorybookTheme] = useState(getTheme());
   const [withFooterPadding, setWithFooterPadding] = useState(true);
   const [wrapperRef, setWrapperRef] = useState(null);
   const doSetWrapperRef = (element) => setWrapperRef(() => element);
 
-  let theme;
+  let theme: Theme;
 
-  if (useDarkMode()) {
+  useEffect(() => {
+    const onStorageChange = () => {
+      setStorybookTheme(() => getTheme());
+    };
+
+    window.addEventListener("storage", onStorageChange);
+
+    return () => {
+      window.removeEventListener("storage", onStorageChange);
+    };
+  }, []);
+
+  if (storybookTheme === "dark") {
     theme = Themes[ThemeNames.STEAMPIPE_DARK];
   } else {
     theme = Themes[ThemeNames.STEAMPIPE_DEFAULT];

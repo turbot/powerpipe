@@ -1,5 +1,6 @@
 import ErrorPanel from "@powerpipe/components/dashboards/Error";
 import has from "lodash/has";
+import isEmpty from "lodash/isEmpty";
 import merge from "lodash/merge";
 import Placeholder from "@powerpipe/components/dashboards/Placeholder";
 import React, { useEffect, useRef, useState } from "react";
@@ -39,6 +40,9 @@ const getThemeColorsWithPointOverrides = (
   dataset: any[][],
   themeColorValues,
 ) => {
+  if (isEmpty(themeColorValues)) {
+    return [];
+  }
   switch (type) {
     case "donut":
     case "pie": {
@@ -746,6 +750,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
 
 type ChartComponentProps = {
   options: EChartsOption;
+  searchPathPrefix: string[];
   type: ChartType | FlowType | GraphType | HierarchyType;
 };
 
@@ -779,9 +784,8 @@ const handleClick = async (
   }
 };
 
-const Chart = ({ options, type }: ChartComponentProps) => {
+const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
   const [echarts, setEcharts] = useState<any | null>(null);
-  const { searchPathPrefix } = useDashboard();
   const navigate = useNavigate();
   const chartRef = useRef<ReactEChartsCore>(null);
   const [imageUrl, setImageUrl] = useState<string | null>(null);
@@ -848,6 +852,7 @@ const Chart = ({ options, type }: ChartComponentProps) => {
 
 const ChartWrapper = (props: ChartProps) => {
   const {
+    searchPathPrefix,
     themeContext: { wrapperRef },
   } = useDashboard();
   const themeColors = useChartThemeColors();
@@ -863,6 +868,7 @@ const ChartWrapper = (props: ChartProps) => {
   return (
     <Chart
       options={buildChartOptions(props, themeColors)}
+      searchPathPrefix={searchPathPrefix}
       type={props.display_type || "column"}
     />
   );

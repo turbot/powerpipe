@@ -12,14 +12,13 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/cloud"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -55,7 +54,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddModLocationFlag().
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a dashboard argument").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: pps (snapshot)").
-		AddStringFlag(constants.ArgDatabase, app_specific.DefaultDatabase, "Turbot Pipes workspace database").
+		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddBoolFlag(constants.ArgHelp, false, "Help for dashboard", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
@@ -185,12 +184,12 @@ func validateDashboardArgs(ctx context.Context) error {
 		return fmt.Errorf("only one of --share or --snapshot may be set")
 	}
 
-	return nil
+	return localcmdconfig.ValidateDatabaseArg()
 }
 
 func displaySnapshot(snapshot *steampipeconfig.SteampipeSnapshot) {
 	switch viper.GetString(constants.ArgOutput) {
-	case constants.OutputFormatSnapshot, constants.OutputFormatSnapshotShort:
+	case constants.OutputFormatSnapshot, constants.OutputFormatPowerpipeSnapshotShort:
 		// just display result
 		snapshotText, err := json.MarshalIndent(snapshot, "", "  ")
 		error_helpers.FailOnError(err)
@@ -211,7 +210,7 @@ func publishSnapshotIfNeeded(ctx context.Context, snapshot *steampipeconfig.Stea
 		return nil
 	}
 
-	message, err := cloud.PublishSnapshot(ctx, snapshot, shouldShare)
+	message, err := pipes.PublishSnapshot(ctx, snapshot, shouldShare)
 	if err != nil {
 		// reword "402 Payment Required" error
 		return handlePublishSnapshotError(err)

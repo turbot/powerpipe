@@ -2,9 +2,8 @@ package cmdconfig
 
 import (
 	"fmt"
-	"strings"
-
 	"golang.org/x/exp/maps"
+	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"

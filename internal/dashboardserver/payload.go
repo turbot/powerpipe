@@ -21,7 +21,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, cloudMetadata *steampipeconfig.CloudMetadata) ([]byte, error) {
+func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -60,7 +60,10 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 		},
 	}
 
-	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
 	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
@@ -76,14 +79,17 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, clou
 	}
 	// if telemetry is enabled, send cloud metadata
 	if payload.Metadata.Telemetry != constants.TelemetryNone {
-		payload.Metadata.Cloud = cloudMetadata
+		payload.Metadata.Cloud = pipesMetadata
 	}
 
 	return json.Marshal(payload)
 }
 
 func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *dashboardworkspace.WorkspaceEvents) ([]byte, error) {
-	defaultDatabase, defaultSearchPathConfig := db_client.GetDefaultDatabaseConfig()
+	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, w.Mod, defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err

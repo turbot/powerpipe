@@ -3,6 +3,8 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"log/slog"
+
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -13,6 +15,7 @@ import (
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modinstaller"
+	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
@@ -21,9 +24,9 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
-	"log/slog"
 )
 
 type InitData[T modconfig.ModTreeItem] struct {
@@ -48,7 +51,13 @@ func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
 func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation)
+	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
+		modLocation,
+		// pass connections
+		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+		// disable late binding
+		workspace.WithLateBinding(false),
+	)
 	if errAndWarnings.GetError() != nil {
 		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
@@ -63,6 +72,11 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 
 	i.Workspace = w
 	i.Result.Warnings = errAndWarnings.Warnings
+
+	// if the database is NOT set in viper, and the mod has a connection string, set it
+	if !viper.IsSet(constants.ArgDatabase) && w.Mod.Database != nil {
+		viper.Set(constants.ArgDatabase, *w.Mod.Database)
+	}
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
@@ -145,19 +159,15 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 		}
 	}
 
-	// retrieve cloud metadata
-	cloudMetadata, err := getCloudMetadata(ctx)
+	// determine whether
+
+	// create default client
+	// set the database and search patch config
+	database, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
-
-	// set cloud metadata (may be nil)
-	i.Workspace.CloudMetadata = cloudMetadata
-
-	// create default client
-	// set the dashboard database and search patch config
-	database, searchPathConfig := db_client.GetDefaultDatabaseConfig()
 
 	// create client
 	var opts []backend.ConnectOption
@@ -195,7 +205,7 @@ func (i *InitData[T]) resolveTargets(args []string) {
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
-	var pluginVersionMap = &modconfig.PluginVersionMap{
+	var pluginVersionMap = &plugin.PluginVersionMap{
 		Database: client.Backend.ConnectionString(),
 		Backend:  client.Backend.Name(),
 	}

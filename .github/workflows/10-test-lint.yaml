@@ -24,6 +24,7 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+          ref: v1.6.x
 
       # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
@@ -34,6 +35,6 @@ jobs:
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v6
         with:
-          version: v1.54.1
+          version: v1.61.0
           args: --timeout=10m
           working-directory: powerpipe

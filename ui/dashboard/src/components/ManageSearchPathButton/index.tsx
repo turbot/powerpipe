@@ -1,3 +1,4 @@
+import Badge from "@powerpipe/components/Badge";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import SearchPathConfig from "../dashboards/SearchPathConfig";
@@ -8,7 +9,6 @@ import {
 import { forwardRef, Fragment, useMemo } from "react";
 import { Popover, Transition } from "@headlessui/react";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import Badge from "@powerpipe/components/Badge";
 
 const PopoverButton = forwardRef((props, ref) => {
   const {
