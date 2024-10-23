@@ -2,8 +2,8 @@ package dashboardtypes
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 )
 
@@ -22,5 +22,5 @@ type DashboardTreeRun interface {
 	GetInputsDependingOn(string) []string
 	GetNodeType() string
 	AsTreeNode() *steampipeconfig.SnapshotTreeNode
-	GetResource() modconfig.DashboardLeafNode
+	GetResource() dashboard.DashboardLeafNode
 }

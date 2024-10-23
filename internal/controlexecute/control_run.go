@@ -3,6 +3,7 @@ package controlexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"log/slog"
 	"sync"
 	"time"
@@ -10,7 +11,6 @@ import (
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -43,7 +43,7 @@ type ControlRun struct {
 	NodeType string `json:"panel_type"`
 
 	// the control being run
-	Control *modconfig.Control `json:"-"`
+	Control *dashboard.Control `json:"-"`
 	// this is populated by retrieving Control properties with the snapshot tag
 	Properties map[string]any `json:"properties,omitempty"`
 
@@ -105,7 +105,7 @@ func NewControlRunInstance(cr *ControlRun, parent *ResultGroup) ControlRunInstan
 	return res //nolint:govet // we want the struct
 }
 
-func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
+func NewControlRun(control *dashboard.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
 	controlId := control.Name()
 
 	// only show qualified control names for controls from dependent mods
@@ -327,7 +327,7 @@ func (r *ControlRun) getControlQueryContext(ctx context.Context) context.Context
 	return newCtx
 }
 
-func (r *ControlRun) resolveControlQuery(control *modconfig.Control) (*modconfig.ResolvedQuery, error) {
+func (r *ControlRun) resolveControlQuery(control *dashboard.Control) (*dashboard.ResolvedQuery, error) {
 	resolvedQuery, err := r.Tree.Workspace.ResolveQueryFromQueryProvider(control, nil)
 	if err != nil {
 		return nil, fmt.Errorf(`cannot run %s - failed to resolve query "%s": %s`, control.Name(), typehelpers.SafeString(control.SQL), err.Error())

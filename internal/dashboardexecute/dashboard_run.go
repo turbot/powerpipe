@@ -3,6 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -136,8 +137,8 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 			if err != nil {
 				return err
 			}
-		case *modconfig.Benchmark, *modconfig.Control:
-			childRun, err = NewCheckRun(i.(modconfig.DashboardLeafNode), r, executionTree)
+		case *dashboard.Benchmark, *dashboard.Control:
+			childRun, err = NewCheckRun(i.(dashboard.DashboardLeafNode), r, executionTree)
 			if err != nil {
 				return err
 			}
@@ -157,7 +158,7 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 
 		default:
 			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(modconfig.DashboardLeafNode)
+			leafNode, ok := i.(dashboard.DashboardLeafNode)
 			if !ok {
 				return fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
 			}

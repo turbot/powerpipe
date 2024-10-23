@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"os"
 	"strings"
 	"time"
@@ -105,7 +106,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData[*modconfig.Query](ctx, cmd, args...)
+	initData := initialisation.NewInitData[*dashboard.Query](ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)

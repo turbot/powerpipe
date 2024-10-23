@@ -2,6 +2,7 @@ package dashboardevents
 
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 )
 
 type DashboardChanged struct {
@@ -24,8 +25,8 @@ type DashboardChanged struct {
 
 	NewDashboards  []*modconfig.Dashboard
 	NewContainers  []*modconfig.DashboardContainer
-	NewControls    []*modconfig.Control
-	NewBenchmarks  []*modconfig.Benchmark
+	NewControls    []*dashboard.Control
+	NewBenchmarks  []*dashboard.Benchmark
 	NewCards       []*modconfig.DashboardCard
 	NewCategories  []*modconfig.DashboardCategory
 	NewCharts      []*modconfig.DashboardChart
@@ -41,8 +42,8 @@ type DashboardChanged struct {
 
 	DeletedDashboards  []*modconfig.Dashboard
 	DeletedContainers  []*modconfig.DashboardContainer
-	DeletedControls    []*modconfig.Control
-	DeletedBenchmarks  []*modconfig.Benchmark
+	DeletedControls    []*dashboard.Control
+	DeletedBenchmarks  []*dashboard.Benchmark
 	DeletedCards       []*modconfig.DashboardCard
 	DeletedCategories  []*modconfig.DashboardCategory
 	DeletedCharts      []*modconfig.DashboardChart
@@ -346,11 +347,11 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedContainers, item) {
 			c.ChangedContainers = append(c.ChangedContainers, diff)
 		}
-	case *modconfig.Control:
+	case *dashboard.Control:
 		if !c.diffsContain(c.ChangedControls, item) {
 			c.ChangedControls = append(c.ChangedControls, diff)
 		}
-	case *modconfig.Benchmark:
+	case *dashboard.Benchmark:
 		if !c.diffsContain(c.ChangedBenchmarks, item) {
 			c.ChangedBenchmarks = append(c.ChangedBenchmarks, diff)
 		}

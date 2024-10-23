@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
@@ -56,7 +57,7 @@ func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) work
 	var res = workspace.ResourceFilter{}
 
 	var empty T
-	if _, ok := any(empty).(*modconfig.Benchmark); ok {
+	if _, ok := any(empty).(*dashboard.Benchmark); ok {
 
 		// if T is benchmark, and if output is pretty or plain, only show top level benchmarks
 		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {

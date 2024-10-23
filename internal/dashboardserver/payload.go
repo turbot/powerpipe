@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
 	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
@@ -133,11 +134,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *dashboard.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *modconfig.Benchmark:
+		case *dashboard.Benchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName

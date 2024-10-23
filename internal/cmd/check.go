@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"io"
 	"os"
 	"strings"
@@ -16,7 +17,6 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -35,7 +35,7 @@ var checkOutputMode = localconstants.CheckOutputModeText
 
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := dashboard.GenericTypeToBlockType[T]()
 	argsSupported := cobra.ExactArgs(1)
 	if typeName == "benchmark" {
 		argsSupported = cobra.MinimumNArgs(1)

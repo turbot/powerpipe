@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/cobra"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -17,7 +18,7 @@ import (
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*modconfig.Benchmark | *modconfig.Control
+	*dashboard.Benchmark | *dashboard.Control
 }
 
 type InitData[T CheckTarget] struct {

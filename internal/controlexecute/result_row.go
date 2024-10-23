@@ -2,12 +2,12 @@ package controlexecute
 
 import (
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
 	"github.com/turbot/go-kit/helpers"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
@@ -55,7 +55,7 @@ type ResultRow struct {
 	// parent control run
 	Run *ControlRun `json:"-"`
 	// source control
-	Control *modconfig.Control `json:"-" csv:"control_id:UnqualifiedName,control_title:Title,control_description:Description"`
+	Control *dashboard.Control `json:"-" csv:"control_id:UnqualifiedName,control_title:Title,control_description:Description"`
 }
 
 // GetDimensionValue returns the value for a dimension key. Returns an empty string with 'false' if not found

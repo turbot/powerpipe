@@ -3,6 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"log/slog"
 	"sync"
 
@@ -29,7 +30,7 @@ type RuntimeDependencySubscriberImpl struct {
 	RuntimeDependencyNames []string `json:"dependencies,omitempty"`
 }
 
-func NewRuntimeDependencySubscriber(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) *RuntimeDependencySubscriberImpl {
+func NewRuntimeDependencySubscriber(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) *RuntimeDependencySubscriberImpl {
 	b := &RuntimeDependencySubscriberImpl{
 		runtimeDependencies: make(map[string]*dashboardtypes.ResolvedRuntimeDependency),
 	}
@@ -48,7 +49,7 @@ func (s *RuntimeDependencySubscriberImpl) GetBaseDependencySubscriber() RuntimeD
 
 // if the resource is a runtime dependency provider, create with runs and resolve dependencies
 func (s *RuntimeDependencySubscriberImpl) initRuntimeDependencies(executionTree *DashboardExecutionTree) error {
-	if _, ok := s.resource.(modconfig.RuntimeDependencyProvider); !ok {
+	if _, ok := s.resource.(dashboard.RuntimeDependencyProvider); !ok {
 		return nil
 	}
 
@@ -68,11 +69,11 @@ func (s *RuntimeDependencySubscriberImpl) initRuntimeDependencies(executionTree 
 
 func (s *RuntimeDependencySubscriberImpl) initBaseRuntimeDependencySubscriber(executionTree *DashboardExecutionTree) error {
 	if base := s.resource.(modconfig.HclResource).GetBase(); base != nil {
-		if _, ok := base.(modconfig.RuntimeDependencyProvider); ok {
+		if _, ok := base.(dashboard.RuntimeDependencyProvider); ok {
 			// create base dependency subscriber
 			// pass ourselves as 'run'
 			// - this is only used when sending update events, which will not happen for the baseDependencySubscriber
-			s.baseDependencySubscriber = NewRuntimeDependencySubscriber(base.(modconfig.DashboardLeafNode), nil, s, executionTree)
+			s.baseDependencySubscriber = NewRuntimeDependencySubscriber(base.(dashboard.DashboardLeafNode), nil, s, executionTree)
 			err := s.baseDependencySubscriber.initRuntimeDependencies(executionTree)
 			if err != nil {
 				return err
@@ -87,7 +88,7 @@ func (s *RuntimeDependencySubscriberImpl) initBaseRuntimeDependencySubscriber(ex
 // if this node has runtime dependencies, find the publisher of the dependency and create a dashboardtypes.ResolvedRuntimeDependency
 // which  we use to resolve the values
 func (s *RuntimeDependencySubscriberImpl) resolveRuntimeDependencies() error {
-	rdp, ok := s.resource.(modconfig.RuntimeDependencyProvider)
+	rdp, ok := s.resource.(dashboard.RuntimeDependencyProvider)
 	if !ok {
 		return nil
 	}
@@ -136,7 +137,7 @@ func (s *RuntimeDependencySubscriberImpl) resolveRuntimeDependencies() error {
 	return nil
 }
 
-func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyPublisher(runtimeDependency *modconfig.RuntimeDependency) RuntimeDependencyPublisher {
+func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyPublisher(runtimeDependency *dashboard.RuntimeDependency) RuntimeDependencyPublisher {
 	// the runtime dependency publisher is either the root dashboard run,
 	// or if this resource (or in case of a node/edge, the resource parent) has a base,
 	// the baseDependencySubscriber for that base
@@ -312,7 +313,7 @@ func (s *RuntimeDependencySubscriberImpl) findRuntimeDependencyForParentProperty
 // resolve the sql for this leaf run into the source sql and resolved args
 func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 	slog.Debug("resolveSQLAndArgs", "name", s.resource.Name())
-	queryProvider, ok := s.resource.(modconfig.QueryProvider)
+	queryProvider, ok := s.resource.(dashboard.QueryProvider)
 	if !ok {
 		// not a query provider - nothing to do
 		return nil
@@ -348,12 +349,12 @@ func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 		// otherwise just resolve the args
 
 		// merge the base args with the runtime args
-		runtimeArgs, err = modconfig.MergeArgs(queryProvider, runtimeArgs)
+		runtimeArgs, err = dashboard.MergeArgs(queryProvider, runtimeArgs)
 		if err != nil {
 			return err
 		}
 
-		args, err := modconfig.ResolveArgs(queryProvider, runtimeArgs)
+		args, err := dashboard.ResolveArgs(queryProvider, runtimeArgs)
 		if err != nil {
 			return err
 		}
@@ -362,7 +363,7 @@ func (s *RuntimeDependencySubscriberImpl) resolveSQLAndArgs() error {
 	return nil
 }
 
-func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider modconfig.QueryProvider) error {
+func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider dashboard.QueryProvider) error {
 	paramDefs := provider.GetParams()
 	for _, paramDef := range paramDefs {
 		if dep := s.findRuntimeDependencyForParentProperty(paramDef.UnqualifiedName); dep != nil {
@@ -379,8 +380,8 @@ func (s *RuntimeDependencySubscriberImpl) populateParamDefaults(provider modconf
 }
 
 // convert runtime dependencies into arg map
-func (s *RuntimeDependencySubscriberImpl) buildRuntimeDependencyArgs() (*modconfig.QueryArgs, error) {
-	res := modconfig.NewQueryArgs()
+func (s *RuntimeDependencySubscriberImpl) buildRuntimeDependencyArgs() (*dashboard.QueryArgs, error) {
+	res := dashboard.NewQueryArgs()
 
 	slog.Debug("buildRuntimeDependencyArgs - %d runtime dependencies", s.resource.Name(), len(s.runtimeDependencies))
 

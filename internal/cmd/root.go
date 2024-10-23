@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"os"
 
 	"github.com/mattn/go-isatty"
@@ -53,10 +54,10 @@ func rootCommand() *cobra.Command {
 		serverCmd(),
 		modCmd(),
 		loginCmd(),
-		resourceCmd[*modconfig.Benchmark](),
-		resourceCmd[*modconfig.Control](),
+		resourceCmd[*dashboard.Benchmark](),
+		resourceCmd[*dashboard.Control](),
 		resourceCmd[*modconfig.Dashboard](),
-		resourceCmd[*modconfig.Query](),
+		resourceCmd[*dashboard.Query](),
 		resourceCmd[*modconfig.Variable](),
 	)
 

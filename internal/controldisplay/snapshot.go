@@ -3,8 +3,8 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -14,7 +14,7 @@ import (
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
-	var dashboardNode modconfig.DashboardLeafNode
+	var dashboardNode dashboard.DashboardLeafNode
 	var panels map[string]steampipeconfig.SnapshotPanel
 	var checkRun *dashboardexecute.CheckRun
 
@@ -22,7 +22,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	switch root := e.Root.Children[0].(type) {
 	case *controlexecute.ResultGroup:
 		var ok bool
-		dashboardNode, ok = root.GroupItem.(modconfig.DashboardLeafNode)
+		dashboardNode, ok = root.GroupItem.(dashboard.DashboardLeafNode)
 		if !ok {
 			return nil, fmt.Errorf("invalid node found in control execution tree - cannot cast '%s' to a DashboardLeafNode", root.GroupItem.Name())
 		}

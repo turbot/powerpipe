@@ -2,10 +2,10 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
@@ -29,14 +29,14 @@ type DashboardTreeRunImpl struct {
 	err           error
 	parent        dashboardtypes.DashboardParent
 	executionTree *DashboardExecutionTree
-	resource      modconfig.DashboardLeafNode
+	resource      dashboard.DashboardLeafNode
 
 	// store the top level run which embeds this struct
 	// we need this for setStatus which serialises the run for the message payload
 	run dashboardtypes.DashboardTreeRun
 }
 
-func NewDashboardTreeRunImpl(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) DashboardTreeRunImpl {
+func NewDashboardTreeRunImpl(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) DashboardTreeRunImpl {
 	// NOTE: we MUST declare children inline - therefore we cannot share children between runs in the tree
 	// (if we supported the children property then we could reuse resources)
 	// so FOR NOW it is safe to use the container name directly as the run name
@@ -127,7 +127,7 @@ func (r *DashboardTreeRunImpl) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 }
 
 // GetResource implements DashboardTreeRun
-func (r *DashboardTreeRunImpl) GetResource() modconfig.DashboardLeafNode {
+func (r *DashboardTreeRunImpl) GetResource() dashboard.DashboardLeafNode {
 	return r.resource
 }
 

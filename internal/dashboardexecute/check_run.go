@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/dashboard"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -32,7 +33,7 @@ func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return r.Root.AsTreeNode()
 }
 
-func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
+func NewCheckRun(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
 	r := &CheckRun{SessionId: executionTree.sessionId}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
