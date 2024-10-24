@@ -425,3 +425,83 @@ EOF
   # check output that the database specified in resource is used
   assert_output --partial "Total Employees"
 }
+
+# database specified in mod through connection ref, search_path_prefix specified in connection
+# so the search_path_prefix specified in connection gets the highest precedence
+@test "database specified in mod through connection ref, search_path_prefix specified in connection" {
+  # add the steampipe connection with search_path_prefix defined
+  # write the steampipe connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/with_search_path_prefix.ppc
+connection "steampipe" "with_search_path_prefix" {
+  host     = "localhost"
+  port     = 9193
+  db       = "steampipe"
+  username = "steampipe"
+  search_path_prefix = ["foo"]
+}
+EOF
+
+  # checkout the mod with database(connection ref) specified in mod.pp, connection has search_path_prefix defined
+  cd $MODS_DIR/mod_with_db_steampipe_search_path
+
+  # run a powerpipe query to verify that the search_path specified in mod is used
+  run powerpipe query run query.search_path --output csv
+  echo $output
+
+  # check output that the search_path specified in mod is used
+  assert_output --partial "foo"
+}
+
+# database specified in mod through connection ref, search_path_prefix specified in connection
+# database specified by --var in runtime
+# so the search_path_prefix specified in --var gets the highest precedence
+@test "database specified in mod through connection ref, search_path_prefix specified in connection, database specified by --var in runtime" {
+  # add the steampipe connection with search_path_prefix defined
+  # write the steampipe connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/with_search_path_prefix_bar.ppc
+connection "steampipe" "with_search_path_prefix_bar" {
+  host     = "localhost"
+  port     = 9193
+  db       = "steampipe"
+  username = "steampipe"
+  search_path_prefix = ["bar"]
+}
+EOF
+
+  # checkout the mod with database(connection ref) specified in mod.pp, connection has search_path_prefix defined
+  cd $MODS_DIR/mod_with_db_steampipe_search_path
+
+  # run a powerpipe query to verify that the search_path specified in --var is used
+  run powerpipe query run query.search_path --output csv --var database=connection.steampipe.with_search_path_prefix_bar
+  echo $output
+
+  # check output that the search_path specified in mod is used
+  assert_output --partial "bar"
+}
+
+# database specified in mod through connection ref, search_path_prefix specified in connection
+# database specified in query resource
+# so the database/connection specified in resource gets the highest precedence
+@test "database specified in mod through connection ref, search_path_prefix specified in connection, database specified in query resource" {
+  # add the steampipe connection with search_path_prefix defined
+  # write the steampipe connection with $MODS_DIR placeholder directly into the config file
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/with_search_path_prefix_bar.ppc
+connection "steampipe" "with_search_path_prefix_bar" {
+  host     = "localhost"
+  port     = 9193
+  db       = "steampipe"
+  username = "steampipe"
+  search_path_prefix = ["bar"]
+}
+EOF
+
+  # checkout the mod with database(connection ref) specified in mod.pp, connection has search_path_prefix defined
+  cd $MODS_DIR/mod_with_resource_db_steampipe_search_path
+
+  # run a powerpipe query to verify that the search_path/database specified in query is used
+  run powerpipe query run query.search_path --output csv
+  echo $output
+
+  # check output that the search_path specified in query is used
+  assert_output --partial "bar"
+}
