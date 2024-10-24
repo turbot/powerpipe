@@ -497,7 +497,7 @@ func (s *Server) getResource(name string) modconfig.ModTreeItem {
 	return resource.(modconfig.ModTreeItem)
 }
 
-func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.DashboardTreeItemDiffs) []string {
+func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.ModTreeItemDiffs) []string {
 	var changedDashboardNames []string
 
 	for _, changedItem := range changedItems {

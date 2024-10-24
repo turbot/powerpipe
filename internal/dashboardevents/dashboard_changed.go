@@ -6,56 +6,56 @@ import (
 )
 
 type DashboardChanged struct {
-	ChangedDashboards  []*powerpipe.DashboardTreeItemDiffs
-	ChangedContainers  []*modconfig.DashboardTreeItemDiffs
-	ChangedControls    []*modconfig.DashboardTreeItemDiffs
-	ChangedBenchmarks  []*modconfig.DashboardTreeItemDiffs
-	ChangedCategories  []*modconfig.DashboardTreeItemDiffs
-	ChangedCards       []*modconfig.DashboardTreeItemDiffs
-	ChangedCharts      []*modconfig.DashboardTreeItemDiffs
-	ChangedFlows       []*modconfig.DashboardTreeItemDiffs
-	ChangedGraphs      []*modconfig.DashboardTreeItemDiffs
-	ChangedHierarchies []*modconfig.DashboardTreeItemDiffs
-	ChangedImages      []*modconfig.DashboardTreeItemDiffs
-	ChangedInputs      []*modconfig.DashboardTreeItemDiffs
-	ChangedTables      []*modconfig.DashboardTreeItemDiffs
-	ChangedTexts       []*modconfig.DashboardTreeItemDiffs
-	ChangedNodes       []*modconfig.DashboardTreeItemDiffs
-	ChangedEdges       []*modconfig.DashboardTreeItemDiffs
+	ChangedDashboards  []*modconfig.ModTreeItemDiffs
+	ChangedContainers  []*modconfig.ModTreeItemDiffs
+	ChangedControls    []*modconfig.ModTreeItemDiffs
+	ChangedBenchmarks  []*modconfig.ModTreeItemDiffs
+	ChangedCategories  []*modconfig.ModTreeItemDiffs
+	ChangedCards       []*modconfig.ModTreeItemDiffs
+	ChangedCharts      []*modconfig.ModTreeItemDiffs
+	ChangedFlows       []*modconfig.ModTreeItemDiffs
+	ChangedGraphs      []*modconfig.ModTreeItemDiffs
+	ChangedHierarchies []*modconfig.ModTreeItemDiffs
+	ChangedImages      []*modconfig.ModTreeItemDiffs
+	ChangedInputs      []*modconfig.ModTreeItemDiffs
+	ChangedTables      []*modconfig.ModTreeItemDiffs
+	ChangedTexts       []*modconfig.ModTreeItemDiffs
+	ChangedNodes       []*modconfig.ModTreeItemDiffs
+	ChangedEdges       []*modconfig.ModTreeItemDiffs
 
-	NewDashboards  []*modconfig.Dashboard
-	NewContainers  []*modconfig.DashboardContainer
+	NewDashboards  []*powerpipe.Dashboard
+	NewContainers  []*powerpipe.DashboardContainer
 	NewControls    []*powerpipe.Control
 	NewBenchmarks  []*powerpipe.Benchmark
-	NewCards       []*modconfig.DashboardCard
-	NewCategories  []*modconfig.DashboardCategory
-	NewCharts      []*modconfig.DashboardChart
-	NewFlows       []*modconfig.DashboardFlow
-	NewGraphs      []*modconfig.DashboardGraph
-	NewHierarchies []*modconfig.DashboardHierarchy
-	NewImages      []*modconfig.DashboardImage
-	NewInputs      []*modconfig.DashboardInput
-	NewTables      []*modconfig.DashboardTable
-	NewTexts       []*modconfig.DashboardText
-	NewNodes       []*modconfig.DashboardNode
-	NewEdges       []*modconfig.DashboardEdge
+	NewCards       []*powerpipe.DashboardCard
+	NewCategories  []*powerpipe.DashboardCategory
+	NewCharts      []*powerpipe.DashboardChart
+	NewFlows       []*powerpipe.DashboardFlow
+	NewGraphs      []*powerpipe.DashboardGraph
+	NewHierarchies []*powerpipe.DashboardHierarchy
+	NewImages      []*powerpipe.DashboardImage
+	NewInputs      []*powerpipe.DashboardInput
+	NewTables      []*powerpipe.DashboardTable
+	NewTexts       []*powerpipe.DashboardText
+	NewNodes       []*powerpipe.DashboardNode
+	NewEdges       []*powerpipe.DashboardEdge
 
-	DeletedDashboards  []*modconfig.Dashboard
-	DeletedContainers  []*modconfig.DashboardContainer
+	DeletedDashboards  []*powerpipe.Dashboard
+	DeletedContainers  []*powerpipe.DashboardContainer
 	DeletedControls    []*powerpipe.Control
 	DeletedBenchmarks  []*powerpipe.Benchmark
-	DeletedCards       []*modconfig.DashboardCard
-	DeletedCategories  []*modconfig.DashboardCategory
-	DeletedCharts      []*modconfig.DashboardChart
-	DeletedFlows       []*modconfig.DashboardFlow
-	DeletedGraphs      []*modconfig.DashboardGraph
-	DeletedHierarchies []*modconfig.DashboardHierarchy
-	DeletedImages      []*modconfig.DashboardImage
-	DeletedInputs      []*modconfig.DashboardInput
-	DeletedTables      []*modconfig.DashboardTable
-	DeletedTexts       []*modconfig.DashboardText
-	DeletedNodes       []*modconfig.DashboardNode
-	DeletedEdges       []*modconfig.DashboardEdge
+	DeletedCards       []*powerpipe.DashboardCard
+	DeletedCategories  []*powerpipe.DashboardCategory
+	DeletedCharts      []*powerpipe.DashboardChart
+	DeletedFlows       []*powerpipe.DashboardFlow
+	DeletedGraphs      []*powerpipe.DashboardGraph
+	DeletedHierarchies []*powerpipe.DashboardHierarchy
+	DeletedImages      []*powerpipe.DashboardImage
+	DeletedInputs      []*powerpipe.DashboardInput
+	DeletedTables      []*powerpipe.DashboardTable
+	DeletedTexts       []*powerpipe.DashboardText
+	DeletedNodes       []*powerpipe.DashboardNode
+	DeletedEdges       []*powerpipe.DashboardEdge
 }
 
 // IsDashboardEvent implements DashboardEvent interface
@@ -323,7 +323,7 @@ func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevRes
 	}
 }
 
-func (c *DashboardChanged) diffsContain(diffs []*modconfig.DashboardTreeItemDiffs, item modconfig.ModTreeItem) bool {
+func (c *DashboardChanged) diffsContain(diffs []*modconfig.ModTreeItemDiffs, item modconfig.ModTreeItem) bool {
 	for _, d := range diffs {
 		if d.Item.Name() == item.Name() {
 			return true
@@ -333,17 +333,17 @@ func (c *DashboardChanged) diffsContain(diffs []*modconfig.DashboardTreeItemDiff
 }
 
 func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
-	diff := &modconfig.DashboardTreeItemDiffs{
+	diff := &modconfig.ModTreeItemDiffs{
 		Name:              item.Name(),
 		Item:              item,
 		ChangedProperties: []string{"Children"},
 	}
 	switch item.(type) {
-	case *modconfig.Dashboard:
+	case *powerpipe.Dashboard:
 		if !c.diffsContain(c.ChangedDashboards, item) {
 			c.ChangedDashboards = append(c.ChangedDashboards, diff)
 		}
-	case *modconfig.DashboardContainer:
+	case *powerpipe.DashboardContainer:
 		if !c.diffsContain(c.ChangedContainers, item) {
 			c.ChangedContainers = append(c.ChangedContainers, diff)
 		}
@@ -355,38 +355,38 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedBenchmarks, item) {
 			c.ChangedBenchmarks = append(c.ChangedBenchmarks, diff)
 		}
-	case *modconfig.DashboardCard:
+	case *powerpipe.DashboardCard:
 		if !c.diffsContain(c.ChangedCards, item) {
 			c.ChangedCards = append(c.ChangedCards, diff)
 		}
-	case *modconfig.DashboardCategory:
+	case *powerpipe.DashboardCategory:
 		if !c.diffsContain(c.ChangedCategories, item) {
 			c.ChangedCategories = append(c.ChangedCategories, diff)
 		}
-	case *modconfig.DashboardChart:
+	case *powerpipe.DashboardChart:
 		if !c.diffsContain(c.ChangedCharts, item) {
 			c.ChangedCharts = append(c.ChangedCharts, diff)
 		}
-	case *modconfig.DashboardHierarchy:
+	case *powerpipe.DashboardHierarchy:
 		if !c.diffsContain(c.ChangedHierarchies, item) {
 			c.ChangedHierarchies = append(c.ChangedHierarchies, diff)
 		}
 
-	case *modconfig.DashboardImage:
+	case *powerpipe.DashboardImage:
 		if !c.diffsContain(c.ChangedImages, item) {
 			c.ChangedImages = append(c.ChangedImages, diff)
 		}
 
-	case *modconfig.DashboardInput:
+	case *powerpipe.DashboardInput:
 		if !c.diffsContain(c.ChangedInputs, item) {
 			c.ChangedInputs = append(c.ChangedInputs, diff)
 		}
 
-	case *modconfig.DashboardTable:
+	case *powerpipe.DashboardTable:
 		if !c.diffsContain(c.ChangedTables, item) {
 			c.ChangedTables = append(c.ChangedTables, diff)
 		}
-	case *modconfig.DashboardText:
+	case *powerpipe.DashboardText:
 		if !c.diffsContain(c.ChangedTexts, item) {
 			c.ChangedTexts = append(c.ChangedTexts, diff)
 		}
