@@ -221,7 +221,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.Db
 
 	// validate dependent mods
 	for childDependencyName, childMod := range mod.ResourceMaps.Mods {
-		if childDependencyName == "local" || mod.DependencyName == childMod.DependencyName {
+		if childDependencyName == "local" || mod.GetDependencyName() == childMod.GetDependencyName() {
 			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
 			continue
 		}
