@@ -11,7 +11,6 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
@@ -75,7 +74,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx, cmd)
+	modInitData := initialisation.NewInitData(ctx, cmd)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets

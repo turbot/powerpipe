@@ -6,10 +6,10 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
-func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+func GenerateSnapshot(ctx context.Context, w *workspace.WorkspaceEvents, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)

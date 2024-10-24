@@ -16,7 +16,7 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 type DashboardExecutor struct {
@@ -43,7 +43,7 @@ func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor
 
 var Executor *DashboardExecutor
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *dashboardworkspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *workspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err == nil && ctx.Err() != nil {
@@ -112,7 +112,7 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 	return nil
 }
 
-func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *dashboardworkspace.WorkspaceEvents) (map[string]any, error) {
+func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *workspace.WorkspaceEvents) (map[string]any, error) {
 	// find snapshot path in workspace
 	snapshotPath, ok := w.GetResourceMaps().Snapshots[snapshotName]
 	if !ok {

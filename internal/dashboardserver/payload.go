@@ -17,8 +17,8 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -86,7 +86,7 @@ func buildServerMetadataPayload(workspaceResources *powerpipe.PowerpipeResourceM
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *dashboardworkspace.WorkspaceEvents) ([]byte, error) {
+func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.WorkspaceEvents) ([]byte, error) {
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		return nil, err

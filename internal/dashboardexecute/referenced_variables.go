@@ -7,7 +7,7 @@ import (
 
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 // GetReferencedVariables builds map of variables values containing only those mod variables which are referenced
@@ -15,7 +15,7 @@ import (
 // <mod>.<var-name>
 // the VariableValues map will contain these variables with the name format <mod>.var.<var-name>,
 // so we must convert the name
-func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.WorkspaceEvents) (map[string]string, error) {
+func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.WorkspaceEvents) (map[string]string, error) {
 	var referencedVariables = make(map[string]string)
 
 	addReferencedVars := func(refs []*modconfig.ResourceReference) {

@@ -18,8 +18,8 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 // DashboardExecutionTree is a structure representing the control result hierarchy
@@ -34,7 +34,7 @@ type DashboardExecutionTree struct {
 	defaultClientMap *db_client.ClientMap
 	// map of executing runs, keyed by full name
 	runs      map[string]dashboardtypes.DashboardTreeRun
-	workspace *dashboardworkspace.WorkspaceEvents
+	workspace *workspace.WorkspaceEvents
 
 	runComplete chan dashboardtypes.DashboardTreeRun
 	// map of subscribers to notify when an input value changes
@@ -47,7 +47,7 @@ type DashboardExecutionTree struct {
 	searchPathConfig backend.SearchPathConfig
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),

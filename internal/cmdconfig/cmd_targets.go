@@ -2,7 +2,7 @@ package cmdconfig
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/exp/maps"
 	"strings"
 
@@ -10,11 +10,12 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	if len(cmdArgs) == 0 {
 		return nil, nil
 	}
@@ -40,7 +41,7 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Work
 //   - verify the resource exists in the workspace
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
-func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 
 	var target modconfig.ModTreeItem
 	var queryArgs *powerpipe.QueryArgs
@@ -97,7 +98,7 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Wo
 
 }
 
-func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	var targets []modconfig.ModTreeItem
 	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
 	// verify T is Benchmark (should be enforced by Cobra)
@@ -124,7 +125,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *works
 	return targets, nil
 }
 
-func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	// if there is more than 1 arg, "all" is not valid
 	if len(args) > 1 {
 		// verify that no other benchmarks/controls are given with an all
@@ -150,7 +151,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace
 			if !ok {
 				return false
 			}
-			return mti.GetMod().ShortName == w.Mod.ShortName
+			return mti.GetMod().GetShortName() == w.Mod.ShortName
 		},
 	}
 	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](w, filter)

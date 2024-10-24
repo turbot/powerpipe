@@ -1,4 +1,4 @@
-package dashboardworkspace
+package workspace
 
 import (
 	"context"
@@ -14,7 +14,7 @@ import (
 
 var EventCount int64 = 0
 
-func (w *WorkspaceEvents) PublishDashboardEvent(ctx context.Context, e dashboardevents.DashboardEvent) {
+func (w *PowerpipeWorkspace) PublishDashboardEvent(ctx context.Context, e dashboardevents.DashboardEvent) {
 	if w.dashboardEventChan != nil {
 		var doneChan = make(chan struct{})
 		go func() {
@@ -35,7 +35,7 @@ func (w *WorkspaceEvents) PublishDashboardEvent(ctx context.Context, e dashboard
 
 // RegisterDashboardEventHandler starts the event handler goroutine if necessary and
 // adds the event handler to our list
-func (w *WorkspaceEvents) RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler) {
+func (w *PowerpipeWorkspace) RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler) {
 	// if no event channel has been created we need to start the event handler goroutine
 	if w.dashboardEventChan == nil {
 		// create a fairly large channel buffer
@@ -48,12 +48,12 @@ func (w *WorkspaceEvents) RegisterDashboardEventHandler(ctx context.Context, han
 
 // UnregisterDashboardEventHandlers clears all event handlers
 // used when generating multiple snapshots
-func (w *WorkspaceEvents) UnregisterDashboardEventHandlers() {
+func (w *PowerpipeWorkspace) UnregisterDashboardEventHandlers() {
 	w.dashboardEventHandlers = nil
 }
 
 // this function is run as a goroutine to call registered event handlers for all received events
-func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
+func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 	for {
 		e := <-w.dashboardEventChan
 		atomic.AddInt64(&EventCount, -1)
@@ -69,7 +69,7 @@ func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
 	}
 }
 
-func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
+func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
 	event := &dashboardevents.DashboardChanged{}
 
 	// TODO reports can we use a PowerpipeResourceMaps diff function to do all of this - we are duplicating logic

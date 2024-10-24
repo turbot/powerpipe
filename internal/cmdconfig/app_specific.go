@@ -1,6 +1,7 @@
 package cmdconfig
 
 import (
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"os"
 	"path/filepath"
 	"strings"
@@ -71,6 +72,7 @@ func SetAppSpecificConstants() {
 	app_specific.VersionCheckPath = "api/cli/version/latest"
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 
+	app_specific.NewResourceMapsFunc = powerpipe.NewPowerpipeResourceMaps
 	// register supported connection types
 	registerConnections()
 }

@@ -21,8 +21,8 @@ type CheckTarget interface {
 	*powerpipe.Benchmark | *powerpipe.Control
 }
 
-type InitData[T CheckTarget] struct {
-	initialisation.InitData[T]
+type InitData struct {
+	initialisation.InitData
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
 }
@@ -30,14 +30,14 @@ type InitData[T CheckTarget] struct {
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
+func NewInitData(ctx context.Context, cmd *cobra.Command, args []string) *InitData {
 
 	statushooks.SetStatus(ctx, "Loading workspace")
 
-	initData := initialisation.NewInitData[T](ctx, cmd, args...)
+	initData := initialisation.NewInitData(ctx, cmd, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData[T]{
+	i := &InitData{
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {

@@ -18,7 +18,6 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -106,7 +105,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData[*powerpipe.Query](ctx, cmd, args...)
+	initData := initialisation.NewInitData(ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)

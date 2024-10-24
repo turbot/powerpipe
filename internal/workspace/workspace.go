@@ -1,26 +1,30 @@
-package dashboardworkspace
+package workspace
 
 import (
 	"context"
+	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
-	"log/slog"
-
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
+	"log/slog"
 )
 
-// WorkspaceEvents is a wrapper around workspace.WorkspaceEvents that adds dashboard specific event handling
-type WorkspaceEvents struct {
-	*workspace.Workspace
+type PowerpipeWorkspace struct {
+	workspace.WorkspaceBase[*powerpipe.PowerpipeResourceMaps]
 	// event handlers
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
 	dashboardEventChan chan dashboardevents.DashboardEvent
 }
 
-func NewWorkspaceEvents(workspace *workspace.Workspace) *WorkspaceEvents {
-	w := &WorkspaceEvents{
-		Workspace: workspace,
+func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
+	w := &PowerpipeWorkspace{
+		WorkspaceBase: workspace.WorkspaceBase[*powerpipe.PowerpipeResourceMaps]{
+			Path:              workspacePath,
+			VariableValues:    make(map[string]string),
+			ValidateVariables: true,
+			Mod:               powerpipe.NewMod("local", workspacePath, hcl.Range{}),
+		},
 	}
 
 	w.OnFileWatcherError = func(ctx context.Context, err error) {
@@ -31,12 +35,22 @@ func NewWorkspaceEvents(workspace *workspace.Workspace) *WorkspaceEvents {
 	}
 	return w
 }
-func (w *WorkspaceEvents) Close() {
-	w.Workspace.Close()
+
+func (w *PowerpipeWorkspace) Close() {
+	w.WorkspaceBase.Close()
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first
 		w.dashboardEventChan = nil
 		slog.Debug("closing dashboardEventChan")
 		close(ch)
 	}
+}
+
+func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
+	for _, d := range w.Mod.GetResourceMaps().(*powerpipe.PowerpipeResourceMaps).Dashboards {
+		if err := d.ValidateRuntimeDependencies(w); err != nil {
+			return err
+		}
+	}
+	return nil
 }
