@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"strconv"
 	"sync"
@@ -26,7 +26,7 @@ type runtimeDependencyPublisherImpl struct {
 	inputs         map[string]*modconfig.DashboardInput
 }
 
-func newRuntimeDependencyPublisherImpl(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
+func newRuntimeDependencyPublisherImpl(resource powerpipe.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
 	b := runtimeDependencyPublisherImpl{
 		DashboardParentImpl: newDashboardParentImpl(resource, parent, run, executionTree),
 		subscriptions:       make(map[string][]*RuntimeDependencyPublishTarget),
@@ -35,7 +35,7 @@ func newRuntimeDependencyPublisherImpl(resource dashboard.DashboardLeafNode, par
 		withValueMutex:      new(sync.Mutex),
 	}
 	// if the resource is a query provider, get params and set status
-	if queryProvider, ok := resource.(dashboard.QueryProvider); ok {
+	if queryProvider, ok := resource.(powerpipe.QueryProvider); ok {
 		// get params
 		b.Params = queryProvider.GetParams()
 		if queryProvider.RequiresExecution(queryProvider) || len(queryProvider.GetChildren()) > 0 {
@@ -60,7 +60,7 @@ func (p *runtimeDependencyPublisherImpl) GetName() string {
 	return p.Name
 }
 
-func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *dashboard.RuntimeDependency) bool {
+func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *powerpipe.RuntimeDependency) bool {
 	resourceName := dependency.SourceResourceName()
 	switch dependency.PropertyPath.ItemType {
 	case schema.BlockTypeWith:

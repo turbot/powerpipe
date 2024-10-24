@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -60,15 +60,15 @@ func NewDashboardContainerRun(container *modconfig.DashboardContainer, parent da
 			if err != nil {
 				return nil, err
 			}
-		case *dashboard.Benchmark, *dashboard.Control:
-			childRun, err = NewCheckRun(i.(dashboard.DashboardLeafNode), r, executionTree)
+		case *powerpipe.Benchmark, *powerpipe.Control:
+			childRun, err = NewCheckRun(i.(powerpipe.DashboardLeafNode), r, executionTree)
 			if err != nil {
 				return nil, err
 			}
 
 		default:
 			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(dashboard.DashboardLeafNode)
+			leafNode, ok := i.(powerpipe.DashboardLeafNode)
 			if !ok {
 				return nil, fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
 			}

@@ -2,7 +2,7 @@ package dashboardevents
 
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 )
 
 type DashboardChanged struct {
@@ -25,8 +25,8 @@ type DashboardChanged struct {
 
 	NewDashboards  []*modconfig.Dashboard
 	NewContainers  []*modconfig.DashboardContainer
-	NewControls    []*dashboard.Control
-	NewBenchmarks  []*dashboard.Benchmark
+	NewControls    []*powerpipe.Control
+	NewBenchmarks  []*powerpipe.Benchmark
 	NewCards       []*modconfig.DashboardCard
 	NewCategories  []*modconfig.DashboardCategory
 	NewCharts      []*modconfig.DashboardChart
@@ -42,8 +42,8 @@ type DashboardChanged struct {
 
 	DeletedDashboards  []*modconfig.Dashboard
 	DeletedContainers  []*modconfig.DashboardContainer
-	DeletedControls    []*dashboard.Control
-	DeletedBenchmarks  []*dashboard.Benchmark
+	DeletedControls    []*powerpipe.Control
+	DeletedBenchmarks  []*powerpipe.Benchmark
 	DeletedCards       []*modconfig.DashboardCard
 	DeletedCategories  []*modconfig.DashboardCategory
 	DeletedCharts      []*modconfig.DashboardChart
@@ -307,7 +307,7 @@ func (c *DashboardChanged) WalkChangedResources(resourceFunc func(item modconfig
 	return nil
 }
 
-func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *modconfig.ResourceMaps) {
+func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
 	if prevResourceMaps == nil {
 		return
 	}
@@ -347,11 +347,11 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedContainers, item) {
 			c.ChangedContainers = append(c.ChangedContainers, diff)
 		}
-	case *dashboard.Control:
+	case *powerpipe.Control:
 		if !c.diffsContain(c.ChangedControls, item) {
 			c.ChangedControls = append(c.ChangedControls, diff)
 		}
-	case *dashboard.Benchmark:
+	case *powerpipe.Benchmark:
 		if !c.diffsContain(c.ChangedBenchmarks, item) {
 			c.ChangedBenchmarks = append(c.ChangedBenchmarks, diff)
 		}

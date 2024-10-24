@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/workspace/flowpipe"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -30,7 +31,7 @@ import (
 )
 
 type InitData[T modconfig.ModTreeItem] struct {
-	Workspace       *workspace.Workspace
+	Workspace       *workspace.PowerpipeWorkspace
 	WorkspaceEvents *dashboardworkspace.WorkspaceEvents
 	Result          *InitResult
 
@@ -51,12 +52,12 @@ func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
 func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
+	w, errAndWarnings := flowpipe.LoadWorkspacePromptingForVariables(ctx,
 		modLocation,
 		// pass connections
-		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+		flowpipe.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
 		// disable late binding
-		workspace.WithLateBinding(false),
+		flowpipe.WithLateBinding(false),
 	)
 	if errAndWarnings.GetError() != nil {
 		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))

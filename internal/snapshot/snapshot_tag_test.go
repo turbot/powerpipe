@@ -2,7 +2,7 @@ package snapshot
 
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/utils"
 	"reflect"
 	"testing"
@@ -20,8 +20,8 @@ func TestGetAsSnapshotPropertyMap(t *testing.T) {
 		{name: "card",
 			args: args{
 				item: modconfig.DashboardChart{
-					QueryProviderImpl: dashboard.QueryProviderImpl{
-						RuntimeDependencyProviderImpl: dashboard.RuntimeDependencyProviderImpl{
+					QueryProviderImpl: powerpipe.QueryProviderImpl{
+						RuntimeDependencyProviderImpl: powerpipe.RuntimeDependencyProviderImpl{
 							ModTreeItemImpl: modconfig.ModTreeItemImpl{
 								HclResourceImpl: modconfig.HclResourceImpl{
 									FullName:        "mod1.card.card1",

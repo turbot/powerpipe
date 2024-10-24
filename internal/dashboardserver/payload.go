@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 
 	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
@@ -22,7 +22,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+func buildServerMetadataPayload(workspaceResources *powerpipe.PowerpipeResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -134,11 +134,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *dashboard.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *powerpipe.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *dashboard.Benchmark:
+		case *powerpipe.Benchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -158,7 +158,7 @@ func addBenchmarkChildren(benchmark *dashboard.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps) ([]byte, error) {
+func buildAvailableDashboardsPayload(workspaceResources *powerpipe.PowerpipeResourceMaps) ([]byte, error) {
 
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",

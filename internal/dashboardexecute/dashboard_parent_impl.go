@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"sync"
 
@@ -22,7 +22,7 @@ type DashboardParentImpl struct {
 	childStatusLock *sync.Mutex
 }
 
-func newDashboardParentImpl(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) DashboardParentImpl {
+func newDashboardParentImpl(resource powerpipe.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) DashboardParentImpl {
 	return DashboardParentImpl{
 		DashboardTreeRunImpl: NewDashboardTreeRunImpl(resource, parent, run, executionTree),
 		childStatusLock:      new(sync.Mutex),

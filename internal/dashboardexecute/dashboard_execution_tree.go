@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
@@ -92,9 +92,9 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 	switch r := rootResource.(type) {
 	case *modconfig.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *dashboard.Benchmark:
+	case *powerpipe.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *dashboard.Query:
+	case *powerpipe.Query:
 		// wrap this in a chart and a dashboard
 		dashboard, err := modconfig.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
@@ -341,7 +341,7 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (*DashboardExecutionTree) GetResource() dashboard.DashboardLeafNode {
+func (*DashboardExecutionTree) GetResource() powerpipe.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
 }
 

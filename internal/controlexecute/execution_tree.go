@@ -2,7 +2,7 @@ package controlexecute
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"sort"
 	"time"
@@ -62,7 +62,7 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		resolvedItem = targets[0]
 	} else {
 		// create a root benchmark with `items` as it's children
-		resolvedItem = dashboard.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
+		resolvedItem = powerpipe.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
 	}
 
 	// build tree of result groups, starting with a synthetic 'root' node
@@ -96,7 +96,7 @@ func (*ExecutionTree) IsExportSourceData() {}
 
 // AddControl checks whether control should be included in the tree
 // if so, creates a ControlRun, which is added to the parent group
-func (e *ExecutionTree) AddControl(ctx context.Context, control *dashboard.Control, group *ResultGroup) error {
+func (e *ExecutionTree) AddControl(ctx context.Context, control *powerpipe.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
 		// check if we have a run already
@@ -202,7 +202,7 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 // This is used to implement the 'where' control filtering
 func (e *ExecutionTree) getControlMapFromFilter(controlFilter workspace.ResourceFilter) (map[string]struct{}, error) {
 	var res = make(map[string]struct{})
-	controls, err := workspace.FilterWorkspaceResourcesOfType[*dashboard.Control](e.Workspace, controlFilter)
+	controls, err := workspace.FilterWorkspaceResourcesOfType[*powerpipe.Control](e.Workspace, controlFilter)
 	if err != nil {
 		return nil, err
 	}

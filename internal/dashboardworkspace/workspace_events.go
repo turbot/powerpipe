@@ -2,6 +2,7 @@ package dashboardworkspace
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"reflect"
 	"sync/atomic"
@@ -68,10 +69,10 @@ func (w *WorkspaceEvents) handleDashboardEvent(ctx context.Context) {
 	}
 }
 
-func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *modconfig.ResourceMaps) {
+func (w *WorkspaceEvents) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
 	event := &dashboardevents.DashboardChanged{}
 
-	// TODO reports can we use a ResourceMaps diff function to do all of this - we are duplicating logic
+	// TODO reports can we use a PowerpipeResourceMaps diff function to do all of this - we are duplicating logic
 
 	// first detect changes to existing resources and deletions
 	for name, prev := range prevResourceMaps.Dashboards {

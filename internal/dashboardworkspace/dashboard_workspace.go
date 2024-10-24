@@ -2,9 +2,9 @@ package dashboardworkspace
 
 import (
 	"context"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 )
@@ -26,7 +26,7 @@ func NewWorkspaceEvents(workspace *workspace.Workspace) *WorkspaceEvents {
 	w.OnFileWatcherError = func(ctx context.Context, err error) {
 		w.PublishDashboardEvent(ctx, &dashboardevents.WorkspaceError{Error: err})
 	}
-	w.OnFileWatcherEvent = func(ctx context.Context, resourceMaps, prevResourceMaps *modconfig.ResourceMaps) {
+	w.OnFileWatcherEvent = func(ctx context.Context, resourceMaps, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
 		w.raiseDashboardChangedEvents(ctx, resourceMaps, prevResourceMaps)
 	}
 	return w

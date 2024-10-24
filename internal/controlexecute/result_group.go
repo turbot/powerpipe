@@ -2,7 +2,7 @@ package controlexecute
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"sort"
 	"sync"
@@ -82,7 +82,7 @@ func NewRootResultGroup(ctx context.Context, executionTree *ExecutionTree, rootI
 	}
 
 	// if root item is a benchmark, create new result group with root as parent
-	if control, ok := rootItem.(*dashboard.Control); ok {
+	if control, ok := rootItem.(*powerpipe.Control); ok {
 		// if root item is a control, add control run
 		if err := executionTree.AddControl(ctx, control, root); err != nil {
 			return nil, err
@@ -117,18 +117,18 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 
 	// populate additional properties (this avoids adding GetDocumentation, GetDisplay and GetType to all ModTreeItems)
 	switch t := treeItem.(type) {
-	case *dashboard.Benchmark:
+	case *powerpipe.Benchmark:
 		group.Documentation = t.GetDocumentation()
 		group.Display = t.GetDisplay()
 		group.Type = t.GetType()
-	case *dashboard.Control:
+	case *powerpipe.Control:
 		group.Documentation = t.GetDocumentation()
 		group.Display = t.GetDisplay()
 		group.Type = t.GetType()
 	}
 	// add child groups for children which are benchmarks
 	for _, c := range treeItem.GetChildren() {
-		if benchmark, ok := c.(*dashboard.Benchmark); ok {
+		if benchmark, ok := c.(*powerpipe.Benchmark); ok {
 			// create a result group for this item
 			benchmarkGroup, err := NewResultGroup(ctx, executionTree, benchmark, group)
 			if err != nil {
@@ -140,7 +140,7 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 				group.addResultGroup(benchmarkGroup)
 			}
 		}
-		if control, ok := c.(*dashboard.Control); ok {
+		if control, ok := c.(*powerpipe.Control); ok {
 			if err := executionTree.AddControl(ctx, control, group); err != nil {
 				return nil, err
 			}

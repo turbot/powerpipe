@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -26,7 +26,7 @@ type ResourceCommandConfig struct {
 }
 
 func newResourceCommandConfig[T modconfig.ModTreeItem]() *ResourceCommandConfig {
-	typeName := dashboard.GenericTypeToBlockType[T]()
+	typeName := powerpipe.GenericTypeToBlockType[T]()
 	return &ResourceCommandConfig{
 		cmd: typeName,
 	}
@@ -62,7 +62,7 @@ func resourceCmd[T modconfig.ModTreeItem](opts ...ResourceCommandOption) *cobra.
 }
 
 func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := dashboard.GenericTypeToBlockType[T]()
+	typeName := powerpipe.GenericTypeToBlockType[T]()
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Args:  cobra.NoArgs,
@@ -79,7 +79,7 @@ func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
 }
 
 func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := dashboard.GenericTypeToBlockType[T]()
+	typeName := powerpipe.GenericTypeToBlockType[T]()
 
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
@@ -99,7 +99,7 @@ func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
 
 // determine which resource commands apply to this resource
 func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
-	typeName := dashboard.GenericTypeToBlockType[T]()
+	typeName := powerpipe.GenericTypeToBlockType[T]()
 
 	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
 
@@ -140,14 +140,14 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 	var empty T
 
 	switch any(empty).(type) {
-	case *dashboard.Query:
+	case *powerpipe.Query:
 		return queryRunCmd()
 	case *modconfig.Dashboard:
 		return dashboardRunCmd()
-	case *dashboard.Benchmark:
-		return checkCmd[*dashboard.Benchmark]()
-	case *dashboard.Control:
-		return checkCmd[*dashboard.Control]()
+	case *powerpipe.Benchmark:
+		return checkCmd[*powerpipe.Benchmark]()
+	case *powerpipe.Control:
+		return checkCmd[*powerpipe.Control]()
 	}
 
 	return nil

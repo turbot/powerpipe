@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/dashboard"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
@@ -24,7 +24,7 @@ type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
 
-	Resource dashboard.DashboardLeafNode `json:"-"`
+	Resource powerpipe.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
 	Properties map[string]any           `json:"properties,omitempty"`
 	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
@@ -42,7 +42,7 @@ func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	}
 }
 
-func NewLeafRun(resource dashboard.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
+func NewLeafRun(resource powerpipe.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
 	r := &LeafRun{
 		Resource:   resource,
 		Properties: make(map[string]any),
@@ -119,7 +119,7 @@ func (r *LeafRun) createChildRuns(executionTree *DashboardExecutionTree) error {
 
 	for i, c := range children {
 		var opts []LeafRunOption
-		childRun, err := NewLeafRun(c.(dashboard.DashboardLeafNode), r, executionTree, opts...)
+		childRun, err := NewLeafRun(c.(powerpipe.DashboardLeafNode), r, executionTree, opts...)
 		if err != nil {
 			errors = append(errors, err)
 			continue
