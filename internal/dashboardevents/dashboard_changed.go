@@ -6,7 +6,7 @@ import (
 )
 
 type DashboardChanged struct {
-	ChangedDashboards  []*modconfig.DashboardTreeItemDiffs
+	ChangedDashboards  []*powerpipe.DashboardTreeItemDiffs
 	ChangedContainers  []*modconfig.DashboardTreeItemDiffs
 	ChangedControls    []*modconfig.DashboardTreeItemDiffs
 	ChangedBenchmarks  []*modconfig.DashboardTreeItemDiffs
