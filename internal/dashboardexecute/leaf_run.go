@@ -67,7 +67,7 @@ func NewLeafRun(resource powerpipe.DashboardLeafNode, parent dashboardtypes.Dash
 		return nil, err
 	}
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 
 	// if the node has no runtime dependencies, resolve the sql
 	if !r.hasRuntimeDependencies() {
@@ -258,7 +258,7 @@ func (r *LeafRun) combineChildData() {
 		childLeafRun := c.(*LeafRun)
 		data := childLeafRun.Data
 		// if there is no data or this is a 'with', skip
-		if data == nil || childLeafRun.resource.BlockType() == schema.BlockTypeWith {
+		if data == nil || childLeafRun.resource.GetBlockType() == schema.BlockTypeWith {
 			continue
 		}
 		for _, s := range data.Columns {

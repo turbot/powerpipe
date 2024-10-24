@@ -43,7 +43,7 @@ func NewDashboardTreeRunImpl(resource powerpipe.DashboardLeafNode, parent dashbo
 	res := DashboardTreeRunImpl{
 		Name:             resource.Name(),
 		Title:            resource.GetTitle(),
-		NodeType:         resource.BlockType(),
+		NodeType:         resource.GetBlockType(),
 		Width:            resource.GetWidth(),
 		Display:          resource.GetDisplay(),
 		Description:      resource.GetDescription(),

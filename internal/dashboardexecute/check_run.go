@@ -39,7 +39,7 @@ func NewCheckRun(resource powerpipe.DashboardLeafNode, parent dashboardtypes.Das
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(resource, parent, r, executionTree)
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 	//  set status to initialized
 	r.Status = dashboardtypes.RunInitialized
 	// add r into execution tree
