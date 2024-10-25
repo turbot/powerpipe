@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"os"
 	"strings"
 	"time"
@@ -17,7 +18,6 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
@@ -105,7 +105,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData(ctx, cmd, args...)
+	initData := initialisation.NewInitData[*powerpipe.Query](ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
@@ -134,7 +134,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.FailOnError(err)
 	}
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, nil)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, nil)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)
@@ -218,7 +218,7 @@ func setExitCodeForQueryError(err error) {
 
 func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime time.Time) (*queryresult.Result, error) {
 	// the table of a snapshot query has a fixed name
-	tablePanel, ok := snap.Panels[modconfig.SnapshotQueryTableName]
+	tablePanel, ok := snap.Panels[powerpipe.SnapshotQueryTableName]
 	if !ok {
 		return nil, sperr.New("dashboard does not contain table result for query")
 	}

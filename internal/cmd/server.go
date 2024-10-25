@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"os"
 	"os/signal"
 
@@ -74,7 +75,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData(ctx, cmd)
+	modInitData := initialisation.NewInitData[*powerpipe.Dashboard](ctx, cmd)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets
@@ -84,7 +85,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	// setup a new webSocket service
 	webSocket := melody.New()
 	// create the dashboardServer
-	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.WorkspaceEvents, webSocket)
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server

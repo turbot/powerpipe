@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"os"
 	"strings"
 
@@ -119,7 +120,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData(ctx, cmd, dashboardName)
+	initData := initialisation.NewInitData[*powerpipe.Dashboard](ctx, cmd, dashboardName)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(dashboardExporters()...)
@@ -142,7 +143,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	// so a dashboard name was specified - just call GenerateSnapshot
 	target, err := initData.GetSingleTarget()
 	error_helpers.FailOnError(err)
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, inputs)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)

@@ -95,7 +95,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 	return i
 }
 
-func (i *InitData) setControlFilter() {
+func (i *InitData[T]) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
@@ -110,7 +110,7 @@ func (i *InitData) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData) registerCheckExporters() error {
+func (i *InitData[T]) registerCheckExporters() error {
 	exporters, err := controldisplay.GetExporters()
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 

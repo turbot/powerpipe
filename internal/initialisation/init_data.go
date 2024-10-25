@@ -30,7 +30,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
 
-type InitData struct {
+type InitData[T modconfig.ModTreeItem] struct {
 	Workspace *workspace.PowerpipeWorkspace
 	Result    *InitResult
 
@@ -40,15 +40,15 @@ type InitData struct {
 	DefaultClient     *db_client.DbClient
 }
 
-func NewErrorInitData(err error) *InitData {
-	return &InitData{
+func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
+	return &InitData[T]{
 		Result: &InitResult{
 			ErrorAndWarnings: error_helpers.NewErrorsAndWarning(err),
 		},
 	}
 }
 
-func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData[T] {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
@@ -59,13 +59,13 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		workspace.WithLateBinding(false),
 	)
 	if errAndWarnings.GetError() != nil {
-		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
 
 	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
-		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
+		return NewErrorInitData[T](localconstants.ErrorNoModDefinition{})
 	}
-	i := &InitData{
+	i := &InitData[T]{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
@@ -103,7 +103,7 @@ func commandRequiresModfile(cmd *cobra.Command, args []string) bool {
 	return argIsNamedResource
 }
 
-func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
+func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
 	for _, e := range exporters {
 		if err := i.ExportManager.Register(e); err != nil {
 			return err
@@ -113,7 +113,7 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData) Init(ctx context.Context, args ...string) {
+func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -220,7 +220,7 @@ func validateModRequirementsRecursively(mod modconfig.ModI, client *db_client.Db
 	return validationErrors
 }
 
-func (i *InitData) Cleanup(ctx context.Context) {
+func (i *InitData[T]) Cleanup(ctx context.Context) {
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}
@@ -234,7 +234,7 @@ func (i *InitData) Cleanup(ctx context.Context) {
 }
 
 // GetSingleTarget validates there is only a single target and returns it
-func (i *InitData) GetSingleTarget() (modconfig.ModTreeItem, error) {
+func (i *InitData[T]) GetSingleTarget() (modconfig.ModTreeItem, error) {
 
 	// cobra should validate this
 	if len(i.Targets) != 1 {
