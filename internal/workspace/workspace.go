@@ -13,7 +13,7 @@ import (
 )
 
 type PowerpipeWorkspace struct {
-	workspace.WorkspaceBase[*powerpipe.PowerpipeResourceMaps]
+	workspace.WorkspaceBase[*powerpipe.ModResources]
 	// event handlers
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
@@ -22,11 +22,11 @@ type PowerpipeWorkspace struct {
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 	w := &PowerpipeWorkspace{
-		WorkspaceBase: workspace.WorkspaceBase[*powerpipe.PowerpipeResourceMaps]{
+		WorkspaceBase: workspace.WorkspaceBase[*powerpipe.ModResources]{
 			Path:              workspacePath,
 			VariableValues:    make(map[string]string),
 			ValidateVariables: true,
-			Mod:               powerpipe.NewMod("local", workspacePath, hcl.Range{}),
+			Mod:               modconfig.NewModBase[*powerpipe.ModResources]("local", workspacePath, hcl.Range{}),
 		},
 	}
 
@@ -50,7 +50,7 @@ func (w *PowerpipeWorkspace) Close() {
 }
 
 func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
-	for _, d := range w.Mod.GetResourceMaps().(*powerpipe.PowerpipeResourceMaps).Dashboards {
+	for _, d := range w.Mod.GetResourceMaps().(*powerpipe.ModResources).Dashboards {
 		if err := d.ValidateRuntimeDependencies(w); err != nil {
 			return err
 		}

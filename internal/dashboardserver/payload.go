@@ -23,7 +23,7 @@ import (
 )
 
 func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
-	workspaceResources := rm.(*powerpipe.PowerpipeResourceMaps)
+	workspaceResources := rm.(*powerpipe.ModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -74,7 +74,7 @@ func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steam
 
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
 			FullName:  mod.GetFullName(),
 			ShortName: mod.GetShortName(),
 		}
@@ -160,7 +160,7 @@ func addBenchmarkChildren(benchmark *powerpipe.Benchmark, recordTrunk bool, trun
 }
 
 func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error) {
-	workspaceResources := rm.(*powerpipe.PowerpipeResourceMaps)
+	workspaceResources := rm.(*powerpipe.ModResources)
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -173,7 +173,8 @@ func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error)
 		// build a map of the dashboards provided by each mod
 
 		// iterate over the dashboards for the top level mod - this will include the dashboards from dependency mods
-		for _, dashboard := range workspaceResources.Mod.ResourceMaps.Dashboards {
+		rm := workspaceResources.Mod.GetResourceMaps().(*powerpipe.ModResources)
+		for _, dashboard := range rm.Dashboards {
 			mod := dashboard.Mod
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
@@ -186,7 +187,7 @@ func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error)
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range workspaceResources.Mod.ResourceMaps.Benchmarks {
+		for _, benchmark := range rm.Benchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}
