@@ -6,7 +6,6 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
@@ -15,7 +14,7 @@ import (
 type DashboardContainerRun struct {
 	DashboardParentImpl
 
-	dashboardNode *modconfig.DashboardContainer
+	dashboardNode *powerpipe.DashboardContainer
 }
 
 func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -30,7 +29,7 @@ func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDashboardContainerRun(container *modconfig.DashboardContainer, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardContainerRun, error) {
+func NewDashboardContainerRun(container *powerpipe.DashboardContainer, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardContainerRun, error) {
 	children := container.GetChildren()
 
 	r := &DashboardContainerRun{dashboardNode: container}
@@ -50,12 +49,12 @@ func NewDashboardContainerRun(container *modconfig.DashboardContainer, parent da
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *modconfig.DashboardContainer:
+		case *powerpipe.DashboardContainer:
 			childRun, err = NewDashboardContainerRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}
-		case *modconfig.Dashboard:
+		case *powerpipe.Dashboard:
 			childRun, err = NewDashboardRun(i, r, executionTree)
 			if err != nil {
 				return nil, err

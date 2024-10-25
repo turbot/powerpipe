@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"os"
 	"strings"
@@ -43,7 +44,7 @@ func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor
 
 var Executor *DashboardExecutor
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *workspace.WorkspaceEvents, opts ...backend.ConnectOption) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *workspace.PowerpipeWorkspace, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err == nil && ctx.Err() != nil {
@@ -112,9 +113,9 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 	return nil
 }
 
-func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *workspace.WorkspaceEvents) (map[string]any, error) {
+func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *workspace.PowerpipeWorkspace) (map[string]any, error) {
 	// find snapshot path in workspace
-	snapshotPath, ok := w.GetResourceMaps().Snapshots[snapshotName]
+	snapshotPath, ok := w.GetResourceMaps().(*powerpipe.PowerpipeResourceMaps).Snapshots[snapshotName]
 	if !ok {
 		return nil, fmt.Errorf("snapshot %s not found in %s (%s)", snapshotName, w.Mod.Name(), w.Path)
 	}

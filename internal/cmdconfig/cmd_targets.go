@@ -2,11 +2,11 @@ package cmdconfig
 
 import (
 	"fmt"
+	"github.com/spf13/viper"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/exp/maps"
 	"strings"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -147,11 +147,11 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 	// but NOT children which come from dependency mods
 	filter := workspace.ResourceFilter{
 		WherePredicate: func(item modconfig.HclResource) bool {
-			mti, ok := item.(modconfig.ModTreeItem)
+			mti, ok := item.(modconfig.ModItem)
 			if !ok {
 				return false
 			}
-			return mti.GetMod().GetShortName() == w.Mod.ShortName
+			return mti.GetMod().GetShortName() == w.Mod.GetShortName()
 		},
 	}
 	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](w, filter)

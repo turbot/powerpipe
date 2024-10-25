@@ -56,7 +56,7 @@ func rootCommand() *cobra.Command {
 		loginCmd(),
 		resourceCmd[*powerpipe.Benchmark](),
 		resourceCmd[*powerpipe.Control](),
-		resourceCmd[*modconfig.Dashboard](),
+		resourceCmd[*powerpipe.Dashboard](),
 		resourceCmd[*powerpipe.Query](),
 		resourceCmd[*modconfig.Variable](),
 	)

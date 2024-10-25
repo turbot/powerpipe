@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"log/slog"
 
@@ -81,8 +82,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	i.Targets = targets
 
 	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.Database != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.Database)
+	if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
+		viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase())
 	}
 
 	// now do the actual initialisation
@@ -146,7 +147,7 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 	if viper.GetBool(constants.ArgModInstall) {
 		statushooks.SetStatus(ctx, "Installing workspace dependencies")
 		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
+		opts := modinstaller.NewInstallOpts[*powerpipe.PowerpipeResourceMaps](i.Workspace.Mod)
 		// arg pull should always be set (to a default at least) if ArgModInstall is set
 		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 		// use force install so that errors are ignored during installation

@@ -10,7 +10,6 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
@@ -40,7 +39,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	// populate the panels
 	panels = checkRun.BuildSnapshotPanels(make(map[string]steampipeconfig.SnapshotPanel))
 
-	vars, err := dashboardexecute.GetReferencedVariables(checkRun, workspace.NewWorkspaceEvents(e.Workspace))
+	vars, err := dashboardexecute.GetReferencedVariables(checkRun, e.Workspace)
 	if err != nil {
 		return nil, err
 	}

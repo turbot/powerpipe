@@ -4,9 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 
-	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
@@ -22,17 +22,18 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *powerpipe.PowerpipeResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	workspaceResources := rm.(*powerpipe.PowerpipeResourceMaps)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
-		if mod.FullName == workspaceResources.Mod.FullName {
+		if mod.GetFullName() == workspaceResources.Mod.GetFullName() {
 			continue
 		}
-		installedMods[mod.FullName] = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
-			ShortName: mod.ShortName,
+		installedMods[mod.GetFullName()] = &ModMetadata{
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
+			FullName:  mod.GetFullName(),
+			ShortName: mod.GetShortName(),
 		}
 	}
 
@@ -74,8 +75,8 @@ func buildServerMetadataPayload(workspaceResources *powerpipe.PowerpipeResourceM
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
-			ShortName: mod.ShortName,
+			FullName:  mod.GetFullName(),
+			ShortName: mod.GetShortName(),
 		}
 	}
 	// if telemetry is enabled, send cloud metadata
@@ -86,7 +87,7 @@ func buildServerMetadataPayload(workspaceResources *powerpipe.PowerpipeResourceM
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.WorkspaceEvents) ([]byte, error) {
+func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.PowerpipeWorkspace) ([]byte, error) {
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		return nil, err
@@ -158,8 +159,8 @@ func addBenchmarkChildren(benchmark *powerpipe.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *powerpipe.PowerpipeResourceMaps) ([]byte, error) {
-
+func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error) {
+	workspaceResources := rm.(*powerpipe.PowerpipeResourceMaps)
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -180,7 +181,7 @@ func buildAvailableDashboardsPayload(workspaceResources *powerpipe.PowerpipeReso
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
 				Tags:        dashboard.Tags,
-				ModFullName: mod.FullName,
+				ModFullName: mod.GetFullName(),
 			}
 		}
 
@@ -194,7 +195,7 @@ func buildAvailableDashboardsPayload(workspaceResources *powerpipe.PowerpipeReso
 			isTopLevel := false
 			for _, parent := range benchmark.GetParents() {
 				switch parent.(type) {
-				case *modconfig.Mod:
+				case modconfig.ModI:
 					isTopLevel = true
 				}
 			}
@@ -213,7 +214,7 @@ func buildAvailableDashboardsPayload(workspaceResources *powerpipe.PowerpipeReso
 				Tags:        benchmark.Tags,
 				IsTopLevel:  isTopLevel,
 				Children:    addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
-				ModFullName: mod.FullName,
+				ModFullName: mod.GetFullName(),
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark

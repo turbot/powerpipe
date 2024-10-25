@@ -11,7 +11,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *modconfig.Mod, defaultDatabase string, defaultSearchPathConfig backend.SearchPathConfig) (string, backend.SearchPathConfig, error) {
+func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod modconfig.ModI, defaultDatabase string, defaultSearchPathConfig backend.SearchPathConfig) (string, backend.SearchPathConfig, error) {
 	database := defaultDatabase
 	searchPathConfig := defaultSearchPathConfig
 
@@ -23,14 +23,14 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	}
 
 	// NOTE: if the resource is in a dependency mod, check whether database or search path has been specified for it
-	depName := resource.GetMod().GetDependencyName()
+	depName := resource.(modconfig.ModItem).GetMod().GetDependencyName()
 
 	if depName != "" {
 		// look for this mod in the workspace mod require
-		modRequirement := workspaceMod.Require.GetModDependency(depName)
+		modRequirement := workspaceMod.GetRequire().GetModDependency(depName)
 		if modRequirement == nil {
 			// not expected
-			return database, searchPathConfig, sperr.New("could not find mod requirement for '%s' in workspace mod %s", depName, workspaceMod.ShortName)
+			return database, searchPathConfig, sperr.New("could not find mod requirement for '%s' in workspace mod %s", depName, workspaceMod.GetShortName())
 		}
 
 		// if the mod requirement has a search path, prefix or database, set it in viper,
@@ -41,13 +41,13 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
 		}
 		// if the parent mod has a database set, use it
-		if modDb := resource.GetMod().Database; modDb != nil {
+		if modDb := resource.(modconfig.ModItem).GetMod().GetDatabase(); modDb != nil {
 			database = *modDb
 		}
-		if modSearchPath := resource.GetMod().SearchPath; len(modSearchPath) > 0 {
+		if modSearchPath := resource.(modconfig.ModItem).GetMod().GetSearchPath(); len(modSearchPath) > 0 {
 			searchPathConfig.SearchPath = modSearchPath
 		}
-		if modSearchPathPrefix := resource.GetMod().SearchPathPrefix; len(modSearchPathPrefix) > 0 {
+		if modSearchPathPrefix := resource.(modconfig.ModItem).GetMod().GetSearchPathPrefix(); len(modSearchPathPrefix) > 0 {
 			searchPathConfig.SearchPathPrefix = modSearchPathPrefix
 		}
 

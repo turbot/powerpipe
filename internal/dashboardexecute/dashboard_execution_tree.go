@@ -3,13 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -34,7 +34,7 @@ type DashboardExecutionTree struct {
 	defaultClientMap *db_client.ClientMap
 	// map of executing runs, keyed by full name
 	runs      map[string]dashboardtypes.DashboardTreeRun
-	workspace *workspace.WorkspaceEvents
+	workspace *workspace.PowerpipeWorkspace
 
 	runComplete chan dashboardtypes.DashboardTreeRun
 	// map of subscribers to notify when an input value changes
@@ -47,7 +47,7 @@ type DashboardExecutionTree struct {
 	searchPathConfig backend.SearchPathConfig
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
@@ -90,13 +90,13 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 
 func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
 	switch r := rootResource.(type) {
-	case *modconfig.Dashboard:
+	case *powerpipe.Dashboard:
 		return NewDashboardRun(r, e, e)
 	case *powerpipe.Benchmark:
 		return NewCheckRun(r, e, e)
 	case *powerpipe.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r)
+		dashboard, err := powerpipe.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		e.dashboardName = dashboard.Name()
 		if err != nil {
@@ -208,7 +208,7 @@ func (e *DashboardExecutionTree) SetError(ctx context.Context, err error) {
 // GetName implements DashboardParent
 // use mod short name - this will be the root name for all child runs
 func (e *DashboardExecutionTree) GetName() string {
-	return e.workspace.Mod.ShortName
+	return e.workspace.Mod.GetShortName()
 }
 
 // GetParent implements DashboardTreeRun

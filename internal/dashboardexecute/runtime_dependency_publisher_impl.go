@@ -23,14 +23,14 @@ type runtimeDependencyPublisherImpl struct {
 	subscriptions  map[string][]*RuntimeDependencyPublishTarget
 	withValueMutex *sync.Mutex
 	withRuns       map[string]*LeafRun
-	inputs         map[string]*modconfig.DashboardInput
+	inputs         map[string]*powerpipe.DashboardInput
 }
 
 func newRuntimeDependencyPublisherImpl(resource powerpipe.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
 	b := runtimeDependencyPublisherImpl{
 		DashboardParentImpl: newDashboardParentImpl(resource, parent, run, executionTree),
 		subscriptions:       make(map[string][]*RuntimeDependencyPublishTarget),
-		inputs:              make(map[string]*modconfig.DashboardInput),
+		inputs:              make(map[string]*powerpipe.DashboardInput),
 		withRuns:            make(map[string]*LeafRun),
 		withValueMutex:      new(sync.Mutex),
 	}
@@ -67,7 +67,7 @@ func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *p
 		// we cannot use withRuns here as if withs have dependencies on each other,
 		// this function may be called before all runs have been added
 		// instead, look directly at the underlying resource withs
-		if wp, ok := p.resource.(modconfig.WithProvider); ok {
+		if wp, ok := p.resource.(powerpipe.WithProvider); ok {
 			for _, w := range wp.GetWiths() {
 				if w.UnqualifiedName == resourceName {
 					return true
@@ -123,7 +123,7 @@ func (p *runtimeDependencyPublisherImpl) GetWithRuns() map[string]*LeafRun {
 
 func (p *runtimeDependencyPublisherImpl) initWiths() error {
 	// if the resource is a runtime dependency provider, create with runs and resolve dependencies
-	wp, ok := p.resource.(modconfig.WithProvider)
+	wp, ok := p.resource.(powerpipe.WithProvider)
 	if !ok {
 		return nil
 	}
@@ -264,7 +264,7 @@ func populateData(withData *dashboardtypes.LeafData, result *dashboardtypes.Reso
 	}
 }
 
-func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*modconfig.DashboardWith, executionTree *DashboardExecutionTree) error {
+func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*powerpipe.DashboardWith, executionTree *DashboardExecutionTree) error {
 	for _, w := range withs {
 		// NOTE: set the name of the run to be the scoped name
 		withRunName := fmt.Sprintf("%s.%s", p.GetName(), w.UnqualifiedName)

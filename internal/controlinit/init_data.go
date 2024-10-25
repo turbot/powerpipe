@@ -21,8 +21,8 @@ type CheckTarget interface {
 	*powerpipe.Benchmark | *powerpipe.Control
 }
 
-type InitData struct {
-	initialisation.InitData
+type InitData[T CheckTarget] struct {
+	initialisation.InitData[T]
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
 }
@@ -30,14 +30,14 @@ type InitData struct {
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData(ctx context.Context, cmd *cobra.Command, args []string) *InitData {
+func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
 
 	statushooks.SetStatus(ctx, "Loading workspace")
 
-	initData := initialisation.NewInitData(ctx, cmd, args...)
+	initData := initialisation.NewInitData[T](ctx, cmd, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData{
+	i := &InitData[T]{
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {
@@ -59,8 +59,8 @@ func NewInitData(ctx context.Context, cmd *cobra.Command, args []string) *InitDa
 		i.Result.Error = err
 		return i
 	}
-
-	if len(w.GetResourceMaps().Controls)+len(w.GetResourceMaps().Benchmarks) == 0 {
+	rm := w.GetResourceMaps().(*powerpipe.PowerpipeResourceMaps)
+	if len(rm.Controls)+len(rm.Benchmarks) == 0 {
 		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
 	}
 
@@ -95,7 +95,7 @@ func NewInitData(ctx context.Context, cmd *cobra.Command, args []string) *InitDa
 	return i
 }
 
-func (i *InitData[T]) setControlFilter() {
+func (i *InitData) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
@@ -110,7 +110,7 @@ func (i *InitData[T]) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData[T]) registerCheckExporters() error {
+func (i *InitData) registerCheckExporters() error {
 	exporters, err := controldisplay.GetExporters()
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 

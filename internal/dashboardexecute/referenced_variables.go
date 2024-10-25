@@ -15,7 +15,7 @@ import (
 // <mod>.<var-name>
 // the VariableValues map will contain these variables with the name format <mod>.var.<var-name>,
 // so we must convert the name
-func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.WorkspaceEvents) (map[string]string, error) {
+func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.PowerpipeWorkspace) (map[string]string, error) {
 	var referencedVariables = make(map[string]string)
 
 	addReferencedVars := func(refs []*modconfig.ResourceReference) {
@@ -26,7 +26,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.W
 				varValueName := varName
 				// NOTE: if the ref is NOT for the workspace mod, then use the qualified variable name
 				// (e.g. aws_insights.var.v1)
-				if refMod := ref.GetMetadata().ModName; refMod != w.Mod.ShortName {
+				if refMod := ref.GetMetadata().ModName; refMod != w.Mod.GetShortName() {
 					varValueName = fmt.Sprintf("%s.var.%s", refMod, varName)
 					varName = fmt.Sprintf("%s.%s", refMod, varName)
 				}

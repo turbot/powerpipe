@@ -3,7 +3,6 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"sync"
 	"time"
@@ -11,6 +10,7 @@ import (
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -109,7 +109,7 @@ func NewControlRun(control *powerpipe.Control, group *ResultGroup, executionTree
 	controlId := control.Name()
 
 	// only show qualified control names for controls from dependent mods
-	if control.Mod.Name() == executionTree.Workspace.Mod.Name() {
+	if control.Mod.Name() == executionTree.Workspace.GetMod().Name() {
 		controlId = control.UnqualifiedName
 	}
 

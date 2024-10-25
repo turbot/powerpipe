@@ -59,7 +59,7 @@ Examples:
 		modUninstallCmd(),
 		modUpdateCmd(),
 		modListCmd(),
-		showCmd[*modconfig.Mod](),
+		showCmd[modconfig.ModI](),
 		modInitCmd(),
 	)
 
@@ -130,7 +130,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
 	workspacePath := viper.GetString(constants.ArgModLocation)
-	workspaceMod, err := parse.LoadModfile(workspacePath)
+	workspaceMod, err := parse.LoadModfile[T](workspacePath)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 
 	// if no mod was loaded, create a default
@@ -223,7 +223,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile[T](viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable output
@@ -284,7 +284,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile[T](viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable output
@@ -339,13 +339,13 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 	// if the output format is json or yaml, call the generic list function
 	output := viper.GetString(constants.ArgOutput)
 	if output == constants.OutputFormatJSON || output == constants.OutputFormatYAML {
-		display.ListResources[*modconfig.Mod](cmd)
+		display.ListResources[modconfig.ModI](cmd)
 		return
 	}
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile[T](viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable
@@ -403,7 +403,7 @@ func runModInitCmd(cmd *cobra.Command, args []string) {
 	}
 }
 
-func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (*modconfig.Mod, error) {
+func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (modconfig.ModI, error) {
 	if !modinstaller.ValidateModLocation(ctx, workspacePath) {
 		return nil, fmt.Errorf("mod %s cancelled", cmd.Name())
 	}
@@ -423,7 +423,7 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 
 	// load up the written mod file so that we get the updated
 	// block ranges
-	mod, err := parse.LoadModfile(workspacePath)
+	mod, err := parse.LoadModfile[T](workspacePath)
 	if err != nil {
 		return nil, err
 	}

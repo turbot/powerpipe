@@ -118,15 +118,15 @@ func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
 
 func dashboardChildCommands() []*cobra.Command {
 	res := []*cobra.Command{
-		resourceCmd[*modconfig.DashboardCard](withCmdName("card")),
-		resourceCmd[*modconfig.DashboardChart](withCmdName("chart")),
-		resourceCmd[*modconfig.DashboardContainer](withCmdName("container")),
-		resourceCmd[*modconfig.DashboardFlow](withCmdName("flow")),
-		resourceCmd[*modconfig.DashboardGraph](withCmdName("graph")),
-		resourceCmd[*modconfig.DashboardHierarchy](withCmdName("hierarchy")),
-		resourceCmd[*modconfig.DashboardImage](withCmdName("image")),
-		resourceCmd[*modconfig.DashboardTable](withCmdName("table")),
-		resourceCmd[*modconfig.DashboardText](withCmdName("text")),
+		resourceCmd[*powerpipe.DashboardCard](withCmdName("card")),
+		resourceCmd[*powerpipe.DashboardChart](withCmdName("chart")),
+		resourceCmd[*powerpipe.DashboardContainer](withCmdName("container")),
+		resourceCmd[*powerpipe.DashboardFlow](withCmdName("flow")),
+		resourceCmd[*powerpipe.DashboardGraph](withCmdName("graph")),
+		resourceCmd[*powerpipe.DashboardHierarchy](withCmdName("hierarchy")),
+		resourceCmd[*powerpipe.DashboardImage](withCmdName("image")),
+		resourceCmd[*powerpipe.DashboardTable](withCmdName("table")),
+		resourceCmd[*powerpipe.DashboardText](withCmdName("text")),
 	}
 
 	// set all to hidden
@@ -142,7 +142,7 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 	switch any(empty).(type) {
 	case *powerpipe.Query:
 		return queryRunCmd()
-	case *modconfig.Dashboard:
+	case *powerpipe.Dashboard:
 		return dashboardRunCmd()
 	case *powerpipe.Benchmark:
 		return checkCmd[*powerpipe.Benchmark]()

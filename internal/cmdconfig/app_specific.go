@@ -1,7 +1,10 @@
 package cmdconfig
 
 import (
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/pipe-fittings/parse"
+	fparse "github.com/turbot/pipe-fittings/parse/flowpipe"
 	"os"
 	"path/filepath"
 	"strings"
@@ -72,7 +75,10 @@ func SetAppSpecificConstants() {
 	app_specific.VersionCheckPath = "api/cli/version/latest"
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 
-	app_specific.NewResourceMapsFunc = powerpipe.NewPowerpipeResourceMaps
+	// set app specific parse related constants
+	modconfig.NewResourceMapsFunc = powerpipe.NewPowerpipeResourceMaps
+	parse.ModDecoderFunc = fparse.NewFlowpipeModDecoder
+
 	// register supported connection types
 	registerConnections()
 }

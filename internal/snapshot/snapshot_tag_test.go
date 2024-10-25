@@ -19,7 +19,7 @@ func TestGetAsSnapshotPropertyMap(t *testing.T) {
 	}{
 		{name: "card",
 			args: args{
-				item: modconfig.DashboardChart{
+				item: powerpipe.DashboardChart{
 					QueryProviderImpl: powerpipe.QueryProviderImpl{
 						RuntimeDependencyProviderImpl: powerpipe.RuntimeDependencyProviderImpl{
 							ModTreeItemImpl: modconfig.ModTreeItemImpl{
@@ -33,15 +33,15 @@ func TestGetAsSnapshotPropertyMap(t *testing.T) {
 						},
 						SQL: utils.ToStringPointer("select 1"),
 					},
-					Axes: &modconfig.DashboardChartAxes{
-						X: &modconfig.DashboardChartAxesX{
-							Title: &modconfig.DashboardChartAxisTitle{
+					Axes: &powerpipe.DashboardChartAxes{
+						X: &powerpipe.DashboardChartAxesX{
+							Title: &powerpipe.DashboardChartAxisTitle{
 								Value: utils.ToStringPointer("x axis"),
 							},
 							Min: utils.ToIntegerPointer(0),
 							Max: utils.ToIntegerPointer(1000),
 						},
-						Y: &modconfig.DashboardChartAxesY{},
+						Y: &powerpipe.DashboardChartAxesY{},
 					},
 				},
 			},

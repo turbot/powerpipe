@@ -28,10 +28,10 @@ type Server struct {
 	mutex            *sync.Mutex
 	dashboardClients map[string]*DashboardClientInfo
 	webSocket        *melody.Melody
-	workspace        *workspace.WorkspaceEvents
+	workspace        *workspace.PowerpipeWorkspace
 }
 
-func NewServer(ctx context.Context, w *workspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, w *workspace.PowerpipeWorkspace, webSocket *melody.Melody) (*Server, error) {
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)

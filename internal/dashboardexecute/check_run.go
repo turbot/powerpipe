@@ -87,7 +87,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 		r.SetError(ctx, err)
 		return
 	}
-	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, workspace.ResourceFilter{}, r.resource)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace, client, workspace.ResourceFilter{}, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)

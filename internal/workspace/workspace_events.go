@@ -69,8 +69,11 @@ func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 	}
 }
 
-func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, resourceMaps, prevResourceMaps *powerpipe.PowerpipeResourceMaps) {
+func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r, p modconfig.ResourceMapsI) {
 	event := &dashboardevents.DashboardChanged{}
+
+	resourceMaps := r.(*powerpipe.PowerpipeResourceMaps)
+	prevResourceMaps := p.(*powerpipe.PowerpipeResourceMaps)
 
 	// TODO reports can we use a PowerpipeResourceMaps diff function to do all of this - we are duplicating logic
 
