@@ -76,7 +76,7 @@ func SetAppSpecificConstants() {
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 
 	// set app specific parse related constants
-	modconfig.NewResourceMapsFunc = powerpipe.NewPowerpipeResourceMaps
+	modconfig.AppSpecificNewResourceMapsFunc = powerpipe.NewPowerpipeResourceMaps
 	parse.ModDecoderFunc = fparse.NewFlowpipeModDecoder
 
 	// register supported connection types
