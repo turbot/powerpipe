@@ -13,7 +13,7 @@ import (
 )
 
 type PowerpipeWorkspace struct {
-	workspace.WorkspaceBase[*powerpipe.ModResources]
+	workspace.Workspace[*powerpipe.ModResources]
 	// event handlers
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
@@ -22,7 +22,7 @@ type PowerpipeWorkspace struct {
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 	w := &PowerpipeWorkspace{
-		WorkspaceBase: workspace.WorkspaceBase[*powerpipe.ModResources]{
+		Workspace: workspace.Workspace[*powerpipe.ModResources]{
 			Path:              workspacePath,
 			VariableValues:    make(map[string]string),
 			ValidateVariables: true,
@@ -40,7 +40,7 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 }
 
 func (w *PowerpipeWorkspace) Close() {
-	w.WorkspaceBase.Close()
+	w.Workspace.Close()
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first
 		w.dashboardEventChan = nil

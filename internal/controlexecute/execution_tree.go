@@ -39,10 +39,10 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]struct{}
 }
 
-func NewExecutionTree(ctx context.Context, w pworkspace.WorkspaceI, client *db_client.DbClient, controlFilter pworkspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
+func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, client *db_client.DbClient, controlFilter pworkspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
-		Workspace:   w.(*workspace.PowerpipeWorkspace),
+		Workspace:   w,
 		client:      client,
 		ControlRuns: make(map[string]*ControlRun),
 	}
