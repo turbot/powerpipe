@@ -204,7 +204,8 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 // This is used to implement the 'where' control filtering
 func (e *ExecutionTree) getControlMapFromFilter(controlFilter pworkspace.ResourceFilter) (map[string]struct{}, error) {
 	var res = make(map[string]struct{})
-	controls, err := pworkspace.FilterWorkspaceResourcesOfType[*powerpipe.Control](e.Workspace, controlFilter)
+	// TODO K pass workspace interface instead
+	controls, err := pworkspace.FilterWorkspaceResourcesOfType[*powerpipe.Control](&e.Workspace.Workspace, controlFilter)
 	if err != nil {
 		return nil, err
 	}

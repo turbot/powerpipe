@@ -22,7 +22,7 @@ type PowerpipeWorkspace struct {
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 	w := &PowerpipeWorkspace{
-		Workspace: *workspace.Workspace{
+		Workspace: workspace.Workspace{
 			Path:              workspacePath,
 			VariableValues:    make(map[string]string),
 			ValidateVariables: true,

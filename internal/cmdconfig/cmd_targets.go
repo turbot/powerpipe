@@ -50,8 +50,8 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 	// now try to resolve targets
 	// NOTE: we only expect multiple targets for benchmarks which do not support query args
 	// however for resilience (and in case this changes), collect query args into a map
-
-	target, queryArgs, err = workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, w)
+	// TODO K pass workspace interface instead
+	target, queryArgs, err = workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 	if err != nil {
 		return nil, err
 	}
@@ -109,7 +109,8 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pwork
 
 	// now try to resolve targets
 	for _, cmdArg := range cmdArgs {
-		target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, w)
+		// TODO K pass workspace interface instead
+		target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 		if err != nil {
 			return nil, err
 		}
@@ -151,10 +152,11 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 			if !ok {
 				return false
 			}
-			return mti.GetMod().GetShortName() == w.mod.ShortName
+			return mti.GetMod().GetShortName() == w.Mod.ShortName
 		},
 	}
-	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](w, filter)
+	// TODO K pass workspace interface instead
+	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](&w.Workspace, filter)
 	if err != nil {
 		return nil, err
 	}

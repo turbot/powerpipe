@@ -291,7 +291,7 @@ func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData 
 		if err != nil {
 			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 		}
-		name := fmt.Sprintf("check.%s", initData.Workspace.mod.ShortName)
+		name := fmt.Sprintf("check.%s", initData.Workspace.Mod.ShortName)
 		trees = append(trees, newNamedExecutionTree(name, executionTree))
 	} else {
 		// otherwise return multiple trees

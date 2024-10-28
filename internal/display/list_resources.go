@@ -29,8 +29,9 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	// get resource filter depending on resource type and output type
-	resourceFilter := getListResourceFilter[T](w)
-	resources, err := workspace.FilterWorkspaceResourcesOfType[T](w, resourceFilter)
+	// TODO K pass workspace interface instead
+	resourceFilter := getListResourceFilter[T](&w.Workspace)
+	resources, err := workspace.FilterWorkspaceResourcesOfType[T](&w.Workspace, resourceFilter)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed to filter resources")
 		return
