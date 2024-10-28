@@ -29,7 +29,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 	// Set the AppSpecificNewResourceMapsFunc to the Powerpipe NewResourceMaps function
 	modconfig.AppSpecificNewResourceMapsFunc = powerpipe.NewModResources
 
-	var mod = powerpipe.NewMod("test_mod", ".", hcl.Range{})
+	var mod = modconfig.NewMod("test_mod", ".", hcl.Range{})
 	mod.ResourceMaps = &powerpipe.ModResources{
 		Benchmarks: map[string]*powerpipe.Benchmark{},
 		Controls: map[string]*powerpipe.Control{
@@ -41,7 +41,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 		},
 	}
 	var w = &PowerpipeWorkspace{
-		Workspace: *workspace.Workspace{
+		Workspace: workspace.Workspace{
 			Mod: mod,
 		},
 	}
@@ -164,7 +164,7 @@ func executeTests[T modconfig.HclResource](t *testing.T, controlTests []testCase
 		}
 		t.Run(tt.name, func(t *testing.T) {
 
-			got, err := workspace.FilterWorkspaceResourcesOfType[T](w, tt.filter)
+			got, err := workspace.FilterWorkspaceResourcesOfType[T](&w.Workspace, tt.filter)
 			if err != nil {
 				t.Fatalf("FilterWorkspaceResourcesOfType() test '%s' error = %v", tt.name, err)
 			}
