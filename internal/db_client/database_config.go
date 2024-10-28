@@ -30,7 +30,8 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 		modRequirement := workspaceMod.GetRequire().GetModDependency(depName)
 		if modRequirement == nil {
 			// not expected
-			return database, searchPathConfig, sperr.New("could not find mod requirement for '%s' in workspace mod %s", depName, workspaceMod.GetShortName())
+			return database, searchPathConfig, sperr.New("could not find mod requirement for '%s' in workspace mod %s", depName, workspace
+			 mod.ShortName)
 		}
 
 		// if the mod requirement has a search path, prefix or database, set it in viper,

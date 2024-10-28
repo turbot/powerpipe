@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"log/slog"
 	"strings"
 
@@ -131,7 +130,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
 	workspacePath := viper.GetString(constants.ArgModLocation)
-	workspaceMod, err := parse.LoadModfile[*powerpipe.ModResources](workspacePath)
+	workspaceMod, err := parse.LoadModfile(workspacePath)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 
 	// if no mod was loaded, create a default
@@ -144,7 +143,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 	}
 
 	// if any mod names were passed as args, convert into formed mod names
-	installOpts := modinstaller.NewInstallOpts[*powerpipe.ModResources](workspaceMod, args...)
+	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
 	installOpts.PluginVersions = getPluginVersions(ctx)
 
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
@@ -224,7 +223,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile[*powerpipe.ModResources](viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable output
@@ -232,7 +231,7 @@ func runModUninstallCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	opts := modinstaller.NewInstallOpts[*powerpipe.ModResources](workspaceMod, args...)
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
 
 	installData, err := modinstaller.UninstallWorkspaceDependencies(ctx, opts)
 	error_helpers.FailOnError(err)
@@ -285,7 +284,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile[*powerpipe.ModResources](viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable output
@@ -293,7 +292,7 @@ func runModUpdateCmd(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	opts := modinstaller.NewInstallOpts[*powerpipe.ModResources](workspaceMod, args...)
+	opts := modinstaller.NewInstallOpts(workspaceMod, args...)
 
 	// do this update
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
@@ -346,7 +345,7 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 
 	// try to load the workspace mod definition
 	// - if it does not exist, this will return a nil mod and a nil error
-	workspaceMod, err := parse.LoadModfile[*powerpipe.ModResources](viper.GetString(constants.ArgModLocation))
+	workspaceMod, err := parse.LoadModfile(viper.GetString(constants.ArgModLocation))
 	error_helpers.FailOnErrorWithMessage(err, "failed to load mod definition")
 	if workspaceMod == nil {
 		//nolint:forbidigo // acceptable
@@ -354,7 +353,7 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 		return
 	}
 
-	opts := modinstaller.NewInstallOpts[*powerpipe.ModResources](workspaceMod)
+	opts := modinstaller.NewInstallOpts(workspaceMod)
 	installer, err := modinstaller.NewModInstaller(opts)
 	error_helpers.FailOnError(err)
 
@@ -424,7 +423,7 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 
 	// load up the written mod file so that we get the updated
 	// block ranges
-	mod, err := parse.LoadModfile[*powerpipe.ModResources](workspacePath)
+	mod, err := parse.LoadModfile(workspacePath)
 	if err != nil {
 		return nil, err
 	}

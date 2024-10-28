@@ -26,7 +26,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.P
 				varValueName := varName
 				// NOTE: if the ref is NOT for the workspace mod, then use the qualified variable name
 				// (e.g. aws_insights.var.v1)
-				if refMod := ref.GetMetadata().ModName; refMod != w.Mod.GetShortName() {
+				if refMod := ref.GetMetadata().ModName; refMod != w.mod.ShortName {
 					varValueName = fmt.Sprintf("%s.var.%s", refMod, varName)
 					varName = fmt.Sprintf("%s.%s", refMod, varName)
 				}

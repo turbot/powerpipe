@@ -41,7 +41,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 		},
 	}
 	var w = &PowerpipeWorkspace{
-		Workspace: workspace.Workspace[*powerpipe.ModResources]{
+		Workspace: *workspace.Workspace{
 			Mod: mod,
 		},
 	}

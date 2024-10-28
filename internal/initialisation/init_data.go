@@ -3,7 +3,6 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"log/slog"
 
@@ -147,7 +146,7 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	if viper.GetBool(constants.ArgModInstall) {
 		statushooks.SetStatus(ctx, "Installing workspace dependencies")
 		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts[*powerpipe.ModResources](i.Workspace.Mod)
+		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
 		// arg pull should always be set (to a default at least) if ArgModInstall is set
 		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
 		// use force install so that errors are ignored during installation

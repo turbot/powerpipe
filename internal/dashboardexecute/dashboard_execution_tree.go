@@ -208,7 +208,7 @@ func (e *DashboardExecutionTree) SetError(ctx context.Context, err error) {
 // GetName implements DashboardParent
 // use mod short name - this will be the root name for all child runs
 func (e *DashboardExecutionTree) GetName() string {
-	return e.workspace.Mod.GetShortName()
+	return e.workspace.mod.ShortName
 }
 
 // GetParent implements DashboardTreeRun

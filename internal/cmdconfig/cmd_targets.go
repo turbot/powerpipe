@@ -151,7 +151,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 			if !ok {
 				return false
 			}
-			return mti.GetMod().GetShortName() == w.Mod.GetShortName()
+			return mti.GetMod().GetShortName() == w.mod.ShortName
 		},
 	}
 	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](w, filter)

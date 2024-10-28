@@ -54,7 +54,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	}
 }
 
-func getListResourceFilter[T modconfig.ModTreeItem](w workspace.WorkspaceI) workspace.ResourceFilter {
+func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) workspace.ResourceFilter {
 	var res = workspace.ResourceFilter{}
 
 	var empty T

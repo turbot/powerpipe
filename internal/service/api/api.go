@@ -72,7 +72,7 @@ type APIService struct {
 	webSocket      *melody.Melody
 
 	// the loaded workspace
-	workspace workspace.WorkspaceI
+	workspace *workspace.Workspace
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -85,7 +85,7 @@ func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	}
 }
 
-func WithWorkspace(workspace workspace.WorkspaceI) APIServiceOption {
+func WithWorkspace(workspace *workspace.Workspace) APIServiceOption {
 	return func(api *APIService) error {
 		api.workspace = workspace
 		return nil

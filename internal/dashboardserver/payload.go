@@ -33,7 +33,7 @@ func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steam
 		installedMods[mod.GetFullName()] = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.GetTitle()),
 			FullName:  mod.GetFullName(),
-			ShortName: mod.GetShortName(),
+			ShortName: mod.ShortName,
 		}
 	}
 
@@ -76,7 +76,7 @@ func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steam
 		payload.Metadata.Mod = &ModMetadata{
 			Title:     typeHelpers.SafeString(mod.GetTitle()),
 			FullName:  mod.GetFullName(),
-			ShortName: mod.GetShortName(),
+			ShortName: mod.ShortName,
 		}
 	}
 	// if telemetry is enabled, send cloud metadata
