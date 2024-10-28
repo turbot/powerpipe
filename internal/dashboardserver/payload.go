@@ -196,7 +196,7 @@ func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error)
 			isTopLevel := false
 			for _, parent := range benchmark.GetParents() {
 				switch parent.(type) {
-				case modconfig.ModI:
+				case *modconfig.Mod:
 					isTopLevel = true
 				}
 			}

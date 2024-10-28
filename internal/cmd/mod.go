@@ -60,7 +60,7 @@ Examples:
 		modUninstallCmd(),
 		modUpdateCmd(),
 		modListCmd(),
-		showCmd[modconfig.ModI](),
+		showCmd[*modconfig.Mod](),
 		modInitCmd(),
 	)
 
@@ -340,7 +340,7 @@ func runModListCmd(cmd *cobra.Command, _ []string) {
 	// if the output format is json or yaml, call the generic list function
 	output := viper.GetString(constants.ArgOutput)
 	if output == constants.OutputFormatJSON || output == constants.OutputFormatYAML {
-		display.ListResources[modconfig.ModI](cmd)
+		display.ListResources[*modconfig.Mod](cmd)
 		return
 	}
 
@@ -404,7 +404,7 @@ func runModInitCmd(cmd *cobra.Command, args []string) {
 	}
 }
 
-func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (modconfig.ModI, error) {
+func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath string) (*modconfig.Mod, error) {
 	if !modinstaller.ValidateModLocation(ctx, workspacePath) {
 		return nil, fmt.Errorf("mod %s cancelled", cmd.Name())
 	}
@@ -413,7 +413,7 @@ func createWorkspaceMod(ctx context.Context, cmd *cobra.Command, workspacePath s
 		error_helpers.ShowWarning("Working folder already contains a mod definition file")
 		return nil, nil
 	}
-	mod := modconfig.CreateDefaultMod[*powerpipe.ModResources](workspacePath)
+	mod := modconfig.CreateDefaultMod(workspacePath)
 	if err := mod.Save(); err != nil {
 		return nil, err
 	}

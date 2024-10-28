@@ -191,7 +191,7 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap)
 }
 
-func validateModRequirementsRecursively(mod modconfig.ModI, client *db_client.DbClient) []string {
+func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
 	var pluginVersionMap = &plugin.PluginVersionMap{

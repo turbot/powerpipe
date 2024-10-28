@@ -99,7 +99,7 @@ func getListLoadWorkspaceOpts[T modconfig.ModTreeItem]() []pworkspace.LoadPowerp
 		pworkspace.WithVariableValidation(false),
 	}
 	switch any(empty).(type) {
-	case modconfig.ModI:
+	case *modconfig.Mod:
 		opts = append(opts, pworkspace.WithBlockType([]string{schema.BlockTypeMod}))
 	case *modconfig.Variable:
 		opts = append(opts, pworkspace.WithBlockType([]string{schema.BlockTypeVariable}))

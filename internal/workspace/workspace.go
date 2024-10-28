@@ -26,7 +26,7 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 			Path:              workspacePath,
 			VariableValues:    make(map[string]string),
 			ValidateVariables: true,
-			Mod:               modconfig.NewModBase[*powerpipe.ModResources]("local", workspacePath, hcl.Range{}),
+			Mod:               modconfig.NewMod("local", workspacePath, hcl.Range{}),
 		},
 	}
 
