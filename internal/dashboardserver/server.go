@@ -211,7 +211,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			_ = s.webSocket.Broadcast(payload)
 
 			// Emit available dashboards event
-			payload, payloadError = buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			workspaceResources := s.workspace.GetPowerpipeResourceMaps()
+			payload, payloadError = buildAvailableDashboardsPayload(workspaceResources)
 			if payloadError != nil {
 				return
 			}
@@ -362,7 +363,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
-			payload, err := buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeResourceMaps())
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}

@@ -4,8 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
-	"github.com/turbot/powerpipe/internal/db_client"
 	"os"
 	"strings"
 	"sync"
@@ -17,6 +15,7 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/workspace"
 )
 
@@ -115,7 +114,7 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 
 func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *workspace.PowerpipeWorkspace) (map[string]any, error) {
 	// find snapshot path in workspace
-	snapshotPath, ok := w.GetResourceMaps().(*powerpipe.ModResources).Snapshots[snapshotName]
+	snapshotPath, ok := w.GetPowerpipeResourceMaps().Snapshots[snapshotName]
 	if !ok {
 		return nil, fmt.Errorf("snapshot %s not found in %s (%s)", snapshotName, w.Mod.Name(), w.Path)
 	}

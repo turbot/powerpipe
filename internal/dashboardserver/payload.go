@@ -159,8 +159,7 @@ func addBenchmarkChildren(benchmark *powerpipe.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error) {
-	workspaceResources := rm.(*powerpipe.ModResources)
+func buildAvailableDashboardsPayload(workspaceResources *powerpipe.ModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -173,8 +172,9 @@ func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error)
 		// build a map of the dashboards provided by each mod
 
 		// iterate over the dashboards for the top level mod - this will include the dashboards from dependency mods
-		rm := workspaceResources.Mod.GetResourceMaps().(*powerpipe.ModResources)
-		for _, dashboard := range rm.Dashboards {
+		topLevelResources := powerpipe.GetModResources(workspaceResources.Mod)
+
+		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
@@ -187,7 +187,7 @@ func buildAvailableDashboardsPayload(rm modconfig.ResourceMapsI) ([]byte, error)
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range rm.Benchmarks {
+		for _, benchmark := range topLevelResources.Benchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}

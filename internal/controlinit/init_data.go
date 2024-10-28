@@ -59,8 +59,8 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		i.Result.Error = err
 		return i
 	}
-	rm := w.GetResourceMaps().(*powerpipe.ModResources)
-	if len(rm.Controls)+len(rm.Benchmarks) == 0 {
+	modResources := powerpipe.GetModResources(w.Mod)
+	if len(modResources.Controls)+len(modResources.Benchmarks) == 0 {
 		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
 	}
 

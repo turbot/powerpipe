@@ -104,3 +104,30 @@ func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider powerpi
 	return queryProvider.GetResolvedQuery(runtimeArgs)
 
 }
+
+func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (powerpipe.QueryProvider, bool) {
+	parsedName, err := modconfig.ParseResourceName(queryName)
+	if err != nil {
+		return nil, false
+	}
+	// try to find the resource
+	if resource, ok := w.GetResource(parsedName); ok {
+		// found a resource - is it a query provider
+		if qp := resource.(powerpipe.QueryProvider); ok {
+			return qp, true
+		}
+		slog.Debug("GetQueryProviderImpl found a mod resource resource for query but it is not a query provider", "resourceName", queryName)
+	}
+
+	return nil, false
+}
+
+// GetPowerpipeResourceMaps returns the powerpipe ModResources from the workspace, cast to the correct type
+func (w *PowerpipeWorkspace) GetPowerpipeResourceMaps() *powerpipe.ModResources {
+	resourceMaps, ok := w.GetResourceMaps().(*powerpipe.ModResources)
+	if !ok {
+		// should never happen
+		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a powerpipe ModResources: %T", w.GetResourceMaps()))
+	}
+	return resourceMaps
+}

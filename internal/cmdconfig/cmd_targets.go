@@ -51,13 +51,14 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 	// NOTE: we only expect multiple targets for benchmarks which do not support query args
 	// however for resilience (and in case this changes), collect query args into a map
 	// TODO K pass workspace interface instead
-	target, queryArgs, err = workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
+	target, queryArgs, err = pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 	if err != nil {
 		return nil, err
 	}
 	if helpers.IsNil(target) {
 		return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArg, w.Mod.Name(), w.Path)
 	}
+	// TODO KAI CHECK QUERY ARGS LOGIC HERE
 	if queryArgs != nil {
 		return nil, sperr.New("benchmarks do not support query args")
 	}
@@ -109,8 +110,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pwork
 
 	// now try to resolve targets
 	for _, cmdArg := range cmdArgs {
-		// TODO K pass workspace interface instead
-		target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
+		target, queryArgs, err := pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 		if err != nil {
 			return nil, err
 		}

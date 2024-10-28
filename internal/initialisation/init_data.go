@@ -19,7 +19,6 @@ import (
 	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
-	pworkspace "github.com/turbot/pipe-fittings/workspace"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -98,7 +97,7 @@ func commandRequiresModfile(cmd *cobra.Command, args []string) bool {
 	}
 
 	// if the command is query run, and the first argument is a raw sql query, we don't need a modfile
-	_, argIsNamedResource := pworkspace.SqlLooksLikeExecutableResource(args[0])
+	_, argIsNamedResource := workspace.SqlLooksLikeExecutableResource(args[0])
 	return argIsNamedResource
 }
 
