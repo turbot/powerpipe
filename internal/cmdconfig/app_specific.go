@@ -1,10 +1,6 @@
 package cmdconfig
 
 import (
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
-	"github.com/turbot/pipe-fittings/parse"
-	fparse "github.com/turbot/pipe-fittings/parse/flowpipe"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +14,10 @@ import (
 	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/pipe-fittings/parse"
+	pparse "github.com/turbot/pipe-fittings/parse/powerpipe"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
@@ -77,7 +77,7 @@ func SetAppSpecificConstants() {
 
 	// set app specific parse related constants
 	modconfig.AppSpecificNewResourceMapsFunc = powerpipe.NewModResources
-	parse.ModDecoderFunc = fparse.NewFlowpipeModDecoder
+	parse.ModDecoderFunc = pparse.NewPowerpipeModDecoder
 
 	// register supported connection types
 	registerConnections()

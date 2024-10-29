@@ -3,7 +3,6 @@ package cmdconfig
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/exp/maps"
 	"strings"
 
@@ -12,6 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/workspace"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -41,15 +41,13 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.Pow
 //   - verify the resource exists in the workspace
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
+//
+// TODO K add unit test
 func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 
 	var target modconfig.ModTreeItem
 	var queryArgs *powerpipe.QueryArgs
 	var err error
-	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
-	// now try to resolve targets
-	// NOTE: we only expect multiple targets for benchmarks which do not support query args
-	// however for resilience (and in case this changes), collect query args into a map
 	// TODO K pass workspace interface instead
 	target, queryArgs, err = pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 	if err != nil {
@@ -59,9 +57,9 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 		return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArg, w.Mod.Name(), w.Path)
 	}
 	// TODO KAI CHECK QUERY ARGS LOGIC HERE
-	if queryArgs != nil {
-		return nil, sperr.New("benchmarks do not support query args")
-	}
+	//if queryArgs != nil {
+	//	return nil, sperr.New("benchmarks do not support query args")
+	//}
 
 	// ok we managed to resolve
 
