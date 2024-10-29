@@ -27,7 +27,7 @@ func SetAppSpecificConstants() {
 	// set all app specific env var keys
 	app_specific.SetAppSpecificEnvVarKeys("POWERPIPE_")
 
-	// version
+	// version string
 	versionString := viper.GetString("main.version")
 	app_specific.AppVersion = semver.MustParse(versionString)
 
