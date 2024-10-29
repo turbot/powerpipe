@@ -2,7 +2,7 @@ package dashboardevents
 
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type DashboardChanged struct {
@@ -23,39 +23,39 @@ type DashboardChanged struct {
 	ChangedNodes       []*modconfig.ModTreeItemDiffs
 	ChangedEdges       []*modconfig.ModTreeItemDiffs
 
-	NewDashboards  []*powerpipe2.Dashboard
-	NewContainers  []*powerpipe2.DashboardContainer
-	NewControls    []*powerpipe2.Control
-	NewBenchmarks  []*powerpipe2.Benchmark
-	NewCards       []*powerpipe2.DashboardCard
-	NewCategories  []*powerpipe2.DashboardCategory
-	NewCharts      []*powerpipe2.DashboardChart
-	NewFlows       []*powerpipe2.DashboardFlow
-	NewGraphs      []*powerpipe2.DashboardGraph
-	NewHierarchies []*powerpipe2.DashboardHierarchy
-	NewImages      []*powerpipe2.DashboardImage
-	NewInputs      []*powerpipe2.DashboardInput
-	NewTables      []*powerpipe2.DashboardTable
-	NewTexts       []*powerpipe2.DashboardText
-	NewNodes       []*powerpipe2.DashboardNode
-	NewEdges       []*powerpipe2.DashboardEdge
+	NewDashboards  []*resources.Dashboard
+	NewContainers  []*resources.DashboardContainer
+	NewControls    []*resources.Control
+	NewBenchmarks  []*resources.Benchmark
+	NewCards       []*resources.DashboardCard
+	NewCategories  []*resources.DashboardCategory
+	NewCharts      []*resources.DashboardChart
+	NewFlows       []*resources.DashboardFlow
+	NewGraphs      []*resources.DashboardGraph
+	NewHierarchies []*resources.DashboardHierarchy
+	NewImages      []*resources.DashboardImage
+	NewInputs      []*resources.DashboardInput
+	NewTables      []*resources.DashboardTable
+	NewTexts       []*resources.DashboardText
+	NewNodes       []*resources.DashboardNode
+	NewEdges       []*resources.DashboardEdge
 
-	DeletedDashboards  []*powerpipe2.Dashboard
-	DeletedContainers  []*powerpipe2.DashboardContainer
-	DeletedControls    []*powerpipe2.Control
-	DeletedBenchmarks  []*powerpipe2.Benchmark
-	DeletedCards       []*powerpipe2.DashboardCard
-	DeletedCategories  []*powerpipe2.DashboardCategory
-	DeletedCharts      []*powerpipe2.DashboardChart
-	DeletedFlows       []*powerpipe2.DashboardFlow
-	DeletedGraphs      []*powerpipe2.DashboardGraph
-	DeletedHierarchies []*powerpipe2.DashboardHierarchy
-	DeletedImages      []*powerpipe2.DashboardImage
-	DeletedInputs      []*powerpipe2.DashboardInput
-	DeletedTables      []*powerpipe2.DashboardTable
-	DeletedTexts       []*powerpipe2.DashboardText
-	DeletedNodes       []*powerpipe2.DashboardNode
-	DeletedEdges       []*powerpipe2.DashboardEdge
+	DeletedDashboards  []*resources.Dashboard
+	DeletedContainers  []*resources.DashboardContainer
+	DeletedControls    []*resources.Control
+	DeletedBenchmarks  []*resources.Benchmark
+	DeletedCards       []*resources.DashboardCard
+	DeletedCategories  []*resources.DashboardCategory
+	DeletedCharts      []*resources.DashboardChart
+	DeletedFlows       []*resources.DashboardFlow
+	DeletedGraphs      []*resources.DashboardGraph
+	DeletedHierarchies []*resources.DashboardHierarchy
+	DeletedImages      []*resources.DashboardImage
+	DeletedInputs      []*resources.DashboardInput
+	DeletedTables      []*resources.DashboardTable
+	DeletedTexts       []*resources.DashboardText
+	DeletedNodes       []*resources.DashboardNode
+	DeletedEdges       []*resources.DashboardEdge
 }
 
 // IsDashboardEvent implements DashboardEvent interface
@@ -307,7 +307,7 @@ func (c *DashboardChanged) WalkChangedResources(resourceFunc func(item modconfig
 	return nil
 }
 
-func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *powerpipe2.ModResources) {
+func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *resources.ModResources) {
 	if prevResourceMaps == nil {
 		return
 	}
@@ -339,54 +339,54 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		ChangedProperties: []string{"Children"},
 	}
 	switch item.(type) {
-	case *powerpipe2.Dashboard:
+	case *resources.Dashboard:
 		if !c.diffsContain(c.ChangedDashboards, item) {
 			c.ChangedDashboards = append(c.ChangedDashboards, diff)
 		}
-	case *powerpipe2.DashboardContainer:
+	case *resources.DashboardContainer:
 		if !c.diffsContain(c.ChangedContainers, item) {
 			c.ChangedContainers = append(c.ChangedContainers, diff)
 		}
-	case *powerpipe2.Control:
+	case *resources.Control:
 		if !c.diffsContain(c.ChangedControls, item) {
 			c.ChangedControls = append(c.ChangedControls, diff)
 		}
-	case *powerpipe2.Benchmark:
+	case *resources.Benchmark:
 		if !c.diffsContain(c.ChangedBenchmarks, item) {
 			c.ChangedBenchmarks = append(c.ChangedBenchmarks, diff)
 		}
-	case *powerpipe2.DashboardCard:
+	case *resources.DashboardCard:
 		if !c.diffsContain(c.ChangedCards, item) {
 			c.ChangedCards = append(c.ChangedCards, diff)
 		}
-	case *powerpipe2.DashboardCategory:
+	case *resources.DashboardCategory:
 		if !c.diffsContain(c.ChangedCategories, item) {
 			c.ChangedCategories = append(c.ChangedCategories, diff)
 		}
-	case *powerpipe2.DashboardChart:
+	case *resources.DashboardChart:
 		if !c.diffsContain(c.ChangedCharts, item) {
 			c.ChangedCharts = append(c.ChangedCharts, diff)
 		}
-	case *powerpipe2.DashboardHierarchy:
+	case *resources.DashboardHierarchy:
 		if !c.diffsContain(c.ChangedHierarchies, item) {
 			c.ChangedHierarchies = append(c.ChangedHierarchies, diff)
 		}
 
-	case *powerpipe2.DashboardImage:
+	case *resources.DashboardImage:
 		if !c.diffsContain(c.ChangedImages, item) {
 			c.ChangedImages = append(c.ChangedImages, diff)
 		}
 
-	case *powerpipe2.DashboardInput:
+	case *resources.DashboardInput:
 		if !c.diffsContain(c.ChangedInputs, item) {
 			c.ChangedInputs = append(c.ChangedInputs, diff)
 		}
 
-	case *powerpipe2.DashboardTable:
+	case *resources.DashboardTable:
 		if !c.diffsContain(c.ChangedTables, item) {
 			c.ChangedTables = append(c.ChangedTables, diff)
 		}
-	case *powerpipe2.DashboardText:
+	case *resources.DashboardText:
 		if !c.diffsContain(c.ChangedTexts, item) {
 			c.ChangedTexts = append(c.ChangedTexts, diff)
 		}

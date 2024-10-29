@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/spf13/viper"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -23,7 +23,7 @@ import (
 )
 
 func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
-	workspaceResources := rm.(*powerpipe2.ModResources)
+	workspaceResources := rm.(*resources.ModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -135,11 +135,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *powerpipe2.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *powerpipe2.Benchmark:
+		case *resources.Benchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -159,7 +159,7 @@ func addBenchmarkChildren(benchmark *powerpipe2.Benchmark, recordTrunk bool, tru
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *powerpipe2.ModResources) ([]byte, error) {
+func buildAvailableDashboardsPayload(workspaceResources *resources.ModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -172,7 +172,7 @@ func buildAvailableDashboardsPayload(workspaceResources *powerpipe2.ModResources
 		// build a map of the dashboards provided by each mod
 
 		// iterate over the dashboards for the top level mod - this will include the dashboards from dependency mods
-		topLevelResources := powerpipe2.GetModResources(workspaceResources.Mod)
+		topLevelResources := resources.GetModResources(workspaceResources.Mod)
 
 		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod

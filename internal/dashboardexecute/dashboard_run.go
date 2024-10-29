@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/schema"
@@ -16,7 +16,7 @@ type DashboardRun struct {
 	runtimeDependencyPublisherImpl
 
 	parent    dashboardtypes.DashboardParent
-	dashboard *powerpipe2.Dashboard
+	dashboard *resources.Dashboard
 }
 
 func (r *DashboardRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -36,7 +36,7 @@ func (r *DashboardRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDashboardRun(dashboard *powerpipe2.Dashboard, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardRun, error) {
+func NewDashboardRun(dashboard *resources.Dashboard, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardRun, error) {
 	r := &DashboardRun{
 		parent:    parent,
 		dashboard: dashboard,
@@ -100,7 +100,7 @@ func (r *DashboardRun) Execute(ctx context.Context) {
 func (*DashboardRun) IsSnapshotPanel() {}
 
 // GetInput searches for an input with the given name
-func (r *DashboardRun) GetInput(name string) (*powerpipe2.DashboardInput, bool) {
+func (r *DashboardRun) GetInput(name string) (*resources.DashboardInput, bool) {
 	return r.dashboard.GetInput(name)
 }
 
@@ -123,25 +123,25 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *powerpipe2.DashboardWith:
+		case *resources.DashboardWith:
 			// ignore as with runs are created by RuntimeDependencyPublisherImpl
 			continue
-		case *powerpipe2.Dashboard:
+		case *resources.Dashboard:
 			childRun, err = NewDashboardRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *powerpipe2.DashboardContainer:
+		case *resources.DashboardContainer:
 			childRun, err = NewDashboardContainerRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *powerpipe2.Benchmark, *powerpipe2.Control:
-			childRun, err = NewCheckRun(i.(powerpipe2.DashboardLeafNode), r, executionTree)
+		case *resources.Benchmark, *resources.Control:
+			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *powerpipe2.DashboardInput:
+		case *resources.DashboardInput:
 			// NOTE: clone the input to avoid mutating the original
 			// TODO remove the need for this when we refactor input values resolution
 			// TODO https://github.com/turbot/steampipe/issues/2864
@@ -157,7 +157,7 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 
 		default:
 			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(powerpipe2.DashboardLeafNode)
+			leafNode, ok := i.(resources.DashboardLeafNode)
 			if !ok {
 				return fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
 			}

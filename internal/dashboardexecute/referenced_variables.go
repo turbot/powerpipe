@@ -2,7 +2,7 @@ package dashboardexecute
 
 import (
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"strings"
 
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -51,7 +51,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.P
 		}
 	case *CheckRun:
 		switch n := r.resource.(type) {
-		case *powerpipe2.Benchmark:
+		case *resources.Benchmark:
 			err := n.WalkResources(
 				func(resource modconfig.ModTreeItem) (bool, error) {
 					if resourceWithMetadata, ok := resource.(modconfig.ResourceWithMetadata); ok {
@@ -63,7 +63,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.P
 			if err != nil {
 				return nil, err
 			}
-		case *powerpipe2.Control:
+		case *resources.Control:
 			addReferencedVars(n.GetReferences())
 		}
 	}

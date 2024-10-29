@@ -3,7 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -14,7 +14,7 @@ import (
 type DashboardContainerRun struct {
 	DashboardParentImpl
 
-	dashboardNode *powerpipe2.DashboardContainer
+	dashboardNode *resources.DashboardContainer
 }
 
 func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -29,7 +29,7 @@ func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDashboardContainerRun(container *powerpipe2.DashboardContainer, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardContainerRun, error) {
+func NewDashboardContainerRun(container *resources.DashboardContainer, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardContainerRun, error) {
 	children := container.GetChildren()
 
 	r := &DashboardContainerRun{dashboardNode: container}
@@ -49,25 +49,25 @@ func NewDashboardContainerRun(container *powerpipe2.DashboardContainer, parent d
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *powerpipe2.DashboardContainer:
+		case *resources.DashboardContainer:
 			childRun, err = NewDashboardContainerRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}
-		case *powerpipe2.Dashboard:
+		case *resources.Dashboard:
 			childRun, err = NewDashboardRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}
-		case *powerpipe2.Benchmark, *powerpipe2.Control:
-			childRun, err = NewCheckRun(i.(powerpipe2.DashboardLeafNode), r, executionTree)
+		case *resources.Benchmark, *resources.Control:
+			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
 			if err != nil {
 				return nil, err
 			}
 
 		default:
 			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(powerpipe2.DashboardLeafNode)
+			leafNode, ok := i.(resources.DashboardLeafNode)
 			if !ok {
 				return nil, fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
 			}

@@ -3,9 +3,8 @@ package controlinit
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/cobra"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
@@ -14,11 +13,12 @@ import (
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*powerpipe2.Benchmark | *powerpipe2.Control
+	*resources.Benchmark | *resources.Control
 }
 
 type InitData[T CheckTarget] struct {
@@ -59,7 +59,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		i.Result.Error = err
 		return i
 	}
-	modResources := powerpipe2.GetModResources(w.Mod)
+	modResources := resources.GetModResources(w.Mod)
 	if len(modResources.Controls)+len(modResources.Benchmarks) == 0 {
 		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
 	}

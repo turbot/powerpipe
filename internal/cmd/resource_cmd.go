@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -26,7 +26,7 @@ type ResourceCommandConfig struct {
 }
 
 func newResourceCommandConfig[T modconfig.ModTreeItem]() *ResourceCommandConfig {
-	typeName := powerpipe2.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 	return &ResourceCommandConfig{
 		cmd: typeName,
 	}
@@ -62,7 +62,7 @@ func resourceCmd[T modconfig.ModTreeItem](opts ...ResourceCommandOption) *cobra.
 }
 
 func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := powerpipe2.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Args:  cobra.NoArgs,
@@ -79,7 +79,7 @@ func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
 }
 
 func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := powerpipe2.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
@@ -99,7 +99,7 @@ func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
 
 // determine which resource commands apply to this resource
 func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
-	typeName := powerpipe2.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 
 	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
 
@@ -118,15 +118,15 @@ func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
 
 func dashboardChildCommands() []*cobra.Command {
 	res := []*cobra.Command{
-		resourceCmd[*powerpipe2.DashboardCard](withCmdName("card")),
-		resourceCmd[*powerpipe2.DashboardChart](withCmdName("chart")),
-		resourceCmd[*powerpipe2.DashboardContainer](withCmdName("container")),
-		resourceCmd[*powerpipe2.DashboardFlow](withCmdName("flow")),
-		resourceCmd[*powerpipe2.DashboardGraph](withCmdName("graph")),
-		resourceCmd[*powerpipe2.DashboardHierarchy](withCmdName("hierarchy")),
-		resourceCmd[*powerpipe2.DashboardImage](withCmdName("image")),
-		resourceCmd[*powerpipe2.DashboardTable](withCmdName("table")),
-		resourceCmd[*powerpipe2.DashboardText](withCmdName("text")),
+		resourceCmd[*resources.DashboardCard](withCmdName("card")),
+		resourceCmd[*resources.DashboardChart](withCmdName("chart")),
+		resourceCmd[*resources.DashboardContainer](withCmdName("container")),
+		resourceCmd[*resources.DashboardFlow](withCmdName("flow")),
+		resourceCmd[*resources.DashboardGraph](withCmdName("graph")),
+		resourceCmd[*resources.DashboardHierarchy](withCmdName("hierarchy")),
+		resourceCmd[*resources.DashboardImage](withCmdName("image")),
+		resourceCmd[*resources.DashboardTable](withCmdName("table")),
+		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
 	// set all to hidden
@@ -140,14 +140,14 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 	var empty T
 
 	switch any(empty).(type) {
-	case *powerpipe2.Query:
+	case *resources.Query:
 		return queryRunCmd()
-	case *powerpipe2.Dashboard:
+	case *resources.Dashboard:
 		return dashboardRunCmd()
-	case *powerpipe2.Benchmark:
-		return checkCmd[*powerpipe2.Benchmark]()
-	case *powerpipe2.Control:
-		return checkCmd[*powerpipe2.Control]()
+	case *resources.Benchmark:
+		return checkCmd[*resources.Benchmark]()
+	case *resources.Control:
+		return checkCmd[*resources.Control]()
 	}
 
 	return nil

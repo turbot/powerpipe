@@ -3,7 +3,7 @@ package snapshot
 import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/utils"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"reflect"
 	"testing"
 )
@@ -19,9 +19,9 @@ func TestGetAsSnapshotPropertyMap(t *testing.T) {
 	}{
 		{name: "card",
 			args: args{
-				item: powerpipe2.DashboardChart{
-					QueryProviderImpl: powerpipe2.QueryProviderImpl{
-						RuntimeDependencyProviderImpl: powerpipe2.RuntimeDependencyProviderImpl{
+				item: resources.DashboardChart{
+					QueryProviderImpl: resources.QueryProviderImpl{
+						RuntimeDependencyProviderImpl: resources.RuntimeDependencyProviderImpl{
 							ModTreeItemImpl: modconfig.ModTreeItemImpl{
 								HclResourceImpl: modconfig.HclResourceImpl{
 									FullName:        "mod1.card.card1",
@@ -33,15 +33,15 @@ func TestGetAsSnapshotPropertyMap(t *testing.T) {
 						},
 						SQL: utils.ToStringPointer("select 1"),
 					},
-					Axes: &powerpipe2.DashboardChartAxes{
-						X: &powerpipe2.DashboardChartAxesX{
-							Title: &powerpipe2.DashboardChartAxisTitle{
+					Axes: &resources.DashboardChartAxes{
+						X: &resources.DashboardChartAxesX{
+							Title: &resources.DashboardChartAxisTitle{
 								Value: utils.ToStringPointer("x axis"),
 							},
 							Min: utils.ToIntegerPointer(0),
 							Max: utils.ToIntegerPointer(1000),
 						},
-						Y: &powerpipe2.DashboardChartAxesY{},
+						Y: &resources.DashboardChartAxesY{},
 					},
 				},
 			},

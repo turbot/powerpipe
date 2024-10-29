@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"strings"
 	"time"
@@ -105,7 +105,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData[*powerpipe2.Query](ctx, cmd, args...)
+	initData := initialisation.NewInitData[*resources.Query](ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
@@ -218,7 +218,7 @@ func setExitCodeForQueryError(err error) {
 
 func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime time.Time) (*queryresult.Result, error) {
 	// the table of a snapshot query has a fixed name
-	tablePanel, ok := snap.Panels[powerpipe2.SnapshotQueryTableName]
+	tablePanel, ok := snap.Panels[resources.SnapshotQueryTableName]
 	if !ok {
 		return nil, sperr.New("dashboard does not contain table result for query")
 	}

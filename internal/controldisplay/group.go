@@ -2,7 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"strings"
 
@@ -43,7 +43,7 @@ func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
 	// get the name of the last sibling which has controls (or is a control)
 	var finalSiblingName string
 	for _, s := range siblings {
-		if b, ok := s.(*powerpipe2.Benchmark); ok {
+		if b, ok := s.(*resources.Benchmark); ok {
 			// find the result group for this benchmark and see if it has controls
 			resultGroup := r.resultTree.Root.GetChildGroupByName(b.Name())
 			// if the result group has not controls, we will not find it in the result tree
@@ -160,7 +160,7 @@ func (r GroupRenderer) renderChildren() []string {
 	var childStrings []string
 
 	for _, child := range children {
-		if control, ok := child.(*powerpipe2.Control); ok {
+		if control, ok := child.(*resources.Control); ok {
 			// get Result group with a matching name
 			if run := r.group.GetControlRunByName(control.Name()); run != nil {
 				controlRenderer := NewControlRenderer(run, &r)

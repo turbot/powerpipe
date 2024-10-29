@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"context"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 
 	"github.com/mattn/go-isatty"
@@ -54,10 +54,10 @@ func rootCommand() *cobra.Command {
 		serverCmd(),
 		modCmd(),
 		loginCmd(),
-		resourceCmd[*powerpipe2.Benchmark](),
-		resourceCmd[*powerpipe2.Control](),
-		resourceCmd[*powerpipe2.Dashboard](),
-		resourceCmd[*powerpipe2.Query](),
+		resourceCmd[*resources.Benchmark](),
+		resourceCmd[*resources.Control](),
+		resourceCmd[*resources.Dashboard](),
+		resourceCmd[*resources.Query](),
 		resourceCmd[*modconfig.Variable](),
 	)
 

@@ -2,7 +2,7 @@ package workspace
 
 import (
 	"github.com/turbot/pipe-fittings/workspace"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/resources"
 	"testing"
 
 	"github.com/hashicorp/hcl/v2"
@@ -10,8 +10,8 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 )
 
-func makeControl(mod *modconfig.Mod, name, title, description, sql string, tags map[string]string) *powerpipe2.Control {
-	control := powerpipe2.NewControl(&hcl.Block{Type: "control"}, mod, name).(*powerpipe2.Control)
+func makeControl(mod *modconfig.Mod, name, title, description, sql string, tags map[string]string) *resources.Control {
+	control := resources.NewControl(&hcl.Block{Type: "control"}, mod, name).(*resources.Control)
 	control.Title = &title
 	control.Description = &description
 	control.Tags = tags
@@ -27,12 +27,12 @@ type testCase[T modconfig.HclResource] struct {
 
 func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 	// Set the AppSpecificNewResourceMapsFunc to the Powerpipe NewResourceMaps function
-	modconfig.AppSpecificNewResourceMapsFunc = powerpipe2.NewModResources
+	modconfig.AppSpecificNewResourceMapsFunc = resources.NewModResources
 
 	var mod = modconfig.NewMod("test_mod", ".", hcl.Range{})
-	mod.ResourceMaps = &powerpipe2.ModResources{
-		Benchmarks: map[string]*powerpipe2.Benchmark{},
-		Controls: map[string]*powerpipe2.Control{
+	mod.ResourceMaps = &resources.ModResources{
+		Benchmarks: map[string]*resources.Benchmark{},
+		Controls: map[string]*resources.Control{
 			"control1":  makeControl(mod, "control1", "Control 1", "Control 1 description", "SELECT * FROM table1", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo"}),
 			"control2a": makeControl(mod, "control2a", "Control 2", "Control 2a description", "SELECT id FROM table2", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo_a"}),
 			"control2b": makeControl(mod, "control2b", "Control 2", "Control 2b description", "SELECT * FROM table2", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo_b"}),
@@ -46,7 +46,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 		},
 	}
 
-	controlTests := []testCase[*powerpipe2.Control]{
+	controlTests := []testCase[*resources.Control]{
 		{
 			name: `where "name = 'control1'"`,
 			filter: workspace.ResourceFilter{
@@ -153,10 +153,10 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 	//var testFilter = "name like 'control1'"
 	var testFilter = ""
 
-	executeTests[*powerpipe2.Control](t, controlTests, testFilter, w)
+	executeTests[*resources.Control](t, controlTests, testFilter, w)
 }
 
-func executeTests[T modconfig.HclResource](t *testing.T, controlTests []testCase[*powerpipe2.Control], testFilter string, w *PowerpipeWorkspace) {
+func executeTests[T modconfig.HclResource](t *testing.T, controlTests []testCase[*resources.Control], testFilter string, w *PowerpipeWorkspace) {
 	for _, tt := range controlTests {
 		// apply test filter if specified
 		if testFilter != "" && tt.name != testFilter {
