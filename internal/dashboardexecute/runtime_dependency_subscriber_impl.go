@@ -3,7 +3,6 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"sync"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 )
 
