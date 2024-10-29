@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
@@ -90,13 +90,13 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 
 func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
 	switch r := rootResource.(type) {
-	case *powerpipe.Dashboard:
+	case *powerpipe2.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *powerpipe.Benchmark:
+	case *powerpipe2.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *powerpipe.Query:
+	case *powerpipe2.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := powerpipe.NewQueryDashboard(r)
+		dashboard, err := powerpipe2.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		e.dashboardName = dashboard.Name()
 		if err != nil {
@@ -341,7 +341,7 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (*DashboardExecutionTree) GetResource() powerpipe.DashboardLeafNode {
+func (*DashboardExecutionTree) GetResource() powerpipe2.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
 }
 

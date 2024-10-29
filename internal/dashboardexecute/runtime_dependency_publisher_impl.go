@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"strconv"
 	"sync"
@@ -23,19 +23,19 @@ type runtimeDependencyPublisherImpl struct {
 	subscriptions  map[string][]*RuntimeDependencyPublishTarget
 	withValueMutex *sync.Mutex
 	withRuns       map[string]*LeafRun
-	inputs         map[string]*powerpipe.DashboardInput
+	inputs         map[string]*powerpipe2.DashboardInput
 }
 
-func newRuntimeDependencyPublisherImpl(resource powerpipe.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
+func newRuntimeDependencyPublisherImpl(resource powerpipe2.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
 	b := runtimeDependencyPublisherImpl{
 		DashboardParentImpl: newDashboardParentImpl(resource, parent, run, executionTree),
 		subscriptions:       make(map[string][]*RuntimeDependencyPublishTarget),
-		inputs:              make(map[string]*powerpipe.DashboardInput),
+		inputs:              make(map[string]*powerpipe2.DashboardInput),
 		withRuns:            make(map[string]*LeafRun),
 		withValueMutex:      new(sync.Mutex),
 	}
 	// if the resource is a query provider, get params and set status
-	if queryProvider, ok := resource.(powerpipe.QueryProvider); ok {
+	if queryProvider, ok := resource.(powerpipe2.QueryProvider); ok {
 		// get params
 		b.Params = queryProvider.GetParams()
 		if queryProvider.RequiresExecution(queryProvider) || len(queryProvider.GetChildren()) > 0 {
@@ -60,14 +60,14 @@ func (p *runtimeDependencyPublisherImpl) GetName() string {
 	return p.Name
 }
 
-func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *powerpipe.RuntimeDependency) bool {
+func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *powerpipe2.RuntimeDependency) bool {
 	resourceName := dependency.SourceResourceName()
 	switch dependency.PropertyPath.ItemType {
 	case schema.BlockTypeWith:
 		// we cannot use withRuns here as if withs have dependencies on each other,
 		// this function may be called before all runs have been added
 		// instead, look directly at the underlying resource withs
-		if wp, ok := p.resource.(powerpipe.WithProvider); ok {
+		if wp, ok := p.resource.(powerpipe2.WithProvider); ok {
 			for _, w := range wp.GetWiths() {
 				if w.UnqualifiedName == resourceName {
 					return true
@@ -123,7 +123,7 @@ func (p *runtimeDependencyPublisherImpl) GetWithRuns() map[string]*LeafRun {
 
 func (p *runtimeDependencyPublisherImpl) initWiths() error {
 	// if the resource is a runtime dependency provider, create with runs and resolve dependencies
-	wp, ok := p.resource.(powerpipe.WithProvider)
+	wp, ok := p.resource.(powerpipe2.WithProvider)
 	if !ok {
 		return nil
 	}
@@ -264,7 +264,7 @@ func populateData(withData *dashboardtypes.LeafData, result *dashboardtypes.Reso
 	}
 }
 
-func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*powerpipe.DashboardWith, executionTree *DashboardExecutionTree) error {
+func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*powerpipe2.DashboardWith, executionTree *DashboardExecutionTree) error {
 	for _, w := range withs {
 		// NOTE: set the name of the run to be the scoped name
 		withRunName := fmt.Sprintf("%s.%s", p.GetName(), w.UnqualifiedName)

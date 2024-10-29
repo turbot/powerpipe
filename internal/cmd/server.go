@@ -3,7 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"os/signal"
 
@@ -75,7 +75,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData[*powerpipe.Dashboard](ctx, cmd)
+	modInitData := initialisation.NewInitData[*resources.Dashboard](ctx, cmd)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets

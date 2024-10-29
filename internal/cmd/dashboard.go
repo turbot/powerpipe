@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"strings"
 
@@ -120,7 +120,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData[*powerpipe.Dashboard](ctx, cmd, dashboardName)
+	initData := initialisation.NewInitData[*resources.Dashboard](ctx, cmd, dashboardName)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(dashboardExporters()...)

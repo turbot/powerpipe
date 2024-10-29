@@ -3,13 +3,13 @@ package cmdconfig
 import (
 	"fmt"
 	"github.com/spf13/viper"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/workspace"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
@@ -46,7 +46,7 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.Pow
 func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 
 	var target modconfig.ModTreeItem
-	var queryArgs *powerpipe.QueryArgs
+	var queryArgs *powerpipe2.QueryArgs
 	var err error
 	// TODO K pass workspace interface instead
 	target, queryArgs, err = pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
@@ -82,14 +82,14 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 		// if the target is a query provider set the args
 		// (if the target is a dashboard, which is not a query provider,
 		// we read the args from viper separately and use to populate the inputs)
-		if qp, ok := any(target).(powerpipe.QueryProvider); ok {
+		if qp, ok := any(target).(powerpipe2.QueryProvider); ok {
 			qp.SetArgs(queryArgs)
 		}
 	}
 	// now set the command line args
 	if !commandLineQueryArgs.Empty() {
 		// if the target is a query provider set the args
-		if qp, ok := any(target).(powerpipe.QueryProvider); ok {
+		if qp, ok := any(target).(powerpipe2.QueryProvider); ok {
 			qp.SetArgs(commandLineQueryArgs)
 		}
 	}
@@ -102,7 +102,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pwork
 	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
 	// verify T is Benchmark (should be enforced by Cobra)
 	var empty T
-	if _, isBenchmark := (any(empty)).(*powerpipe.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*powerpipe2.Benchmark); !isBenchmark {
 		return nil, sperr.New("multiple targets are only supported for benchmarks")
 	}
 
@@ -138,7 +138,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 		return nil, nil
 	}
 	var empty T
-	if _, isBenchmark := (any(empty)).(*powerpipe.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*powerpipe2.Benchmark); !isBenchmark {
 		return nil, nil
 	}
 
@@ -162,16 +162,16 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 	targets := ToModTreeItemSlice(maps.Values(targetsMap))
 
 	// make a root item to hold the benchmarks
-	resolvedItem := powerpipe.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
+	resolvedItem := powerpipe2.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
 
 	return []modconfig.ModTreeItem{resolvedItem}, nil
 
 }
 
 // build a QueryArgs from any args passed using the --args flag
-func getCommandLineQueryArgs() (*powerpipe.QueryArgs, error) {
+func getCommandLineQueryArgs() (*powerpipe2.QueryArgs, error) {
 	argTuples := viper.GetStringSlice(constants.ArgArg)
-	var res = powerpipe.NewQueryArgs()
+	var res = powerpipe2.NewQueryArgs()
 
 	if argTuples == nil {
 		return res, nil

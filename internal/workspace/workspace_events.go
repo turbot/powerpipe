@@ -2,7 +2,7 @@ package workspace
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"reflect"
 	"sync/atomic"
@@ -72,8 +72,8 @@ func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r, p modconfig.ResourceMapsI) {
 	event := &dashboardevents.DashboardChanged{}
 
-	resourceMaps := r.(*powerpipe.ModResources)
-	prevResourceMaps := p.(*powerpipe.ModResources)
+	resourceMaps := r.(*resources.ModResources)
+	prevResourceMaps := p.(*resources.ModResources)
 
 	// TODO reports can we use a ModResources diff function to do all of this - we are duplicating logic
 

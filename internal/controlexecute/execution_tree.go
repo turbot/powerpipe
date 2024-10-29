@@ -2,6 +2,7 @@ package controlexecute
 
 import (
 	"context"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"log/slog"
 	"sort"
@@ -11,7 +12,6 @@ import (
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	pworkspace "github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 
@@ -64,7 +64,7 @@ func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, clie
 		resolvedItem = targets[0]
 	} else {
 		// create a root benchmark with `items` as it's children
-		resolvedItem = powerpipe.NewRootBenchmarkWithChildren(w.GetMod(), targets).(modconfig.ModTreeItem)
+		resolvedItem = powerpipe2.NewRootBenchmarkWithChildren(w.GetMod(), targets).(modconfig.ModTreeItem)
 	}
 
 	// build tree of result groups, starting with a synthetic 'root' node
@@ -98,7 +98,7 @@ func (*ExecutionTree) IsExportSourceData() {}
 
 // AddControl checks whether control should be included in the tree
 // if so, creates a ControlRun, which is added to the parent group
-func (e *ExecutionTree) AddControl(ctx context.Context, control *powerpipe.Control, group *ResultGroup) error {
+func (e *ExecutionTree) AddControl(ctx context.Context, control *powerpipe2.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
 		// check if we have a run already
@@ -205,7 +205,7 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 func (e *ExecutionTree) getControlMapFromFilter(controlFilter pworkspace.ResourceFilter) (map[string]struct{}, error) {
 	var res = make(map[string]struct{})
 	// TODO K pass workspace interface instead
-	controls, err := pworkspace.FilterWorkspaceResourcesOfType[*powerpipe.Control](&e.Workspace.Workspace, controlFilter)
+	controls, err := pworkspace.FilterWorkspaceResourcesOfType[*powerpipe2.Control](&e.Workspace.Workspace, controlFilter)
 	if err != nil {
 		return nil, err
 	}

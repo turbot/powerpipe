@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/spf13/cobra"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
@@ -18,7 +18,7 @@ import (
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*powerpipe.Benchmark | *powerpipe.Control
+	*powerpipe2.Benchmark | *powerpipe2.Control
 }
 
 type InitData[T CheckTarget] struct {
@@ -59,7 +59,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		i.Result.Error = err
 		return i
 	}
-	modResources := powerpipe.GetModResources(w.Mod)
+	modResources := powerpipe2.GetModResources(w.Mod)
 	if len(modResources.Controls)+len(modResources.Benchmarks) == 0 {
 		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
 	}

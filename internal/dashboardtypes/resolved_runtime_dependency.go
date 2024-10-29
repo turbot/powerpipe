@@ -2,7 +2,7 @@ package dashboardtypes
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"sync"
 
@@ -12,7 +12,7 @@ import (
 // ResolvedRuntimeDependency is a wrapper for RuntimeDependency which contains the resolved value
 // we must wrap it so that we do not mutate the underlying workspace data when resolving dependency values
 type ResolvedRuntimeDependency struct {
-	Dependency *powerpipe.RuntimeDependency
+	Dependency *resources.RuntimeDependency
 	valueLock  sync.Mutex
 	Value      any
 	// the name of the run which publishes this dependency
@@ -20,7 +20,7 @@ type ResolvedRuntimeDependency struct {
 	valueChannel  chan *ResolvedRuntimeDependencyValue
 }
 
-func NewResolvedRuntimeDependency(dep *powerpipe.RuntimeDependency, valueChannel chan *ResolvedRuntimeDependencyValue, publisherName string) *ResolvedRuntimeDependency {
+func NewResolvedRuntimeDependency(dep *resources.RuntimeDependency, valueChannel chan *ResolvedRuntimeDependencyValue, publisherName string) *ResolvedRuntimeDependency {
 	return &ResolvedRuntimeDependency{
 		Dependency:    dep,
 		valueChannel:  valueChannel,

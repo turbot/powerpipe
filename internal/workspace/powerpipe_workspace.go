@@ -6,9 +6,9 @@ import (
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modconfig/powerpipe"
 	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
+	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 )
 
@@ -50,7 +50,7 @@ func (w *PowerpipeWorkspace) Close() {
 }
 
 func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
-	for _, d := range w.Mod.GetResourceMaps().(*powerpipe.ModResources).Dashboards {
+	for _, d := range w.Mod.GetResourceMaps().(*powerpipe2.ModResources).Dashboards {
 		if err := d.ValidateRuntimeDependencies(w); err != nil {
 			return err
 		}
@@ -59,7 +59,7 @@ func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
 }
 
 // ResolveQueryFromQueryProvider resolves the query for the given QueryProvider
-func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider powerpipe.QueryProvider, runtimeArgs *powerpipe.QueryArgs) (*powerpipe.ResolvedQuery, error) {
+func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider powerpipe2.QueryProvider, runtimeArgs *powerpipe2.QueryArgs) (*powerpipe2.ResolvedQuery, error) {
 	slog.Debug("ResolveQueryFromQueryProvider", "resourceName", queryProvider.Name())
 
 	query := queryProvider.GetQuery()
@@ -69,7 +69,7 @@ func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider powerpi
 
 	// merge the base args with the runtime args
 	var err error
-	runtimeArgs, err = powerpipe.MergeArgs(queryProvider, runtimeArgs)
+	runtimeArgs, err = powerpipe2.MergeArgs(queryProvider, runtimeArgs)
 	if err != nil {
 		return nil, err
 	}
@@ -105,7 +105,7 @@ func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider powerpi
 
 }
 
-func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (powerpipe.QueryProvider, bool) {
+func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (powerpipe2.QueryProvider, bool) {
 	parsedName, err := modconfig.ParseResourceName(queryName)
 	if err != nil {
 		return nil, false
@@ -113,7 +113,7 @@ func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (powerpipe.Query
 	// try to find the resource
 	if resource, ok := w.GetResource(parsedName); ok {
 		// found a resource - is it a query provider
-		if qp := resource.(powerpipe.QueryProvider); ok {
+		if qp := resource.(powerpipe2.QueryProvider); ok {
 			return qp, true
 		}
 		slog.Debug("GetQueryProviderImpl found a mod resource resource for query but it is not a query provider", "resourceName", queryName)
@@ -123,8 +123,8 @@ func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (powerpipe.Query
 }
 
 // GetPowerpipeResourceMaps returns the powerpipe ModResources from the workspace, cast to the correct type
-func (w *PowerpipeWorkspace) GetPowerpipeResourceMaps() *powerpipe.ModResources {
-	resourceMaps, ok := w.GetResourceMaps().(*powerpipe.ModResources)
+func (w *PowerpipeWorkspace) GetPowerpipeResourceMaps() *powerpipe2.ModResources {
+	resourceMaps, ok := w.GetResourceMaps().(*powerpipe2.ModResources)
 	if !ok {
 		// should never happen
 		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a powerpipe ModResources: %T", w.GetResourceMaps()))
