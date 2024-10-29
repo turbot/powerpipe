@@ -2,8 +2,6 @@ package workspace
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/parse"
-	powerpipe2 "github.com/turbot/powerpipe/internal/resources"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
@@ -13,10 +11,12 @@ import (
 	"github.com/turbot/pipe-fittings/sperr"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/pipe-fittings/workspace"
+	pparse "github.com/turbot/powerpipe/internal/parse"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // ResolveResourceAndArgsFromSQLString attempts to resolve 'arg' to a resource of type T and (optionally) query args
-func ResolveResourceAndArgsFromSQLString[T modconfig.ModTreeItem](sqlString string, w *workspace.Workspace) (modconfig.ModTreeItem, *powerpipe2.QueryArgs, error) {
+func ResolveResourceAndArgsFromSQLString[T modconfig.ModTreeItem](sqlString string, w *workspace.Workspace) (modconfig.ModTreeItem, *resources.QueryArgs, error) {
 	var err error
 	var empty T
 
@@ -38,7 +38,7 @@ func ResolveResourceAndArgsFromSQLString[T modconfig.ModTreeItem](sqlString stri
 		return empty, nil, fmt.Errorf("'%s' not found in %s (%s)", name, w.GetMod().Name(), w.GetPath())
 	}
 	switch any(empty).(type) {
-	case *powerpipe2.Query:
+	case *resources.Query:
 		// if the desired type is a query,  and the sqlString DOES NOT look like a resource name,
 		// treat it as a raw query and create a Query to wrap it
 		q := createQueryResourceForCommandLineQuery(sqlString, w.GetMod())
@@ -58,7 +58,7 @@ func ResolveResourceAndArgsFromSQLString[T modconfig.ModTreeItem](sqlString stri
 
 // does the input look like a resource which can be executed as a query
 // Note: if anything fails just return nil values
-func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *workspace.Workspace) (modconfig.ModTreeItem, *powerpipe2.QueryArgs, error) {
+func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *workspace.Workspace) (modconfig.ModTreeItem, *resources.QueryArgs, error) {
 	// can we extract a resource name from the string
 	parsedResourceName, err := extractResourceNameFromQuery[T](input)
 	if err != nil {
@@ -80,7 +80,7 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 		return nil, nil, sperr.New("target '%s' is not of the expected type '%s'", resource.GetUnqualifiedName(), typeName)
 	}
 
-	_, args, err := flowpipe.ParseQueryInvocation(input)
+	_, args, err := pparse.ParseQueryInvocation(input)
 	if err != nil {
 		return nil, nil, err
 	}
@@ -91,12 +91,12 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 
 // convert the given command line query into a query resource and add to workspace
 // this is to allow us to use existing dashboard execution code
-func createQueryResourceForCommandLineQuery(queryString string, mod *modconfig.Mod) *powerpipe2.Query {
+func createQueryResourceForCommandLineQuery(queryString string, mod *modconfig.Mod) *resources.Query {
 	// build name
 	shortName := "command_line_query"
 
 	// this is NOT a named query - create the query using RawSql
-	q := powerpipe2.NewQuery(&hcl.Block{Type: schema.BlockTypeQuery}, mod, shortName).(*powerpipe2.Query)
+	q := resources.NewQuery(&hcl.Block{Type: schema.BlockTypeQuery}, mod, shortName).(*resources.Query)
 	q.SQL = utils.ToStringPointer(queryString)
 
 	// add empty metadata
@@ -110,7 +110,7 @@ func createQueryResourceForCommandLineQuery(queryString string, mod *modconfig.M
 // look at string up the the first open bracket
 func extractResourceNameFromQuery[T modconfig.ModTreeItem](input string) (*modconfig.ParsedResourceName, error) {
 	// convert the type T into a resource type name
-	resourceType := powerpipe2.GenericTypeToBlockType[T]()
+	resourceType := resources.GenericTypeToBlockType[T]()
 	// special case handling for variables
 	if resourceType == schema.BlockTypeVariable {
 		// variables are named var.xxxx, not variable.xxxx
