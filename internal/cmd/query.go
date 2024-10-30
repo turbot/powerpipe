@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"strings"
 	"time"
@@ -26,6 +25,7 @@ import (
 	"github.com/turbot/powerpipe/internal/display"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )

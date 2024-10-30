@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"strings"
 
 	"github.com/spf13/cobra"
@@ -14,6 +13,7 @@ import (
 	"github.com/turbot/pipe-fittings/schema"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // variable used to assign the output mode flag

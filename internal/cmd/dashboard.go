@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"strings"
 
@@ -29,6 +28,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
 
