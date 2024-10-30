@@ -58,9 +58,12 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 	if w.ModfileExists() || !cfg.skipResourceLoadIfNoModfile {
 		ew = w.LoadWorkspaceMod(ctx)
 	}
+	if ew.GetError() != nil {
+		return nil, ew
+	}
 
 	// verify all runtime dependencies can be resolved
 	ew.Error = w.verifyResourceRuntimeDependencies()
 
-	return
+	return w, ew
 }
