@@ -23,8 +23,6 @@ type QueryProviderImpl struct {
 	Params    []*modconfig.ParamDef `cty:"params" json:"params,omitempty"`
 	QueryName *string               `json:"query,omitempty"`
 
-	//nolint:unused // TODO: unused function
-	withs               []*DashboardWith
 	disableCtySerialise bool
 	// flags to indicate if params and args were inherited from base resource
 	argsInheritedFromBase   bool
