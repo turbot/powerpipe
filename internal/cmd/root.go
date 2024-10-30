@@ -2,7 +2,6 @@ package cmd
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 
 	"github.com/mattn/go-isatty"
@@ -16,6 +15,7 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 var exitCode int

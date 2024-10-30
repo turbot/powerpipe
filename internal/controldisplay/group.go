@@ -2,11 +2,11 @@ package controldisplay
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"strings"
 
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type GroupRenderer struct {

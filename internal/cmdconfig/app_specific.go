@@ -1,7 +1,6 @@
 package cmdconfig
 
 import (
-	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"path/filepath"
 	"strings"
@@ -18,6 +17,7 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/parse"
 	pparse "github.com/turbot/powerpipe/internal/parse"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings

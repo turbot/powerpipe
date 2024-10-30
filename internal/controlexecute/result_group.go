@@ -2,7 +2,6 @@ package controlexecute
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"sort"
 	"sync"
@@ -18,6 +17,7 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/sync/semaphore"
 )
 

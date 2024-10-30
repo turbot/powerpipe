@@ -3,7 +3,6 @@ package controlexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"sync"
 	"time"
@@ -20,6 +19,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )

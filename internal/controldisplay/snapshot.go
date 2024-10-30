@@ -3,13 +3,13 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {

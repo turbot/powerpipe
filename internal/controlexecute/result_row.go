@@ -2,7 +2,6 @@ package controlexecute
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/turbot/go-kit/helpers"
 	typehelpers "github.com/turbot/go-kit/types"
@@ -11,6 +10,7 @@ import (
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type ResultRows []*ResultRow

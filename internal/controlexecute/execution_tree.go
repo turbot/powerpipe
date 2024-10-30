@@ -2,8 +2,6 @@ package controlexecute
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/resources"
-	"github.com/turbot/powerpipe/internal/workspace"
 	"log/slog"
 	"sort"
 	"time"
@@ -14,8 +12,9 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 	pworkspace "github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
-
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/sync/semaphore"
 )
 

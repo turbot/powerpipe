@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"os"
 	"os/signal"
 
@@ -18,6 +17,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"

@@ -2,9 +2,9 @@ package dashboardtypes
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // DashboardTreeRun is an interface implemented by all dashboard run nodes

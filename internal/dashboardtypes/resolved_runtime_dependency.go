@@ -2,11 +2,11 @@ package dashboardtypes
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"sync"
 
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // ResolvedRuntimeDependency is a wrapper for RuntimeDependency which contains the resolved value

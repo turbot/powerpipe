@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/internal/resources"
-	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/exp/maps"
 
 	"github.com/turbot/pipe-fittings/constants"
@@ -17,6 +15,8 @@ import (
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
+	"github.com/turbot/powerpipe/internal/resources"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 )
 
 func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
