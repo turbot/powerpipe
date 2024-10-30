@@ -2,7 +2,7 @@ module github.com/turbot/powerpipe
 
 go 1.23.2
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
+//replace github.com/turbot/pipe-fittings => ../pipe-fittings
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
@@ -21,13 +21,14 @@ require (
 	github.com/spf13/cobra v1.8.1
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0
-	github.com/stevenle/topsort v0.2.0 // indirect
+	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.6.2
+	// develop branch 281024164508bc549bb702da27381e28ab77eb0b (spp specific resource refactor)
+	github.com/turbot/pipe-fittings v1.6.6-0.20241030175007-281024164508
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.0
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	github.com/zclconf/go-cty v1.14.4 // indirect
+	github.com/zclconf/go-cty v1.14.4
 	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	golang.org/x/exp v0.0.0-20240222234643-814bf88cf225
 	sigs.k8s.io/yaml v1.4.0 // indirect
@@ -193,7 +194,6 @@ require (
 	github.com/prometheus/common v0.39.0 // indirect
 	github.com/prometheus/procfs v0.9.0 // indirect
 	github.com/rivo/uniseg v0.4.3 // indirect
-	github.com/robfig/cron/v3 v3.0.1 // indirect
 	github.com/rs/xid v1.5.0 // indirect
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
