@@ -114,7 +114,7 @@ func (d *PowerpipeModDecoder) decodeNodeAndEdgeProviderBlocks(content *hclsyntax
 			}
 
 			// populate metadata, set references and call OnDecoded
-			parse.HandleModDecodeResult(child, childRes, block, parseCtx)
+			d.HandleModDecodeResult(child, childRes, block, parseCtx)
 			res.Merge(childRes)
 			if res.Success() {
 				moreDiags := nodeAndEdgeProvider.AddChild(child)
