@@ -48,7 +48,6 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 	var target modconfig.ModTreeItem
 	var queryArgs *resources.QueryArgs
 	var err error
-	// TODO K pass workspace interface instead
 	target, queryArgs, err = pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 	if err != nil {
 		return nil, err

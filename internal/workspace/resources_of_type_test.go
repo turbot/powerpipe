@@ -30,7 +30,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 	modconfig.AppSpecificNewResourceMapsFunc = resources.NewModResources
 
 	var mod = modconfig.NewMod("test_mod", ".", hcl.Range{})
-	mod.ResourceMaps = &resources.ModResources{
+	mod.ResourceMaps = &resources.PowerpipeModResources{
 		Benchmarks: map[string]*resources.Benchmark{},
 		Controls: map[string]*resources.Control{
 			"control1":  makeControl(mod, "control1", "Control 1", "Control 1 description", "SELECT * FROM table1", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo"}),

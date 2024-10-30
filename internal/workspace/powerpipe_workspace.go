@@ -33,7 +33,7 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 	w.OnFileWatcherError = func(ctx context.Context, err error) {
 		w.PublishDashboardEvent(ctx, &dashboardevents.WorkspaceError{Error: err})
 	}
-	w.OnFileWatcherEvent = func(ctx context.Context, resourceMaps, prevResourceMaps modconfig.ResourceMapsI) {
+	w.OnFileWatcherEvent = func(ctx context.Context, resourceMaps, prevResourceMaps modconfig.ModResources) {
 		w.raiseDashboardChangedEvents(ctx, resourceMaps, prevResourceMaps)
 	}
 	return w
@@ -50,7 +50,7 @@ func (w *PowerpipeWorkspace) Close() {
 }
 
 func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
-	for _, d := range w.Mod.GetResourceMaps().(*resources.ModResources).Dashboards {
+	for _, d := range w.Mod.GetResourceMaps().(*resources.PowerpipeModResources).Dashboards {
 		if err := d.ValidateRuntimeDependencies(w); err != nil {
 			return err
 		}
@@ -122,12 +122,12 @@ func (w *PowerpipeWorkspace) GetQueryProvider(queryName string) (resources.Query
 	return nil, false
 }
 
-// GetPowerpipeResourceMaps returns the powerpipe ModResources from the workspace, cast to the correct type
-func (w *PowerpipeWorkspace) GetPowerpipeResourceMaps() *resources.ModResources {
-	resourceMaps, ok := w.GetResourceMaps().(*resources.ModResources)
+// GetPowerpipeResourceMaps returns the powerpipe PowerpipeModResources from the workspace, cast to the correct type
+func (w *PowerpipeWorkspace) GetPowerpipeResourceMaps() *resources.PowerpipeModResources {
+	resourceMaps, ok := w.GetResourceMaps().(*resources.PowerpipeModResources)
 	if !ok {
 		// should never happen
-		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a powerpipe ModResources: %T", w.GetResourceMaps()))
+		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a powerpipe PowerpipeModResources: %T", w.GetResourceMaps()))
 	}
 	return resourceMaps
 }

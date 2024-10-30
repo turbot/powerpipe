@@ -307,7 +307,7 @@ func (c *DashboardChanged) WalkChangedResources(resourceFunc func(item modconfig
 	return nil
 }
 
-func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *resources.ModResources) {
+func (c *DashboardChanged) SetParentsChanged(item modconfig.ModTreeItem, prevResourceMaps *resources.PowerpipeModResources) {
 	if prevResourceMaps == nil {
 		return
 	}

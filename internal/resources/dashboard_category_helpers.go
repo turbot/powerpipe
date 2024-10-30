@@ -10,7 +10,7 @@ import (
 // this is used when a category has been retrieved via a HCL reference - as cty does not serialise all properties
 func enrichCategory(shellCategory *DashboardCategory, parent modconfig.HclResource, resourceMapProvider modconfig.ResourceMapsProvider) (*DashboardCategory, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
-	resourceMaps := resourceMapProvider.GetResourceMaps().(*ModResources)
+	resourceMaps := resourceMapProvider.GetResourceMaps().(*PowerpipeModResources)
 	fullCategory, ok := resourceMaps.DashboardCategories[shellCategory.Name()]
 	if !ok {
 		diags = diags.Append(&hcl.Diagnostic{

@@ -69,13 +69,13 @@ func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 	}
 }
 
-func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r, p modconfig.ResourceMapsI) {
+func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r, p modconfig.ModResources) {
 	event := &dashboardevents.DashboardChanged{}
 
-	resourceMaps := r.(*resources.ModResources)
-	prevResourceMaps := p.(*resources.ModResources)
+	resourceMaps := r.(*resources.PowerpipeModResources)
+	prevResourceMaps := p.(*resources.PowerpipeModResources)
 
-	// TODO reports can we use a ModResources diff function to do all of this - we are duplicating logic
+	// TODO reports can we use a PowerpipeModResources diff function to do all of this - we are duplicating logic
 
 	// first detect changes to existing resources and deletions
 	for name, prev := range prevResourceMaps.Dashboards {

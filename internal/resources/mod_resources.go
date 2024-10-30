@@ -8,18 +8,18 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 )
 
-func GetModResources(mod *modconfig.Mod) *ModResources {
-	resourceMaps, ok := mod.GetResourceMaps().(*ModResources)
+func GetModResources(mod *modconfig.Mod) *PowerpipeModResources {
+	resourceMaps, ok := mod.GetResourceMaps().(*PowerpipeModResources)
 	if !ok {
 		// should never happen
-		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a powerpipe ModResources: %T", mod.GetResourceMaps()))
+		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a PowerpipeModResources: %T", mod.GetResourceMaps()))
 	}
 	return resourceMaps
 }
 
-// ModResources is a struct containing maps of all mod resource types
+// PowerpipeModResources is a struct containing maps of all mod resource types
 // This is provided to avoid db needing to reference workspace package
-type ModResources struct {
+type PowerpipeModResources struct {
 	// the parent mod
 	Mod *modconfig.Mod
 
@@ -50,7 +50,7 @@ type ModResources struct {
 	Snapshots map[string]string
 }
 
-func NewModResources(mod *modconfig.Mod, sourceMaps ...modconfig.ResourceMapsI) modconfig.ResourceMapsI {
+func NewModResources(mod *modconfig.Mod, sourceMaps ...modconfig.ModResources) modconfig.ModResources {
 	res := emptyPowerpipeModResources()
 	res.Mod = mod
 	res.Mods[mod.GetInstallCacheKey()] = mod
@@ -58,8 +58,8 @@ func NewModResources(mod *modconfig.Mod, sourceMaps ...modconfig.ResourceMapsI) 
 	return res
 }
 
-func emptyPowerpipeModResources() *ModResources {
-	return &ModResources{
+func emptyPowerpipeModResources() *PowerpipeModResources {
+	return &PowerpipeModResources{
 		Controls:              make(map[string]*Control),
 		Benchmarks:            make(map[string]*Benchmark),
 		Dashboards:            make(map[string]*Dashboard),
@@ -87,7 +87,7 @@ func emptyPowerpipeModResources() *ModResources {
 }
 
 // QueryProviders returns a slice of all QueryProviders
-func (m *ModResources) QueryProviders() []QueryProvider {
+func (m *PowerpipeModResources) QueryProviders() []QueryProvider {
 	res := make([]QueryProvider, m.queryProviderCount())
 	idx := 0
 	f := func(item modconfig.HclResource) (bool, error) {
@@ -104,8 +104,8 @@ func (m *ModResources) QueryProviders() []QueryProvider {
 	return res
 }
 
-// TopLevelResources returns a new ModResources containing only top level resources (i.e. no dependencies)
-func (m *ModResources) TopLevelResources() modconfig.ResourceMapsI {
+// TopLevelResources returns a new PowerpipeModResources containing only top level resources (i.e. no dependencies)
+func (m *PowerpipeModResources) TopLevelResources() modconfig.ModResources {
 	res := NewModResources(m.Mod)
 
 	f := func(item modconfig.HclResource) (bool, error) {
@@ -124,8 +124,8 @@ func (m *ModResources) TopLevelResources() modconfig.ResourceMapsI {
 	return res
 }
 
-func (m *ModResources) Equals(o modconfig.ResourceMapsI) bool {
-	other, ok := o.(*ModResources)
+func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
+	other, ok := o.(*PowerpipeModResources)
 	if !ok {
 		return false
 	}
@@ -396,9 +396,9 @@ func (m *ModResources) Equals(o modconfig.ResourceMapsI) bool {
 	return true
 }
 
-// GetResource tries to find a resource with the given name in the ModResources
+// GetResource tries to find a resource with the given name in the PowerpipeModResources
 // NOTE: this does NOT support inputs, which are NOT uniquely named in a mod
-func (m *ModResources) GetResource(parsedName *modconfig.ParsedResourceName) (resource modconfig.HclResource, found bool) {
+func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResourceName) (resource modconfig.HclResource, found bool) {
 	modName := parsedName.Mod
 	if modName == "" {
 		modName = m.Mod.ShortName
@@ -461,7 +461,7 @@ func (m *ModResources) GetResource(parsedName *modconfig.ParsedResourceName) (re
 }
 
 // TODO K is this needed
-//func (m *ModResources) PopulateReferences() {
+//func (m *PowerpipeModResources) PopulateReferences() {
 //	utils.LogTime("ModPopulateReferences")
 //	defer utils.LogTime("ModPopulateReferences end")
 //
@@ -493,7 +493,7 @@ func (m *ModResources) GetResource(parsedName *modconfig.ParsedResourceName) (re
 //}
 
 // populate references for any nodes/edges which have reference a 'with'
-//func (m *ModResources) populateNodeEdgeProviderRefs(nep NodeAndEdgeProvider) {
+//func (m *PowerpipeModResources) populateNodeEdgeProviderRefs(nep NodeAndEdgeProvider) {
 //	var withRoots = map[string]WithProvider{}
 //	for _, n := range nep.GetNodes() {
 //		// lazy populate with-root
@@ -517,7 +517,7 @@ func (m *ModResources) GetResource(parsedName *modconfig.ParsedResourceName) (re
 //}
 
 // populate references for any 'with' blocks referenced by the RuntimeDependencyProvider
-//func (m *ModResources) populateWithRefs(name string, rdp RuntimeDependencyProvider, withRoot WithProvider) {
+//func (m *PowerpipeModResources) populateWithRefs(name string, rdp RuntimeDependencyProvider, withRoot WithProvider) {
 //	// unexpected but behave nicely
 //	if withRoot == nil {
 //		return
@@ -554,7 +554,7 @@ func (m *ModResources) GetResource(parsedName *modconfig.ParsedResourceName) (re
 //	return withRoot
 //}
 
-func (m *ModResources) Empty() bool {
+func (m *PowerpipeModResources) Empty() bool {
 	return len(m.Mods)+
 		len(m.Queries)+
 		len(m.Controls)+
@@ -577,10 +577,10 @@ func (m *ModResources) Empty() bool {
 		len(m.References) == 0
 }
 
-// this is used to create an optimized ModResources containing only the queries which will be run
+// this is used to create an optimized PowerpipeModResources containing only the queries which will be run
 //
 //nolint:unused // TODO: check this unused property
-func (m *ModResources) addControlOrQuery(provider QueryProvider) {
+func (m *PowerpipeModResources) addControlOrQuery(provider QueryProvider) {
 	switch p := provider.(type) {
 	case *Query:
 		if p != nil {
@@ -595,7 +595,7 @@ func (m *ModResources) addControlOrQuery(provider QueryProvider) {
 
 // WalkResources calls resourceFunc for every resource in the mod
 // if any resourceFunc returns false or an error, return immediately
-func (m *ModResources) WalkResources(resourceFunc func(item modconfig.HclResource) (bool, error)) error {
+func (m *PowerpipeModResources) WalkResources(resourceFunc func(item modconfig.HclResource) (bool, error)) error {
 	for _, r := range m.Mods {
 		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
 			return err
@@ -707,7 +707,7 @@ func (m *ModResources) WalkResources(resourceFunc func(item modconfig.HclResourc
 	return nil
 }
 
-func (m *ModResources) AddResource(item modconfig.HclResource) hcl.Diagnostics {
+func (m *PowerpipeModResources) AddResource(item modconfig.HclResource) hcl.Diagnostics {
 	var diags hcl.Diagnostics
 	switch r := item.(type) {
 	case *Query:
@@ -880,16 +880,16 @@ func (m *ModResources) AddResource(item modconfig.HclResource) hcl.Diagnostics {
 	return diags
 }
 
-func (m *ModResources) AddSnapshots(snapshotPaths []string) {
+func (m *PowerpipeModResources) AddSnapshots(snapshotPaths []string) {
 	for _, snapshotPath := range snapshotPaths {
 		snapshotName := fmt.Sprintf("snapshot.%s", utils.FilenameNoExtension(snapshotPath))
 		m.Snapshots[snapshotName] = snapshotPath
 	}
 }
 
-func (m *ModResources) AddMaps(sourceMaps ...modconfig.ResourceMapsI) {
+func (m *PowerpipeModResources) AddMaps(sourceMaps ...modconfig.ModResources) {
 	for _, s := range sourceMaps {
-		source := s.(*ModResources)
+		source := s.(*PowerpipeModResources)
 		for k, v := range source.Benchmarks {
 			m.Benchmarks[k] = v
 		}
@@ -963,7 +963,7 @@ func (m *ModResources) AddMaps(sourceMaps ...modconfig.ResourceMapsI) {
 	}
 }
 
-func (m *ModResources) queryProviderCount() int {
+func (m *PowerpipeModResources) queryProviderCount() int {
 	numDashboardInputs := 0
 	for _, inputs := range m.DashboardInputs {
 		numDashboardInputs += len(inputs)
@@ -986,18 +986,18 @@ func (m *ModResources) queryProviderCount() int {
 	return numItems
 }
 
-func (m *ModResources) AddReference(ref *modconfig.ResourceReference) {
+func (m *PowerpipeModResources) AddReference(ref *modconfig.ResourceReference) {
 	m.References[ref.String()] = ref
 }
 
-func (m *ModResources) GetReferences() map[string]*modconfig.ResourceReference {
+func (m *PowerpipeModResources) GetReferences() map[string]*modconfig.ResourceReference {
 	return m.References
 }
 
-func (m *ModResources) GetVariables() map[string]*modconfig.Variable {
+func (m *PowerpipeModResources) GetVariables() map[string]*modconfig.Variable {
 	return m.Variables
 }
 
-func (m *ModResources) GetMods() map[string]*modconfig.Mod {
+func (m *PowerpipeModResources) GetMods() map[string]*modconfig.Mod {
 	return m.Mods
 }

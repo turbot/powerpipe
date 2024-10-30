@@ -22,8 +22,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(rm modconfig.ResourceMapsI, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
-	workspaceResources := rm.(*resources.ModResources)
+func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
@@ -159,7 +159,7 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *resources.ModResources) ([]byte, error) {
+func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
