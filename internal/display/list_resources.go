@@ -65,7 +65,7 @@ func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) work
 		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {
 			// build a lookup of mod names to filter on
 			var modNames = map[string]struct{}{}
-			for _, mod := range w.GetMods() {
+			for _, mod := range w.Mods {
 				modNames[mod.Name()] = struct{}{}
 			}
 

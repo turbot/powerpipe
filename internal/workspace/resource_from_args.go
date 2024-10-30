@@ -35,16 +35,16 @@ func ResolveResourceAndArgsFromSQLString[T modconfig.ModTreeItem](sqlString stri
 	// so we failed to resolve the resource from the input string
 	// check whether it _looks_ like a resource name (i.e. mod.type.name OR type.name)
 	if name, looksLikeResource := SqlLooksLikeExecutableResource(sqlString); looksLikeResource {
-		return empty, nil, fmt.Errorf("'%s' not found in %s (%s)", name, w.GetMod().Name(), w.GetPath())
+		return empty, nil, fmt.Errorf("'%s' not found in %s (%s)", name, w.Mod.Name(), w.Path)
 	}
 	switch any(empty).(type) {
 	case *resources.Query:
 		// if the desired type is a query,  and the sqlString DOES NOT look like a resource name,
 		// treat it as a raw query and create a Query to wrap it
-		q := createQueryResourceForCommandLineQuery(sqlString, w.GetMod())
+		q := createQueryResourceForCommandLineQuery(sqlString, w.Mod)
 
 		// add to the workspace mod so the dashboard execution code can find it
-		if err := w.GetMod().AddResource(q); err != nil {
+		if err := w.Mod.AddResource(q); err != nil {
 			return empty, nil, err
 		}
 

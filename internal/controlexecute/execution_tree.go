@@ -63,7 +63,7 @@ func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, clie
 		resolvedItem = targets[0]
 	} else {
 		// create a root benchmark with `items` as it's children
-		resolvedItem = resources.NewRootBenchmarkWithChildren(w.GetMod(), targets).(modconfig.ModTreeItem)
+		resolvedItem = resources.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
 	}
 
 	// build tree of result groups, starting with a synthetic 'root' node

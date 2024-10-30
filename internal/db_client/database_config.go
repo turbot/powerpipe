@@ -23,11 +23,11 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	}
 
 	// NOTE: if the resource is in a dependency mod, check whether database or search path has been specified for it
-	depName := resource.(modconfig.ModItem).GetMod().GetDependencyName()
+	depName := resource.(modconfig.ModItem).GetMod().DependencyName
 
 	if depName != "" {
 		// look for this mod in the workspace mod require
-		modRequirement := workspaceMod.GetRequire().GetModDependency(depName)
+		modRequirement := workspaceMod.Require.GetModDependency(depName)
 		if modRequirement == nil {
 			// not expected
 			return database, searchPathConfig, sperr.New("could not find mod requirement for '%s' in workspace mod %s", depName, workspaceMod.ShortName)
