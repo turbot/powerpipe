@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
-	var dashboardNode modconfig.DashboardLeafNode
+	var dashboardNode resources.DashboardLeafNode
 	var panels map[string]steampipeconfig.SnapshotPanel
 	var checkRun *dashboardexecute.CheckRun
 
@@ -22,7 +21,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	switch root := e.Root.Children[0].(type) {
 	case *controlexecute.ResultGroup:
 		var ok bool
-		dashboardNode, ok = root.GroupItem.(modconfig.DashboardLeafNode)
+		dashboardNode, ok = root.GroupItem.(resources.DashboardLeafNode)
 		if !ok {
 			return nil, fmt.Errorf("invalid node found in control execution tree - cannot cast '%s' to a DashboardLeafNode", root.GroupItem.Name())
 		}
@@ -40,7 +39,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	// populate the panels
 	panels = checkRun.BuildSnapshotPanels(make(map[string]steampipeconfig.SnapshotPanel))
 
-	vars, err := dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspaceEvents(e.Workspace))
+	vars, err := dashboardexecute.GetReferencedVariables(checkRun, e.Workspace)
 	if err != nil {
 		return nil, err
 	}

@@ -10,10 +10,12 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/powerpipe/internal/resources"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	if len(cmdArgs) == 0 {
 		return nil, nil
 	}
@@ -39,26 +41,24 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Work
 //   - verify the resource exists in the workspace
 //   - if the command type is 'query', the target may be a query string rather than a resource name
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
-func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+//
+// TODO K add unit test
+func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 
 	var target modconfig.ModTreeItem
-	var queryArgs *modconfig.QueryArgs
+	var queryArgs *resources.QueryArgs
 	var err error
-	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
-	// now try to resolve targets
-	// NOTE: we only expect multiple targets for benchmarks which do not support query args
-	// however for resilience (and in case this changes), collect query args into a map
-
-	target, queryArgs, err = workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, w)
+	target, queryArgs, err = pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 	if err != nil {
 		return nil, err
 	}
 	if helpers.IsNil(target) {
 		return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArg, w.Mod.Name(), w.Path)
 	}
-	if queryArgs != nil {
-		return nil, sperr.New("benchmarks do not support query args")
-	}
+	// TODO KAI CHECK QUERY ARGS LOGIC HERE
+	//if queryArgs != nil {
+	//	return nil, sperr.New("benchmarks do not support query args")
+	//}
 
 	// ok we managed to resolve
 
@@ -81,14 +81,14 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Wo
 		// if the target is a query provider set the args
 		// (if the target is a dashboard, which is not a query provider,
 		// we read the args from viper separately and use to populate the inputs)
-		if qp, ok := any(target).(modconfig.QueryProvider); ok {
+		if qp, ok := any(target).(resources.QueryProvider); ok {
 			qp.SetArgs(queryArgs)
 		}
 	}
 	// now set the command line args
 	if !commandLineQueryArgs.Empty() {
 		// if the target is a query provider set the args
-		if qp, ok := any(target).(modconfig.QueryProvider); ok {
+		if qp, ok := any(target).(resources.QueryProvider); ok {
 			qp.SetArgs(commandLineQueryArgs)
 		}
 	}
@@ -96,18 +96,18 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *workspace.Wo
 
 }
 
-func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	var targets []modconfig.ModTreeItem
 	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
 	// verify T is Benchmark (should be enforced by Cobra)
 	var empty T
-	if _, isBenchmark := (any(empty)).(*modconfig.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*resources.Benchmark); !isBenchmark {
 		return nil, sperr.New("multiple targets are only supported for benchmarks")
 	}
 
 	// now try to resolve targets
 	for _, cmdArg := range cmdArgs {
-		target, queryArgs, err := workspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, w)
+		target, queryArgs, err := pworkspace.ResolveResourceAndArgsFromSQLString[T](cmdArg, &w.Workspace)
 		if err != nil {
 			return nil, err
 		}
@@ -123,7 +123,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *works
 	return targets, nil
 }
 
-func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace) ([]modconfig.ModTreeItem, error) {
+func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	// if there is more than 1 arg, "all" is not valid
 	if len(args) > 1 {
 		// verify that no other benchmarks/controls are given with an all
@@ -137,7 +137,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace
 		return nil, nil
 	}
 	var empty T
-	if _, isBenchmark := (any(empty)).(*modconfig.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*resources.Benchmark); !isBenchmark {
 		return nil, nil
 	}
 
@@ -145,14 +145,15 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace
 	// but NOT children which come from dependency mods
 	filter := workspace.ResourceFilter{
 		WherePredicate: func(item modconfig.HclResource) bool {
-			mti, ok := item.(modconfig.ModTreeItem)
+			mti, ok := item.(modconfig.ModItem)
 			if !ok {
 				return false
 			}
-			return mti.GetMod().ShortName == w.Mod.ShortName
+			return mti.GetMod().GetShortName() == w.Mod.ShortName
 		},
 	}
-	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](w, filter)
+	// TODO K pass workspace interface instead
+	targetsMap, err := workspace.FilterWorkspaceResourcesOfType[T](&w.Workspace, filter)
 	if err != nil {
 		return nil, err
 	}
@@ -160,16 +161,16 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *workspace.Workspace
 	targets := ToModTreeItemSlice(maps.Values(targetsMap))
 
 	// make a root item to hold the benchmarks
-	resolvedItem := modconfig.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
+	resolvedItem := resources.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
 
 	return []modconfig.ModTreeItem{resolvedItem}, nil
 
 }
 
 // build a QueryArgs from any args passed using the --args flag
-func getCommandLineQueryArgs() (*modconfig.QueryArgs, error) {
+func getCommandLineQueryArgs() (*resources.QueryArgs, error) {
 	argTuples := viper.GetStringSlice(constants.ArgArg)
-	var res = modconfig.NewQueryArgs()
+	var res = resources.NewQueryArgs()
 
 	if argTuples == nil {
 		return res, nil

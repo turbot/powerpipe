@@ -15,6 +15,8 @@ import (
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
+	"github.com/turbot/powerpipe/internal/resources"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 )
 
 func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
@@ -23,12 +25,13 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	modLocation := viper.GetString(constants.ArgModLocation)
 	// build options to specify which blocks we need to load (based on type T
 	opts := getListLoadWorkspaceOpts[T]()
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
+	w, errAndWarnings := pworkspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 
 	// get resource filter depending on resource type and output type
-	resourceFilter := getListResourceFilter[T](w)
-	resources, err := workspace.FilterWorkspaceResourcesOfType[T](w, resourceFilter)
+	// TODO K pass workspace interface instead
+	resourceFilter := getListResourceFilter[T](&w.Workspace)
+	resources, err := workspace.FilterWorkspaceResourcesOfType[T](&w.Workspace, resourceFilter)
 	if err != nil {
 		error_helpers.ShowErrorWithMessage(ctx, err, "failed to filter resources")
 		return
@@ -56,7 +59,7 @@ func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) work
 	var res = workspace.ResourceFilter{}
 
 	var empty T
-	if _, ok := any(empty).(*modconfig.Benchmark); ok {
+	if _, ok := any(empty).(*resources.Benchmark); ok {
 
 		// if T is benchmark, and if output is pretty or plain, only show top level benchmarks
 		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {
@@ -87,20 +90,20 @@ func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) work
 }
 
 // build LoadWorkspaceOptions to specify which blocks we need to load (based on type T)
-func getListLoadWorkspaceOpts[T modconfig.ModTreeItem]() []workspace.LoadWorkspaceOption {
+func getListLoadWorkspaceOpts[T modconfig.ModTreeItem]() []pworkspace.LoadPowerpipeWorkspaceOption {
 	var empty T
-	var opts = []workspace.LoadWorkspaceOption{
+	var opts = []pworkspace.LoadPowerpipeWorkspaceOption{
 		// pass connections
-		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+		pworkspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
 		// disable late binding
-		workspace.WithLateBinding(false),
-		workspace.WithVariableValidation(false),
+		pworkspace.WithLateBinding(false),
+		pworkspace.WithVariableValidation(false),
 	}
 	switch any(empty).(type) {
 	case *modconfig.Mod:
-		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeMod}))
+		opts = append(opts, pworkspace.WithBlockType([]string{schema.BlockTypeMod}))
 	case *modconfig.Variable:
-		opts = append(opts, workspace.WithBlockType([]string{schema.BlockTypeVariable}))
+		opts = append(opts, pworkspace.WithBlockType([]string{schema.BlockTypeVariable}))
 	}
 	return opts
 }
@@ -111,7 +114,7 @@ func ShowResource[T modconfig.ModTreeItem](cmd *cobra.Command, args []string) {
 	modLocation := viper.GetString(constants.ArgModLocation)
 	// build options to specify which blocks we need to load (based on type T
 	opts := getListLoadWorkspaceOpts[T]()
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
+	w, errAndWarnings := pworkspace.LoadWorkspacePromptingForVariables(ctx, modLocation, opts...)
 	error_helpers.FailOnError(errAndWarnings.GetError())
 	if !w.ModfileExists() {
 		error_helpers.FailOnError(localconstants.ErrorNoModDefinition{})

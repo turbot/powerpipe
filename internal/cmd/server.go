@@ -11,13 +11,13 @@ import (
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/service/api"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
@@ -75,7 +75,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	}
 
 	// initialise the workspace
-	modInitData := initialisation.NewInitData[*modconfig.Dashboard](ctx, cmd)
+	modInitData := initialisation.NewInitData[*resources.Dashboard](ctx, cmd)
 	error_helpers.FailOnError(modInitData.Result.Error)
 
 	// ensure dashboard assets
@@ -85,7 +85,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	// setup a new webSocket service
 	webSocket := melody.New()
 	// create the dashboardServer
-	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.WorkspaceEvents, webSocket)
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server

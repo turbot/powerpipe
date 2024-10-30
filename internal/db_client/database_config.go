@@ -23,7 +23,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	}
 
 	// NOTE: if the resource is in a dependency mod, check whether database or search path has been specified for it
-	depName := resource.GetMod().DependencyName
+	depName := resource.(modconfig.ModItem).GetMod().DependencyName
 
 	if depName != "" {
 		// look for this mod in the workspace mod require
@@ -41,13 +41,13 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
 		}
 		// if the parent mod has a database set, use it
-		if modDb := resource.GetMod().Database; modDb != nil {
+		if modDb := resource.(modconfig.ModItem).GetMod().GetDatabase(); modDb != nil {
 			database = *modDb
 		}
-		if modSearchPath := resource.GetMod().SearchPath; len(modSearchPath) > 0 {
+		if modSearchPath := resource.(modconfig.ModItem).GetMod().GetSearchPath(); len(modSearchPath) > 0 {
 			searchPathConfig.SearchPath = modSearchPath
 		}
-		if modSearchPathPrefix := resource.GetMod().SearchPathPrefix; len(modSearchPathPrefix) > 0 {
+		if modSearchPathPrefix := resource.(modconfig.ModItem).GetMod().GetSearchPathPrefix(); len(modSearchPathPrefix) > 0 {
 			searchPathConfig.SearchPathPrefix = modSearchPathPrefix
 		}
 

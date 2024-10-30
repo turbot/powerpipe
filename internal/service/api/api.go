@@ -21,9 +21,9 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/pipe-fittings/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api/common"
+	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -72,7 +72,7 @@ type APIService struct {
 	webSocket      *melody.Melody
 
 	// the loaded workspace
-	workspace *workspace.Workspace
+	workspace *pworkspace.PowerpipeWorkspace
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -85,7 +85,7 @@ func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	}
 }
 
-func WithWorkspace(workspace *workspace.Workspace) APIServiceOption {
+func WithWorkspace(workspace *pworkspace.PowerpipeWorkspace) APIServiceOption {
 	return func(api *APIService) error {
 		api.workspace = workspace
 		return nil

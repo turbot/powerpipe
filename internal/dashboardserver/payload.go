@@ -4,8 +4,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/spf13/viper"
+	"github.com/turbot/powerpipe/internal/resources"
+
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/backend"
@@ -16,21 +17,22 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
-		if mod.FullName == workspaceResources.Mod.FullName {
+		if mod.GetFullName() == workspaceResources.Mod.GetFullName() {
 			continue
 		}
-		installedMods[mod.FullName] = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
+		installedMods[mod.GetFullName()] = &ModMetadata{
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
+			FullName:  mod.GetFullName(),
 			ShortName: mod.ShortName,
 		}
 	}
@@ -72,8 +74,8 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipe
 
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
+			FullName:  mod.GetFullName(),
 			ShortName: mod.ShortName,
 		}
 	}
@@ -85,7 +87,7 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipe
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *dashboardworkspace.WorkspaceEvents) ([]byte, error) {
+func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.PowerpipeWorkspace) ([]byte, error) {
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		return nil, err
@@ -133,11 +135,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *modconfig.Benchmark:
+		case *resources.Benchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -157,8 +159,7 @@ func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps) ([]byte, error) {
-
+func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -171,7 +172,9 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 		// build a map of the dashboards provided by each mod
 
 		// iterate over the dashboards for the top level mod - this will include the dashboards from dependency mods
-		for _, dashboard := range workspaceResources.Mod.ResourceMaps.Dashboards {
+		topLevelResources := resources.GetModResources(workspaceResources.Mod)
+
+		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
@@ -179,12 +182,12 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
 				Tags:        dashboard.Tags,
-				ModFullName: mod.FullName,
+				ModFullName: mod.GetFullName(),
 			}
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range workspaceResources.Mod.ResourceMaps.Benchmarks {
+		for _, benchmark := range topLevelResources.Benchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}
@@ -212,7 +215,7 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 				Tags:        benchmark.Tags,
 				IsTopLevel:  isTopLevel,
 				Children:    addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
-				ModFullName: mod.FullName,
+				ModFullName: mod.GetFullName(),
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark

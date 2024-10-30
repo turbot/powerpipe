@@ -2,6 +2,7 @@ package dashboardexecute
 
 import (
 	"context"
+	"github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -32,13 +33,13 @@ func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return r.Root.AsTreeNode()
 }
 
-func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
+func NewCheckRun(resource resources.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
 	r := &CheckRun{SessionId: executionTree.sessionId}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(resource, parent, r, executionTree)
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 	//  set status to initialized
 	r.Status = dashboardtypes.RunInitialized
 	// add r into execution tree
@@ -86,7 +87,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 		r.SetError(ctx, err)
 		return
 	}
-	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, workspace.ResourceFilter{}, r.resource)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace, client, workspace.ResourceFilter{}, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)

@@ -3,13 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -24,7 +24,7 @@ type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
 
-	Resource modconfig.DashboardLeafNode `json:"-"`
+	Resource resources.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
 	Properties map[string]any           `json:"properties,omitempty"`
 	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
@@ -42,7 +42,7 @@ func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	}
 }
 
-func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
+func NewLeafRun(resource resources.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
 	r := &LeafRun{
 		Resource:   resource,
 		Properties: make(map[string]any),
@@ -67,7 +67,7 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 		return nil, err
 	}
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 
 	// if the node has no runtime dependencies, resolve the sql
 	if !r.hasRuntimeDependencies() {
@@ -119,7 +119,7 @@ func (r *LeafRun) createChildRuns(executionTree *DashboardExecutionTree) error {
 
 	for i, c := range children {
 		var opts []LeafRunOption
-		childRun, err := NewLeafRun(c.(modconfig.DashboardLeafNode), r, executionTree, opts...)
+		childRun, err := NewLeafRun(c.(resources.DashboardLeafNode), r, executionTree, opts...)
 		if err != nil {
 			errors = append(errors, err)
 			continue
@@ -258,7 +258,7 @@ func (r *LeafRun) combineChildData() {
 		childLeafRun := c.(*LeafRun)
 		data := childLeafRun.Data
 		// if there is no data or this is a 'with', skip
-		if data == nil || childLeafRun.resource.BlockType() == schema.BlockTypeWith {
+		if data == nil || childLeafRun.resource.GetBlockType() == schema.BlockTypeWith {
 			continue
 		}
 		for _, s := range data.Columns {

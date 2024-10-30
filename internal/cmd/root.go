@@ -15,6 +15,7 @@ import (
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 var exitCode int
@@ -53,10 +54,10 @@ func rootCommand() *cobra.Command {
 		serverCmd(),
 		modCmd(),
 		loginCmd(),
-		resourceCmd[*modconfig.Benchmark](),
-		resourceCmd[*modconfig.Control](),
-		resourceCmd[*modconfig.Dashboard](),
-		resourceCmd[*modconfig.Query](),
+		resourceCmd[*resources.Benchmark](),
+		resourceCmd[*resources.Control](),
+		resourceCmd[*resources.Dashboard](),
+		resourceCmd[*resources.Query](),
 		resourceCmd[*modconfig.Variable](),
 	)
 

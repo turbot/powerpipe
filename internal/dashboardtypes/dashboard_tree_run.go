@@ -3,8 +3,8 @@ package dashboardtypes
 import (
 	"context"
 
-	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // DashboardTreeRun is an interface implemented by all dashboard run nodes
@@ -22,5 +22,5 @@ type DashboardTreeRun interface {
 	GetInputsDependingOn(string) []string
 	GetNodeType() string
 	AsTreeNode() *steampipeconfig.SnapshotTreeNode
-	GetResource() modconfig.DashboardLeafNode
+	GetResource() resources.DashboardLeafNode
 }

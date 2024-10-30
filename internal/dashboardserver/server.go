@@ -20,7 +20,7 @@ import (
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -28,10 +28,10 @@ type Server struct {
 	mutex            *sync.Mutex
 	dashboardClients map[string]*DashboardClientInfo
 	webSocket        *melody.Melody
-	workspace        *dashboardworkspace.WorkspaceEvents
+	workspace        *workspace.PowerpipeWorkspace
 }
 
-func NewServer(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, w *workspace.PowerpipeWorkspace, webSocket *melody.Melody) (*Server, error) {
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -203,15 +203,15 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, payloadError = buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if payloadError != nil {
 				return
 			}
 			_ = s.webSocket.Broadcast(payload)
 
 			// Emit available dashboards event
-			payload, payloadError = buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			workspaceResources := s.workspace.GetPowerpipeModResources()
+			payload, payloadError = buildAvailableDashboardsPayload(workspaceResources)
 			if payloadError != nil {
 				return
 			}
@@ -346,7 +346,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		switch request.Action {
 		case "get_server_metadata":
 			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
@@ -362,7 +362,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
-			payload, err := buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeModResources())
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}
@@ -497,7 +497,7 @@ func (s *Server) getResource(name string) modconfig.ModTreeItem {
 	return resource.(modconfig.ModTreeItem)
 }
 
-func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.DashboardTreeItemDiffs) []string {
+func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.ModTreeItemDiffs) []string {
 	var changedDashboardNames []string
 
 	for _, changedItem := range changedItems {

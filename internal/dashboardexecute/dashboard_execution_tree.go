@@ -3,12 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/spf13/viper"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
 	"time"
 
-	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -17,8 +18,8 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 // DashboardExecutionTree is a structure representing the control result hierarchy
@@ -33,7 +34,7 @@ type DashboardExecutionTree struct {
 	defaultClientMap *db_client.ClientMap
 	// map of executing runs, keyed by full name
 	runs      map[string]dashboardtypes.DashboardTreeRun
-	workspace *dashboardworkspace.WorkspaceEvents
+	workspace *workspace.PowerpipeWorkspace
 
 	runComplete chan dashboardtypes.DashboardTreeRun
 	// map of subscribers to notify when an input value changes
@@ -46,7 +47,7 @@ type DashboardExecutionTree struct {
 	searchPathConfig backend.SearchPathConfig
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
@@ -89,13 +90,13 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 
 func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
 	switch r := rootResource.(type) {
-	case *modconfig.Dashboard:
+	case *resources.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *modconfig.Benchmark:
+	case *resources.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *modconfig.Query:
+	case *resources.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r)
+		dashboard, err := resources.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		e.dashboardName = dashboard.Name()
 		if err != nil {
@@ -340,7 +341,7 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (*DashboardExecutionTree) GetResource() modconfig.DashboardLeafNode {
+func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
 }
 

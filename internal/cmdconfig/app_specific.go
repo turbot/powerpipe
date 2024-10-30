@@ -14,6 +14,10 @@ import (
 	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/parse"
+	pparse "github.com/turbot/powerpipe/internal/parse"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
@@ -23,7 +27,7 @@ func SetAppSpecificConstants() {
 	// set all app specific env var keys
 	app_specific.SetAppSpecificEnvVarKeys("POWERPIPE_")
 
-	// version
+	// version string
 	versionString := viper.GetString("main.version")
 	app_specific.AppVersion = semver.MustParse(versionString)
 
@@ -70,6 +74,11 @@ func SetAppSpecificConstants() {
 	app_specific.VersionCheckHost = "hub.powerpipe.io"
 	app_specific.VersionCheckPath = "api/cli/version/latest"
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
+
+	// set app specific parse related constants
+	modconfig.AppSpecificNewModResourcesFunc = resources.NewModResources
+	parse.ModDecoderFunc = pparse.NewPowerpipeModDecoder
+	parse.AppSpecificGetResourceSchemaFunc = pparse.GetResourceSchema
 
 	// register supported connection types
 	registerConnections()

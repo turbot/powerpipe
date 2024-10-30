@@ -6,13 +6,13 @@ import (
 	"sync"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // ResolvedRuntimeDependency is a wrapper for RuntimeDependency which contains the resolved value
 // we must wrap it so that we do not mutate the underlying workspace data when resolving dependency values
 type ResolvedRuntimeDependency struct {
-	Dependency *modconfig.RuntimeDependency
+	Dependency *resources.RuntimeDependency
 	valueLock  sync.Mutex
 	Value      any
 	// the name of the run which publishes this dependency
@@ -20,7 +20,7 @@ type ResolvedRuntimeDependency struct {
 	valueChannel  chan *ResolvedRuntimeDependencyValue
 }
 
-func NewResolvedRuntimeDependency(dep *modconfig.RuntimeDependency, valueChannel chan *ResolvedRuntimeDependencyValue, publisherName string) *ResolvedRuntimeDependency {
+func NewResolvedRuntimeDependency(dep *resources.RuntimeDependency, valueChannel chan *ResolvedRuntimeDependencyValue, publisherName string) *ResolvedRuntimeDependency {
 	return &ResolvedRuntimeDependency{
 		Dependency:    dep,
 		valueChannel:  valueChannel,
