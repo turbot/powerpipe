@@ -94,7 +94,7 @@ func (q *Query) String() string {
 }
 
 // OnDecoded implements HclResource
-func (q *Query) OnDecoded(*hcl.Block, modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (q *Query) OnDecoded(*hcl.Block, modconfig.ModResourcesProvider) hcl.Diagnostics {
 	return nil
 }
 

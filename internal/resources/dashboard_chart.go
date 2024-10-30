@@ -45,7 +45,7 @@ func (c *DashboardChart) Equals(other *DashboardChart) bool {
 }
 
 // OnDecoded implements HclResource
-func (c *DashboardChart) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (c *DashboardChart) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	c.SetBaseProperties()
 	// populate series map
 	if len(c.SeriesList) > 0 {

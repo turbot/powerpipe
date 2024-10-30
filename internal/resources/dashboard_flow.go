@@ -50,7 +50,7 @@ func (f *DashboardFlow) Equals(other *DashboardFlow) bool {
 }
 
 // OnDecoded implements HclResource
-func (f *DashboardFlow) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (f *DashboardFlow) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	f.SetBaseProperties()
 	if len(f.Nodes) > 0 {
 		f.NodeNames = f.Nodes.Names()

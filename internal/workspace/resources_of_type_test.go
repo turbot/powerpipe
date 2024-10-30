@@ -26,11 +26,11 @@ type testCase[T modconfig.HclResource] struct {
 }
 
 func TestFilterWorkspaceResourcesOfType(t *testing.T) {
-	// Set the AppSpecificNewResourceMapsFunc to the Powerpipe NewResourceMaps function
-	modconfig.AppSpecificNewResourceMapsFunc = resources.NewModResources
+	// Set the AppSpecificNewModResourcesFunc to the Powerpipe NewModResources function
+	modconfig.AppSpecificNewModResourcesFunc = resources.NewModResources
 
 	var mod = modconfig.NewMod("test_mod", ".", hcl.Range{})
-	mod.ResourceMaps = &resources.PowerpipeModResources{
+	mod.ModResources = &resources.PowerpipeModResources{
 		Benchmarks: map[string]*resources.Benchmark{},
 		Controls: map[string]*resources.Control{
 			"control1":  makeControl(mod, "control1", "Control 1", "Control 1 description", "SELECT * FROM table1", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo"}),

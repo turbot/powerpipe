@@ -68,7 +68,7 @@ func (i *DashboardInput) Equals(other *DashboardInput) bool {
 }
 
 // OnDecoded implements HclResource
-func (i *DashboardInput) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (i *DashboardInput) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	i.SetBaseProperties()
 	return i.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }

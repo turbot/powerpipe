@@ -70,7 +70,7 @@ func (b *Benchmark) Equals(other *Benchmark) bool {
 }
 
 // OnDecoded implements HclResource
-func (b *Benchmark) OnDecoded(block *hcl.Block, _ modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (b *Benchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	b.SetBaseProperties()
 	return nil
 }

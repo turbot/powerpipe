@@ -41,7 +41,7 @@ func (t *DashboardText) Equals(other *DashboardText) bool {
 }
 
 // OnDecoded implements HclResource
-func (t *DashboardText) OnDecoded(*hcl.Block, modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (t *DashboardText) OnDecoded(*hcl.Block, modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
 	return nil
 }

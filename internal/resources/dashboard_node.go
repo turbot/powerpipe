@@ -34,7 +34,7 @@ func (n *DashboardNode) Equals(other *DashboardNode) bool {
 }
 
 // OnDecoded implements HclResource—
-func (n *DashboardNode) OnDecoded(_ *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (n *DashboardNode) OnDecoded(_ *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	n.SetBaseProperties()
 
 	// when we reference resources (i.e. category),

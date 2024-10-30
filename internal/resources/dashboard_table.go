@@ -76,7 +76,7 @@ func (t *DashboardTable) Equals(other *DashboardTable) bool {
 }
 
 // OnDecoded implements HclResource
-func (t *DashboardTable) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (t *DashboardTable) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
 	// populate columns map
 	if len(t.ColumnList) > 0 {

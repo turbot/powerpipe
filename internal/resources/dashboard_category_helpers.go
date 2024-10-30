@@ -6,12 +6,12 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 )
 
-// enrich the shell category by fetching from the ResourceMapsProvider
+// enrich the shell category by fetching from the ModResourcesProvider
 // this is used when a category has been retrieved via a HCL reference - as cty does not serialise all properties
-func enrichCategory(shellCategory *DashboardCategory, parent modconfig.HclResource, resourceMapProvider modconfig.ResourceMapsProvider) (*DashboardCategory, hcl.Diagnostics) {
+func enrichCategory(shellCategory *DashboardCategory, parent modconfig.HclResource, resourceMapProvider modconfig.ModResourcesProvider) (*DashboardCategory, hcl.Diagnostics) {
 	var diags hcl.Diagnostics
-	resourceMaps := resourceMapProvider.GetResourceMaps().(*PowerpipeModResources)
-	fullCategory, ok := resourceMaps.DashboardCategories[shellCategory.Name()]
+	modResources := resourceMapProvider.GetModResources().(*PowerpipeModResources)
+	fullCategory, ok := modResources.DashboardCategories[shellCategory.Name()]
 	if !ok {
 		diags = diags.Append(&hcl.Diagnostic{
 			Severity: hcl.DiagError,

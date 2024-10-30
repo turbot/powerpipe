@@ -72,14 +72,14 @@ func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r, p modconfig.ModResources) {
 	event := &dashboardevents.DashboardChanged{}
 
-	resourceMaps := r.(*resources.PowerpipeModResources)
-	prevResourceMaps := p.(*resources.PowerpipeModResources)
+	modResources := r.(*resources.PowerpipeModResources)
+	prevModResources := p.(*resources.PowerpipeModResources)
 
 	// TODO reports can we use a PowerpipeModResources diff function to do all of this - we are duplicating logic
 
 	// first detect changes to existing resources and deletions
-	for name, prev := range prevResourceMaps.Dashboards {
-		if current, ok := resourceMaps.Dashboards[name]; ok {
+	for name, prev := range prevModResources.Dashboards {
+		if current, ok := modResources.Dashboards[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedDashboards = append(event.ChangedDashboards, diff)
@@ -88,8 +88,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedDashboards = append(event.DeletedDashboards, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardContainers {
-		if current, ok := resourceMaps.DashboardContainers[name]; ok {
+	for name, prev := range prevModResources.DashboardContainers {
+		if current, ok := modResources.DashboardContainers[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedContainers = append(event.ChangedContainers, diff)
@@ -98,8 +98,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedContainers = append(event.DeletedContainers, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardCards {
-		if current, ok := resourceMaps.DashboardCards[name]; ok {
+	for name, prev := range prevModResources.DashboardCards {
+		if current, ok := modResources.DashboardCards[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedCards = append(event.ChangedCards, diff)
@@ -108,8 +108,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedCards = append(event.DeletedCards, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardCharts {
-		if current, ok := resourceMaps.DashboardCharts[name]; ok {
+	for name, prev := range prevModResources.DashboardCharts {
+		if current, ok := modResources.DashboardCharts[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedCharts = append(event.ChangedCharts, diff)
@@ -118,8 +118,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedCharts = append(event.DeletedCharts, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.Benchmarks {
-		if current, ok := resourceMaps.Benchmarks[name]; ok {
+	for name, prev := range prevModResources.Benchmarks {
+		if current, ok := modResources.Benchmarks[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedBenchmarks = append(event.ChangedBenchmarks, diff)
@@ -128,8 +128,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedBenchmarks = append(event.DeletedBenchmarks, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.Controls {
-		if current, ok := resourceMaps.Controls[name]; ok {
+	for name, prev := range prevModResources.Controls {
+		if current, ok := modResources.Controls[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedControls = append(event.ChangedControls, diff)
@@ -138,8 +138,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedControls = append(event.DeletedControls, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardFlows {
-		if current, ok := resourceMaps.DashboardFlows[name]; ok {
+	for name, prev := range prevModResources.DashboardFlows {
+		if current, ok := modResources.DashboardFlows[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedFlows = append(event.ChangedFlows, diff)
@@ -148,8 +148,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedFlows = append(event.DeletedFlows, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardGraphs {
-		if current, ok := resourceMaps.DashboardGraphs[name]; ok {
+	for name, prev := range prevModResources.DashboardGraphs {
+		if current, ok := modResources.DashboardGraphs[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedGraphs = append(event.ChangedGraphs, diff)
@@ -158,8 +158,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedGraphs = append(event.DeletedGraphs, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardHierarchies {
-		if current, ok := resourceMaps.DashboardHierarchies[name]; ok {
+	for name, prev := range prevModResources.DashboardHierarchies {
+		if current, ok := modResources.DashboardHierarchies[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedHierarchies = append(event.ChangedHierarchies, diff)
@@ -168,8 +168,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedHierarchies = append(event.DeletedHierarchies, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardImages {
-		if current, ok := resourceMaps.DashboardImages[name]; ok {
+	for name, prev := range prevModResources.DashboardImages {
+		if current, ok := modResources.DashboardImages[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedImages = append(event.ChangedImages, diff)
@@ -178,8 +178,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedImages = append(event.DeletedImages, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardNodes {
-		if current, ok := resourceMaps.DashboardNodes[name]; ok {
+	for name, prev := range prevModResources.DashboardNodes {
+		if current, ok := modResources.DashboardNodes[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedNodes = append(event.ChangedNodes, diff)
@@ -188,8 +188,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedNodes = append(event.DeletedNodes, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardEdges {
-		if current, ok := resourceMaps.DashboardEdges[name]; ok {
+	for name, prev := range prevModResources.DashboardEdges {
+		if current, ok := modResources.DashboardEdges[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedEdges = append(event.ChangedEdges, diff)
@@ -198,8 +198,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedEdges = append(event.DeletedEdges, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.GlobalDashboardInputs {
-		if current, ok := resourceMaps.GlobalDashboardInputs[name]; ok {
+	for name, prev := range prevModResources.GlobalDashboardInputs {
+		if current, ok := modResources.GlobalDashboardInputs[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedInputs = append(event.ChangedInputs, diff)
@@ -208,8 +208,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedInputs = append(event.DeletedInputs, prev)
 		}
 	}
-	for name, prevInputsForDashboard := range prevResourceMaps.DashboardInputs {
-		if currentInputsForDashboard, ok := resourceMaps.DashboardInputs[name]; ok {
+	for name, prevInputsForDashboard := range prevModResources.DashboardInputs {
+		if currentInputsForDashboard, ok := modResources.DashboardInputs[name]; ok {
 			for name, prev := range prevInputsForDashboard {
 				if current, ok := currentInputsForDashboard[name]; ok {
 					diff := prev.Diff(current)
@@ -226,8 +226,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			}
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardTables {
-		if current, ok := resourceMaps.DashboardTables[name]; ok {
+	for name, prev := range prevModResources.DashboardTables {
+		if current, ok := modResources.DashboardTables[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedTables = append(event.ChangedTables, diff)
@@ -236,8 +236,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedTables = append(event.DeletedTables, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardCategories {
-		if current, ok := resourceMaps.DashboardCategories[name]; ok {
+	for name, prev := range prevModResources.DashboardCategories {
+		if current, ok := modResources.DashboardCategories[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedCategories = append(event.ChangedCategories, diff)
@@ -246,8 +246,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedCategories = append(event.DeletedCategories, prev)
 		}
 	}
-	for name, prev := range prevResourceMaps.DashboardTexts {
-		if current, ok := resourceMaps.DashboardTexts[name]; ok {
+	for name, prev := range prevModResources.DashboardTexts {
+		if current, ok := modResources.DashboardTexts[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedTexts = append(event.ChangedTexts, diff)
@@ -258,79 +258,79 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 	}
 
 	// now detect new resources
-	for name, p := range resourceMaps.Dashboards {
-		if _, ok := prevResourceMaps.Dashboards[name]; !ok {
+	for name, p := range modResources.Dashboards {
+		if _, ok := prevModResources.Dashboards[name]; !ok {
 			event.NewDashboards = append(event.NewDashboards, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardContainers {
-		if _, ok := prevResourceMaps.DashboardContainers[name]; !ok {
+	for name, p := range modResources.DashboardContainers {
+		if _, ok := prevModResources.DashboardContainers[name]; !ok {
 			event.NewContainers = append(event.NewContainers, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardCards {
-		if _, ok := prevResourceMaps.DashboardCards[name]; !ok {
+	for name, p := range modResources.DashboardCards {
+		if _, ok := prevModResources.DashboardCards[name]; !ok {
 			event.NewCards = append(event.NewCards, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardCategories {
-		if _, ok := prevResourceMaps.DashboardCategories[name]; !ok {
+	for name, p := range modResources.DashboardCategories {
+		if _, ok := prevModResources.DashboardCategories[name]; !ok {
 			event.NewCategories = append(event.NewCategories, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardCharts {
-		if _, ok := prevResourceMaps.DashboardCharts[name]; !ok {
+	for name, p := range modResources.DashboardCharts {
+		if _, ok := prevModResources.DashboardCharts[name]; !ok {
 			event.NewCharts = append(event.NewCharts, p)
 		}
 	}
-	for name, p := range resourceMaps.Benchmarks {
-		if _, ok := prevResourceMaps.Benchmarks[name]; !ok {
+	for name, p := range modResources.Benchmarks {
+		if _, ok := prevModResources.Benchmarks[name]; !ok {
 			event.NewBenchmarks = append(event.NewBenchmarks, p)
 		}
 	}
-	for name, p := range resourceMaps.Controls {
-		if _, ok := prevResourceMaps.Controls[name]; !ok {
+	for name, p := range modResources.Controls {
+		if _, ok := prevModResources.Controls[name]; !ok {
 			event.NewControls = append(event.NewControls, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardFlows {
-		if _, ok := prevResourceMaps.DashboardFlows[name]; !ok {
+	for name, p := range modResources.DashboardFlows {
+		if _, ok := prevModResources.DashboardFlows[name]; !ok {
 			event.NewFlows = append(event.NewFlows, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardGraphs {
-		if _, ok := prevResourceMaps.DashboardGraphs[name]; !ok {
+	for name, p := range modResources.DashboardGraphs {
+		if _, ok := prevModResources.DashboardGraphs[name]; !ok {
 			event.NewGraphs = append(event.NewGraphs, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardHierarchies {
-		if _, ok := prevResourceMaps.DashboardHierarchies[name]; !ok {
+	for name, p := range modResources.DashboardHierarchies {
+		if _, ok := prevModResources.DashboardHierarchies[name]; !ok {
 			event.NewHierarchies = append(event.NewHierarchies, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardImages {
-		if _, ok := prevResourceMaps.DashboardImages[name]; !ok {
+	for name, p := range modResources.DashboardImages {
+		if _, ok := prevModResources.DashboardImages[name]; !ok {
 			event.NewImages = append(event.NewImages, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardNodes {
-		if _, ok := prevResourceMaps.DashboardNodes[name]; !ok {
+	for name, p := range modResources.DashboardNodes {
+		if _, ok := prevModResources.DashboardNodes[name]; !ok {
 			event.NewNodes = append(event.NewNodes, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardEdges {
-		if _, ok := prevResourceMaps.DashboardEdges[name]; !ok {
+	for name, p := range modResources.DashboardEdges {
+		if _, ok := prevModResources.DashboardEdges[name]; !ok {
 			event.NewEdges = append(event.NewEdges, p)
 		}
 	}
-	for name, p := range resourceMaps.GlobalDashboardInputs {
-		if _, ok := prevResourceMaps.GlobalDashboardInputs[name]; !ok {
+	for name, p := range modResources.GlobalDashboardInputs {
+		if _, ok := prevModResources.GlobalDashboardInputs[name]; !ok {
 			event.NewInputs = append(event.NewInputs, p)
 		}
 	}
 
-	for name, currentInputsForDashboard := range resourceMaps.DashboardInputs {
-		if prevInputsForDashboard, ok := prevResourceMaps.DashboardInputs[name]; ok {
+	for name, currentInputsForDashboard := range modResources.DashboardInputs {
+		if prevInputsForDashboard, ok := prevModResources.DashboardInputs[name]; ok {
 			for name, current := range currentInputsForDashboard {
 				if _, ok := prevInputsForDashboard[name]; !ok {
 					event.NewInputs = append(event.NewInputs, current)
@@ -344,13 +344,13 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 		}
 	}
 
-	for name, p := range resourceMaps.DashboardTables {
-		if _, ok := prevResourceMaps.DashboardTables[name]; !ok {
+	for name, p := range modResources.DashboardTables {
+		if _, ok := prevModResources.DashboardTables[name]; !ok {
 			event.NewTables = append(event.NewTables, p)
 		}
 	}
-	for name, p := range resourceMaps.DashboardTexts {
-		if _, ok := prevResourceMaps.DashboardTexts[name]; !ok {
+	for name, p := range modResources.DashboardTexts {
+		if _, ok := prevModResources.DashboardTexts[name]; !ok {
 			event.NewTexts = append(event.NewTexts, p)
 		}
 	}
@@ -358,7 +358,7 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 	if event.HasChanges() {
 		// for every changed resource, set parents as changed, up the tree
 		f := func(item modconfig.ModTreeItem) (bool, error) {
-			event.SetParentsChanged(item, prevResourceMaps)
+			event.SetParentsChanged(item, prevModResources)
 			return true, nil
 		}
 		err := event.WalkChangedResources(f)

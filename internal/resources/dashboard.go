@@ -130,7 +130,7 @@ func (d *Dashboard) Equals(other *Dashboard) bool {
 }
 
 // OnDecoded implements HclResource
-func (d *Dashboard) OnDecoded(block *hcl.Block, _ modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (d *Dashboard) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	diags := d.SetBaseProperties()
 	if diags.HasErrors() {
 		return diags
@@ -243,7 +243,7 @@ func (d *Dashboard) WalkResources(resourceFunc func(resource modconfig.HclResour
 	return nil
 }
 
-func (d *Dashboard) ValidateRuntimeDependencies(workspace modconfig.ResourceMapsProvider) error {
+func (d *Dashboard) ValidateRuntimeDependencies(workspace modconfig.ModResourcesProvider) error {
 	d.runtimeDependencyGraph = topsort.NewGraph()
 	// add root node - this will depend on all other nodes
 	d.runtimeDependencyGraph.AddNode(rootRuntimeDependencyNode)
@@ -282,7 +282,7 @@ func (d *Dashboard) ValidateRuntimeDependencies(workspace modconfig.ResourceMaps
 	return nil
 }
 
-func (d *Dashboard) validateRuntimeDependenciesForResource(resource modconfig.HclResource, workspace modconfig.ResourceMapsProvider) error {
+func (d *Dashboard) validateRuntimeDependenciesForResource(resource modconfig.HclResource, workspace modconfig.ModResourcesProvider) error {
 	// TODO  [node_reuse] re-add parse time validation https://github.com/turbot/steampipe/issues/2925
 	return nil
 	//rdp := resource.(RuntimeDependencyProvider)

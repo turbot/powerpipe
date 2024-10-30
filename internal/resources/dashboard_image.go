@@ -42,7 +42,7 @@ func (i *DashboardImage) Equals(other *DashboardImage) bool {
 }
 
 // OnDecoded implements HclResource
-func (i *DashboardImage) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (i *DashboardImage) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	i.SetBaseProperties()
 	return i.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }

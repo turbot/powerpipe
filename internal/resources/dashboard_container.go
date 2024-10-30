@@ -46,7 +46,7 @@ func (c *DashboardContainer) Equals(other *DashboardContainer) bool {
 }
 
 // OnDecoded implements HclResource
-func (c *DashboardContainer) OnDecoded(block *hcl.Block, _ modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (c *DashboardContainer) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	c.ChildNames = make([]string, len(c.GetChildren()))
 	for i, child := range c.GetChildren() {
 		c.ChildNames[i] = child.Name()

@@ -204,14 +204,14 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
 			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, payloadError = buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
 			if payloadError != nil {
 				return
 			}
 			_ = s.webSocket.Broadcast(payload)
 
 			// Emit available dashboards event
-			workspaceResources := s.workspace.GetPowerpipeResourceMaps()
+			workspaceResources := s.workspace.GetPowerpipeModResources()
 			payload, payloadError = buildAvailableDashboardsPayload(workspaceResources)
 			if payloadError != nil {
 				return
@@ -347,7 +347,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		switch request.Action {
 		case "get_server_metadata":
 			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
@@ -363,7 +363,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
-			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeResourceMaps())
+			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeModResources())
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}

@@ -76,7 +76,7 @@ func SetAppSpecificConstants() {
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 
 	// set app specific parse related constants
-	modconfig.AppSpecificNewResourceMapsFunc = resources.NewModResources
+	modconfig.AppSpecificNewModResourcesFunc = resources.NewModResources
 	parse.ModDecoderFunc = pparse.NewPowerpipeModDecoder
 	parse.AppSpecificGetResourceSchemaFunc = pparse.GetResourceSchema
 

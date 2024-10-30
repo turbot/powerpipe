@@ -9,12 +9,12 @@ import (
 )
 
 func GetModResources(mod *modconfig.Mod) *PowerpipeModResources {
-	resourceMaps, ok := mod.GetResourceMaps().(*PowerpipeModResources)
+	modResources, ok := mod.GetModResources().(*PowerpipeModResources)
 	if !ok {
 		// should never happen
-		panic(fmt.Sprintf("mod.GetResourceMaps() did not return a PowerpipeModResources: %T", mod.GetResourceMaps()))
+		panic(fmt.Sprintf("mod.GetModResources() did not return a PowerpipeModResources: %T", mod.GetModResources()))
 	}
-	return resourceMaps
+	return modResources
 }
 
 // PowerpipeModResources is a struct containing maps of all mod resource types

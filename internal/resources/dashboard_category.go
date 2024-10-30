@@ -40,7 +40,7 @@ func NewDashboardCategory(block *hcl.Block, mod *modconfig.Mod, shortName string
 }
 
 // OnDecoded implements HclResource
-func (c *DashboardCategory) OnDecoded(block *hcl.Block, _ modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (c *DashboardCategory) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	c.SetBaseProperties()
 	// populate properties map
 	if len(c.PropertyList) > 0 {

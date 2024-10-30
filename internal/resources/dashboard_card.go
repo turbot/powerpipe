@@ -44,7 +44,7 @@ func (c *DashboardCard) Equals(other *DashboardCard) bool {
 }
 
 // OnDecoded implements HclResource
-func (c *DashboardCard) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (c *DashboardCard) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	c.SetBaseProperties()
 	return c.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }

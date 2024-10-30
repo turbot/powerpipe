@@ -187,7 +187,7 @@ func (q *QueryProviderImpl) getBaseImpl() *QueryProviderImpl {
 	return q.GetBase().(QueryProvider).GetQueryProviderImpl()
 }
 
-func (q *QueryProviderImpl) OnDecoded(block *hcl.Block, _ modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (q *QueryProviderImpl) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	q.populateQueryName()
 
 	return nil

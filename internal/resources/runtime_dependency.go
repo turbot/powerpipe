@@ -33,7 +33,7 @@ func (d *RuntimeDependency) String() string {
 	return fmt.Sprintf("%s.%s->%s", d.ParentPropertyName, *d.TargetPropertyName, d.PropertyPath.String())
 }
 
-func (d *RuntimeDependency) ValidateSource(dashboard *Dashboard, workspace modconfig.ResourceMapsProvider) error {
+func (d *RuntimeDependency) ValidateSource(dashboard *Dashboard, workspace modconfig.ModResourcesProvider) error {
 	// TODO  [node_reuse] re-add parse time validation https://github.com/turbot/steampipe/issues/2925
 	//resourceName := d.PropertyPath.ToResourceName()
 	//var found bool
@@ -50,7 +50,7 @@ func (d *RuntimeDependency) ValidateSource(dashboard *Dashboard, workspace modco
 	//
 	//	//default:
 	//	//	// otherwise, resolve from the global inputs
-	//	//	_, found = workspace.GetResourceMaps().GlobalDashboardInputs[resourceName]
+	//	//	_, found = workspace.GetModResources().GlobalDashboardInputs[resourceName]
 	//}
 	//if !found {
 	//	return fmt.Errorf("could not resolve runtime dependency resource %s", d.PropertyPath)

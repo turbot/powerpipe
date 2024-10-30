@@ -52,7 +52,7 @@ func (g *DashboardGraph) Equals(other *DashboardGraph) bool {
 }
 
 // OnDecoded implements HclResource
-func (g *DashboardGraph) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (g *DashboardGraph) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	g.SetBaseProperties()
 	if len(g.Nodes) > 0 {
 		g.NodeNames = g.Nodes.Names()

@@ -49,7 +49,7 @@ func (h *DashboardHierarchy) Equals(other *DashboardHierarchy) bool {
 }
 
 // OnDecoded implements HclResource
-func (h *DashboardHierarchy) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ResourceMapsProvider) hcl.Diagnostics {
+func (h *DashboardHierarchy) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	h.SetBaseProperties()
 	if len(h.Nodes) > 0 {
 		h.NodeNames = h.Nodes.Names()
