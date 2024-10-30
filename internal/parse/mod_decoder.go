@@ -20,11 +20,14 @@ func NewPowerpipeModDecoder(opts ...parse.DecoderOption) parse.Decoder {
 	d := &PowerpipeModDecoder{
 		DecoderImpl: parse.NewDecoderImpl(),
 	}
-	for _, block := range schema.NodeAndEdgeProviderBlocks {
-		d.DecodeFuncs[block] = d.decodeNodeAndEdgeProvider
+	for _, blockType := range schema.NodeAndEdgeProviderBlocks {
+		d.DecodeFuncs[blockType] = d.decodeNodeAndEdgeProvider
 	}
 	for _, blockType := range schema.QueryProviderBlocks {
-		d.DecodeFuncs[blockType] = d.decodeQueryProvider
+		// only add func if one is not already set (i.e. from NodeAndEdgeProviderBlocks)
+		if _, ok := d.DecodeFuncs[blockType]; !ok {
+			d.DecodeFuncs[blockType] = d.decodeQueryProvider
+		}
 	}
 	d.DecodeFuncs[schema.BlockTypeDashboard] = d.decodeDashboard
 	d.DecodeFuncs[schema.BlockTypeContainer] = d.decodeDashboardContainer
