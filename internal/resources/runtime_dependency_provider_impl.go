@@ -30,5 +30,6 @@ func (b *RuntimeDependencyProviderImpl) GetRuntimeDependencies() map[string]*Run
 
 func (b *RuntimeDependencyProviderImpl) GetNestedStructs() []modconfig.CtyValueProvider {
 	// return all nested structs - this is used to get the nested structs for the cty serialisation
-	return append([]modconfig.CtyValueProvider{&b.ModTreeItemImpl}, b.ModTreeItemImpl.GetNestedStructs()...)
+	// we return ourselves and our base structs
+	return append([]modconfig.CtyValueProvider{b}, b.ModTreeItemImpl.GetNestedStructs()...)
 }
