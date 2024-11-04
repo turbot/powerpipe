@@ -4043,10 +4043,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-symbols/svg-300@npm:0.23.0":
-  version: 0.23.0
-  resolution: "@material-symbols/svg-300@npm:0.23.0"
-  checksum: 10c0/aaae867eb8dba3862ccf721a7366ec0af7b7cf9ad840bfd50ac331a11317796d7293fa6484e62126f19e948e3ea6e1ab0567c74a489bf310b654b8faaffd7fd2
+"@material-symbols/svg-300@npm:0.26.0":
+  version: 0.26.0
+  resolution: "@material-symbols/svg-300@npm:0.26.0"
+  checksum: 10c0/fbabffb0ce0390978220ab8c956ec52ae71866a71082f715e9ffe0c5474266c28fd3cce7cd7f035857e1f88c62253a75c8a8e15e9a15b65f6b61a20ee59755cd
   languageName: node
   linkType: hard
 
@@ -16718,7 +16718,7 @@ __metadata:
     "@craco/craco": "npm:7.1.0"
     "@headlessui/react": "npm:2.1.7"
     "@heroicons/react": "npm:2.1.5"
-    "@material-symbols/svg-300": "npm:0.23.0"
+    "@material-symbols/svg-300": "npm:0.26.0"
     "@popperjs/core": "npm:2.11.8"
     "@storybook/addon-actions": "npm:8.3.0"
     "@storybook/addon-essentials": "npm:8.3.0"
