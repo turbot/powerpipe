@@ -3,7 +3,7 @@ import ControlDimension from "../Benchmark/ControlDimension";
 import ControlEmptyResultNode from "../common/node/ControlEmptyResultNode";
 import ControlErrorNode from "../common/node/ControlErrorNode";
 import ControlResultNode from "../common/node/ControlResultNode";
-import KeyValuePairNode from "@powerpipe/components/dashboards/check/common/node/KeyValuePairNode";
+import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import sortBy from "lodash/sortBy";
 import {
   AlarmIcon,
@@ -16,10 +16,7 @@ import {
   SkipIcon,
   UnknownIcon,
 } from "@powerpipe/constants/icons";
-import {
-  CheckGroupingActions,
-  useCheckGrouping,
-} from "@powerpipe/hooks/useCheckGrouping";
+import { GroupingActions, useGrouping } from "@powerpipe/hooks/useGrouping";
 import {
   CheckNode,
   CheckResult,
@@ -286,7 +283,7 @@ const CheckPanelSeverity = ({ severity_summary }: CheckPanelSeverityProps) => {
 
 const CheckPanel = ({ depth, node }: CheckPanelProps) => {
   const { firstChildSummaries, dispatch, groupingsConfig, nodeStates } =
-    useCheckGrouping();
+    useGrouping();
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
@@ -350,8 +347,8 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
             can_be_expanded
               ? dispatch({
                   type: expanded
-                    ? CheckGroupingActions.COLLAPSE_NODE
-                    : CheckGroupingActions.EXPAND_NODE,
+                    ? GroupingActions.COLLAPSE_NODE
+                    : GroupingActions.EXPAND_NODE,
                   name: node.name,
                 })
               : null

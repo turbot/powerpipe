@@ -2,9 +2,9 @@ import CheckPanel from "../CheckPanel";
 import sortBy from "lodash/sortBy";
 import {
   CheckGroupNodeStates,
-  CheckGroupingActions,
-  useCheckGrouping,
-} from "@powerpipe/hooks/useCheckGrouping";
+  GroupingActions,
+  useGrouping,
+} from "@powerpipe/hooks/useGrouping";
 import { CheckNode } from "../common";
 import { useCallback, useEffect, useState } from "react";
 
@@ -13,19 +13,19 @@ type CheckGroupingProps = {
 };
 
 const CheckGrouping = ({ node }: CheckGroupingProps) => {
-  const { dispatch, nodeStates } = useCheckGrouping();
+  const { dispatch, nodeStates } = useGrouping();
   const [restoreNodeStates, setRestoreNodeStates] =
     useState<CheckGroupNodeStates | null>(null);
 
   const expand = useCallback(() => {
     setRestoreNodeStates(nodeStates);
-    dispatch({ type: CheckGroupingActions.EXPAND_ALL_NODES });
+    dispatch({ type: GroupingActions.EXPAND_ALL_NODES });
   }, [dispatch, nodeStates]);
 
   const restore = useCallback(() => {
     if (restoreNodeStates) {
       dispatch({
-        type: CheckGroupingActions.UPDATE_NODES,
+        type: GroupingActions.UPDATE_NODES,
         nodes: restoreNodeStates,
       });
     }

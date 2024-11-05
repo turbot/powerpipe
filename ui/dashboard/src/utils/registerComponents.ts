@@ -39,7 +39,7 @@ import "@powerpipe/components/dashboards/inputs/TextInput";
 import "@powerpipe/components/dashboards/inputs/Input";
 
 // Check
-import "@powerpipe/components/dashboards/check/Benchmark";
+import "@powerpipe/components/dashboards/grouping/Benchmark";
 
 // Dashboard
 import "@powerpipe/components/dashboards/layout/Dashboard";

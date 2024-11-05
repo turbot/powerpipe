@@ -1,12 +1,12 @@
-import BenchmarkNode from "@powerpipe/components/dashboards/check/common/node/BenchmarkNode";
-import ControlEmptyResultNode from "@powerpipe/components/dashboards/check/common/node/ControlEmptyResultNode";
-import ControlErrorNode from "@powerpipe/components/dashboards/check/common/node/ControlErrorNode";
-import ControlNode from "@powerpipe/components/dashboards/check/common/node/ControlNode";
-import ControlResultNode from "@powerpipe/components/dashboards/check/common/node/ControlResultNode";
-import ControlRunningNode from "@powerpipe/components/dashboards/check/common/node/ControlRunningNode";
-import KeyValuePairNode from "@powerpipe/components/dashboards/check/common/node/KeyValuePairNode";
-import RootNode from "@powerpipe/components/dashboards/check/common/node/RootNode";
-import useCheckFilterConfig from "./useCheckFilterConfig";
+import BenchmarkNode from "@powerpipe/components/dashboards/grouping/common/node/BenchmarkNode";
+import ControlEmptyResultNode from "@powerpipe/components/dashboards/grouping/common/node/ControlEmptyResultNode";
+import ControlErrorNode from "@powerpipe/components/dashboards/grouping/common/node/ControlErrorNode";
+import ControlNode from "@powerpipe/components/dashboards/grouping/common/node/ControlNode";
+import ControlResultNode from "@powerpipe/components/dashboards/grouping/common/node/ControlResultNode";
+import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common/node/ControlRunningNode";
+import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
+import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
+import useGroupingFilterConfig from "./useGroupingFilterConfig";
 import useCheckGroupingConfig from "./useCheckGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
@@ -20,7 +20,7 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import {
   createContext,
   useContext,
@@ -28,7 +28,7 @@ import {
   useMemo,
   useReducer,
 } from "react";
-import { default as BenchmarkType } from "@powerpipe/components/dashboards/check/common/Benchmark";
+import { default as BenchmarkType } from "@powerpipe/components/dashboards/grouping/common/Benchmark";
 import {
   ElementType,
   IActions,
@@ -76,7 +76,7 @@ type ICheckGroupingContext = {
   dispatch(action: CheckGroupingAction): void;
 };
 
-const CheckGroupingActions: IActions = {
+const GroupingActions: IActions = {
   COLLAPSE_ALL_NODES: "collapse_all_nodes",
   COLLAPSE_NODE: "collapse_node",
   EXPAND_ALL_NODES: "expand_all_nodes",
@@ -84,9 +84,9 @@ const CheckGroupingActions: IActions = {
   UPDATE_NODES: "update_nodes",
 };
 
-const checkGroupingActions = Object.values(CheckGroupingActions);
+const checkGroupingActions = Object.values(GroupingActions);
 
-const CheckGroupingContext = createContext<ICheckGroupingContext | null>(null);
+const GroupingContext = createContext<ICheckGroupingContext | null>(null);
 
 const addBenchmarkTrunkNode = (
   benchmark_trunk: BenchmarkType[],
@@ -519,7 +519,7 @@ const getCheckResultNode = (checkResult: CheckResult) => {
 
 const reducer = (state: CheckGroupNodeStates, action) => {
   switch (action.type) {
-    case CheckGroupingActions.COLLAPSE_ALL_NODES: {
+    case GroupingActions.COLLAPSE_ALL_NODES: {
       const newNodes = {};
       for (const [name, node] of Object.entries(state)) {
         newNodes[name] = {
@@ -532,7 +532,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
         nodes: newNodes,
       };
     }
-    case CheckGroupingActions.COLLAPSE_NODE:
+    case GroupingActions.COLLAPSE_NODE:
       return {
         ...state,
         [action.name]: {
@@ -540,7 +540,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
           expanded: false,
         },
       };
-    case CheckGroupingActions.EXPAND_ALL_NODES: {
+    case GroupingActions.EXPAND_ALL_NODES: {
       const newNodes = {};
       Object.entries(state).forEach(([name, node]) => {
         newNodes[name] = {
@@ -550,7 +550,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
       });
       return newNodes;
     }
-    case CheckGroupingActions.EXPAND_NODE: {
+    case GroupingActions.EXPAND_NODE: {
       return {
         ...state,
         [action.name]: {
@@ -559,7 +559,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
         },
       };
     }
-    case CheckGroupingActions.UPDATE_NODES:
+    case GroupingActions.UPDATE_NODES:
       return action.nodes;
     default:
       return state;
@@ -785,13 +785,13 @@ const includeResult = (
   return matches.every((m) => m);
 };
 
-const useGrouping = (
+const useGroupingInternal = (
   definition: PanelDefinition | null,
   panelsMap: PanelsMap | undefined,
   groupingsConfig: CheckDisplayGroup[],
   skip = false,
 ) => {
-  const checkFilterConfig = useCheckFilterConfig();
+  const checkFilterConfig = useGroupingFilterConfig();
 
   return useMemo(() => {
     const filterValues = {
@@ -882,7 +882,7 @@ const useGrouping = (
   }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
 };
 
-const CheckGroupingProvider = ({
+const GroupingProvider = ({
   children,
   definition,
   diff_panels,
@@ -899,9 +899,9 @@ const CheckGroupingProvider = ({
     firstChildSummaries,
     tempNodeStates,
     filterValues,
-  ] = useGrouping(definition, panelsMap, groupingsConfig);
+  ] = useGroupingInternal(definition, panelsMap, groupingsConfig);
 
-  const [, , diffGrouping, diffFirstChildSummaries] = useGrouping(
+  const [, , diffGrouping, diffFirstChildSummaries] = useGroupingInternal(
     definition,
     diff_panels,
     groupingsConfig,
@@ -919,7 +919,7 @@ const CheckGroupingProvider = ({
       return;
     }
     dispatch({
-      type: CheckGroupingActions.UPDATE_NODES,
+      type: GroupingActions.UPDATE_NODES,
       nodes: tempNodeStates,
     });
   }, [previousGroupings, groupingsConfig, tempNodeStates]);
@@ -929,7 +929,7 @@ const CheckGroupingProvider = ({
   }, [filterValues, setDashboardControlsContext]);
 
   return (
-    <CheckGroupingContext.Provider
+    <GroupingContext.Provider
       value={{
         benchmark,
         // @ts-ignore
@@ -945,26 +945,19 @@ const CheckGroupingProvider = ({
       }}
     >
       {children}
-    </CheckGroupingContext.Provider>
+    </GroupingContext.Provider>
   );
 };
 
-const useCheckGrouping = () => {
-  const context = useContext(CheckGroupingContext);
+const useGrouping = () => {
+  const context = useContext(GroupingContext);
   if (context === undefined) {
-    throw new Error(
-      "useCheckGrouping must be used within a CheckGroupingContext",
-    );
+    throw new Error("useCheckGrouping must be used within a GroupingContext");
   }
   return context as ICheckGroupingContext;
 };
 
-export {
-  CheckGroupingActions,
-  CheckGroupingContext,
-  CheckGroupingProvider,
-  useCheckGrouping,
-};
+export { GroupingActions, GroupingContext, GroupingProvider, useGrouping };
 
 // https://stackoverflow.com/questions/50737098/multi-level-grouping-in-javascript
 // keys = ['level1', 'level2'],

@@ -1,4 +1,4 @@
-import CheckEditorAddItem from "@powerpipe/components/dashboards/check/common/CheckEditorAddItem";
+import CheckEditorAddItem from "@powerpipe/components/dashboards/grouping/common/CheckEditorAddItem";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";

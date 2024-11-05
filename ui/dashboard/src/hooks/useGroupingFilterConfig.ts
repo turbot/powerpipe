@@ -1,8 +1,8 @@
-import { CheckFilter } from "@powerpipe/components/dashboards/check/common";
+import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const useCheckFilterConfig = (): CheckFilter => {
+const useGroupingFilterConfig = (): CheckFilter => {
   const [searchParams] = useSearchParams();
   const defaultFilter = {
     operator: "and",
@@ -26,4 +26,4 @@ const useCheckFilterConfig = (): CheckFilter => {
   }, [searchParams]);
 };
 
-export default useCheckFilterConfig;
+export default useGroupingFilterConfig;
