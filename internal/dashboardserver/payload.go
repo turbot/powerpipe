@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"github.com/turbot/powerpipe/internal/resources"
+	"log/slog"
 
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -66,7 +67,11 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 	if err != nil {
 		return nil, err
 	}
-	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase, defaultSearchPathConfig)
+	connectionString, err := defaultDatabase.GetConnectionString()
+	if err != nil {
+		return nil, err
+	}
+	searchPath, err := getSearchPathMetadata(context.Background(), connectionString, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -88,29 +93,44 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 }
 
 func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.PowerpipeWorkspace) ([]byte, error) {
+	slog.Debug("calling buildDashboardMetadataPayload")
+
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
+		slog.Warn("error getting default database config", "error", err)
 		return nil, err
 	}
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, w.Mod, defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
+		slog.Warn("error getting database config for resource", "error", err)
 		return nil, err
 	}
 
+	connectionString, err := database.GetConnectionString()
+	if err != nil {
+		slog.Warn("error getting connection string", "error", err)
+		return nil, err
+	}
 	payload := DashboardMetadataPayload{
 		Action: "dashboard_metadata",
 		Metadata: DashboardMetadata{
-			Database: database,
+			Database: connectionString,
 		},
 	}
 
-	searchPath, err := getSearchPathMetadata(ctx, database, searchPathConfig)
+	searchPath, err := getSearchPathMetadata(ctx, connectionString, searchPathConfig)
 	if err != nil {
+		slog.Warn("error getting search path metadata", "error", err)
 		return nil, err
 	}
 	payload.Metadata.SearchPath = searchPath
 
-	return json.Marshal(payload)
+	res, err := json.Marshal(payload)
+	if err != nil {
+		slog.Warn("error marshalling payload", "error", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
@@ -159,12 +179,37 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 	return children
 }
 
+func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+	var children []ModAvailableBenchmark
+	for _, child := range benchmark.GetChildren() {
+		switch t := child.(type) {
+		case *resources.Benchmark:
+			childTrunk := make([]string, len(trunk)+1)
+			copy(childTrunk, trunk)
+			childTrunk[len(childTrunk)-1] = t.FullName
+			if recordTrunk {
+				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
+			}
+			availableBenchmark := ModAvailableBenchmark{
+				Title:     t.GetTitle(),
+				FullName:  t.FullName,
+				ShortName: t.ShortName,
+				Tags:      t.Tags,
+				Children:  addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+			}
+			children = append(children, availableBenchmark)
+		}
+	}
+	return children
+}
+
 func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
-		Action:     "available_dashboards",
-		Dashboards: make(map[string]ModAvailableDashboard),
-		Benchmarks: make(map[string]ModAvailableBenchmark),
-		Snapshots:  workspaceResources.Snapshots,
+		Action:              "available_dashboards",
+		Dashboards:          make(map[string]ModAvailableDashboard),
+		Benchmarks:          make(map[string]ModAvailableBenchmark),
+		DetectionBenchmarks: make(map[string]ModAvailableBenchmark),
+		Snapshots:           workspaceResources.Snapshots,
 	}
 
 	// if workspace resources has a mod, populate dashboards and benchmarks
@@ -224,6 +269,47 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			if foundBenchmark, ok := payload.Benchmarks[benchmarkName]; ok {
 				foundBenchmark.Trunks = trunks
 				payload.Benchmarks[benchmarkName] = foundBenchmark
+			}
+		}
+
+		detectionBenchmarkTrunks := make(map[string][][]string)
+		for _, detectionBenchmark := range topLevelResources.DetectionBenchmarks {
+			if detectionBenchmark.IsAnonymous() {
+				continue
+			}
+
+			// Find any detectionBenchmarks who have a parent that is a mod - we consider these top-level
+			isTopLevel := false
+			for _, parent := range detectionBenchmark.GetParents() {
+				switch parent.(type) {
+				case *modconfig.Mod:
+					isTopLevel = true
+				}
+			}
+
+			mod := detectionBenchmark.Mod
+			trunk := []string{detectionBenchmark.FullName}
+
+			if isTopLevel {
+				detectionBenchmarkTrunks[detectionBenchmark.FullName] = [][]string{trunk}
+			}
+
+			availableDetectionBenchmark := ModAvailableBenchmark{
+				Title:       detectionBenchmark.GetTitle(),
+				FullName:    detectionBenchmark.FullName,
+				ShortName:   detectionBenchmark.ShortName,
+				Tags:        detectionBenchmark.Tags,
+				IsTopLevel:  isTopLevel,
+				Children:    addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
+				ModFullName: mod.GetFullName(),
+			}
+
+			payload.DetectionBenchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark
+		}
+		for detectionBenchmarkName, trunks := range detectionBenchmarkTrunks {
+			if foundDetectionBenchmark, ok := payload.DetectionBenchmarks[detectionBenchmarkName]; ok {
+				foundDetectionBenchmark.Trunks = trunks
+				payload.DetectionBenchmarks[detectionBenchmarkName] = foundDetectionBenchmark
 			}
 		}
 	}

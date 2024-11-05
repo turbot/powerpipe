@@ -37,6 +37,8 @@ type PowerpipeModResources struct {
 	DashboardImages       map[string]*DashboardImage
 	DashboardInputs       map[string]map[string]*DashboardInput
 	DashboardTables       map[string]*DashboardTable
+	Detections            map[string]*Detection
+	DetectionBenchmarks   map[string]*DetectionBenchmark
 	DashboardTexts        map[string]*DashboardText
 	DashboardNodes        map[string]*DashboardNode
 	GlobalDashboardInputs map[string]*DashboardInput
@@ -73,6 +75,8 @@ func emptyPowerpipeModResources() *PowerpipeModResources {
 		DashboardImages:       make(map[string]*DashboardImage),
 		DashboardInputs:       make(map[string]map[string]*DashboardInput),
 		DashboardTables:       make(map[string]*DashboardTable),
+		Detections:            make(map[string]*Detection),
+		DetectionBenchmarks:   make(map[string]*DetectionBenchmark),
 		DashboardTexts:        make(map[string]*DashboardText),
 		DashboardNodes:        make(map[string]*DashboardNode),
 		DashboardCategories:   make(map[string]*DashboardCategory),
@@ -348,6 +352,20 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 			return false
 		}
 	}
+	for name, detection := range m.Detections {
+		if otherDetection, ok := other.Detections[name]; !ok {
+			return false
+		} else if !detection.Equals(otherDetection) {
+			return false
+		}
+	}
+	for name, benchmark := range m.DetectionBenchmarks {
+		if otherBenchmark, ok := other.DetectionBenchmarks[name]; !ok {
+			return false
+		} else if !benchmark.Equals(otherBenchmark) {
+			return false
+		}
+	}
 	for name, category := range m.DashboardCategories {
 		if otherCategory, ok := other.DashboardCategories[name]; !ok {
 			return false
@@ -357,6 +375,16 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 	}
 	for name := range other.DashboardTables {
 		if _, ok := m.DashboardTables[name]; !ok {
+			return false
+		}
+	}
+	for name := range other.Detections {
+		if _, ok := m.Detections[name]; !ok {
+			return false
+		}
+	}
+	for name := range other.DetectionBenchmarks {
+		if _, ok := m.DetectionBenchmarks[name]; !ok {
 			return false
 		}
 	}
@@ -436,6 +464,10 @@ func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResource
 		resource, found = m.DashboardNodes[longName]
 	case schema.BlockTypeTable:
 		resource, found = m.DashboardTables[longName]
+	case schema.BlockTypeDetection:
+		resource, found = m.Detections[longName]
+	case schema.BlockTypeDetectionBenchmark:
+		resource, found = m.DetectionBenchmarks[longName]
 	case schema.BlockTypeText:
 		resource, found = m.DashboardTexts[longName]
 	case schema.BlockTypeInput:
@@ -573,6 +605,8 @@ func (m *PowerpipeModResources) Empty() bool {
 		len(m.DashboardImages)+
 		len(m.DashboardInputs)+
 		len(m.DashboardTables)+
+		len(m.Detections)+
+		len(m.DetectionBenchmarks)+
 		len(m.DashboardTexts)+
 		len(m.References) == 0
 }
@@ -674,6 +708,16 @@ func (m *PowerpipeModResources) WalkResources(resourceFunc func(item modconfig.H
 		}
 	}
 	for _, r := range m.DashboardTables {
+		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
+			return err
+		}
+	}
+	for _, r := range m.Detections {
+		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
+			return err
+		}
+	}
+	for _, r := range m.DetectionBenchmarks {
 		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
 			return err
 		}
@@ -851,6 +895,20 @@ func (m *PowerpipeModResources) AddResource(item modconfig.HclResource) hcl.Diag
 			break
 		}
 		m.DashboardTables[name] = r
+	case *Detection:
+		name := r.Name()
+		if existing, ok := m.Detections[name]; ok {
+			diags = append(diags, modconfig.CheckForDuplicate(existing, item)...)
+			break
+		}
+		m.Detections[name] = r
+	case *DetectionBenchmark:
+		name := r.Name()
+		if existing, ok := m.DetectionBenchmarks[name]; ok {
+			diags = append(diags, modconfig.CheckForDuplicate(existing, item)...)
+			break
+		}
+		m.DetectionBenchmarks[name] = r
 
 	case *DashboardText:
 		name := r.Name()
@@ -935,6 +993,12 @@ func (m *PowerpipeModResources) AddMaps(sourceMaps ...modconfig.ModResources) {
 		for k, v := range source.DashboardTables {
 			m.DashboardTables[k] = v
 		}
+		for k, v := range source.Detections {
+			m.Detections[k] = v
+		}
+		for k, v := range source.DetectionBenchmarks {
+			m.DetectionBenchmarks[k] = v
+		}
 		for k, v := range source.DashboardTexts {
 			m.DashboardTexts[k] = v
 		}
@@ -981,6 +1045,8 @@ func (m *PowerpipeModResources) queryProviderCount() int {
 			numDashboardInputs +
 			len(m.DashboardNodes) +
 			len(m.DashboardTables) +
+			len(m.Detections) +
+			len(m.DetectionBenchmarks) +
 			len(m.GlobalDashboardInputs) +
 			len(m.Queries)
 	return numItems

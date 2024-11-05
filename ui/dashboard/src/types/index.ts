@@ -1,7 +1,7 @@
 import {
   CheckDisplayGroup,
   CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
@@ -325,6 +325,8 @@ export type DashboardPanelType =
   | "container"
   | "control"
   | "dashboard"
+  | "detection"
+  | "detection_benchmark"
   | "edge"
   | "error"
   | "flow"
@@ -365,7 +367,13 @@ type AvailableDashboardTags = {
   [key: string]: string;
 };
 
-type AvailableDashboardType = "benchmark" | "dashboard" | "snapshot";
+type AvailableDashboardType =
+  | "available_dashboard"
+  | "benchmark"
+  | "dashboard"
+  | "detection_benchmark"
+  | "detection"
+  | "snapshot";
 
 export type AvailableDashboard = {
   full_name: string;

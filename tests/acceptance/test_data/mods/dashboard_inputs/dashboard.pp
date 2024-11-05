@@ -21,7 +21,7 @@ dashboard "testing_dashboard_inputs" {
       wrap = "all"
     }
   }
-}
+ }
 
 query "query_input" {
   sql = <<-EOQ

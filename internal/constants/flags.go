@@ -62,6 +62,20 @@ var DashboardOutputModeIds = map[DashboardOutputMode][]string{
 	DashboardOutputModeNone:          {constants.OutputFormatNone},
 }
 
+type DetectionOutputMode enumflag.Flag
+
+const (
+	DetectionOutputModeSnapshot DetectionOutputMode = iota
+	DetectionOutputModeSnapshotShort
+	DetectionOutputModeNone
+)
+
+var DetectionOutputModeIds = map[DetectionOutputMode][]string{
+	DetectionOutputModeSnapshot:      {constants.OutputFormatSnapshot},
+	DetectionOutputModeSnapshotShort: {OutputFormatPpSnapshotShort},
+	DetectionOutputModeNone:          {constants.OutputFormatNone},
+}
+
 type CheckOutputMode enumflag.Flag
 
 const (

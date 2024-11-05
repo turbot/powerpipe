@@ -107,7 +107,6 @@ _Whats new_
 - Optimize workspace load time for large workspaces with multiple dependent mods. ([#365](https://github.com/turbot/pipe-fittings/issues/365))
 
 ## v0.1.1 [2024-03-07]
-
 _Bug fixes_
 * Fix CLI available version check. ([#250](https://github.com/turbot/powerpipe/issues/250))
 * Notify when `mod install` creates a default mod. ([#246](https://github.com/turbot/powerpipe/issues/246))
@@ -116,7 +115,6 @@ _Bug fixes_
 
 
 ## v0.1.0 [2024-03-06]
-
 Introducing Powerpipe - Dashboards for DevOps.
 
 *Benchmarks* - 5,000+ open-source controls from CIS, NIST, PCI, HIPAA, FedRamp and more. Run instantly on your machine or as part of your deployment pipeline.

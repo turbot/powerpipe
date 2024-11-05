@@ -1,7 +1,7 @@
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -9,6 +9,9 @@ const groupingKeys = [
   "benchmark",
   "control",
   "control_tag",
+  "detection",
+  "detection_benchmark",
+  "detection_tag",
   "dimension",
   "reason",
   "resource",

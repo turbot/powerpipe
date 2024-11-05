@@ -301,7 +301,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		dashboardClients := s.getDashboardClients()
 		if sessionInfo, ok := dashboardClients[e.Session]; ok {
 			for _, clearedInput := range e.ClearedInputs {
-				delete(sessionInfo.DashboardInputs, clearedInput)
+				delete(sessionInfo.DashboardInputs.Inputs, clearedInput)
 			}
 		}
 		s.writePayloadToSession(e.Session, payload)
@@ -352,6 +352,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "get_dashboard_metadata":
+			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
 			dashboard := s.getResource(request.Payload.Dashboard.FullName)
 			if dashboard == nil {
 				return
@@ -375,7 +376,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 
 			// was a search path passed into the execute command?
-			var opts []backend.ConnectOption
+			var opts []backend.BackendOption
 			if request.Payload.SearchPath != nil || request.Payload.SearchPathPrefix != nil {
 				opts = append(opts, backend.WithSearchPathConfig(backend.SearchPathConfig{
 					SearchPath:       request.Payload.SearchPath,
@@ -429,7 +430,7 @@ func (s *Server) addSession(session *melody.Session) {
 	s.addDashboardClient(sessionId, clientSession)
 }
 
-func (s *Server) setDashboardInputsForSession(sessionId string, inputs map[string]interface{}) {
+func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
 	dashboardClients := s.getDashboardClients()
 	if sessionInfo, ok := dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
@@ -442,7 +443,7 @@ func (s *Server) getSessionId(session *melody.Session) string {
 
 // functions providing locked access to member properties
 
-func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs map[string]interface{}) *DashboardClientInfo {
+func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs *dashboardexecute.InputValues) *DashboardClientInfo {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -506,7 +507,7 @@ func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, e
 			for _, nodeName := range nodePath {
 				resourceParts, _ := modconfig.ParseResourceName(nodeName)
 				// We only care about changes from these resource types
-				if !helpers.StringSliceContains([]string{schema.BlockTypeDashboard, schema.BlockTypeBenchmark}, resourceParts.ItemType) {
+				if !helpers.StringSliceContains([]string{schema.BlockTypeDashboard, schema.BlockTypeBenchmark, schema.BlockTypeDetectionBenchmark}, resourceParts.ItemType) {
 					continue
 				}
 

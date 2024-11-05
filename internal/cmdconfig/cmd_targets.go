@@ -44,7 +44,7 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.Pow
 //
 // TODO K add unit test
 func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
-
+	typeName := resources.GenericTypeToBlockType[T]()
 	var target modconfig.ModTreeItem
 	var queryArgs *resources.QueryArgs
 	var err error
@@ -53,7 +53,7 @@ func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.P
 		return nil, err
 	}
 	if helpers.IsNil(target) {
-		return nil, fmt.Errorf("'%s' not found in %s (%s)", cmdArg, w.Mod.Name(), w.Path)
+		return nil, fmt.Errorf("'%s.%s' not found in %s (%s)", typeName, cmdArg, w.Mod.Name(), w.Path)
 	}
 	// TODO KAI CHECK QUERY ARGS LOGIC HERE
 	//if queryArgs != nil {

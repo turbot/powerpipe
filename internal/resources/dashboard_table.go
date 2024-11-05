@@ -3,6 +3,7 @@ package resources
 import (
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -10,8 +11,6 @@ import (
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/zclconf/go-cty/cty"
 )
-
-const SnapshotQueryTableName = "custom.table.results"
 
 // DashboardTable is a struct representing a leaf dashboard node
 type DashboardTable struct {
@@ -40,7 +39,7 @@ func NewDashboardTable(block *hcl.Block, mod *modconfig.Mod, shortName string) m
 // NewQueryDashboardTable creates a Table to wrap a query.
 // This is used in order to execute queries as dashboards
 func NewQueryDashboardTable(qp QueryProvider) (*DashboardTable, error) {
-	parsedName, err := modconfig.ParseResourceName(SnapshotQueryTableName)
+	parsedName, err := modconfig.ParseResourceName(constants.SnapshotQueryTableName)
 	if err != nil {
 		return nil, err
 	}

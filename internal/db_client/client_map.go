@@ -84,7 +84,7 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 	}
 
 	// if a search path override was passed in, set the opt
-	var opts []backend.ConnectOption
+	var opts []backend.BackendOption
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
