@@ -3,6 +3,7 @@ package resources
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
+	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -32,7 +33,9 @@ type DetectionBenchmark struct {
 func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
 	// create a fake block for the wrapper benchmark
 	block := &hcl.Block{
-		Type:   schema.BlockTypeBenchmark,
+		Type:   schema.BlockTypeDetectionBenchmark,
+		// TODO KAI WHICH???
+		//Type:   schema.BlockTypeBenchmark,
 		Labels: []string{detection.ShortName + "_benchmark"},
 		Body:   &hclsyntax.Body{SrcRange: detection.DeclRange},
 	}
@@ -65,6 +68,24 @@ func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
 func (d *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	d.SetBaseProperties()
 	return nil
+}
+
+// GetWidth implements DashboardLeafNode
+func (d *DetectionBenchmark) GetWidth() int {
+	if d.Width == nil {
+		return 0
+	}
+	return *d.Width
+}
+
+// GetDisplay implements DashboardLeafNode
+func (d *DetectionBenchmark) GetDisplay() string {
+	return typehelpers.SafeString(d.Display)
+}
+
+// GetType implements DashboardLeafNode
+func (d *DetectionBenchmark) GetType() string {
+	return ""
 }
 
 func (d *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {

@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -19,6 +20,14 @@ type Detection struct {
 	Remain         hcl.Body `hcl:",remain" json:"-"`
 	Severity       *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
 	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" snapshot:"display_columns" json:"display_columns,omitempty"`
+
+	Columns map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns"`
+
+	Type       *string  `cty:"type" hcl:"type"  json:"type,omitempty"`
+	Display    *string  `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
+	Author     *string  `cty:"author" hcl:"author" json:"author,omitempty"`
+	References []string `cty:"references" hcl:"references,optional" json:"references,omitempty"`
+	Tables     []string `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
 
 	Base *Detection `hcl:"base" json:"-"`
 }
@@ -39,6 +48,11 @@ func (t *Detection) Equals(other *Detection) bool {
 // OnDecoded implements HclResource
 func (t *Detection) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
+	t.Columns = map[string]*DashboardTableColumn{
+		"reason": {
+			Name: "reason",
+		},
+	}
 	return t.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }
 
@@ -57,6 +71,29 @@ func (t *Detection) Diff(other *Detection) *modconfig.ModTreeItemDiffs {
 	res.Merge(dashboardLeafNodeDiff(t, other))
 
 	return res
+}
+
+// GetWidth implements DashboardLeafNode
+func (t *Detection) GetWidth() int {
+	if t.Width == nil {
+		return 0
+	}
+	return *t.Width
+}
+
+// GetDisplay implements DashboardLeafNode
+func (t *Detection) GetDisplay() string {
+	return typehelpers.SafeString(t.Display)
+}
+
+// GetDocumentation implements DashboardLeafNode, ModTreeItem
+func (*Detection) GetDocumentation() string {
+	return ""
+}
+
+// GetType implements DashboardLeafNode
+func (t *Detection) GetType() string {
+	return typehelpers.SafeString(t.Type)
 }
 
 // CtyValue implements CtyValueProvider

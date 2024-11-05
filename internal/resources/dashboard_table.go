@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"

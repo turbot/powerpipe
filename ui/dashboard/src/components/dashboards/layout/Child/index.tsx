@@ -60,6 +60,16 @@ const Child = ({
           showControls={showPanelControls}
         />
       );
+    case "detection_benchmark":
+    case "detection":
+      const DetectionBenchmark = getComponent("detection_benchmark");
+      return (
+        <DetectionBenchmark
+          {...(layoutDefinition as PanelDefinition)}
+          diff_panels={diff ? diff.panelsMap : null}
+          showControls={showPanelControls}
+        />
+      );
     case "card":
       const Card = getComponent("card");
       return (
@@ -103,7 +113,7 @@ const Child = ({
     case "flow": {
       const Flow = getComponent("flow");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties,
+        panelDefinition.properties as NodeAndEdgeProperties
       );
       return (
         <Panel
@@ -125,7 +135,7 @@ const Child = ({
     case "graph": {
       const Graph = getComponent("graph");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties,
+        panelDefinition.properties as NodeAndEdgeProperties
       );
       return (
         <Panel
@@ -147,7 +157,7 @@ const Child = ({
     case "hierarchy": {
       const Hierarchy = getComponent("hierarchy");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties,
+        panelDefinition.properties as NodeAndEdgeProperties
       );
       return (
         <Panel
