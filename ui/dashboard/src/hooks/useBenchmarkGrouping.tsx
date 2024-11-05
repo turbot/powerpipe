@@ -6,8 +6,13 @@ import ControlResultNode from "@powerpipe/components/dashboards/grouping/common/
 import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common/node/ControlRunningNode";
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
 import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "./useGroupingConfig";
+========
+import useGroupingFilterConfig from "./useGroupingFilterConfig";
+import useCheckGroupingConfig from "./useCheckGroupingConfig";
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
 import usePrevious from "./usePrevious";
 import {
   CheckDisplayGroup,
@@ -20,7 +25,10 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
   applyFilter,
+========
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   createContext,
@@ -767,7 +775,11 @@ const useGroupingInternal = (
   groupingConfig: CheckDisplayGroup[],
   skip = false,
 ) => {
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
   const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
+========
+  const checkFilterConfig = useGroupingFilterConfig();
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
 
   return useMemo(() => {
     const filterValues = {
@@ -875,9 +887,22 @@ const GroupingProvider = ({
     firstChildSummaries,
     tempNodeStates,
     filterValues,
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
   ] = useGroupingInternal(definition, panelsMap, groupingConfig);
 
   const previousGroupings = usePrevious({ groupingConfig });
+========
+  ] = useGroupingInternal(definition, panelsMap, groupingsConfig);
+
+  const [, , diffGrouping, diffFirstChildSummaries] = useGroupingInternal(
+    definition,
+    diff_panels,
+    groupingsConfig,
+    !diff_panels,
+  );
+
+  const previousGroupings = usePrevious({ groupingsConfig });
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
 
   useEffect(() => {
     if (
@@ -917,7 +942,11 @@ const GroupingProvider = ({
   );
 };
 
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
 const useBenchmarkGrouping = () => {
+========
+const useGrouping = () => {
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
   const context = useContext(GroupingContext);
   if (context === undefined) {
     throw new Error("useCheckGrouping must be used within a GroupingContext");
@@ -925,12 +954,16 @@ const useBenchmarkGrouping = () => {
   return context as ICheckGroupingContext;
 };
 
+<<<<<<<< HEAD:ui/dashboard/src/hooks/useBenchmarkGrouping.tsx
 export {
   GroupingActions,
   GroupingContext,
   GroupingProvider,
   useBenchmarkGrouping,
 };
+========
+export { GroupingActions, GroupingContext, GroupingProvider, useGrouping };
+>>>>>>>> 982dc29 (Rename check to grouping in dashboard UI):ui/dashboard/src/hooks/useGrouping.tsx
 
 // https://stackoverflow.com/questions/50737098/multi-level-grouping-in-javascript
 // keys = ['level1', 'level2'],
