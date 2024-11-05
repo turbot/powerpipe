@@ -1,7 +1,7 @@
 import {
   CheckDisplayGroup,
   CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";

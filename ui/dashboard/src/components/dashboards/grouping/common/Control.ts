@@ -12,7 +12,7 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardRunState } from "@powerpipe/types";
 import {
   LeafNodeData,

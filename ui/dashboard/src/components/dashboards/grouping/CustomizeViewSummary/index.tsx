@@ -1,9 +1,9 @@
-import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
-import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
 
 const CustomizeViewSummary = () => {
-  const filterConfig = useCheckFilterConfig();
+  const filterConfig = useGroupingFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
   const filterCount = filterConfig?.expressions?.length

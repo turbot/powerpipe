@@ -1,4 +1,4 @@
-import ControlDimension from "../check/Benchmark/ControlDimension";
+import ControlDimension from "../grouping/Benchmark/ControlDimension";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import useDeepCompareEffect from "use-deep-compare-effect";

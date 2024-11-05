@@ -1,7 +1,7 @@
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 

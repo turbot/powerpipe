@@ -8,6 +8,7 @@ import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
@@ -17,23 +18,19 @@ import {
   CheckSummary,
 } from "../common";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import {
-  CheckGroupingProvider,
-  useCheckGrouping,
-} from "@powerpipe/hooks/useCheckGrouping";
 import { default as BenchmarkType } from "../common/Benchmark";
 import {
   getComponent,
   registerComponent,
 } from "@powerpipe/components/dashboards";
+import { GroupingProvider, useGrouping } from "@powerpipe/hooks/useGrouping";
 import { noop } from "@powerpipe/utils/func";
 import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
-import { Width } from "@powerpipe/components/dashboards/common";
-import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
-import { validateFilter } from "../CheckFilterEditor";
 import { useSearchParams } from "react-router-dom";
+import { validateFilter } from "../CheckFilterEditor";
+import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
 
@@ -56,7 +53,7 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { expressions } = useCheckFilterConfig();
+  const { expressions } = useGroupingFilterConfig();
   const { cliMode, dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
@@ -499,7 +496,7 @@ const Inner = ({ showControls, withTitle }) => {
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
-  } = useCheckGrouping();
+  } = useGrouping();
 
   if (!definition || !benchmark || !grouping) {
     return null;
@@ -550,9 +547,9 @@ type BenchmarkProps = PanelDefinition & {
 
 const BenchmarkWrapper = (props: BenchmarkProps) => {
   return (
-    <CheckGroupingProvider definition={props} diff_panels={props.diff_panels}>
+    <GroupingProvider definition={props} diff_panels={props.diff_panels}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
-    </CheckGroupingProvider>
+    </GroupingProvider>
   );
 };
 

@@ -11,7 +11,7 @@ import {
   CheckResult,
   CheckSeveritySummary,
   CheckSummary,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardLayoutNode, PanelsMap } from "@powerpipe/types";
 import {
   LeafNodeData,

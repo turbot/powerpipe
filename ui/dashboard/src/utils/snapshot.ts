@@ -10,7 +10,7 @@ import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
   CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {

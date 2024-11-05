@@ -1,5 +1,5 @@
 import CheckFilterEditor, { validateFilter } from "../CheckFilterEditor";
-import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import { CheckFilter } from "../common";
 import { Fragment, ReactNode } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -42,7 +42,7 @@ const filtersToText = (filter: CheckFilter) => {
 
 const CheckFilterConfig = () => {
   const [, setSearchParams] = useSearchParams();
-  const filterConfig = useCheckFilterConfig();
+  const filterConfig = useGroupingFilterConfig();
 
   const saveFilterConfig = (toSave: CheckFilter) => {
     setSearchParams((previous) => {
