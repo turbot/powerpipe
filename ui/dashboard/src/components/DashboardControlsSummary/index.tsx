@@ -1,11 +1,11 @@
 import {
   CheckDisplayGroup,
   CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+} from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { Noop } from "@powerpipe/types/func";
 import { ReactNode } from "react";
-import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
 
 type DashboardControlsSummaryProps = {
   searchPathPrefix: string[];

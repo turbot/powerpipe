@@ -1,7 +1,9 @@
-import ControlDimension from "../check/Benchmark/ControlDimension";
+import ControlDimension from "../grouping/Benchmark/ControlDimension";
+import Icon from "@powerpipe/components/Icon";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import useDeepCompareEffect from "use-deep-compare-effect";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -9,6 +11,9 @@ import {
   OKIcon,
   SkipIcon,
   UnknownIcon,
+  ErrorIcon,
+  SortAscendingIcon,
+  SortDescendingIcon,
 } from "@powerpipe/constants/icons";
 import {
   BasePrimitiveProps,
@@ -17,18 +22,15 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
+import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
-import {
-  ErrorIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
-} from "@powerpipe/constants/icons";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
 import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useSearchParams } from "react-router-dom";
 import { useSortBy, useTable } from "react-table";
 
 export type TableColumnDisplay = "all" | "none";
@@ -82,8 +84,6 @@ const getColumns = (
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
-      // Boolean data types do not sort under the default alphanumeric sorting logic of react-table
-      // On the next column type that needs specialising we'll move this out into a function / hook
       sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
     };
     if (colHref) {
@@ -111,6 +111,13 @@ type CellValueProps = {
   rowTemplateData: RowRenderResult[];
   value: any;
   showTitle?: boolean;
+  addFilter?: (
+    operator: "equal" | "not_equal",
+    key: string,
+    value: any,
+    context?: string,
+  ) => void;
+  context?: string;
 };
 
 const CellValue = ({
@@ -119,13 +126,14 @@ const CellValue = ({
   rowTemplateData,
   value,
   showTitle = false,
+  addFilter,
+  context = "",
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Calculate a link for this cell
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
 
@@ -230,7 +238,6 @@ const CellValue = ({
       </div>
     );
   } else if (dataType === "bool") {
-    // True should be
     cellContent = href ? (
       <ExternalLink
         to={href}
@@ -322,7 +329,6 @@ const CellValue = ({
       </span>
     );
   }
-  // Fallback is just show it as a string
   if (!cellContent) {
     cellContent = href ? (
       <ExternalLink
@@ -341,12 +347,33 @@ const CellValue = ({
       </span>
     );
   }
+
   return error ? (
     <span className="flex items-center space-x-2" title={error}>
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
   ) : (
-    cellContent
+    <div className="flex items-center space-x-2 group">
+      {cellContent}
+      {addFilter && (
+        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={() => addFilter("equal", column.name, value, context)}
+            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+            title="Add value to include filter"
+          >
+            <Icon className="h-5 w-5" icon="add_circle" />
+          </button>
+          <button
+            onClick={() => addFilter("not_equal", column.name, value, context)}
+            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+            title="Add value to exclude filter"
+          >
+            <Icon className="h-5 w-5" icon="do_not_disturb_on" />
+          </button>
+        </div>
+      )}
+    </div>
   );
 };
 
@@ -373,16 +400,149 @@ export type TableProps = PanelDefinition &
   ExecutablePrimitiveProps & {
     display_type?: TableType;
     properties?: TableProperties;
+    filterEnabled?: boolean;
+    context?: string;
   };
+
+const useTableFilters = () => {
+  const urlFilters = useGroupingFilterConfig();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const expressions = urlFilters.expressions;
+  const filters: CheckFilter[] = [];
+
+  for (const expression of expressions || []) {
+    if (
+      expression.operator === "equal" &&
+      expression.type === "dimension" &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    } else if (
+      expression.operator === "not_equal" &&
+      expression.type === "dimension" &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    }
+  }
+
+  const addFilter = useCallback(
+    (
+      operator: "equal" | "not_equal",
+      key: string,
+      value: any,
+      context?: string,
+    ) => {
+      const index = urlFilters.expressions?.findIndex(
+        (e) =>
+          e.type === "dimension" &&
+          e.key === key &&
+          e.value === value &&
+          e.context === context,
+      );
+      let newFilters =
+        index !== undefined && index > -1
+          ? [
+              ...urlFilters.expressions?.slice(0, index),
+              ...urlFilters.expressions?.slice(index + 1),
+            ]
+          : urlFilters.expressions || [];
+      if (
+        newFilters.length === 1 &&
+        newFilters[0].operator === "equal" &&
+        !newFilters[0].type
+      ) {
+        newFilters = [
+          {
+            operator,
+            value,
+            type: "dimension",
+            key,
+            title: value,
+            context,
+          },
+        ];
+      } else {
+        newFilters.push({
+          operator,
+          value,
+          type: "dimension",
+          key,
+          title: value,
+          context,
+        });
+      }
+      urlFilters.expressions = newFilters;
+      searchParams.set("where", JSON.stringify(urlFilters));
+      setSearchParams(searchParams);
+    },
+    [urlFilters, searchParams, setSearchParams],
+  );
+
+  const removeFilter = useCallback(
+    (key: string, value: any, context: string) => {
+      const index = urlFilters.expressions?.findIndex(
+        (e) =>
+          e.type === "dimension" &&
+          e.key === key &&
+          e.value === value &&
+          e.context === context,
+      );
+      const newFilters =
+        index !== undefined
+          ? [
+              ...urlFilters.expressions?.slice(0, index),
+              ...urlFilters.expressions?.slice(index + 1),
+            ]
+          : urlFilters.expressions || [];
+      if (newFilters.length === 0) {
+        urlFilters.expressions = [{ operator: "equal" }];
+      } else {
+        urlFilters.expressions = newFilters;
+      }
+      searchParams.set("where", JSON.stringify(urlFilters));
+      setSearchParams(searchParams);
+    },
+    [urlFilters, searchParams, setSearchParams],
+  );
+
+  return {
+    filters,
+    addFilter,
+    removeFilter,
+  };
+};
 
 const TableView = ({
   rowData,
   columns,
   hiddenColumns,
   hasTopBorder = false,
+  filterEnabled = true,
+  context = "",
 }) => {
+  const { filters, addFilter, removeFilter } = useTableFilters();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
+
+  // const filteredData = useMemo(() => {
+  //   let filtered = rowData;
+  //
+  //   if (activeFilters.length > 0 || excludedFilters.length > 0) {
+  //     filtered = filtered.filter((row) => {
+  //       return (
+  //         activeFilters.every(
+  //           (filter) => row[filter.column] === filter.value,
+  //         ) &&
+  //         excludedFilters.every((filter) => row[filter.column] !== filter.value)
+  //       );
+  //     });
+  //   }
+  //
+  //   return filtered;
+  // }, [rowData, activeFilters, excludedFilters]);
 
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable(
@@ -415,7 +575,39 @@ const TableView = ({
   }, [columns, renderTemplates, rows, templateRenderReady]);
 
   return (
-    <>
+    <div>
+      {filterEnabled &&
+        filters.filter((f) => f.context === context).length > 0 && (
+          <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
+            {filters.map((filter) => {
+              return (
+                <div
+                  key={`${filter.operator}:${filter.key}:${filter.value}`}
+                  className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
+                >
+                  <Icon
+                    className="w-4 h-4"
+                    icon={
+                      filter.operator === "equal"
+                        ? "add_circle"
+                        : "do_not_disturb_on"
+                    }
+                  />
+                  <span>{`${filter.key}: ${filter.value}`}</span>
+                  <span
+                    onClick={() =>
+                      removeFilter(filter.key, filter.value, filter.context)
+                    }
+                    className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                  >
+                    <Icon className="w-4 h-4" icon="close" />
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+
       <table
         {...getTableProps()}
         className={classNames(
@@ -440,7 +632,6 @@ const TableView = ({
                       scope="col"
                       className={classNames(
                         "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                        isNumericCol(column.data_type) ? "text-right" : null,
                       )}
                     >
                       {column.render("Header")}
@@ -499,6 +690,9 @@ const TableView = ({
                         rowIndex={index}
                         rowTemplateData={rowTemplateData}
                         value={cell.value}
+                        addFilter={addFilter}
+                        filterEnabled={filterEnabled}
+                        context={context}
                       />
                     </td>
                   );
@@ -508,7 +702,7 @@ const TableView = ({
           })}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };
 
@@ -523,13 +717,64 @@ const TableViewWrapper = (props: TableProps) => {
     [columns, props.data],
   );
 
+  // State for managing column visibility
+  // const [visibleColumns, setVisibleColumns] = useState(
+  //   columns.map((col) => ({
+  //     ...col,
+  //     visible: !hiddenColumns.includes(col.name),
+  //   })),
+  // );
+
+  // Handler to toggle column visibility
+  // const toggleColumnVisibility = (columnName) => {
+  //   setVisibleColumns((prevColumns) =>
+  //     prevColumns.map((col) =>
+  //       col.name === columnName ? { ...col, visible: !col.visible } : col,
+  //     ),
+  //   );
+  // };
+
+  // Filter columns based on visibility state
+  // const filteredColumns = useMemo(
+  //   () => visibleColumns.filter((col) => col.visible),
+  //   [visibleColumns],
+  // );
+
+  // Render column selection UI
+  // const renderColumnSelector = () => (
+  //   <div className="p-2 border-b mb-4">
+  //     <label className="block font-bold mb-2">Select Columns to Display:</label>
+  //     <div className="flex flex-wrap gap-2">
+  //       {visibleColumns.map((col) => (
+  //         <div key={col.name} className="flex items-center">
+  //           <input
+  //             type="checkbox"
+  //             checked={col.visible}
+  //             onChange={() => toggleColumnVisibility(col.name)}
+  //             id={`toggle-${col.name}`}
+  //           />
+  //           <label htmlFor={`toggle-${col.name}`} className="ml-2">
+  //             {col.title}
+  //           </label>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   </div>
+  // );
+
   return props.data ? (
-    <TableView
-      rowData={rowData}
-      columns={columns}
-      hiddenColumns={hiddenColumns}
-      hasTopBorder={!!props.title}
-    />
+    <div>
+      {/* Render column selector UI */}
+      {/* {renderColumnSelector()}  */}
+      <TableView
+        rowData={rowData}
+        columns={columns} // Use filtered columns for the table
+        hiddenColumns={hiddenColumns}
+        hasTopBorder={!!props.title}
+        filterEnabled={props.filterEnabled}
+        context={props.context}
+      />
+    </div>
   ) : null;
 };
 
@@ -642,4 +887,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableView };
+export { TableView, TableViewWrapper };

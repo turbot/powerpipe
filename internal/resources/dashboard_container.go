@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/stevenle/topsort"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -26,9 +25,6 @@ type DashboardContainer struct {
 	Inputs  []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 	// store children in a way which can be serialised via cty
 	ChildNames []string `cty:"children" json:"children,omitempty"`
-
-	//nolint:unused // TODO: unused attribute
-	runtimeDependencyGraph *topsort.Graph
 }
 
 func NewDashboardContainer(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {

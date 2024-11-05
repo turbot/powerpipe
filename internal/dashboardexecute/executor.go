@@ -43,7 +43,7 @@ func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor
 
 var Executor *DashboardExecutor
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *workspace.PowerpipeWorkspace, opts ...backend.ConnectOption) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs *InputValues, workspace *workspace.PowerpipeWorkspace, opts ...backend.BackendOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err == nil && ctx.Err() != nil {
@@ -68,23 +68,18 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.CancelExecutionForSession(ctx, sessionId)
 
 	// now create a new execution
-	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, e.defaultClient, opts...)
+	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, inputs, e.defaultClient, opts...)
 	if err != nil {
-		return err
-	}
-
-	// if inputs must be provided before execution (i.e. this is a batch dashboard execution),
-	// verify all required inputs are provided
-	if err = e.validateInputs(executionTree, inputs); err != nil {
 		return err
 	}
 
 	// add to execution map
 	e.setExecution(sessionId, executionTree)
 
-	// if inputs have been passed, set them first
-	if len(inputs) > 0 {
-		executionTree.SetInputValues(inputs)
+	// if inputs must be provided before execution (i.e. this is a batch dashboard execution),
+	// verify all required inputs are provided
+	if err = e.validateInputs(executionTree, inputs.Inputs); err != nil {
+		return err
 	}
 
 	go executionTree.Execute(ctx)
@@ -94,7 +89,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 
 // if inputs must be provided before execution (i.e. this is a batch dashboard execution),
 // verify all required inputs are provided
-func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree, inputs map[string]any) error {
+func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree, inputs map[string]interface{}) error {
 	if e.interactive {
 		// interactive dashboard execution - no need to validate
 		return nil
@@ -141,7 +136,7 @@ func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapsho
 	return snap, nil
 }
 
-func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string, inputs map[string]any, changedInput string) error {
+func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string, inputs *InputValues, changedInput string) error {
 	// find the execution
 	executionTree, found := e.executions[sessionId]
 	if !found {
@@ -150,19 +145,33 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 
 	// get the previous value of this input
 	inputPrevValue := executionTree.inputValues[changedInput]
+	// if there are any dependent inputs, set their value to nil and send an event to the UI
 	// first see if any other inputs rely on the one which was just changed
-	clearedInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs)
-	if len(clearedInputs) > 0 {
+	dependentInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs.Inputs)
+	if len(dependentInputs) > 0 {
 		event := &dashboardevents.InputValuesCleared{
-			ClearedInputs: clearedInputs,
+			ClearedInputs: dependentInputs,
 			Session:       executionTree.sessionId,
 			ExecutionId:   executionTree.id,
 		}
 		executionTree.workspace.PublishDashboardEvent(ctx, event)
 	}
-	// if there are any dependent inputs, set their value to nil and send an event to the UI
-	// if the dashboard run is complete, just re-execute
-	if executionTree.GetRunStatus().IsFinished() || inputPrevValue != nil {
+
+	// has the time range changed
+	timeRangeChanged := !inputs.DetectionTimeRange.Equals(executionTree.DetectionTimeRange)
+	currentRunFinished := executionTree.GetRunStatus().IsFinished()
+	prevInputsExist := inputPrevValue != nil
+
+	// input has changed - should we immediately re-execute?
+
+	// we should re-execute if:
+	// - the execution has completed - reexecute
+	// - the time range has changed - reexecute
+	// - the input value was NOT previously nil
+	// (i.e. this is really a CHANGE of input not just the first time the inputs have been set)
+	// NOTE: if the previous input value is nil and we are currently executing we do not need to re-execute
+	// as the current execution will be waiting for the inputs to be available
+	if currentRunFinished || timeRangeChanged || prevInputsExist {
 		return e.ExecuteDashboard(
 			ctx,
 			sessionId,
@@ -171,7 +180,7 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 			executionTree.workspace)
 	}
 
-	// set the inputs
+	// ok we we are NOT re-executing - just set the inputs
 	executionTree.SetInputValues(inputs)
 
 	return nil

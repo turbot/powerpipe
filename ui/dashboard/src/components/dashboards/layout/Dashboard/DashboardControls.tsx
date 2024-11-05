@@ -1,5 +1,5 @@
-import CheckFilterConfig from "@powerpipe/components/dashboards/check/CheckFilterConfig";
-import CheckGroupingConfig from "@powerpipe/components/dashboards/check/CheckGroupingConfig";
+import CheckFilterConfig from "@powerpipe/components/dashboards/grouping/CheckFilterConfig";
+import CheckGroupingConfig from "@powerpipe/components/dashboards/grouping/CheckGroupingConfig";
 import Icon from "@powerpipe/components/Icon";
 import { DashboardActions } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";

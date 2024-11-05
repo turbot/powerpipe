@@ -3,7 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/pipe-fittings/connection"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -19,6 +19,7 @@ import (
 	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -79,10 +80,20 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	}
 	i.Targets = targets
 
-	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase())
+	// TODO K breaking hack do not use viper for database
+	// this is because DefaultDatabase is now a ConnectionStringProvider
+	if db_client.DefaultDatabase == nil {
+		db_client.DefaultDatabase = w.Mod.GetDatabase()
 	}
+	// if database command line was passed, set default
+	// TODO K will we onl ypass connection strin gin db arg or coutl we pass connection name?
+	if db := viper.GetString(constants.ArgDatabase); db != "" {
+		db_client.DefaultDatabase = connection.NewConnectionString(db)
+	}
+	// if the database is NOT set in viper, and the mod has a connection string, set it
+	//if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
+	//	viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase().)
+	//}
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
@@ -162,18 +173,23 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 	// create default client
 	// set the database and search patch config
-	database, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
 	// create client
-	var opts []backend.ConnectOption
+	var opts []backend.BackendOption
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-	client, err := db_client.NewDbClient(ctx, database, opts...)
+	connectionString, err := csp.GetConnectionString()
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
 	if err != nil {
 		i.Result.Error = err
 		return

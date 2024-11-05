@@ -1,6 +1,6 @@
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
-import useCheckFilterConfig from "@powerpipe/hooks/useCheckFilterConfig";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
 import {
   DashboardDataModeCLISnapshot,
@@ -15,11 +15,11 @@ import {
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { validateFilter } from "@powerpipe/components/dashboards/check/CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
-  const filterConfig = useCheckFilterConfig();
+  const filterConfig = useGroupingFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
   const saveSnapshot = () => {
@@ -46,7 +46,8 @@ const SaveSnapshotButton = () => {
       }
       if (!!groupingConfig) {
         // @ts-ignore
-        metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
+        // TODO @mike re-include this
+        // metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
       }
       withMetadata.metadata = metadata;
       withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240607;

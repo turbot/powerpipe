@@ -111,7 +111,7 @@ func checkCmdShort(typeName string) string {
 func checkCmdLong(typeName string) string {
 	return fmt.Sprintf(`Execute one or more %ss.
 
-You may specify one or more benchmarks to run, separated by a space.`, typeName)
+You may specify one or more %ss to run, separated by a space.`, typeName, typeName)
 }
 
 // exitCode=0 no runtime errors, no control alarms or errors
