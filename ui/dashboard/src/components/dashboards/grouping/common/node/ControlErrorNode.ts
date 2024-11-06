@@ -1,6 +1,6 @@
 import {
   CheckNodeStatus,
-  CheckNodeType,
+  GroupingNodeType,
   CheckSummary,
   CheckNode,
   CheckResult,
@@ -30,7 +30,7 @@ class ControlErrorNode implements CheckNode {
     return this._result.control.error || "Unknown error";
   }
 
-  get type(): CheckNodeType {
+  get type(): GroupingNodeType {
     return "error";
   }
 

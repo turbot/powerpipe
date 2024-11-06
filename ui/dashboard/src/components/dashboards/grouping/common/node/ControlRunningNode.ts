@@ -1,6 +1,6 @@
 import {
   CheckNodeStatus,
-  CheckNodeType,
+  GroupingNodeType,
   CheckSummary,
   CheckNode,
   CheckResult,
@@ -26,7 +26,7 @@ class ControlRunningNode implements CheckNode {
     return this._result.control.title || this.name;
   }
 
-  get type(): CheckNodeType {
+  get type(): GroupingNodeType {
     return "running";
   }
 

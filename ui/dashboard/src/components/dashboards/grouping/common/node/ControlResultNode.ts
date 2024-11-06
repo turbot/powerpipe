@@ -1,6 +1,6 @@
 import {
   CheckNodeStatus,
-  CheckNodeType,
+  GroupingNodeType,
   CheckSummary,
   CheckNode,
   CheckResult,
@@ -13,7 +13,7 @@ import {
 //   constructor(
 //     result: CheckResult,
 //     sort: string,
-//     type: CheckNodeType,
+//     type: GroupingNodeType,
 //     key: string,
 //     value: string,
 //     children?: CheckNode[],
@@ -45,7 +45,7 @@ class ControlResultNode implements CheckNode {
     return this._result;
   }
 
-  get type(): CheckNodeType {
+  get type(): GroupingNodeType {
     return "result";
   }
 

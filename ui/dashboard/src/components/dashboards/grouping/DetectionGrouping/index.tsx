@@ -5,14 +5,14 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
-import { CheckNode } from "../common";
+import { DetectionNode } from "../common";
 import { useCallback, useEffect, useState } from "react";
 
-type CheckGroupingProps = {
-  node: CheckNode;
+type DetectionGroupingProps = {
+  node: DetectionNode;
 };
 
-const DetectionGrouping = ({ node }: CheckGroupingProps) => {
+const DetectionGrouping = ({ node }: DetectionGroupingProps) => {
   const { dispatch, nodeStates } = useDetectionGrouping();
   const [restoreNodeStates, setRestoreNodeStates] =
     useState<CheckGroupNodeStates | null>(null);
