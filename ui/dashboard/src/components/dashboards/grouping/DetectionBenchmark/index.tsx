@@ -34,6 +34,7 @@ import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { validateFilter } from "../CheckFilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
+import DateRangePicker from "./DateRangePicker/DateRangePicker";
 
 const Table = getComponent("table");
 
@@ -392,6 +393,9 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
           }
         />
       )}
+      <Grid name="temp">
+          <DateRangePicker />
+      </Grid>
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
