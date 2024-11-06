@@ -41,6 +41,9 @@ import "@powerpipe/components/dashboards/inputs/Input";
 // Check
 import "@powerpipe/components/dashboards/grouping/Benchmark";
 
+// Detection
+import "@powerpipe/components/dashboards/grouping/DetectionBenchmark";
+
 // Dashboard
 import "@powerpipe/components/dashboards/layout/Dashboard";
 
