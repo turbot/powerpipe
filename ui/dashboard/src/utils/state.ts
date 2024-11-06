@@ -21,6 +21,7 @@ import {
 const buildDashboards = (
   dashboards: AvailableDashboardsDictionary,
   benchmarks: AvailableDashboardsDictionary,
+  detection_benchmarks: AvailableDashboardsDictionary,
   snapshots: KeyValueStringPairs,
 ): DashboardsCollection => {
   const dashboardsMap = {};
@@ -51,6 +52,22 @@ const buildDashboards = (
       is_top_level: benchmark.is_top_level,
       trunks: benchmark.trunks,
       children: benchmark.children,
+    };
+    dashboardsMap[builtBenchmark.full_name] = builtBenchmark;
+    builtDashboards.push(builtBenchmark);
+  }
+
+  for (const [, detection_benchmark] of Object.entries(detection_benchmarks)) {
+    const builtBenchmark: AvailableDashboard = {
+      title: detection_benchmark.title,
+      full_name: detection_benchmark.full_name,
+      short_name: detection_benchmark.short_name,
+      type: "detection_benchmark",
+      tags: detection_benchmark.tags,
+      mod_full_name: detection_benchmark.mod_full_name,
+      is_top_level: detection_benchmark.is_top_level,
+      trunks: detection_benchmark.trunks,
+      children: detection_benchmark.children,
     };
     dashboardsMap[builtBenchmark.full_name] = builtBenchmark;
     builtDashboards.push(builtBenchmark);
