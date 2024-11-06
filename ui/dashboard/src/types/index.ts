@@ -367,7 +367,12 @@ type AvailableDashboardTags = {
   [key: string]: string;
 };
 
-type AvailableDashboardType = "benchmark" | "dashboard" | "snapshot";
+type AvailableDashboardType =
+  | "available_dashboard"
+  | "benchmark"
+  | "detection_benchmark"
+  | "dashboard"
+  | "snapshot";
 
 export type AvailableDashboard = {
   full_name: string;
