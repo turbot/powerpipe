@@ -18,6 +18,7 @@ func GetResourceSchema(resource modconfig.HclResource, res *hcl.BodySchema) *hcl
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeChart},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeContainer},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetection},
+			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetectionBenchmark},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeFlow},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeGraph},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeHierarchy},
@@ -27,7 +28,6 @@ func GetResourceSchema(resource modconfig.HclResource, res *hcl.BodySchema) *hcl
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeText},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeWith},
 		)
-	// TODO is this neede3d
 	case schema.BlockTypeDetectionBenchmark:
 		res.Blocks = append(res.Blocks,
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetectionBenchmark},

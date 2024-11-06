@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	"github.com/stevenle/topsort"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -18,14 +17,16 @@ type DetectionBenchmark struct {
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Width   *int              `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Display *string           `cty:"display" hcl:"display" json:"display,omitempty"`
-	Inputs  []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 	// store children in a way which can be serialised via cty
-	ChildNames []string `cty:"children" json:"children,omitempty"`
+	ChildNames       modconfig.NamedItemList `cty:"child_names" json:"-"`
+	ChildNameStrings []string                `cty:"child_name_strings" json:"children,omitempty"`
 
-	//nolint:unused // TODO: unused attribute
-	runtimeDependencyGraph *topsort.Graph
+	// dashboard specific properties
+	Inputs  []*DashboardInput   `cty:"inputs" json:"inputs,omitempty"`
+	Base    *DetectionBenchmark `hcl:"base" json:"-"`
+	Width   *int                `cty:"width" hcl:"width"  json:"width,omitempty"`
+	Type    *string             `cty:"type" hcl:"type"  json:"type,omitempty"`
+	Display *string             `cty:"display" hcl:"display" json:"display,omitempty"`
 }
 
 func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
@@ -37,66 +38,63 @@ func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName strin
 	return c
 }
 
-func (c *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
-	diff := c.Diff(other)
+func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
+	diff := d.Diff(other)
 	return !diff.HasChanges()
 }
 
 // OnDecoded implements HclResource
-func (c *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
-	c.ChildNames = make([]string, len(c.GetChildren()))
-	for i, child := range c.GetChildren() {
-		c.ChildNames[i] = child.Name()
-	}
+func (d *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
+	d.SetBaseProperties()
 	return nil
 }
 
 // GetWidth implements DashboardLeafNode
-func (c *DetectionBenchmark) GetWidth() int {
-	if c.Width == nil {
+func (d *DetectionBenchmark) GetWidth() int {
+	if d.Width == nil {
 		return 0
 	}
-	return *c.Width
+	return *d.Width
 }
 
 // GetDisplay implements DashboardLeafNode
-func (c *DetectionBenchmark) GetDisplay() string {
-	return typehelpers.SafeString(c.Display)
+func (d *DetectionBenchmark) GetDisplay() string {
+	return typehelpers.SafeString(d.Display)
 }
 
 // GetType implements DashboardLeafNode
-func (c *DetectionBenchmark) GetType() string {
+func (d *DetectionBenchmark) GetType() string {
 	return ""
 }
 
-func (c *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {
+func (d *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {
 	res := &modconfig.ModTreeItemDiffs{
-		Item: c,
-		Name: c.Name(),
+		Item: d,
+		Name: d.Name(),
 	}
 
-	if !utils.SafeStringsEqual(c.FullName, other.FullName) {
+	if !utils.SafeStringsEqual(d.FullName, other.FullName) {
 		res.AddPropertyDiff("Name")
 	}
 
-	if !utils.SafeStringsEqual(c.Title, other.Title) {
+	if !utils.SafeStringsEqual(d.Title, other.Title) {
 		res.AddPropertyDiff("Title")
 	}
 
-	if !utils.SafeIntEqual(c.Width, other.Width) {
+	if !utils.SafeIntEqual(d.Width, other.Width) {
 		res.AddPropertyDiff("Width")
 	}
 
-	if !utils.SafeStringsEqual(c.Display, other.Display) {
+	if !utils.SafeStringsEqual(d.Display, other.Display) {
 		res.AddPropertyDiff("Display")
 	}
 
-	res.PopulateChildDiffs(c, other)
+	res.PopulateChildDiffs(d, other)
 	return res
 }
 
-func (c *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
-	for _, child := range c.Children {
+func (d *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
+	for _, child := range d.Children {
 		continueWalking, err := resourceFunc(child.(modconfig.HclResource))
 		if err != nil {
 			return err
@@ -115,19 +113,43 @@ func (c *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.
 }
 
 // CtyValue implements CtyValueProvider
-func (c *DetectionBenchmark) CtyValue() (cty.Value, error) {
-	return cty_helpers.GetCtyValue(c)
+func (d *DetectionBenchmark) CtyValue() (cty.Value, error) {
+	return cty_helpers.GetCtyValue(d)
+}
+
+func (d *DetectionBenchmark) SetBaseProperties() {
+	if d.Base == nil {
+		return
+	}
+	// copy base into the HclResourceImpl 'base' property so it is accessible to all nested structs
+	d.HclResourceImpl.SetBase(d.Base)
+	// call into parent nested struct SetBaseProperties
+	d.ModTreeItemImpl.SetBaseProperties()
+
+	if d.Width == nil {
+		d.Width = d.Base.Width
+	}
+
+	if d.Display == nil {
+		d.Display = d.Base.Display
+	}
+
+	if len(d.GetChildren()) == 0 {
+		d.Children = d.Base.Children
+		d.ChildNameStrings = d.Base.ChildNameStrings
+		d.ChildNames = d.Base.ChildNames
+	}
 }
 
 // GetShowData implements printers.Showable
-func (c *DetectionBenchmark) GetShowData() *printers.RowData {
+func (d *DetectionBenchmark) GetShowData() *printers.RowData {
 	res := printers.NewRowData(
-		printers.NewFieldValue("Width", c.Width),
-		printers.NewFieldValue("Display", c.Display),
-		printers.NewFieldValue("Inputs", c.Inputs),
-		printers.NewFieldValue("Children", c.ChildNames),
+		printers.NewFieldValue("Width", d.Width),
+		printers.NewFieldValue("Display", d.Display),
+		printers.NewFieldValue("Inputs", d.Inputs),
+		printers.NewFieldValue("Children", d.ChildNames),
 	)
 	// merge fields from base, putting base fields first
-	res.Merge(c.ModTreeItemImpl.GetShowData())
+	res.Merge(d.ModTreeItemImpl.GetShowData())
 	return res
 }
