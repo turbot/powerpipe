@@ -94,6 +94,8 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 		return NewDashboardRun(r, e, e)
 	case *resources.Benchmark:
 		return NewCheckRun(r, e, e)
+	case *resources.DetectionBenchmark:
+		return NewDetectionBenchmarkRun(r, e, e)
 	case *resources.Query:
 		// wrap this in a chart and a dashboard
 		dashboard, err := resources.NewQueryDashboard(r)

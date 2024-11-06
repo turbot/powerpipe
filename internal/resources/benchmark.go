@@ -24,9 +24,8 @@ type Benchmark struct {
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
 	// child names as NamedItem structs - used to allow setting children via the 'children' property
-	ChildNames modconfig.NamedItemList `cty:"child_names" json:"-"`
-	// used for introspection tables
-	ChildNameStrings []string `cty:"child_name_strings" json:"children,omitempty"`
+	ChildNames       modconfig.NamedItemList `cty:"child_names" json:"-"`
+	ChildNameStrings []string                `cty:"child_name_strings" json:"children,omitempty"`
 
 	// dashboard specific properties
 	Base    *Benchmark `hcl:"base" json:"-"`

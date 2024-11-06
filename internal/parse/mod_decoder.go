@@ -32,6 +32,7 @@ func NewPowerpipeModDecoder(opts ...parse.DecoderOption) parse.Decoder {
 	d.DecodeFuncs[schema.BlockTypeDashboard] = d.decodeDashboard
 	d.DecodeFuncs[schema.BlockTypeContainer] = d.decodeDashboardContainer
 	d.DecodeFuncs[schema.BlockTypeBenchmark] = d.decodeBenchmark
+	d.DecodeFuncs[schema.BlockTypeDetectionBenchmark] = d.decodeDetectionBenchmark
 	// apply options
 	for _, opt := range opts {
 		opt(d)
@@ -235,7 +236,12 @@ func (d *PowerpipeModDecoder) decodeDashboard(block *hcl.Block, parseCtx *parse.
 	res.HandleDecodeDiags(diags)
 
 	if dashboard.Base != nil && len(dashboard.Base.ChildNames) > 0 {
-		supportedChildren := []string{schema.BlockTypeContainer, schema.BlockTypeChart, schema.BlockTypeCard, schema.BlockTypeFlow, schema.BlockTypeGraph, schema.BlockTypeHierarchy, schema.BlockTypeImage, schema.BlockTypeInput, schema.BlockTypeTable, schema.BlockTypeText}
+		supportedChildren := []string{
+			schema.BlockTypeContainer, schema.BlockTypeChart, schema.BlockTypeCard,
+			schema.BlockTypeDetection, schema.BlockTypeFlow, schema.BlockTypeGraph,
+			schema.BlockTypeHierarchy, schema.BlockTypeImage, schema.BlockTypeInput,
+			schema.BlockTypeTable, schema.BlockTypeText}
+
 		// TACTICAL: we should be passing in the block for the Base resource - but this is only used for diags
 		// and we do not expect to get any (as this function has already succeeded when the base was originally parsed)
 		children, _ := parse.ResolveChildrenFromNames(dashboard.Base.ChildNames, block, supportedChildren, parseCtx)
@@ -378,9 +384,10 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 	diags = parse.DecodeProperty(content, "display", &benchmark.Display, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
 
+	supportedChildren := []string{schema.BlockTypeBenchmark, schema.BlockTypeControl}
+
 	// now add children
 	if res.Success() {
-		supportedChildren := []string{schema.BlockTypeBenchmark, schema.BlockTypeControl}
 		children, diags := parse.ResolveChildrenFromNames(benchmark.ChildNames.StringList(), block, supportedChildren, parseCtx)
 		res.HandleDecodeDiags(diags)
 
@@ -392,7 +399,57 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 	diags = parse.DecodeProperty(content, "base", &benchmark.Base, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
 	if benchmark.Base != nil && len(benchmark.Base.ChildNames) > 0 {
-		supportedChildren := []string{schema.BlockTypeBenchmark, schema.BlockTypeControl}
+		// TACTICAL: we should be passing in the block for the Base resource - but this is only used for diags
+		// and we do not expect to get any (as this function has already succeeded when the base was originally parsed)
+		children, _ := parse.ResolveChildrenFromNames(benchmark.Base.ChildNameStrings, block, supportedChildren, parseCtx)
+		benchmark.Children = children
+	}
+	diags = parse.DecodeProperty(content, "width", &benchmark.Width, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+	return benchmark, res
+}
+
+func (d *PowerpipeModDecoder) decodeDetectionBenchmark(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, *parse.DecodeResult) {
+	res := parse.NewDecodeResult()
+	benchmark := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
+	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "children", &benchmark.ChildNames, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "description", &benchmark.Description, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "documentation", &benchmark.Documentation, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "tags", &benchmark.Tags, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "title", &benchmark.Title, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "type", &benchmark.Type, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	diags = parse.DecodeProperty(content, "display", &benchmark.Display, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+
+	supportedChildren := []string{schema.BlockTypeDetectionBenchmark, schema.BlockTypeDetection}
+
+	// now add children
+	if res.Success() {
+		children, diags := parse.ResolveChildrenFromNames(benchmark.ChildNames.StringList(), block, supportedChildren, parseCtx)
+		res.HandleDecodeDiags(diags)
+		// now set children and child name strings
+		benchmark.Children = children
+		benchmark.ChildNameStrings = parse.GetChildNameStringsFromModTreeItem(children)
+	}
+
+	diags = parse.DecodeProperty(content, "base", &benchmark.Base, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+	if benchmark.Base != nil && len(benchmark.Base.ChildNames) > 0 {
 		// TACTICAL: we should be passing in the block for the Base resource - but this is only used for diags
 		// and we do not expect to get any (as this function has already succeeded when the base was originally parsed)
 		children, _ := parse.ResolveChildrenFromNames(benchmark.Base.ChildNameStrings, block, supportedChildren, parseCtx)
@@ -429,25 +486,27 @@ func (d *PowerpipeModDecoder) resourceForBlock(block *hcl.Block, parseCtx *parse
 
 	factoryFuncs := map[string]func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource{
 		// for block type mod, just use the current mod
-		schema.BlockTypeMod:       func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource { return mod },
-		schema.BlockTypeQuery:     resources.NewQuery,
-		schema.BlockTypeControl:   resources.NewControl,
-		schema.BlockTypeBenchmark: resources.NewBenchmark,
-		schema.BlockTypeDashboard: resources.NewDashboard,
-		schema.BlockTypeContainer: resources.NewDashboardContainer,
-		schema.BlockTypeChart:     resources.NewDashboardChart,
-		schema.BlockTypeCard:      resources.NewDashboardCard,
-		schema.BlockTypeFlow:      resources.NewDashboardFlow,
-		schema.BlockTypeGraph:     resources.NewDashboardGraph,
-		schema.BlockTypeHierarchy: resources.NewDashboardHierarchy,
-		schema.BlockTypeImage:     resources.NewDashboardImage,
-		schema.BlockTypeInput:     resources.NewDashboardInput,
-		schema.BlockTypeTable:     resources.NewDashboardTable,
-		schema.BlockTypeText:      resources.NewDashboardText,
-		schema.BlockTypeNode:      resources.NewDashboardNode,
-		schema.BlockTypeEdge:      resources.NewDashboardEdge,
-		schema.BlockTypeCategory:  resources.NewDashboardCategory,
-		schema.BlockTypeWith:      resources.NewDashboardWith,
+		schema.BlockTypeBenchmark:          resources.NewBenchmark,
+		schema.BlockTypeCard:               resources.NewDashboardCard,
+		schema.BlockTypeCategory:           resources.NewDashboardCategory,
+		schema.BlockTypeContainer:          resources.NewDashboardContainer,
+		schema.BlockTypeChart:              resources.NewDashboardChart,
+		schema.BlockTypeControl:            resources.NewControl,
+		schema.BlockTypeDashboard:          resources.NewDashboard,
+		schema.BlockTypeDetection:          resources.NewDetection,
+		schema.BlockTypeDetectionBenchmark: resources.NewDetectionBenchmark,
+		schema.BlockTypeEdge:               resources.NewDashboardEdge,
+		schema.BlockTypeFlow:               resources.NewDashboardFlow,
+		schema.BlockTypeGraph:              resources.NewDashboardGraph,
+		schema.BlockTypeHierarchy:          resources.NewDashboardHierarchy,
+		schema.BlockTypeImage:              resources.NewDashboardImage,
+		schema.BlockTypeInput:              resources.NewDashboardInput,
+		schema.BlockTypeMod:                func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource { return mod },
+		schema.BlockTypeNode:               resources.NewDashboardNode,
+		schema.BlockTypeQuery:              resources.NewQuery,
+		schema.BlockTypeTable:              resources.NewDashboardTable,
+		schema.BlockTypeText:               resources.NewDashboardText,
+		schema.BlockTypeWith:               resources.NewDashboardWith,
 	}
 
 	factoryFunc, ok := factoryFuncs[block.Type]
