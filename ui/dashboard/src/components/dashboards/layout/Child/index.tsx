@@ -37,6 +37,16 @@ const Child = ({
           showControls={showPanelControls}
         />
       );
+    case "detection_benchmark":
+    case "detection":
+      const DetectionBenchmark = getComponent("detection_benchmark");
+      return (
+        <DetectionBenchmark
+          {...(layoutDefinition as PanelDefinition)}
+          diff_panels={diff ? diff.panelsMap : null}
+          showControls={showPanelControls}
+        />
+      );
     case "card":
       const Card = getComponent("card");
       return (

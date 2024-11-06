@@ -3,8 +3,8 @@ import sortBy from "lodash/sortBy";
 import {
   CheckGroupNodeStates,
   GroupingActions,
-  useBenchmarkGrouping,
-} from "@powerpipe/hooks/useBenchmarkGrouping";
+  useDetectionGrouping,
+} from "@powerpipe/hooks/useDetectionGrouping";
 import { CheckNode } from "../common";
 import { useCallback, useEffect, useState } from "react";
 
@@ -12,8 +12,8 @@ type CheckGroupingProps = {
   node: CheckNode;
 };
 
-const CheckGrouping = ({ node }: CheckGroupingProps) => {
-  const { dispatch, nodeStates } = useBenchmarkGrouping();
+const DetectionGrouping = ({ node }: CheckGroupingProps) => {
+  const { dispatch, nodeStates } = useDetectionGrouping();
   const [restoreNodeStates, setRestoreNodeStates] =
     useState<CheckGroupNodeStates | null>(null);
 
@@ -45,4 +45,4 @@ const CheckGrouping = ({ node }: CheckGroupingProps) => {
   );
 };
 
-export default CheckGrouping;
+export default DetectionGrouping;

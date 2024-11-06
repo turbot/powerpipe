@@ -16,7 +16,10 @@ import {
   SkipIcon,
   UnknownIcon,
 } from "@powerpipe/constants/icons";
-import { GroupingActions, useGrouping } from "@powerpipe/hooks/useGrouping";
+import {
+  GroupingActions,
+  useBenchmarkGrouping,
+} from "@powerpipe/hooks/useBenchmarkGrouping";
 import {
   CheckNode,
   CheckResult,
@@ -283,7 +286,7 @@ const CheckPanelSeverity = ({ severity_summary }: CheckPanelSeverityProps) => {
 
 const CheckPanel = ({ depth, node }: CheckPanelProps) => {
   const { firstChildSummaries, dispatch, groupingsConfig, nodeStates } =
-    useGrouping();
+    useBenchmarkGrouping();
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;

@@ -325,6 +325,8 @@ export type DashboardPanelType =
   | "container"
   | "control"
   | "dashboard"
+  | "detection"
+  | "detection_benchmark"
   | "edge"
   | "error"
   | "flow"

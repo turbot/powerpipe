@@ -7,7 +7,7 @@ import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
 import useGroupingFilterConfig from "./useGroupingFilterConfig";
-import useCheckGroupingConfig from "./useCheckGroupingConfig";
+import useDetectionGroupingConfig from "./useDetectionGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   CheckDisplayGroup,
@@ -890,7 +890,7 @@ const GroupingProvider = ({
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const groupingsConfig = useCheckGroupingConfig();
+  const groupingsConfig = useDetectionGroupingConfig();
 
   const [
     benchmark,
@@ -949,7 +949,7 @@ const GroupingProvider = ({
   );
 };
 
-const useGrouping = () => {
+const useDetectionGrouping = () => {
   const context = useContext(GroupingContext);
   if (context === undefined) {
     throw new Error("useCheckGrouping must be used within a GroupingContext");
@@ -957,7 +957,12 @@ const useGrouping = () => {
   return context as ICheckGroupingContext;
 };
 
-export { GroupingActions, GroupingContext, GroupingProvider, useGrouping };
+export {
+  GroupingActions,
+  GroupingContext,
+  GroupingProvider,
+  useDetectionGrouping,
+};
 
 // https://stackoverflow.com/questions/50737098/multi-level-grouping-in-javascript
 // keys = ['level1', 'level2'],

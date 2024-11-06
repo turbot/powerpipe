@@ -1,9 +1,9 @@
 // Ensure Table is loaded & registered first
 import "@powerpipe/components/dashboards/Table";
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
-import CheckGrouping from "../CheckGrouping";
 import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
+import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
@@ -25,8 +25,8 @@ import {
 } from "@powerpipe/components/dashboards";
 import {
   GroupingProvider,
-  useBenchmarkGrouping,
-} from "@powerpipe/hooks/useBenchmarkGrouping";
+  useDetectionGrouping,
+} from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
 import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -55,7 +55,7 @@ type InnerCheckProps = {
   withTitle: boolean;
 };
 
-const Benchmark = (props: InnerCheckProps) => {
+const DetectionBenchmark = (props: InnerCheckProps) => {
   const { expressions } = useGroupingFilterConfig();
   const { cliMode, dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
@@ -80,10 +80,6 @@ const Benchmark = (props: InnerCheckProps) => {
     usePanelControls(definitionWithData, props.showControls);
 
   useEffect(() => {
-    // TODO remove once all workspaces are running Powerpipe
-    if (cliMode === "steampipe") {
-      return;
-    }
     setCustomControls([
       {
         action: async () =>
@@ -456,7 +452,7 @@ const BenchmarkTree = (props: BenchmarkTreeProps) => {
     return null;
   }
 
-  return <CheckGrouping node={props.properties.grouping} />;
+  return <DetectionGrouping node={props.properties.grouping} />;
 };
 
 const BenchmarkTableView = ({
@@ -499,7 +495,7 @@ const Inner = ({ showControls, withTitle }) => {
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
-  } = useBenchmarkGrouping();
+  } = useDetectionGrouping();
 
   if (!definition || !benchmark || !grouping) {
     return null;
@@ -507,7 +503,7 @@ const Inner = ({ showControls, withTitle }) => {
 
   if (!definition.display_type || definition.display_type === "benchmark") {
     return (
-      <Benchmark
+      <DetectionBenchmark
         benchmark={benchmark}
         definition={definition}
         grouping={grouping}
@@ -542,13 +538,13 @@ const Inner = ({ showControls, withTitle }) => {
   }
 };
 
-type BenchmarkProps = PanelDefinition & {
+type DetectionBenchmarkWrapperProps = PanelDefinition & {
   diff_panels?: PanelsMap;
   showControls: boolean;
   withTitle: boolean;
 };
 
-const BenchmarkWrapper = (props: BenchmarkProps) => {
+const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
     <GroupingProvider definition={props} diff_panels={props.diff_panels}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
@@ -556,6 +552,6 @@ const BenchmarkWrapper = (props: BenchmarkProps) => {
   );
 };
 
-registerComponent("benchmark", BenchmarkWrapper);
+registerComponent("detection_benchmark", DetectionBenchmarkWrapper);
 
-export default BenchmarkWrapper;
+export default DetectionBenchmarkWrapper;
