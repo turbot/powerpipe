@@ -7,7 +7,7 @@ import {
   CheckDynamicColsMap,
   CheckNode,
   CheckNodeStatus,
-  CheckNodeType,
+  GroupingNodeType,
   CheckResult,
   CheckSeveritySummary,
   CheckSummary,
@@ -134,7 +134,7 @@ class Benchmark implements CheckNode {
     return this._title || this._name;
   }
 
-  get type(): CheckNodeType {
+  get type(): GroupingNodeType {
     return "benchmark";
   }
 

@@ -1,7 +1,7 @@
-import HierarchyNode from "./HierarchyNode";
-import { GroupingNodeType, CheckNode } from "../index";
+import DetectionHierarchyNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionHierarchyNode";
+import { GroupingNodeType, DetectionNode } from "../index";
 
-class KeyValuePairNode extends HierarchyNode {
+class DetectionKeyValuePairNode extends DetectionHierarchyNode {
   private readonly _key: string;
   private readonly _value: string;
 
@@ -10,7 +10,7 @@ class KeyValuePairNode extends HierarchyNode {
     type: GroupingNodeType,
     key: string,
     value: string,
-    children?: CheckNode[],
+    children?: DetectionNode[],
   ) {
     super(type, `${key}=${value}`, value, sort, children || []);
     this._key = key;
@@ -26,4 +26,4 @@ class KeyValuePairNode extends HierarchyNode {
   }
 }
 
-export default KeyValuePairNode;
+export default DetectionKeyValuePairNode;

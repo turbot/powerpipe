@@ -1,24 +1,23 @@
 import {
-  CheckNode,
-  CheckNodeStatus,
+  DetectionNode,
+  DetectionSummary,
+  DetectionNodeStatus,
   GroupingNodeType,
-  CheckSeveritySummary,
-  CheckSummary,
 } from "../index";
 
-class HierarchyNode implements CheckNode {
+class DetectionHierarchyNode implements DetectionNode {
   private readonly _type: GroupingNodeType;
   private readonly _name: string;
   private readonly _title: string;
   private readonly _sort: string;
-  private readonly _children: CheckNode[];
+  private readonly _children: DetectionNode[];
 
   constructor(
     type: GroupingNodeType,
     name: string,
     title: string,
     sort: string,
-    children: CheckNode[],
+    children: DetectionNode[],
   ) {
     this._type = type;
     this._name = name;
@@ -43,44 +42,22 @@ class HierarchyNode implements CheckNode {
     return this._sort;
   }
 
-  get children(): CheckNode[] {
+  get children(): DetectionNode[] {
     return this._children;
   }
 
-  get summary(): CheckSummary {
+  get summary(): DetectionSummary {
     const summary = {
-      alarm: 0,
-      ok: 0,
-      info: 0,
-      skip: 0,
-      error: 0,
+      total: 0,
     };
     for (const child of this._children) {
       const nestedSummary = child.summary;
-      summary.alarm += nestedSummary.alarm;
-      summary.ok += nestedSummary.ok;
-      summary.info += nestedSummary.info;
-      summary.skip += nestedSummary.skip;
-      summary.error += nestedSummary.error;
+      summary.total += nestedSummary.total;
     }
     return summary;
   }
 
-  get severity_summary(): CheckSeveritySummary {
-    const summary = {};
-    for (const child of this._children) {
-      for (const [severity, count] of Object.entries(child.severity_summary)) {
-        if (!summary[severity]) {
-          summary[severity] = count;
-        } else {
-          summary[severity] += count;
-        }
-      }
-    }
-    return summary;
-  }
-
-  get status(): CheckNodeStatus {
+  get status(): DetectionNodeStatus {
     for (const child of this._children) {
       if (child.status === "running") {
         return "running";
@@ -89,7 +66,7 @@ class HierarchyNode implements CheckNode {
     return "complete";
   }
 
-  merge(other: CheckNode) {
+  merge(other: DetectionNode) {
     // merge(other) -> iterate children of other -> if child exists on me, call me_child.merge(other_child), else add to end of children
     for (const otherChild of other.children || []) {
       // Check for existing child with this name
@@ -111,4 +88,4 @@ class HierarchyNode implements CheckNode {
   }
 }
 
-export default HierarchyNode;
+export default DetectionHierarchyNode;

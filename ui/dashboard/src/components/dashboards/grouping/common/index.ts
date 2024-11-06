@@ -1,4 +1,5 @@
 import Benchmark from "./Benchmark";
+import DetectionBenchmark from "@powerpipe/components/dashboards/grouping/common/DetectionBenchmark";
 import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
@@ -6,10 +7,13 @@ import {
 } from "../../common";
 import { DashboardRunState } from "@powerpipe/types";
 
-export type CheckNodeType =
+export type GroupingNodeType =
   | "benchmark"
   | "control"
   | "control_tag"
+  | "detection_benchmark"
+  | "detection"
+  | "detection_tag"
   | "dimension"
   | "empty_result"
   | "error"
@@ -25,7 +29,7 @@ export type CheckNode = {
   sort: string;
   name: string;
   title: string;
-  type: CheckNodeType;
+  type: GroupingNodeType;
   status: CheckNodeStatus;
   severity?: CheckSeverity;
   severity_summary: CheckSeveritySummary;
@@ -36,7 +40,22 @@ export type CheckNode = {
   merge?: (other: CheckNode) => void;
 };
 
+export type DetectionNode = {
+  sort: string;
+  name: string;
+  title: string;
+  type: GroupingNodeType;
+  status: CheckNodeStatus;
+  summary: DetectionSummary;
+  children?: DetectionNode[];
+  data?: LeafNodeData;
+  error?: string;
+  merge?: (other: DetectionNode) => void;
+};
+
 export type CheckNodeStatus = "running" | "complete";
+
+export type DetectionNodeStatus = "running" | "complete";
 
 export type CheckSeverity = "none" | "low" | "medium" | "high" | "critical";
 
@@ -54,6 +73,10 @@ export type CheckSummary = {
   error: number;
 };
 
+export type DetectionSummary = {
+  total: number;
+};
+
 export type CheckDynamicValueMap = {
   [dimension: string]: boolean;
 };
@@ -63,11 +86,25 @@ export type CheckDynamicColsMap = {
   tags: CheckDynamicValueMap;
 };
 
+export type DetectionDynamicColsMap = {
+  dimensions: CheckDynamicValueMap;
+  tags: CheckDynamicValueMap;
+};
+
 export type CheckTags = {
   [key: string]: string;
 };
 
+export type DetectionTags = {
+  [key: string]: string;
+};
+
 export type CheckResultDimension = {
+  key: string;
+  value: string;
+};
+
+export type DetectionResultDimension = {
   key: string;
   value: string;
 };
@@ -96,6 +133,18 @@ export type CheckResult = {
   type: CheckResultType;
 };
 
+export type DetectionResult = {
+  dimensions: CheckResultDimension[];
+  tags: CheckTags;
+  detection: DetectionNode;
+  detection_benchmark_trunk: DetectionBenchmark[];
+  status: CheckResultStatus;
+  reason: string;
+  resource: string;
+  error?: string;
+  type: CheckResultType;
+};
+
 type CheckControlRunProperties = {
   severity?: CheckSeverity | undefined;
 };
@@ -114,6 +163,18 @@ export type CheckControlRun = {
   error?: string;
 };
 
+export type DetectionRun = {
+  name: string;
+  title?: string;
+  description?: string;
+  panel_type: "detection";
+  tags?: CheckTags;
+  data: LeafNodeData;
+  summary: DetectionSummary;
+  status: DashboardRunState;
+  error?: string;
+};
+
 export type CheckDisplayGroupType =
   | "benchmark"
   | "control"
@@ -126,12 +187,28 @@ export type CheckDisplayGroupType =
   | "status"
   | string;
 
+export type DetectionDisplayGroupType =
+  | "benchmark"
+  | "detection"
+  | "detection_tag"
+  | "result"
+  | "dimension"
+  | "status"
+  | string;
+
 export type CheckDisplayGroup = {
   type: CheckDisplayGroupType;
   value?: string | undefined;
 };
 
-export type CheckFilterOperator = "and" | "equal";
+export type DetectionDisplayGroup = {
+  type: DetectionDisplayGroupType;
+  value?: string | undefined;
+};
+
+type BaseOperator = "and" | "equal";
+export type CheckFilterOperator = BaseOperator;
+export type DetectionFilterOperator = BaseOperator;
 
 export type CheckFilter = {
   operator: CheckFilterOperator;
@@ -142,7 +219,18 @@ export type CheckFilter = {
   expressions?: CheckFilter[];
 };
 
+export type DetectionFilter = {
+  operator: DetectionFilterOperator;
+  type?: DetectionFilterType;
+  key?: string;
+  value?: string;
+  title?: string;
+  expressions?: DetectionFilter[];
+};
+
 export type CheckFilterType = CheckDisplayGroupType;
+
+export type DetectionFilterType = DetectionDisplayGroupType;
 
 export type BenchmarkTreeProps = BasePrimitiveProps &
   ExecutablePrimitiveProps & {
@@ -152,7 +240,17 @@ export type BenchmarkTreeProps = BasePrimitiveProps &
     };
   };
 
+export type DetectionBenchmarkTreeProps = BasePrimitiveProps &
+  ExecutablePrimitiveProps & {
+    properties: {
+      grouping: DetectionNode;
+      first_child_summaries: DetectionSummary[];
+    };
+  };
+
 export type AddControlResultsAction = (results: CheckResult[]) => void;
+
+export type AddDetectionResultsAction = (results: DetectionResult[]) => void;
 
 export const findDimension = (
   dimensions?: CheckResultDimension[],

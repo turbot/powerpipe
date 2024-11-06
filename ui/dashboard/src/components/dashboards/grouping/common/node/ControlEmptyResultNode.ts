@@ -1,6 +1,6 @@
 import {
   CheckNodeStatus,
-  CheckNodeType,
+  GroupingNodeType,
   CheckSummary,
   CheckNode,
   CheckResult,
@@ -30,7 +30,7 @@ class ControlEmptyResultNode implements CheckNode {
     return this._result;
   }
 
-  get type(): CheckNodeType {
+  get type(): GroupingNodeType {
     return "empty_result";
   }
 

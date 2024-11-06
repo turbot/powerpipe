@@ -1,16 +1,14 @@
-import Benchmark from "./Benchmark";
 import {
-  AddControlResultsAction,
-  CheckDynamicColsMap,
-  CheckNode,
+  AddDetectionResultsAction,
+  DetectionDynamicColsMap,
   CheckNodeStatus,
   GroupingNodeType,
-  CheckResult,
+  DetectionResult,
   CheckResultStatus,
-  CheckSeverity,
   CheckSeveritySummary,
-  CheckSummary,
+  DetectionSummary,
   CheckTags,
+  DetectionNode,
   findDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardRunState } from "@powerpipe/types";
@@ -19,8 +17,9 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "@powerpipe/components/dashboards/common";
+import DetectionBenchmark from "@powerpipe/components/dashboards/grouping/common/DetectionBenchmark";
 
-class Control implements CheckNode {
+class Detection implements DetectionNode {
   private readonly _sortIndex: string;
   private readonly _group_id: string;
   private readonly _group_title: string | undefined;
@@ -28,9 +27,8 @@ class Control implements CheckNode {
   private readonly _name: string;
   private readonly _title: string | undefined;
   private readonly _description: string | undefined;
-  private readonly _severity: CheckSeverity | undefined;
-  private readonly _results: CheckResult[];
-  private readonly _summary: CheckSummary;
+  private readonly _results: DetectionResult[];
+  private readonly _summary: DetectionSummary;
   private readonly _tags: CheckTags;
   private readonly _status: DashboardRunState;
   private readonly _error: string | undefined;
@@ -43,14 +41,13 @@ class Control implements CheckNode {
     name: string,
     title: string | undefined,
     description: string | undefined,
-    severity: CheckSeverity | undefined,
     data: LeafNodeData | undefined,
-    summary: CheckSummary | undefined,
+    summary: DetectionSummary | undefined,
     tags: CheckTags | undefined,
     status: DashboardRunState,
     error: string | undefined,
-    benchmark_trunk: Benchmark[],
-    add_control_results: AddControlResultsAction,
+    detection_benchmark_trunk: DetectionBenchmark[],
+    add_detection_results: AddDetectionResultsAction,
   ) {
     this._sortIndex = sortIndex;
     this._group_id = group_id;
@@ -59,14 +56,9 @@ class Control implements CheckNode {
     this._name = name;
     this._title = title;
     this._description = description;
-    this._severity = severity;
     this._results = this._build_check_results(data);
     this._summary = summary || {
-      alarm: 0,
-      ok: 0,
-      info: 0,
-      skip: 0,
-      error: 0,
+      total: 0,
     };
     this._tags = tags || {};
     this._status = status;
@@ -77,16 +69,23 @@ class Control implements CheckNode {
       this._status === "blocked" ||
       this._status === "running"
     ) {
-      add_control_results([this._build_control_loading_node(benchmark_trunk)]);
+      add_detection_results([
+        this._build_detection_loading_node(detection_benchmark_trunk),
+      ]);
     } else if (this._error) {
-      add_control_results([
-        this._build_control_error_node(benchmark_trunk, this._error),
+      add_detection_results([
+        this._build_detection_error_node(
+          detection_benchmark_trunk,
+          this._error,
+        ),
       ]);
     } else if (!this._results || this._results.length === 0) {
-      add_control_results([this._build_control_empty_result(benchmark_trunk)]);
+      add_detection_results([
+        this._build_detection_empty_result(detection_benchmark_trunk),
+      ]);
     } else {
-      add_control_results(
-        this._build_control_results(benchmark_trunk, this._results),
+      add_detection_results(
+        this._build_detection_results(detection_benchmark_trunk, this._results),
       );
     }
   }
@@ -103,19 +102,15 @@ class Control implements CheckNode {
     return this._title || this._name;
   }
 
-  get severity(): CheckSeverity | undefined {
-    return this._severity;
-  }
-
   get severity_summary(): CheckSeveritySummary {
     return {};
   }
 
   get type(): GroupingNodeType {
-    return "control";
+    return "detection";
   }
 
-  get summary(): CheckSummary {
+  get summary(): DetectionSummary {
     return this._summary;
   }
 
@@ -134,7 +129,7 @@ class Control implements CheckNode {
     }
   }
 
-  get results(): CheckResult[] {
+  get results(): DetectionResult[] {
     return this._results;
   }
 
@@ -142,7 +137,7 @@ class Control implements CheckNode {
     return this._tags;
   }
 
-  get_dynamic_cols(): CheckDynamicColsMap {
+  get_dynamic_cols(): DetectionDynamicColsMap {
     const dimensionKeysMap = {
       dimensions: {},
       tags: {},
@@ -168,10 +163,9 @@ class Control implements CheckNode {
         group_id: this._group_id,
         title: this._group_title ? this._group_title : null,
         description: this._group_description ? this._group_description : null,
-        control_id: this._name,
-        control_title: this._title ? this._title : null,
-        control_description: this._description ? this._description : null,
-        severity: this._severity ? this._severity : null,
+        detection_id: this._name,
+        detection_title: this._title ? this._title : null,
+        detection_description: this._description ? this._description : null,
         reason: result.reason,
         resource: result.resource,
         status: result.status,
@@ -192,73 +186,72 @@ class Control implements CheckNode {
     return rows;
   }
 
-  private _build_control_loading_node = (
-    benchmark_trunk: Benchmark[],
-  ): CheckResult => {
+  private _build_detection_loading_node = (
+    detection_benchmark_trunk: DetectionBenchmark[],
+  ): DetectionResult => {
     return {
       type: "loading",
       dimensions: [],
       tags: this.tags,
-      control: this,
+      detection: this,
       reason: "",
       resource: "",
       status: CheckResultStatus.ok,
-      benchmark_trunk,
+      detection_benchmark_trunk,
     };
   };
 
-  private _build_control_error_node = (
-    benchmark_trunk: Benchmark[],
+  private _build_detection_error_node = (
+    detection_benchmark_trunk: DetectionBenchmark[],
     error: string,
-  ): CheckResult => {
+  ): DetectionResult => {
     return {
       type: "error",
       error,
       dimensions: [],
       tags: this.tags,
-      control: this,
+      detection: this,
       reason: "",
       resource: "",
       status: CheckResultStatus.error,
-      benchmark_trunk,
+      detection_benchmark_trunk,
     };
   };
 
-  private _build_control_empty_result = (
-    benchmark_trunk: Benchmark[],
-  ): CheckResult => {
+  private _build_detection_empty_result = (
+    detection_benchmark_trunk: DetectionBenchmark[],
+  ): DetectionResult => {
     return {
       type: "empty",
       error: undefined,
       dimensions: [],
       tags: this.tags,
-      control: this,
+      detection: this,
       reason: "",
       resource: "",
       status: CheckResultStatus.empty,
-      benchmark_trunk,
+      detection_benchmark_trunk,
     };
   };
 
-  private _build_control_results = (
-    benchmark_trunk: Benchmark[],
-    results: CheckResult[],
-  ): CheckResult[] => {
+  private _build_detection_results = (
+    detection_benchmark_trunk: DetectionBenchmark[],
+    results: DetectionResult[],
+  ): DetectionResult[] => {
     return results.map((r) => ({
       ...r,
       type: "result",
-      severity: this.severity,
       tags: this.tags,
-      benchmark_trunk,
-      control: this,
+      detection_benchmark_trunk,
+      detection: this,
     }));
   };
 
-  private _build_check_results = (data?: LeafNodeData): CheckResult[] => {
+  private _build_check_results = (data?: LeafNodeData): DetectionResult[] => {
     if (!data || !data.columns || !data.rows) {
       return [];
     }
-    const results: CheckResult[] = [];
+    const results: DetectionResult[] = [];
     const dimensionColumns: LeafNodeDataColumn[] = [];
     for (const col of data.columns) {
       if (
@@ -287,4 +280,4 @@ class Control implements CheckNode {
   };
 }
 
-export default Control;
+export default Detection;

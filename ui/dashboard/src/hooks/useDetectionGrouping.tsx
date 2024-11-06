@@ -1,24 +1,22 @@
-import BenchmarkNode from "@powerpipe/components/dashboards/grouping/common/node/BenchmarkNode";
-import ControlEmptyResultNode from "@powerpipe/components/dashboards/grouping/common/node/ControlEmptyResultNode";
-import ControlErrorNode from "@powerpipe/components/dashboards/grouping/common/node/ControlErrorNode";
-import ControlNode from "@powerpipe/components/dashboards/grouping/common/node/ControlNode";
-import ControlResultNode from "@powerpipe/components/dashboards/grouping/common/node/ControlResultNode";
-import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common/node/ControlRunningNode";
-import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
-import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
+import DetectionResultNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionResultNode";
+import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionNode";
+import DetectionBenchmarkNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionBenchmarkNode";
+import DetectionEmptyResultNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionEmptyResultNode";
+import DetectionErrorNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionErrorNode";
+import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionKeyValuePairNode";
+import DetectionRootNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRootNode";
+import DetectionRunningNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRunningNode";
 import useGroupingFilterConfig from "./useGroupingFilterConfig";
 import useDetectionGroupingConfig from "./useDetectionGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
-  CheckDisplayGroup,
-  CheckFilter,
-  CheckNode,
-  CheckResult,
-  CheckResultDimension,
-  CheckResultStatus,
-  CheckSeverity,
-  CheckSummary,
-  CheckTags,
+  DetectionDisplayGroup,
+  DetectionFilter,
+  DetectionNode as DetectionNodeType,
+  DetectionResult,
+  DetectionResultDimension,
+  DetectionSummary,
+  DetectionTags,
   findDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
@@ -28,7 +26,7 @@ import {
   useMemo,
   useReducer,
 } from "react";
-import { default as BenchmarkType } from "@powerpipe/components/dashboards/grouping/common/Benchmark";
+import { default as DetectionBenchmarkType } from "@powerpipe/components/dashboards/grouping/common/DetectionBenchmark";
 import {
   ElementType,
   IActions,
@@ -54,7 +52,7 @@ export type CheckGroupingAction = {
 };
 
 type CheckGroupFilterStatusValuesMap = {
-  [key in keyof typeof CheckResultStatus]: number;
+  [key in keyof typeof DetectionResultStatus]: number;
 };
 
 export type CheckGroupFilterValues = {
@@ -64,13 +62,13 @@ export type CheckGroupFilterValues = {
 };
 
 type ICheckGroupingContext = {
-  benchmark: BenchmarkType | null;
+  benchmark: DetectionBenchmarkType | null;
   definition: PanelDefinition;
-  grouping: CheckNode | null;
-  groupingsConfig: CheckDisplayGroup[];
-  firstChildSummaries: CheckSummary[];
-  diffFirstChildSummaries?: CheckSummary[];
-  diffGrouping: CheckNode | null;
+  grouping: DetectionNodeType | null;
+  groupingsConfig: DetectionDisplayGroup[];
+  firstChildSummaries: DetectionSummary[];
+  diffFirstChildSummaries?: DetectionSummary[];
+  diffGrouping: DetectionNodeType | null;
   nodeStates: CheckGroupNodeStates;
   filterValues: CheckGroupFilterValues;
   dispatch(action: CheckGroupingAction): void;
@@ -89,13 +87,13 @@ const checkGroupingActions = Object.values(GroupingActions);
 const GroupingContext = createContext<ICheckGroupingContext | null>(null);
 
 const addBenchmarkTrunkNode = (
-  benchmark_trunk: BenchmarkType[],
-  children: CheckNode[],
-  benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  benchmark_trunk: DetectionBenchmarkType[],
+  children: DetectionNodeType[],
+  benchmarkChildrenLookup: { [name: string]: DetectionNodeType[] },
   groupingKeysBeforeBenchmark: string[],
   parentGroupType: string | null,
-): CheckNode => {
-  let newChildren: CheckNode[];
+): DetectionNodeType => {
+  let newChildren: DetectionNodeType[];
   if (benchmark_trunk.length > 1) {
     newChildren = [
       addBenchmarkTrunkNode(
@@ -134,7 +132,7 @@ const addBenchmarkTrunkNode = (
       benchmarkChildrenLookup[lookupKey] = newChildren;
     }
   }
-  return new BenchmarkNode(
+  return new DetectionBenchmarkNode(
     !!parentGroupType
       ? currentNode?.title || "Other"
       : currentNode?.sort || "Other",
@@ -144,77 +142,9 @@ const addBenchmarkTrunkNode = (
   );
 };
 
-const getCheckStatusGroupingKey = (status: CheckResultStatus): string => {
-  switch (status) {
-    case CheckResultStatus.alarm:
-      return "Alarm";
-    case CheckResultStatus.error:
-      return "Error";
-    case CheckResultStatus.info:
-      return "Info";
-    case CheckResultStatus.ok:
-      return "OK";
-    case CheckResultStatus.skip:
-      return "Skipped";
-    case CheckResultStatus.empty:
-      return "Empty";
-  }
-};
-
-const getCheckStatusSortKey = (status: CheckResultStatus): string => {
-  switch (status) {
-    case CheckResultStatus.ok:
-      return "0";
-    case CheckResultStatus.alarm:
-      return "1";
-    case CheckResultStatus.error:
-      return "2";
-    case CheckResultStatus.info:
-      return "3";
-    case CheckResultStatus.skip:
-      return "4";
-    case CheckResultStatus.empty:
-      return "5";
-  }
-};
-
-const getCheckSeverityGroupingKey = (
-  severity: CheckSeverity | undefined,
-): string => {
-  switch (severity) {
-    case "critical":
-      return "Critical";
-    case "high":
-      return "High";
-    case "low":
-      return "Low";
-    case "medium":
-      return "Medium";
-    default:
-      return "Unspecified";
-  }
-};
-
-const getCheckSeveritySortKey = (
-  severity: CheckSeverity | undefined,
-): string => {
-  switch (severity) {
-    case "critical":
-      return "0";
-    case "high":
-      return "1";
-    case "medium":
-      return "2";
-    case "low":
-      return "3";
-    default:
-      return "4";
-  }
-};
-
 const getCheckDimensionGroupingKey = (
   dimensionKey: string | undefined,
-  dimensions: CheckResultDimension[],
+  dimensions: DetectionResultDimension[],
 ): string => {
   if (!dimensionKey) {
     return "<not set>";
@@ -223,145 +153,86 @@ const getCheckDimensionGroupingKey = (
   return foundDimension ? foundDimension.value : `<not set>`;
 };
 
-function getCheckTagGroupingKey(tagKey: string | undefined, tags: CheckTags) {
+function getCheckTagGroupingKey(
+  tagKey: string | undefined,
+  tags: DetectionTags,
+) {
   if (!tagKey) {
     return "Tag key not set";
   }
   return tags[tagKey] || `<not set>`;
 }
 
-const getCheckReasonGroupingKey = (reason: string | undefined): string => {
-  return reason || "<not set>";
-};
-
-const getCheckResourceGroupingKey = (resource: string | undefined): string => {
-  return resource || "<not set>";
-};
-
-// const getCheckResultGroupingKey = (checkResult: CheckResult): string => {
-//   return `${checkResult.control.name}-${checkResult.resource}`;
-// };
-
 const getCheckGroupingKey = (
-  checkResult: CheckResult,
-  group: CheckDisplayGroup,
+  checkResult: DetectionResult,
+  group: DetectionDisplayGroup,
 ) => {
   switch (group.type) {
-    case "dimension":
-      return getCheckDimensionGroupingKey(group.value, checkResult.dimensions);
-    case "control_tag":
-      return getCheckTagGroupingKey(group.value, checkResult.tags);
-    case "reason":
-      return getCheckReasonGroupingKey(checkResult.reason);
-    case "resource":
-      return getCheckResourceGroupingKey(checkResult.resource);
-    // case "result":
-    //   return getCheckResultGroupingKey(checkResult);
-    case "severity":
-      return getCheckSeverityGroupingKey(checkResult.control.severity);
-    case "status":
-      return getCheckStatusGroupingKey(checkResult.status);
     case "benchmark":
-      if (checkResult.benchmark_trunk.length <= 1) {
+      if (checkResult.detection_benchmark_trunk.length <= 1) {
         return null;
       }
-      return checkResult.benchmark_trunk[checkResult.benchmark_trunk.length - 1]
-        .name;
-    case "control":
-      return checkResult.control.name;
+      return checkResult.detection_benchmark_trunk[
+        checkResult.detection_benchmark_trunk.length - 1
+      ].name;
+    case "detection":
+      return checkResult.detection.name;
+    case "detection_tag":
+      return getCheckTagGroupingKey(group.value, checkResult.tags);
+    case "dimension":
+      return getCheckDimensionGroupingKey(group.value, checkResult.dimensions);
     default:
       return "Other";
   }
 };
 
 const getCheckGroupingNode = (
-  checkResult: CheckResult,
-  group: CheckDisplayGroup,
-  children: CheckNode[],
-  benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  detectionResult: DetectionResult,
+  group: DetectionDisplayGroup,
+  children: DetectionNodeType[],
+  benchmarkChildrenLookup: { [name: string]: DetectionNodeType[] },
   groupingKeysBeforeBenchmark: string[] = [],
   parentGroupType: string | null,
-): CheckNode => {
+): DetectionNodeType => {
   switch (group.type) {
     case "dimension":
       const dimensionValue = getCheckDimensionGroupingKey(
         group.value,
-        checkResult.dimensions,
+        detectionResult.dimensions,
       );
-      return new KeyValuePairNode(
+      return new DetectionKeyValuePairNode(
         dimensionValue,
         "dimension",
         group.value || "Dimension key not set",
         dimensionValue,
         children,
       );
-    case "control_tag":
-      const value = getCheckTagGroupingKey(group.value, checkResult.tags);
-      return new KeyValuePairNode(
+    case "detection_tag":
+      const value = getCheckTagGroupingKey(group.value, detectionResult.tags);
+      return new DetectionKeyValuePairNode(
         value,
         "control_tag",
         group.value || "Tag key not set",
         value,
         children,
       );
-    case "reason":
-      return new KeyValuePairNode(
-        checkResult.reason || "𤭢", // U+24B62 - very high in sort order - will almost guarantee to put this to the end,
-        "reason",
-        "reason",
-        getCheckReasonGroupingKey(checkResult.reason),
-        children,
-      );
-    case "resource":
-      return new KeyValuePairNode(
-        checkResult.resource || "𤭢", // U+24B62 - very high in sort order - will almost guarantee to put this to the end
-        "resource",
-        "resource",
-        getCheckResourceGroupingKey(checkResult.resource),
-        children,
-      );
-    // case "result":
-    //   return new ControlResultNode(
-    //     checkResult,
-    //     `${checkResult.control.name}-${checkResult.resource}`,
-    //     "result",
-    //     "result",
-    //     getCheckResultGroupingKey(checkResult),
-    //     children,
-    //   );
-    case "severity":
-      return new KeyValuePairNode(
-        getCheckSeveritySortKey(checkResult.control.severity),
-        "severity",
-        "severity",
-        getCheckSeverityGroupingKey(checkResult.control.severity),
-        children,
-      );
-    case "status":
-      return new KeyValuePairNode(
-        getCheckStatusSortKey(checkResult.status),
-        "status",
-        "status",
-        getCheckStatusGroupingKey(checkResult.status),
-        children,
-      );
     case "benchmark":
-      return checkResult.benchmark_trunk.length > 1
+      return detectionResult.detection_benchmark_trunk.length > 1
         ? addBenchmarkTrunkNode(
-            checkResult.benchmark_trunk.slice(1),
+            detectionResult.detection_benchmark_trunk.slice(1),
             children,
             benchmarkChildrenLookup,
             groupingKeysBeforeBenchmark,
             parentGroupType,
           )
         : children[0];
-    case "control":
-      return new ControlNode(
+    case "detection":
+      return new DetectionNode(
         parentGroupType === "benchmark"
-          ? checkResult.control.sort
-          : checkResult.control.title || checkResult.control.name,
-        checkResult.control.name,
-        checkResult.control.title,
+          ? detectionResult.detection.sort
+          : detectionResult.detection.title || detectionResult.detection.name,
+        detectionResult.detection.name,
+        detectionResult.detection.title,
         children,
       );
     default:
@@ -370,14 +241,14 @@ const getCheckGroupingNode = (
 };
 
 const addBenchmarkGroupingNode = (
-  existingGroups: CheckNode[],
-  groupingNode: CheckNode,
+  existingGroups: DetectionNodeType[],
+  groupingNode: DetectionNodeType,
 ) => {
   const existingGroup = existingGroups.find(
     (existingGroup) => existingGroup.name === groupingNode.name,
   );
   if (existingGroup) {
-    (existingGroup as BenchmarkNode).merge(groupingNode);
+    (existingGroup as DetectionBenchmarkNode).merge(groupingNode);
   } else {
     existingGroups.push(groupingNode);
   }
@@ -399,11 +270,11 @@ function getBenchmarkChildrenLookupKey(
 }
 
 const groupCheckItems = (
-  temp: { _: CheckNode[] },
-  checkResult: CheckResult,
-  groupingsConfig: CheckDisplayGroup[],
-  checkNodeStates: CheckGroupNodeStates,
-  benchmarkChildrenLookup: { [name: string]: CheckNode[] },
+  temp: { _: DetectionNodeType[] },
+  checkResult: DetectionResult,
+  groupingsConfig: DetectionDisplayGroup[],
+  DetectionNodeStates: CheckGroupNodeStates,
+  benchmarkChildrenLookup: { [name: string]: DetectionNodeType[] },
   groupingHierarchyKeys: string[],
 ) => {
   return groupingsConfig
@@ -435,14 +306,14 @@ const groupCheckItems = (
 
         // Collapse all benchmark trunk nodes
         if (currentGroupingConfig.type === "benchmark") {
-          checkResult.benchmark_trunk.forEach(
+          checkResult.detection_benchmark_trunk.forEach(
             (benchmark) =>
-              (checkNodeStates[benchmark.name] = {
+              (DetectionNodeStates[benchmark.name] = {
                 expanded: false,
               }),
           );
         } else {
-          checkNodeStates[groupKey] = {
+          DetectionNodeStates[groupKey] = {
             expanded: false,
           };
         }
@@ -498,23 +369,15 @@ const groupCheckItems = (
     );
 };
 
-const getCheckResultNode = (checkResult: CheckResult) => {
-  if (checkResult.type === "loading") {
-    return new ControlRunningNode(checkResult);
-  } else if (checkResult.type === "error") {
-    return new ControlErrorNode(checkResult);
-  } else if (checkResult.type === "empty") {
-    return new ControlEmptyResultNode(checkResult);
+const getDetectionResultNode = (detectionResult: DetectionResult) => {
+  if (detectionResult.type === "loading") {
+    return new DetectionRunningNode(detectionResult);
+  } else if (detectionResult.type === "error") {
+    return new DetectionErrorNode(detectionResult);
+  } else if (detectionResult.type === "empty") {
+    return new DetectionEmptyResultNode(detectionResult);
   }
-  return new ControlResultNode(checkResult);
-  // return new ControlResultNode(
-  //   checkResult,
-  //   `${checkResult.control.name}-${checkResult.resource}`,
-  //   "result",
-  //   "result",
-  //   getCheckResultGroupingKey(checkResult),
-  //   undefined,
-  // );
+  return new DetectionResultNode(detectionResult);
 };
 
 const reducer = (state: CheckGroupNodeStates, action) => {
@@ -566,7 +429,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
   }
 };
 
-type CheckGroupingProviderProps = {
+type DetectionGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
   diff_panels: PanelsMap | undefined;
@@ -590,11 +453,14 @@ function recordFilterValues(
       info: number;
     };
   },
-  checkResult: CheckResult,
+  checkResult: DetectionResult,
 ) {
   // Record the benchmark of this check result to allow assisted filtering later
-  if (!!checkResult.benchmark_trunk && checkResult.benchmark_trunk.length > 0) {
-    for (const benchmark of checkResult.benchmark_trunk) {
+  if (
+    !!checkResult.detection_benchmark_trunk &&
+    checkResult.detection_benchmark_trunk.length > 0
+  ) {
+    for (const benchmark of checkResult.detection_benchmark_trunk) {
       filterValues.benchmark.value[benchmark.name] = filterValues.benchmark
         .value[benchmark.name] || { title: benchmark.title, count: 0 };
       filterValues.benchmark.value[benchmark.name].count += 1;
@@ -602,12 +468,12 @@ function recordFilterValues(
   }
 
   // Record the control of this check result to allow assisted filtering later
-  filterValues.control.value[checkResult.control.name] = filterValues.control
-    .value[checkResult.control.name] || {
-    title: checkResult.control.title,
+  filterValues.control.value[checkResult.detection.name] = filterValues.control
+    .value[checkResult.detection.name] || {
+    title: checkResult.detection.title,
     count: 0,
   };
-  filterValues.control.value[checkResult.control.name].count += 1;
+  filterValues.control.value[checkResult.detection.name].count += 1;
 
   // Record the status of this check result to allow assisted filtering later
   filterValues.status[checkResult.status] =
@@ -626,13 +492,6 @@ function recordFilterValues(
     filterValues.resource.value[checkResult.resource] =
       filterValues.resource.value[checkResult.resource] || 0;
     filterValues.resource.value[checkResult.resource] += 1;
-  }
-
-  // Record the severity of this check result to allow assisted filtering later
-  if (checkResult.severity) {
-    filterValues.severity.value[checkResult.severity.toString()] =
-      filterValues.severity.value[checkResult.severity.toString()] || 0;
-    filterValues.severity.value[checkResult.severity.toString()] += 1;
   }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
@@ -695,8 +554,8 @@ const wildcardToRegex = (wildcard: string) => {
 };
 
 const includeResult = (
-  checkResult: CheckResult,
-  checkFilterConfig: CheckFilter,
+  checkResult: DetectionResult,
+  checkFilterConfig: DetectionFilter,
 ): boolean => {
   if (
     !checkFilterConfig ||
@@ -717,7 +576,7 @@ const includeResult = (
     switch (filter.type) {
       case "benchmark": {
         let matchesTrunk = false;
-        for (const benchmark of checkResult.benchmark_trunk || []) {
+        for (const benchmark of checkResult.detection_benchmark_trunk || []) {
           const match = valueRegex.test(benchmark.name);
           if (match) {
             matchesTrunk = true;
@@ -728,19 +587,7 @@ const includeResult = (
         break;
       }
       case "control": {
-        matches.push(valueRegex.test(checkResult.control.name));
-        break;
-      }
-      case "reason": {
-        matches.push(valueRegex.test(checkResult.reason));
-        break;
-      }
-      case "resource": {
-        matches.push(valueRegex.test(checkResult.resource));
-        break;
-      }
-      case "severity": {
-        matches.push(valueRegex.test(checkResult.severity || ""));
+        matches.push(valueRegex.test(checkResult.detection.name));
         break;
       }
       case "status": {
@@ -788,7 +635,7 @@ const includeResult = (
 const useGroupingInternal = (
   definition: PanelDefinition | null,
   panelsMap: PanelsMap | undefined,
-  groupingsConfig: CheckDisplayGroup[],
+  groupingsConfig: DetectionDisplayGroup[],
   skip = false,
 ) => {
   const checkFilterConfig = useGroupingFilterConfig();
@@ -822,7 +669,7 @@ const useGroupingInternal = (
           );
 
     const rootBenchmarkPanel = panelsMap[definition.name];
-    const b = new BenchmarkType(
+    const b = new DetectionBenchmarkType(
       "0",
       rootBenchmarkPanel.name,
       rootBenchmarkPanel.title,
@@ -833,13 +680,13 @@ const useGroupingInternal = (
       [],
     );
 
-    const checkNodeStates: CheckGroupNodeStates = {};
-    const result: CheckNode[] = [];
+    const DetectionNodeStates: CheckGroupNodeStates = {};
+    const result: DetectionNodeType[] = [];
     const temp = { _: result };
     const benchmarkChildrenLookup = {};
 
     // We'll loop over each control result and build up the grouped nodes from there
-    b.all_control_results.forEach((checkResult) => {
+    b.all_detection_results.forEach((checkResult) => {
       // Record values pre-filter so we can expand out from filtered states with all values later on
       recordFilterValues(filterValues, checkResult);
 
@@ -854,19 +701,19 @@ const useGroupingInternal = (
         temp,
         checkResult,
         groupingsConfig,
-        checkNodeStates,
+        DetectionNodeStates,
         benchmarkChildrenLookup,
         [],
       );
       // Build and add a check result node to the children of the trailing group.
       // This will be used to calculate totals and severity, amongst other things.
-      const node = getCheckResultNode(checkResult);
+      const node = getDetectionResultNode(checkResult);
       grouping._.push(node);
     });
 
-    const results = new RootNode(result);
+    const results = new DetectionRootNode(result);
 
-    const firstChildSummaries: CheckSummary[] = [];
+    const firstChildSummaries: DetectionSummary[] = [];
     for (const child of results.children) {
       firstChildSummaries.push(child.summary);
     }
@@ -876,7 +723,7 @@ const useGroupingInternal = (
       { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
-      checkNodeStates,
+      DetectionNodeStates,
       filterValues,
     ] as const;
   }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
@@ -886,7 +733,7 @@ const GroupingProvider = ({
   children,
   definition,
   diff_panels,
-}: CheckGroupingProviderProps) => {
+}: DetectionGroupingProviderProps) => {
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
