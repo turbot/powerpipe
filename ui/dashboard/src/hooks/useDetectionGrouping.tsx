@@ -51,12 +51,7 @@ export type CheckGroupingAction = {
   [key: string]: any;
 };
 
-type CheckGroupFilterStatusValuesMap = {
-  [key in keyof typeof DetectionResultStatus]: number;
-};
-
 export type CheckGroupFilterValues = {
-  status: CheckGroupFilterStatusValuesMap;
   control_tag: { key: {}; value: {} };
   dimension: { key: {}; value: {} };
 };
@@ -216,7 +211,7 @@ const getCheckGroupingNode = (
         value,
         children,
       );
-    case "benchmark":
+    case "detection_benchmark":
       return detectionResult.detection_benchmark_trunk.length > 1
         ? addBenchmarkTrunkNode(
             detectionResult.detection_benchmark_trunk.slice(1),
@@ -260,7 +255,7 @@ function getBenchmarkChildrenLookupKey(
 ) {
   const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
     0,
-    groupingHierarchyKeys.indexOf("benchmark"),
+    groupingHierarchyKeys.indexOf("detection_benchmark"),
   );
   const benchmarkChildrenLookupKey =
     groupingKeysBeforeBenchmark.length > 0
@@ -305,7 +300,7 @@ const groupCheckItems = (
         groupingHierarchyKeys.push(groupKey);
 
         // Collapse all benchmark trunk nodes
-        if (currentGroupingConfig.type === "benchmark") {
+        if (currentGroupingConfig.type === "detection_benchmark") {
           checkResult.detection_benchmark_trunk.forEach(
             (benchmark) =>
               (DetectionNodeStates[benchmark.name] = {
@@ -334,7 +329,7 @@ const groupCheckItems = (
           );
 
           if (groupingNode) {
-            if (currentGroupingConfig.type === "benchmark") {
+            if (currentGroupingConfig.type === "detection_benchmark") {
               // For benchmarks, we need to get the benchmark nodes including the trunk
               addBenchmarkGroupingNode(cumulativeGrouping._, groupingNode);
             } else {
@@ -352,7 +347,7 @@ const groupCheckItems = (
         // When we come to get the benchmark grouping node for control 2, we'll need to add
         // the control to the existing children of benchmark 1
         if (
-          currentGroupingConfig.type === "benchmark" &&
+          currentGroupingConfig.type === "detection_benchmark" &&
           benchmarkChildrenLookup[benchmarkChildrenLookupKey]
         ) {
           const groupingEntry = cumulativeGrouping[groupKey];
@@ -437,20 +432,12 @@ type DetectionGroupingProviderProps = {
 
 function recordFilterValues(
   filterValues: {
-    severity: { value: {} };
-    reason: { value: {} };
-    resource: { value: {} };
-    control: { value: {} };
-    control_tag: { key: {}; value: {} };
+    detection: { value: {} };
+    detection_tag: { key: {}; value: {} };
     dimension: { key: {}; value: {} };
     benchmark: { value: {} };
     status: {
-      alarm: number;
-      skip: number;
-      error: number;
-      ok: number;
-      empty: number;
-      info: number;
+      total: number;
     };
   },
   checkResult: DetectionResult,
@@ -468,31 +455,17 @@ function recordFilterValues(
   }
 
   // Record the control of this check result to allow assisted filtering later
-  filterValues.control.value[checkResult.detection.name] = filterValues.control
-    .value[checkResult.detection.name] || {
+  filterValues.detection.value[checkResult.detection.name] = filterValues
+    .detection.value[checkResult.detection.name] || {
     title: checkResult.detection.title,
     count: 0,
   };
-  filterValues.control.value[checkResult.detection.name].count += 1;
+  filterValues.detection.value[checkResult.detection.name].count += 1;
 
   // Record the status of this check result to allow assisted filtering later
   filterValues.status[checkResult.status] =
     filterValues.status[checkResult.status] || 0;
   filterValues.status[checkResult.status] += 1;
-
-  // Record the reason of this check result to allow assisted filtering later
-  if (checkResult.reason) {
-    filterValues.reason.value[checkResult.reason] =
-      filterValues.reason.value[checkResult.reason] || 0;
-    filterValues.reason.value[checkResult.reason] += 1;
-  }
-
-  // Record the resource of this check result to allow assisted filtering later
-  if (checkResult.resource) {
-    filterValues.resource.value[checkResult.resource] =
-      filterValues.resource.value[checkResult.resource] || 0;
-    filterValues.resource.value[checkResult.resource] += 1;
-  }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const dimension of checkResult.dimensions) {
@@ -519,25 +492,25 @@ function recordFilterValues(
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(checkResult.tags || {})) {
-    if (!(tagKey in filterValues.control_tag.key)) {
-      filterValues.control_tag.key[tagKey] = {
+    if (!(tagKey in filterValues.detection_tag.key)) {
+      filterValues.detection_tag.key[tagKey] = {
         [tagValue]: 0,
       };
     }
-    if (!(tagValue in filterValues.control_tag.key[tagKey])) {
-      filterValues.control_tag.key[tagKey][tagValue] = 0;
+    if (!(tagValue in filterValues.detection_tag.key[tagKey])) {
+      filterValues.detection_tag.key[tagKey][tagValue] = 0;
     }
-    filterValues.control_tag.key[tagKey][tagValue] += 1;
+    filterValues.detection_tag.key[tagKey][tagValue] += 1;
 
-    if (!(tagValue in filterValues.control_tag.value)) {
-      filterValues.control_tag.value[tagValue] = {
+    if (!(tagValue in filterValues.detection_tag.value)) {
+      filterValues.detection_tag.value[tagValue] = {
         [tagKey]: 0,
       };
     }
-    if (!(tagKey in filterValues.control_tag.value[tagValue])) {
-      filterValues.control_tag.value[tagValue][tagKey] = 0;
+    if (!(tagKey in filterValues.detection_tag.value[tagValue])) {
+      filterValues.detection_tag.value[tagValue][tagKey] = 0;
     }
-    filterValues.control_tag.value[tagValue][tagKey] += 1;
+    filterValues.detection_tag.value[tagValue][tagKey] += 1;
   }
 }
 
@@ -574,7 +547,7 @@ const includeResult = (
     const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
 
     switch (filter.type) {
-      case "benchmark": {
+      case "detection_benchmark": {
         let matchesTrunk = false;
         for (const benchmark of checkResult.detection_benchmark_trunk || []) {
           const match = valueRegex.test(benchmark.name);
@@ -586,7 +559,7 @@ const includeResult = (
         matches.push(matchesTrunk);
         break;
       }
-      case "control": {
+      case "detection": {
         matches.push(valueRegex.test(checkResult.detection.name));
         break;
       }
@@ -643,13 +616,10 @@ const useGroupingInternal = (
   return useMemo(() => {
     const filterValues = {
       benchmark: { value: {} },
-      control: { value: {} },
-      control_tag: { key: {}, value: {} },
+      detection: { value: {} },
+      detection_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
-      reason: { value: {} },
-      resource: { value: {} },
-      severity: { value: {} },
-      status: { alarm: 0, empty: 0, error: 0, info: 0, ok: 0, skip: 0 },
+      status: { total: 0 },
     };
 
     if (!definition || skip || !panelsMap) {
@@ -657,15 +627,15 @@ const useGroupingInternal = (
     }
 
     // @ts-ignore
-    const nestedBenchmarks = definition.children?.filter(
-      (child) => child.panel_type === "benchmark",
+    const nestedDetectionBenchmarks = definition.children?.filter(
+      (child) => child.panel_type === "detection_benchmark",
     );
-    const nestedControls =
+    const nestedDetections =
       definition.panel_type === "control"
         ? [definition]
         : // @ts-ignore
           definition.children?.filter(
-            (child) => child.panel_type === "control",
+            (child) => child.panel_type === "detection",
           );
 
     const rootBenchmarkPanel = panelsMap[definition.name];
@@ -674,8 +644,8 @@ const useGroupingInternal = (
       rootBenchmarkPanel.name,
       rootBenchmarkPanel.title,
       rootBenchmarkPanel.description,
-      nestedBenchmarks,
-      nestedControls,
+      nestedDetectionBenchmarks,
+      nestedDetections,
       panelsMap,
       [],
     );

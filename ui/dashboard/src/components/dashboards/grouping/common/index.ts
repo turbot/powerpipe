@@ -188,7 +188,7 @@ export type CheckDisplayGroupType =
   | string;
 
 export type DetectionDisplayGroupType =
-  | "benchmark"
+  | "detection_benchmark"
   | "detection"
   | "detection_tag"
   | "result"
