@@ -145,7 +145,8 @@ const Section = ({
               dashboard.type === "snapshot") && (
               <TitlePart part={dashboard} searchPathPrefix={searchPathPrefix} />
             )}
-            {dashboard.type === "benchmark" && (
+            {(dashboard.type === "benchmark" ||
+              dashboard.type === "detection_benchmark") && (
               <BenchmarkTitle
                 benchmark={dashboard}
                 searchValue={searchValue}
