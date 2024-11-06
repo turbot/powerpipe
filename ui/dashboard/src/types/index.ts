@@ -2,10 +2,10 @@ import {
   CheckDisplayGroup,
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 export type IDashboardContext = {
   cliMode: DashboardCliMode;
