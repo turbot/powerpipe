@@ -254,28 +254,29 @@ class Detection implements DetectionNode {
     const results: DetectionResult[] = [];
     const dimensionColumns: LeafNodeDataColumn[] = [];
     for (const col of data.columns) {
-      if (
-        col.name === "reason" ||
-        col.name === "resource" ||
-        col.name === "status"
-      ) {
+      if (col.name === "timestamp") {
         continue;
       }
       dimensionColumns.push(col);
     }
-    for (const row of data.rows) {
-      const result = {
-        reason: row.reason,
-        resource: row.resource,
-        status: row.status,
-        dimensions: dimensionColumns.map((col) => ({
-          key: col.name,
-          value: row[col.name],
-        })),
-      };
-      // @ts-ignore
-      results.push(result);
-    }
+    const result = {
+      rows: data.rows,
+      columns: data.columns,
+      detection: this,
+      dimensionColumns,
+    };
+    // for (const row of data.rows) {
+    //   const result = {
+    //     reason: row.reason,
+    //     resource: row.resource,
+    //     status: row.status,
+    //     dimensions: dimensionColumns.map((col) => ({
+    //       key: col.name,
+    //       value: row[col.name],
+    //     })),
+    //   };
+    // @ts-ignore
+    results.push(result);
     return results;
   };
 }

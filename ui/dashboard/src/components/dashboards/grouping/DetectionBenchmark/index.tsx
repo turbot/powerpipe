@@ -238,7 +238,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         />
       )}
       <Grid name="temp">
-          <DateRangePicker />
+        <DateRangePicker />
       </Grid>
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
@@ -265,7 +265,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
               <Panel
                 key={summaryCard.name}
                 definition={cardProps}
-                parentType="benchmark"
+                parentType="detection_benchmark"
                 showControls={false}
               >
                 <span
@@ -296,8 +296,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
 };
 
 const DetectionTree = (props: DetectionBenchmarkTreeProps) => {
-  console.log(props);
-
   if (!props.properties || !props.properties.first_child_summaries) {
     return null;
   }

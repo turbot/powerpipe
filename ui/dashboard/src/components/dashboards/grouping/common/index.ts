@@ -4,6 +4,8 @@ import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
   LeafNodeData,
+  LeafNodeDataColumn,
+  LeafNodeDataRow,
 } from "../../common";
 import { DashboardRunState } from "@powerpipe/types";
 
@@ -134,6 +136,9 @@ export type CheckResult = {
 };
 
 export type DetectionResult = {
+  rows?: LeafNodeDataRow[];
+  columns?: LeafNodeDataColumn[];
+  dimensionColumns?: LeafNodeDataColumn[];
   dimensions: CheckResultDimension[];
   tags: CheckTags;
   detection: DetectionNode;

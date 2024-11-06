@@ -163,7 +163,7 @@ const getCheckGroupingKey = (
   group: DetectionDisplayGroup,
 ) => {
   switch (group.type) {
-    case "benchmark":
+    case "detection_benchmark":
       if (checkResult.detection_benchmark_trunk.length <= 1) {
         return null;
       }
@@ -223,7 +223,7 @@ const getCheckGroupingNode = (
         : children[0];
     case "detection":
       return new DetectionNode(
-        parentGroupType === "benchmark"
+        parentGroupType === "detection_benchmark"
           ? detectionResult.detection.sort
           : detectionResult.detection.title || detectionResult.detection.name,
         detectionResult.detection.name,
@@ -432,10 +432,10 @@ type DetectionGroupingProviderProps = {
 
 function recordFilterValues(
   filterValues: {
+    detection_benchmark: { value: {} };
     detection: { value: {} };
     detection_tag: { key: {}; value: {} };
     dimension: { key: {}; value: {} };
-    benchmark: { value: {} };
     status: {
       total: number;
     };
@@ -448,9 +448,12 @@ function recordFilterValues(
     checkResult.detection_benchmark_trunk.length > 0
   ) {
     for (const benchmark of checkResult.detection_benchmark_trunk) {
-      filterValues.benchmark.value[benchmark.name] = filterValues.benchmark
-        .value[benchmark.name] || { title: benchmark.title, count: 0 };
-      filterValues.benchmark.value[benchmark.name].count += 1;
+      filterValues.detection_benchmark.value[benchmark.name] = filterValues
+        .detection_benchmark.value[benchmark.name] || {
+        title: benchmark.title,
+        count: 0,
+      };
+      filterValues.detection_benchmark.value[benchmark.name].count += 1;
     }
   }
 
@@ -468,27 +471,27 @@ function recordFilterValues(
   filterValues.status[checkResult.status] += 1;
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
-  for (const dimension of checkResult.dimensions) {
-    if (!(dimension.key in filterValues.dimension.key)) {
-      filterValues.dimension.key[dimension.key] = {
-        [dimension.value]: 0,
-      };
-    }
-    if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
-      filterValues.dimension.key[dimension.key][dimension.value] = 0;
-    }
-    filterValues.dimension.key[dimension.key][dimension.value] += 1;
-
-    if (!(dimension.value in filterValues.dimension.value)) {
-      filterValues.dimension.value[dimension.value] = {
-        [dimension.key]: 0,
-      };
-    }
-    if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
-      filterValues.dimension.value[dimension.value][dimension.key] = 0;
-    }
-    filterValues.dimension.value[dimension.value][dimension.key] += 1;
-  }
+  // for (const dimension of checkResult.dimensions) {
+  //   if (!(dimension.key in filterValues.dimension.key)) {
+  //     filterValues.dimension.key[dimension.key] = {
+  //       [dimension.value]: 0,
+  //     };
+  //   }
+  //   if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
+  //     filterValues.dimension.key[dimension.key][dimension.value] = 0;
+  //   }
+  //   filterValues.dimension.key[dimension.key][dimension.value] += 1;
+  //
+  //   if (!(dimension.value in filterValues.dimension.value)) {
+  //     filterValues.dimension.value[dimension.value] = {
+  //       [dimension.key]: 0,
+  //     };
+  //   }
+  //   if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
+  //     filterValues.dimension.value[dimension.value][dimension.key] = 0;
+  //   }
+  //   filterValues.dimension.value[dimension.value][dimension.key] += 1;
+  // }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(checkResult.tags || {})) {
@@ -615,7 +618,7 @@ const useGroupingInternal = (
 
   return useMemo(() => {
     const filterValues = {
-      benchmark: { value: {} },
+      detection_benchmark: { value: {} },
       detection: { value: {} },
       detection_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
