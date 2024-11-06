@@ -126,6 +126,8 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*resources.DashboardHierarchy](withCmdName("hierarchy")),
 		resourceCmd[*resources.DashboardImage](withCmdName("image")),
 		resourceCmd[*resources.DashboardTable](withCmdName("table")),
+		resourceCmd[*resources.Detection](withCmdName("detection")),
+		resourceCmd[*resources.DetectionBenchmark](withCmdName("detectionbenchmark")),
 		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
@@ -169,6 +171,9 @@ func resourceCommandShortDescription(typeName string) string {
 	case schema.BlockTypeBenchmark:
 		return "List, view, and run Powerpipe benchmarks"
 
+	case schema.BlockTypeDetectionBenchmark:
+		return "List, view, and run Powerpipe benchmarks"
+
 	case schema.BlockTypeDashboard:
 		return "List, view, and run Powerpipe dashboards in batch mode"
 
@@ -195,6 +200,12 @@ Run a control from the current mod or its direct dependents or from a Powerpipe 
 view details of a control from the current mod or its direct dependents or from a Powerpipe server instance.`
 
 	case schema.BlockTypeBenchmark:
+		return `List, view, and run Powerpipe benchmarks and its direct dependents.
+		
+Run a benchmark from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a benchmark from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	case schema.BlockTypeDetectionBenchmark:
 		return `List, view, and run Powerpipe benchmarks and its direct dependents.
 		
 Run a benchmark from the current mod or its direct dependents or from a Powerpipe server instance or

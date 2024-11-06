@@ -2,6 +2,7 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/stevenle/topsort"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -10,10 +11,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// TODO [node_reuse] add DashboardLeafNodeImpl
-
-// DashboardContainer is a struct representing the Dashboard and Container resource
-type DashboardContainer struct {
+type DetectionBenchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
 
@@ -25,10 +23,13 @@ type DashboardContainer struct {
 	Inputs  []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 	// store children in a way which can be serialised via cty
 	ChildNames []string `cty:"children" json:"children,omitempty"`
+
+	//nolint:unused // TODO: unused attribute
+	runtimeDependencyGraph *topsort.Graph
 }
 
-func NewDashboardContainer(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
-	c := &DashboardContainer{
+func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
+	c := &DetectionBenchmark{
 		ModTreeItemImpl: modconfig.NewModTreeItemImpl(block, mod, shortName),
 	}
 	c.SetAnonymous(block)
@@ -36,13 +37,13 @@ func NewDashboardContainer(block *hcl.Block, mod *modconfig.Mod, shortName strin
 	return c
 }
 
-func (c *DashboardContainer) Equals(other *DashboardContainer) bool {
+func (c *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
 	diff := c.Diff(other)
 	return !diff.HasChanges()
 }
 
 // OnDecoded implements HclResource
-func (c *DashboardContainer) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
+func (c *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	c.ChildNames = make([]string, len(c.GetChildren()))
 	for i, child := range c.GetChildren() {
 		c.ChildNames[i] = child.Name()
@@ -51,7 +52,7 @@ func (c *DashboardContainer) OnDecoded(block *hcl.Block, _ modconfig.ModResource
 }
 
 // GetWidth implements DashboardLeafNode
-func (c *DashboardContainer) GetWidth() int {
+func (c *DetectionBenchmark) GetWidth() int {
 	if c.Width == nil {
 		return 0
 	}
@@ -59,16 +60,16 @@ func (c *DashboardContainer) GetWidth() int {
 }
 
 // GetDisplay implements DashboardLeafNode
-func (c *DashboardContainer) GetDisplay() string {
+func (c *DetectionBenchmark) GetDisplay() string {
 	return typehelpers.SafeString(c.Display)
 }
 
 // GetType implements DashboardLeafNode
-func (c *DashboardContainer) GetType() string {
+func (c *DetectionBenchmark) GetType() string {
 	return ""
 }
 
-func (c *DashboardContainer) Diff(other *DashboardContainer) *modconfig.ModTreeItemDiffs {
+func (c *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {
 	res := &modconfig.ModTreeItemDiffs{
 		Item: c,
 		Name: c.Name(),
@@ -94,7 +95,7 @@ func (c *DashboardContainer) Diff(other *DashboardContainer) *modconfig.ModTreeI
 	return res
 }
 
-func (c *DashboardContainer) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
+func (c *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
 	for _, child := range c.Children {
 		continueWalking, err := resourceFunc(child.(modconfig.HclResource))
 		if err != nil {
@@ -104,7 +105,7 @@ func (c *DashboardContainer) WalkResources(resourceFunc func(resource modconfig.
 			break
 		}
 
-		if childContainer, ok := child.(*DashboardContainer); ok {
+		if childContainer, ok := child.(*DetectionBenchmark); ok {
 			if err := childContainer.WalkResources(resourceFunc); err != nil {
 				return err
 			}
@@ -114,12 +115,12 @@ func (c *DashboardContainer) WalkResources(resourceFunc func(resource modconfig.
 }
 
 // CtyValue implements CtyValueProvider
-func (c *DashboardContainer) CtyValue() (cty.Value, error) {
+func (c *DetectionBenchmark) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(c)
 }
 
 // GetShowData implements printers.Showable
-func (c *DashboardContainer) GetShowData() *printers.RowData {
+func (c *DetectionBenchmark) GetShowData() *printers.RowData {
 	res := printers.NewRowData(
 		printers.NewFieldValue("Width", c.Width),
 		printers.NewFieldValue("Display", c.Display),

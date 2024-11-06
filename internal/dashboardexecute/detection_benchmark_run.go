@@ -3,21 +3,21 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
-// DashboardContainerRun is a struct representing a container run
-type DashboardContainerRun struct {
+// DetectionBenchmarkRun is a struct representing a container run
+type DetectionBenchmarkRun struct {
 	DashboardParentImpl
 
-	dashboardNode *resources.DashboardContainer
+	dashboardNode *resources.DetectionBenchmark
 }
 
-func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+func (r *DetectionBenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Name,
 		NodeType: r.NodeType,
@@ -29,10 +29,10 @@ func (r *DashboardContainerRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDashboardContainerRun(container *resources.DashboardContainer, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardContainerRun, error) {
+func NewDetectionBenchmarkRun(container *resources.DetectionBenchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DetectionBenchmarkRun, error) {
 	children := container.GetChildren()
 
-	r := &DashboardContainerRun{dashboardNode: container}
+	r := &DetectionBenchmarkRun{dashboardNode: container}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(container, parent, r, executionTree)
@@ -49,38 +49,18 @@ func NewDashboardContainerRun(container *resources.DashboardContainer, parent da
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *resources.DashboardContainer:
-			childRun, err = NewDashboardContainerRun(i, r, executionTree)
-			if err != nil {
-				return nil, err
-			}
-		case *resources.Dashboard:
-			childRun, err = NewDashboardRun(i, r, executionTree)
-			if err != nil {
-				return nil, err
-			}
 		case *resources.DetectionBenchmark:
 			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}
-		case *resources.Benchmark, *resources.Control:
-			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
+		case *resources.Detection:
+			childRun, err = NewLeafRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}
-
 		default:
-			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(resources.DashboardLeafNode)
-			if !ok {
-				return nil, fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
-			}
-
-			childRun, err = NewLeafRun(leafNode, r, executionTree)
-			if err != nil {
-				return nil, err
-			}
+			return nil, fmt.Errorf("invalid child type %T", i)
 		}
 
 		// should never happen - container children must be either container or counter
@@ -100,7 +80,7 @@ func NewDashboardContainerRun(container *resources.DashboardContainer, parent da
 }
 
 // Initialise implements DashboardTreeRun
-func (r *DashboardContainerRun) Initialise(ctx context.Context) {
+func (r *DetectionBenchmarkRun) Initialise(ctx context.Context) {
 	// initialise our children
 	if err := r.initialiseChildren(ctx); err != nil {
 		r.SetError(ctx, err)
@@ -109,7 +89,7 @@ func (r *DashboardContainerRun) Initialise(ctx context.Context) {
 
 // Execute implements DashboardTreeRun
 // execute all children and wait for them to complete
-func (r *DashboardContainerRun) Execute(ctx context.Context) {
+func (r *DetectionBenchmarkRun) Execute(ctx context.Context) {
 	// execute all children asynchronously
 	r.executeChildrenAsync(ctx)
 
@@ -129,4 +109,4 @@ func (r *DashboardContainerRun) Execute(ctx context.Context) {
 }
 
 // IsSnapshotPanel implements SnapshotPanel
-func (*DashboardContainerRun) IsSnapshotPanel() {}
+func (*DetectionBenchmarkRun) IsSnapshotPanel() {}
