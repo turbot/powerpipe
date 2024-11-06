@@ -1,4 +1,4 @@
-import CheckPanel from "../CheckPanel";
+import DetectionPanel from "@powerpipe/components/dashboards/grouping/DetectionPanel";
 import sortBy from "lodash/sortBy";
 import {
   CheckGroupNodeStates,
@@ -39,7 +39,7 @@ const DetectionGrouping = ({ node }: DetectionGroupingProps) => {
   return (
     <div className="space-y-4 md:space-y-6 col-span-12">
       {sortBy(node.children, "sort")?.map((child) => (
-        <CheckPanel key={child.name} depth={1} node={child} />
+        <DetectionPanel key={child.name} depth={1} node={child} />
       ))}
     </div>
   );
