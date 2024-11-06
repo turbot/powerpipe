@@ -238,9 +238,9 @@ func (d *PowerpipeModDecoder) decodeDashboard(block *hcl.Block, parseCtx *parse.
 	if dashboard.Base != nil && len(dashboard.Base.ChildNames) > 0 {
 		supportedChildren := []string{
 			schema.BlockTypeContainer, schema.BlockTypeChart, schema.BlockTypeCard,
-			schema.BlockTypeDetection, schema.BlockTypeFlow, schema.BlockTypeGraph,
-			schema.BlockTypeHierarchy, schema.BlockTypeImage, schema.BlockTypeInput,
-			schema.BlockTypeTable, schema.BlockTypeText}
+			schema.BlockTypeDetection, schema.BlockTypeDetectionBenchmark, schema.BlockTypeFlow,
+			schema.BlockTypeGraph, schema.BlockTypeHierarchy, schema.BlockTypeImage,
+			schema.BlockTypeInput, schema.BlockTypeTable, schema.BlockTypeText}
 
 		// TACTICAL: we should be passing in the block for the Base resource - but this is only used for diags
 		// and we do not expect to get any (as this function has already succeeded when the base was originally parsed)
@@ -359,7 +359,11 @@ func (d *PowerpipeModDecoder) decodeDashboardContainerBlocks(content *hclsyntax.
 
 func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, *parse.DecodeResult) {
 	res := parse.NewDecodeResult()
-	benchmark := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
+	benchmark, ok := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
+	if !ok {
+		// coding error
+		panic(fmt.Sprintf("block type %s not convertible to a Benchmark", block.Type))
+	}
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)
 
@@ -411,7 +415,11 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 
 func (d *PowerpipeModDecoder) decodeDetectionBenchmark(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, *parse.DecodeResult) {
 	res := parse.NewDecodeResult()
-	benchmark := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
+	benchmark, ok := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.DetectionBenchmark)
+	if !ok {
+		// coding error
+		panic(fmt.Sprintf("block type %s not convertible to a DetectionBenchmark", block.Type))
+	}
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)
 

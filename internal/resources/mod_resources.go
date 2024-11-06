@@ -76,6 +76,7 @@ func emptyPowerpipeModResources() *PowerpipeModResources {
 		DashboardInputs:       make(map[string]map[string]*DashboardInput),
 		DashboardTables:       make(map[string]*DashboardTable),
 		Detections:            make(map[string]*Detection),
+		DetectionBenchmarks:   make(map[string]*DetectionBenchmark),
 		DashboardTexts:        make(map[string]*DashboardText),
 		DashboardNodes:        make(map[string]*DashboardNode),
 		DashboardCategories:   make(map[string]*DashboardCategory),

@@ -16,12 +16,12 @@ type Detection struct {
 	QueryProviderImpl
 
 	// required to allow partial decoding
-	Remain hcl.Body `hcl:",remain" json:"-"`
-	Width  *int     `cty:"width" hcl:"width"  json:"width,omitempty"`
+	Remain   hcl.Body `hcl:",remain" json:"-"`
+	Width    *int     `cty:"width" hcl:"width"  json:"width,omitempty"`
+	Severity *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
 
 	Columns map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns"`
 
-	// TODO K what is this for
 	Type    *string `cty:"type" hcl:"type"  json:"type,omitempty"`
 	Display *string `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
 
