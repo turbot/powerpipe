@@ -2,10 +2,12 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
+	"github.com/hashicorp/hcl/v2/hclsyntax"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
+	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/zclconf/go-cty/cty"
 )
@@ -27,6 +29,21 @@ type DetectionBenchmark struct {
 	Width   *int                `cty:"width" hcl:"width"  json:"width,omitempty"`
 	Type    *string             `cty:"type" hcl:"type"  json:"type,omitempty"`
 	Display *string             `cty:"display" hcl:"display" json:"display,omitempty"`
+}
+
+// NewWrapperDetectionBenchmark creates a new DetectionBenchmark to wrap a detection which we wish to execute
+func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
+	// create a fake block for the wrapper benchmark
+	block := &hcl.Block{
+		Type:   schema.BlockTypeDetectionBenchmark,
+		Labels: []string{detection.ShortName + "_benchmark"},
+		Body:   &hclsyntax.Body{SrcRange: detection.DeclRange},
+	}
+	b := NewDetectionBenchmark(block, detection.Mod, detection.ShortName).(*DetectionBenchmark)
+	b.AddChild(detection)
+	b.ChildNames = append(b.ChildNames, modconfig.NamedItem{Name: detection.UnqualifiedName})
+	b.ChildNameStrings = append(b.ChildNameStrings, detection.UnqualifiedName)
+	return b
 }
 
 func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {

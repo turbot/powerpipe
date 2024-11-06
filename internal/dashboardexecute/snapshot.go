@@ -21,8 +21,6 @@ func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, root
 	// clear event handlers again in case another snapshot will be generated in this run
 	defer w.UnregisterDashboardEventHandlers()
 
-	// pull out the target resource
-
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
 

@@ -3,7 +3,6 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -19,6 +18,7 @@ import (
 	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
