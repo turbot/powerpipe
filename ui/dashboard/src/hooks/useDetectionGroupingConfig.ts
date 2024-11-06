@@ -1,6 +1,6 @@
 import {
-  CheckDisplayGroup,
-  CheckDisplayGroupType,
+  DetectionDisplayGroupType,
+  DetectionDisplayGroup,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -22,7 +22,7 @@ const useCheckGroupingConfig = () => {
   return useMemo(() => {
     const rawGrouping = searchParams.get("grouping");
     if (rawGrouping) {
-      const groupings: CheckDisplayGroup[] = [];
+      const groupings: DetectionDisplayGroup[] = [];
       const groupingParts = rawGrouping.split(",").filter((g) => !!g);
       for (const groupingPart of groupingParts) {
         const typeValueParts = groupingPart.split("|");
@@ -36,31 +36,22 @@ const useCheckGroupingConfig = () => {
 
         if (typeValueParts.length > 1) {
           groupings.push({
-            type: typeValueParts[0] as CheckDisplayGroupType,
+            type: typeValueParts[0] as DetectionDisplayGroupType,
             value: typeValueParts[1],
           });
         } else {
           groupings.push({
-            type: typeValueParts[0] as CheckDisplayGroupType,
+            type: typeValueParts[0] as DetectionDisplayGroupType,
           });
         }
       }
       return groupings;
     } else {
       return [
-        // { type: "status" },
-        // { type: "reason" },
-        // { type: "resource" },
-        // { type: "severity" },
-        // { type: "dimension", value: "account_id" },
-        // { type: "dimension", value: "region" },
-        // { type: "control_tag", value: "service" },
-        // { type: "control_tag", value: "cis_type" },
-        // { type: "control_tag", value: "cis_level" },
-        { type: "benchmark" },
-        { type: "control" },
+        { type: "detection_benchmark" },
+        { type: "detection" },
         { type: "result" },
-      ] as CheckDisplayGroup[];
+      ] as DetectionDisplayGroup[];
     }
   }, [searchParams]);
 };
