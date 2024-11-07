@@ -49,9 +49,7 @@ class DetectionResultNode implements DetectionNode {
   }
 
   get summary(): DetectionSummary {
-    return {
-      total: 1,
-    };
+    return { total: this._result?.rows?.length || 0 };
   }
 
   get status(): CheckNodeStatus {
