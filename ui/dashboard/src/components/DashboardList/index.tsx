@@ -107,6 +107,10 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
 
   const parts: AvailableDashboard[] = [];
 
+  if (!benchmark.trunks || benchmark.trunks.length === 0) {
+    return null;
+  }
+
   for (const trunk of benchmark.trunks[0]) {
     const part = dashboardsMap[trunk];
     if (part) {
@@ -142,7 +146,8 @@ const Section = ({
         <div key={dashboard.full_name} className="flex space-x-2 items-center">
           <div className="md:col-span-6 truncate">
             {(dashboard.type === "dashboard" ||
-              dashboard.type === "snapshot") && (
+              dashboard.type === "snapshot" ||
+              dashboard.type === "detection") && (
               <TitlePart part={dashboard} searchPathPrefix={searchPathPrefix} />
             )}
             {(dashboard.type === "benchmark" ||
