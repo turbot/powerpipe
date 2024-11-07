@@ -9,6 +9,9 @@ import {
   OKIcon,
   SkipIcon,
   UnknownIcon,
+  ErrorIcon,
+  SortAscendingIcon,
+  SortDescendingIcon,
 } from "@powerpipe/constants/icons";
 import {
   BasePrimitiveProps,
@@ -18,11 +21,6 @@ import {
   LeafNodeDataRow,
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import {
-  ErrorIcon,
-  SortAscendingIcon,
-  SortDescendingIcon,
-} from "@powerpipe/constants/icons";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
@@ -30,6 +28,7 @@ import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSortBy, useTable } from "react-table";
+import Icon from "@powerpipe/components/Icon";
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
@@ -82,8 +81,6 @@ const getColumns = (
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
-      // Boolean data types do not sort under the default alphanumeric sorting logic of react-table
-      // On the next column type that needs specialising we'll move this out into a function / hook
       sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
     };
     if (colHref) {
@@ -111,6 +108,8 @@ type CellValueProps = {
   rowTemplateData: RowRenderResult[];
   value: any;
   showTitle?: boolean;
+  handleAddFilter: (column: string, value: any) => void;
+  handleRemoveFilter: (filter: { column: string; value: any }) => void;
 };
 
 const CellValue = ({
@@ -119,13 +118,14 @@ const CellValue = ({
   rowTemplateData,
   value,
   showTitle = false,
+  handleAddFilter,
+  handleRemoveFilter,
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
-  // Calculate a link for this cell
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
 
@@ -230,7 +230,6 @@ const CellValue = ({
       </div>
     );
   } else if (dataType === "bool") {
-    // True should be
     cellContent = href ? (
       <ExternalLink
         to={href}
@@ -322,7 +321,6 @@ const CellValue = ({
       </span>
     );
   }
-  // Fallback is just show it as a string
   if (!cellContent) {
     cellContent = href ? (
       <ExternalLink
@@ -341,12 +339,31 @@ const CellValue = ({
       </span>
     );
   }
+
   return error ? (
     <span className="flex items-center space-x-2" title={error}>
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
   ) : (
-    cellContent
+    <div className="flex items-center space-x-2 group">
+      {cellContent}
+      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+        <button
+          onClick={() => handleAddFilter(column.name, value)}
+          className="text-blue-500 hover:text-blue-700 focus:outline-none"
+          title="Add Filter"
+        >
+          <Icon className="h-5 w-5" icon="add_circle"/>
+        </button>
+        <button
+          onClick={() => handleRemoveFilter({ column: column.name, value })}
+          className="text-red-500 hover:text-red-700 focus:outline-none"
+          title="Exclude Filter"
+        >
+          <Icon className="h-5 w-5" icon="do_not_disturb_on"/>
+        </button>
+      </div>
+    </div>
   );
 };
 
@@ -381,12 +398,47 @@ const TableView = ({
   hiddenColumns,
   hasTopBorder = false,
 }) => {
+  const [activeFilters, setActiveFilters] = useState([]);
+  const [excludedFilters, setExcludedFilters] = useState([]);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
 
+  const handleAddFilter = (column, value) => {
+    const newFilter = { column, value };
+    if (!activeFilters.some(f => f.column === column && f.value === value)) {
+      setActiveFilters([...activeFilters, newFilter]);
+      setExcludedFilters(excludedFilters.filter(f => f.column !== column || f.value !== value));
+    }
+  };
+
+  const handleRemoveFilter = (filter) => {
+    if (!excludedFilters.some(f => f.column === filter.column && f.value === filter.value)) {
+      setExcludedFilters([...excludedFilters, filter]);
+      setActiveFilters(activeFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+    }
+  };
+
+  const filteredData = useMemo(() => {
+    let filtered = rowData;
+
+    if (activeFilters.length > 0) {
+      filtered = filtered.filter(row => {
+        return activeFilters.every(filter => row[filter.column] === filter.value);
+      });
+    }
+
+    if (excludedFilters.length > 0) {
+      filtered = filtered.filter(row => {
+        return excludedFilters.every(filter => row[filter.column] !== filter.value);
+      });
+    }
+
+    return filtered;
+  }, [rowData, activeFilters, excludedFilters]);
+
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable(
-      { columns, data: rowData, initialState: { hiddenColumns } },
+      { columns, data: filteredData, initialState: { hiddenColumns } },
       useSortBy,
     );
 
@@ -414,8 +466,41 @@ const TableView = ({
     doRender();
   }, [columns, renderTemplates, rows, templateRenderReady]);
 
+  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
+
   return (
-    <>
+    <div className="overflow-x-auto">
+       {(activeFilters.length > 0 || excludedFilters.length > 0) && (
+        <div className="mb-4 p-2 black-shade-2  rounded shadow-sm flex flex-wrap gap-2">
+          {[...activeFilters, ...excludedFilters].map((filter, index) => {
+            const isActive = activeFilters.some(f => f.column === filter.column && f.value === filter.value);
+            return (
+              <div
+                key={index}
+                className="flex items-center bg-black-scale-2 text-black-scale-8 px-3 py-1 rounded-full shadow-sm"
+              >
+                <span className="mr-2">
+                  {`${isActive ? '+ | ' : '- | '}${capitalize(filter.column)}: ${filter.value}`}
+                </span>
+                <button
+                  onClick={() => {
+                    if (isActive) {
+                      setActiveFilters(activeFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+                    } else {
+                      setExcludedFilters(excludedFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+                    }
+                  }}
+                  className="text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                  title="Remove Filter"
+                >
+                  &times;
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      )}
+
       <table
         {...getTableProps()}
         className={classNames(
@@ -439,11 +524,11 @@ const TableView = ({
                       {...otherHeaderProps}
                       scope="col"
                       className={classNames(
-                        "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                        isNumericCol(column.data_type) ? "text-right" : null,
+                        "py-3 text-left text-sm font-medium tracking-wider whitespace-nowrap pl-4",
+                        isNumericCol(column.data_type) ? "text-right" : "text-left",
                       )}
                     >
-                      {column.render("Header")}
+                      {capitalize(column.render("Header"))}
                       {column.isSortedDesc ? (
                         <SortDescendingIcon className="inline-block h-4 w-4" />
                       ) : (
@@ -468,7 +553,7 @@ const TableView = ({
           {rows.length === 0 && (
             <tr>
               <td
-                className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                className="px-4 py-4 align-top content-center text-sm italic whitespace-normal"
                 colSpan={columns.length}
               >
                 No results
@@ -491,7 +576,7 @@ const TableView = ({
                         isNumericCol(cell.column.data_type) ? "text-right" : "",
                         cell.column.wrap === "all"
                           ? "break-keep"
-                          : "whitespace-nowrap",
+                          : "whitespace-normal",
                       )}
                     >
                       <MemoCellValue
@@ -499,6 +584,8 @@ const TableView = ({
                         rowIndex={index}
                         rowTemplateData={rowTemplateData}
                         value={cell.value}
+                        handleAddFilter={handleAddFilter}
+                        handleRemoveFilter={handleRemoveFilter}
                       />
                     </td>
                   );
@@ -508,11 +595,10 @@ const TableView = ({
           })}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };
 
-// TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
   const { columns, hiddenColumns } = useMemo(
     () => getColumns(props.data ? props.data.columns : [], props.properties),
