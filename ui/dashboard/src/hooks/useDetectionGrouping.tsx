@@ -634,7 +634,7 @@ const useGroupingInternal = (
       (child) => child.panel_type === "detection_benchmark",
     );
     const nestedDetections =
-      definition.panel_type === "control"
+      definition.panel_type === "detection"
         ? [definition]
         : // @ts-ignore
           definition.children?.filter(
