@@ -15,6 +15,7 @@ import {
   DetectionNode as DetectionNodeType,
   DetectionResult,
   DetectionResultDimension,
+  DetectionSeverity,
   DetectionSummary,
   DetectionTags,
   findDimension,
@@ -137,6 +138,40 @@ const addBenchmarkTrunkNode = (
   );
 };
 
+const getDetectionSeverityGroupingKey = (
+  severity: DetectionSeverity | undefined,
+): string => {
+  switch (severity) {
+    case "low":
+      return "Low";
+    case "medium":
+      return "Medium";
+    case "high":
+      return "High";
+    case "critical":
+      return "Critical";
+    default:
+      return "Unspecified";
+  }
+};
+
+const getDetectionSeveritySortKey = (
+  severity: DetectionSeverity | undefined,
+): string => {
+  switch (severity) {
+    case "critical":
+      return "0";
+    case "high":
+      return "1";
+    case "medium":
+      return "2";
+    case "low":
+      return "3";
+    default:
+      return "4";
+  }
+};
+
 const getCheckDimensionGroupingKey = (
   dimensionKey: string | undefined,
   dimensions: DetectionResultDimension[],
@@ -176,6 +211,8 @@ const getCheckGroupingKey = (
       return getCheckTagGroupingKey(group.value, checkResult.tags);
     case "dimension":
       return getCheckDimensionGroupingKey(group.value, checkResult.dimensions);
+    case "severity":
+      return getDetectionSeverityGroupingKey(checkResult.detection.severity);
     default:
       return "Other";
   }
@@ -190,25 +227,13 @@ const getCheckGroupingNode = (
   parentGroupType: string | null,
 ): DetectionNodeType => {
   switch (group.type) {
-    case "dimension":
-      const dimensionValue = getCheckDimensionGroupingKey(
-        group.value,
-        detectionResult.dimensions,
-      );
-      return new DetectionKeyValuePairNode(
-        dimensionValue,
-        "dimension",
-        group.value || "Dimension key not set",
-        dimensionValue,
-        children,
-      );
-    case "detection_tag":
-      const value = getCheckTagGroupingKey(group.value, detectionResult.tags);
-      return new DetectionKeyValuePairNode(
-        value,
-        "control_tag",
-        group.value || "Tag key not set",
-        value,
+    case "detection":
+      return new DetectionNode(
+        parentGroupType === "detection_benchmark"
+          ? detectionResult.detection.sort
+          : detectionResult.detection.title || detectionResult.detection.name,
+        detectionResult.detection.name,
+        detectionResult.detection.title,
         children,
       );
     case "detection_benchmark":
@@ -221,13 +246,33 @@ const getCheckGroupingNode = (
             parentGroupType,
           )
         : children[0];
-    case "detection":
-      return new DetectionNode(
-        parentGroupType === "detection_benchmark"
-          ? detectionResult.detection.sort
-          : detectionResult.detection.title || detectionResult.detection.name,
-        detectionResult.detection.name,
-        detectionResult.detection.title,
+    case "detection_tag":
+      const value = getCheckTagGroupingKey(group.value, detectionResult.tags);
+      return new DetectionKeyValuePairNode(
+        value,
+        "control_tag",
+        group.value || "Tag key not set",
+        value,
+        children,
+      );
+    case "dimension":
+      const dimensionValue = getCheckDimensionGroupingKey(
+        group.value,
+        detectionResult.dimensions,
+      );
+      return new DetectionKeyValuePairNode(
+        dimensionValue,
+        "dimension",
+        group.value || "Dimension key not set",
+        dimensionValue,
+        children,
+      );
+    case "severity":
+      return new DetectionKeyValuePairNode(
+        getDetectionSeveritySortKey(detectionResult.detection.severity),
+        "severity",
+        "severity",
+        getDetectionSeverityGroupingKey(detectionResult.detection.severity),
         children,
       );
     default:
@@ -436,18 +481,19 @@ function recordFilterValues(
     detection: { value: {} };
     detection_tag: { key: {}; value: {} };
     dimension: { key: {}; value: {} };
+    severity: { value: {} };
     status: {
       total: number;
     };
   },
-  checkResult: DetectionResult,
+  detectionResult: DetectionResult,
 ) {
   // Record the benchmark of this check result to allow assisted filtering later
   if (
-    !!checkResult.detection_benchmark_trunk &&
-    checkResult.detection_benchmark_trunk.length > 0
+    !!detectionResult.detection_benchmark_trunk &&
+    detectionResult.detection_benchmark_trunk.length > 0
   ) {
-    for (const benchmark of checkResult.detection_benchmark_trunk) {
+    for (const benchmark of detectionResult.detection_benchmark_trunk) {
       filterValues.detection_benchmark.value[benchmark.name] = filterValues
         .detection_benchmark.value[benchmark.name] || {
         title: benchmark.title,
@@ -458,17 +504,24 @@ function recordFilterValues(
   }
 
   // Record the control of this check result to allow assisted filtering later
-  filterValues.detection.value[checkResult.detection.name] = filterValues
-    .detection.value[checkResult.detection.name] || {
-    title: checkResult.detection.title,
+  filterValues.detection.value[detectionResult.detection.name] = filterValues
+    .detection.value[detectionResult.detection.name] || {
+    title: detectionResult.detection.title,
     count: 0,
   };
-  filterValues.detection.value[checkResult.detection.name].count += 1;
+  filterValues.detection.value[detectionResult.detection.name].count += 1;
+
+  // Record the severity of this check result to allow assisted filtering later
+  if (detectionResult.severity) {
+    filterValues.severity.value[detectionResult.severity.toString()] =
+      filterValues.severity.value[detectionResult.severity.toString()] || 0;
+    filterValues.severity.value[detectionResult.severity.toString()] += 1;
+  }
 
   // Record the status of this check result to allow assisted filtering later
-  filterValues.status[checkResult.status] =
-    filterValues.status[checkResult.status] || 0;
-  filterValues.status[checkResult.status] += 1;
+  filterValues.status[detectionResult.status] =
+    filterValues.status[detectionResult.status] || 0;
+  filterValues.status[detectionResult.status] += 1;
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   // for (const dimension of checkResult.dimensions) {
@@ -494,7 +547,7 @@ function recordFilterValues(
   // }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
-  for (const [tagKey, tagValue] of Object.entries(checkResult.tags || {})) {
+  for (const [tagKey, tagValue] of Object.entries(detectionResult.tags || {})) {
     if (!(tagKey in filterValues.detection_tag.key)) {
       filterValues.detection_tag.key[tagKey] = {
         [tagValue]: 0,
@@ -566,6 +619,10 @@ const includeResult = (
         matches.push(valueRegex.test(checkResult.detection.name));
         break;
       }
+      case "severity": {
+        matches.push(valueRegex.test(checkResult.severity || ""));
+        break;
+      }
       case "status": {
         matches.push(valueRegex.test(checkResult.status.toString()));
         break;
@@ -622,6 +679,7 @@ const useGroupingInternal = (
       detection: { value: {} },
       detection_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
+      severity: { value: {} },
       status: { total: 0 },
     };
 

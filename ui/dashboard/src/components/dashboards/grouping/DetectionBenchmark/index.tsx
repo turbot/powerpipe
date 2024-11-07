@@ -118,7 +118,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       );
     }
 
-    return [
+    const summary_cards = [
       {
         name: `${props.definition.name}.container.summary.total`,
         width: 2,
@@ -148,6 +148,151 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
           : null,
       },
     ];
+
+    const severity_summary = props.grouping.severity_summary;
+    const criticalRaw = severity_summary["critical"];
+    const highRaw = severity_summary["high"];
+    const mediumRaw = severity_summary["medium"];
+    const lowRaw = severity_summary["low"];
+    const critical = criticalRaw || 0;
+    const high = highRaw || 0;
+    const medium = mediumRaw || 0;
+    const low = lowRaw || 0;
+
+    // Calc diff vs previous
+    const diff_severity_summary = props.diffGrouping?.severity_summary;
+    let diffCriticalRaw,
+      diffHighRaw,
+      diffMediumRaw,
+      diffLowRaw,
+      diffCritical,
+      diffHigh,
+      diffMedium,
+      diffLow;
+    if (diff_severity_summary) {
+      diffCriticalRaw = diff_severity_summary["critical"];
+      diffHighRaw = diff_severity_summary["high"];
+      diffMediumRaw = diff_severity_summary["medium"];
+      diffLowRaw = diff_severity_summary["low"];
+      diffCritical = diffCriticalRaw || 0;
+      diffHigh = diffHighRaw || 0;
+      diffMedium = diffMediumRaw || 0;
+      diffLow = diffLowRaw || 0;
+    }
+
+    // If we have at least 1 critical result
+    if (criticalRaw !== undefined) {
+      const total = critical;
+      const diffTotal = diffCritical;
+      summary_cards.push({
+        name: `${props.definition.name}.container.summary.severity.critical`,
+        width: 2,
+        display_type: total > 0 ? "severity" : "",
+        properties: {
+          label: "Critical",
+          value: total,
+          icon: "materialsymbols-solid:warning",
+        },
+        diff_panel: diff_severity_summary
+          ? {
+              name: `${props.definition.name}.container.summary.severity.diff.critical`,
+              width: 2,
+              display_type: diffTotal > 0 ? "severity" : "",
+              properties: {
+                label: "Critical",
+                value: diffTotal,
+                icon: "materialsymbols-solid:warning",
+              },
+            }
+          : null,
+      });
+    }
+
+    // If we have at least 1 high result
+    if (highRaw !== undefined) {
+      const total = high;
+      const diffTotal = diffHigh;
+      summary_cards.push({
+        name: `${props.definition.name}.container.summary.severity.high`,
+        width: 2,
+        display_type: total > 0 ? "severity" : "",
+        properties: {
+          label: "High",
+          value: total,
+          icon: "materialsymbols-solid:warning",
+        },
+        diff_panel: diff_severity_summary
+          ? {
+              name: `${props.definition.name}.container.summary.severity.diff.high`,
+              width: 2,
+              display_type: diffTotal > 0 ? "severity" : "",
+              properties: {
+                label: "High",
+                value: diffTotal,
+                icon: "materialsymbols-solid:warning",
+              },
+            }
+          : null,
+      });
+    }
+
+    // If we have at least 1 medium result
+    if (mediumRaw !== undefined) {
+      const total = medium;
+      const diffTotal = diffMedium;
+      summary_cards.push({
+        name: `${props.definition.name}.container.summary.severity.medium`,
+        width: 2,
+        display_type: total > 0 ? "severity" : "",
+        properties: {
+          label: "Medium",
+          value: total,
+          icon: "materialsymbols-solid:warning",
+        },
+        diff_panel: diff_severity_summary
+          ? {
+              name: `${props.definition.name}.container.summary.severity.diff.medium`,
+              width: 2,
+              display_type: diffTotal > 0 ? "severity" : "",
+              properties: {
+                label: "Medium",
+                value: diffTotal,
+                icon: "materialsymbols-solid:warning",
+              },
+            }
+          : null,
+      });
+    }
+
+    // If we have at least 1 low result
+    if (lowRaw !== undefined) {
+      const total = low;
+      const diffTotal = diffLow;
+      summary_cards.push({
+        name: `${props.definition.name}.container.summary.severity.low`,
+        width: 2,
+        display_type: total > 0 ? "severity" : "",
+        properties: {
+          label: "Low",
+          value: total,
+          icon: "materialsymbols-solid:warning",
+        },
+        diff_panel: diff_severity_summary
+          ? {
+              name: `${props.definition.name}.container.summary.severity.diff.low`,
+              width: 2,
+              display_type: diffTotal > 0 ? "severity" : "",
+              properties: {
+                label: "Low",
+                value: diffTotal,
+                icon: "materialsymbols-solid:warning",
+              },
+            }
+          : null,
+      });
+    }
+
+    return summary_cards;
   }, [
     props.firstChildSummaries,
     props.diffFirstChildSummaries,

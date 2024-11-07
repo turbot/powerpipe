@@ -12,7 +12,10 @@ import {
   ExpandCheckNodeIcon,
 } from "@powerpipe/constants/icons";
 import { classNames } from "@powerpipe/utils/styles";
-import { DetectionResult } from "@powerpipe/components/dashboards/grouping/common";
+import {
+  DetectionResult,
+  DetectionSeveritySummary,
+} from "@powerpipe/components/dashboards/grouping/common";
 import { getComponent } from "@powerpipe/components/dashboards";
 import {
   GroupingActions,
@@ -36,6 +39,16 @@ type DetectionResultsProps = {
 type DetectionPanelProps = {
   depth: number;
   node: DetectionNode;
+};
+
+type DetectionPanelSeverityProps = {
+  severity_summary: DetectionSeveritySummary;
+};
+
+type DetectionPanelSeverityBadgeProps = {
+  label: string;
+  count: number;
+  title: string;
 };
 
 type DetectionEmptyResultRowProps = {
@@ -180,6 +193,87 @@ const DetectionResults = ({
   );
 };
 
+const DetectionPanelSeverityBadge = ({
+  count,
+  label,
+  title,
+}: DetectionPanelSeverityBadgeProps) => {
+  return (
+    <div
+      className={classNames(
+        "border rounded-md text-sm divide-x",
+        count > 0 ? "border-severity" : "border-skip",
+        count > 0
+          ? "bg-severity text-white divide-white"
+          : "text-skip divide-skip",
+      )}
+      title={title}
+    >
+      <span className={classNames("px-2 py-px")}>{label}</span>
+      {count > 0 && <span className={classNames("px-2 py-px")}>{count}</span>}
+    </div>
+  );
+};
+
+const DetectionPanelSeverity = ({
+  severity_summary,
+}: DetectionPanelSeverityProps) => {
+  const critical = severity_summary["critical"];
+  const high = severity_summary["high"];
+  const medium = severity_summary["medium"];
+  const low = severity_summary["low"];
+
+  if (
+    critical === undefined &&
+    high === undefined &&
+    medium === undefined &&
+    low === undefined
+  ) {
+    return null;
+  }
+
+  return (
+    <>
+      {critical !== undefined && (
+        <DetectionPanelSeverityBadge
+          label="Critical"
+          count={critical}
+          title={`${critical.toLocaleString()} critical severity ${
+            critical === 1 ? "result" : "results"
+          }`}
+        />
+      )}
+      {high !== undefined && (
+        <DetectionPanelSeverityBadge
+          label="High"
+          count={high}
+          title={`${high.toLocaleString()} high severity ${
+            high === 1 ? "result" : "results"
+          }`}
+        />
+      )}{" "}
+      {medium !== undefined && (
+        <DetectionPanelSeverityBadge
+          label="Medium"
+          count={medium}
+          title={`${medium.toLocaleString()} medium severity ${
+            high === 1 ? "result" : "results"
+          }`}
+        />
+      )}{" "}
+      {low !== undefined && (
+        <DetectionPanelSeverityBadge
+          label="Low"
+          count={low}
+          title={`${high.toLocaleString()} low severity ${
+            high === 1 ? "result" : "results"
+          }`}
+        />
+      )}
+    </>
+  );
+};
+
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   const { dispatch, groupingsConfig, nodeStates } = useDetectionGrouping();
   const expanded = nodeStates[node.name]
@@ -267,6 +361,9 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                   ) : null}
                   {node.title}
                 </h3>
+                <DetectionPanelSeverity
+                  severity_summary={node.severity_summary}
+                />
               </div>
               <div>{node.summary.total}</div>
             </div>

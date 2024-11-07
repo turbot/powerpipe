@@ -1,9 +1,10 @@
 import {
   CheckNodeStatus,
-  GroupingNodeType,
-  DetectionSummary,
-  DetectionResult,
   DetectionNode,
+  DetectionResult,
+  DetectionSeveritySummary,
+  DetectionSummary,
+  GroupingNodeType,
 } from "../index";
 
 // class ControlResultNode extends HierarchyNode {
@@ -46,6 +47,15 @@ class DetectionResultNode implements DetectionNode {
 
   get type(): GroupingNodeType {
     return "result";
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    const summary = {};
+    if (this._result.detection.severity) {
+      summary[this._result.detection.severity] =
+        this._result?.rows?.length || 0;
+    }
+    return summary;
   }
 
   get summary(): DetectionSummary {

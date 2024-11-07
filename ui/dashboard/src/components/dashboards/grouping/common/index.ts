@@ -32,9 +32,9 @@ export type CheckNode = {
   name: string;
   title: string;
   type: GroupingNodeType;
-  status: CheckNodeStatus;
   severity?: CheckSeverity;
   severity_summary: CheckSeveritySummary;
+  status: CheckNodeStatus;
   summary: CheckSummary;
   children?: CheckNode[];
   data?: LeafNodeData;
@@ -47,6 +47,8 @@ export type DetectionNode = {
   name: string;
   title: string;
   type: GroupingNodeType;
+  severity?: DetectionSeverity;
+  severity_summary: DetectionSeveritySummary;
   status: CheckNodeStatus;
   summary: DetectionSummary;
   children?: DetectionNode[];
@@ -65,6 +67,14 @@ export type CheckSeveritySummary =
   | {}
   | {
       [key in CheckSeverity]: number;
+    };
+
+export type DetectionSeverity = "none" | "low" | "medium" | "high" | "critical";
+
+export type DetectionSeveritySummary =
+  | {}
+  | {
+      [key in DetectionSeverity]: number;
     };
 
 export type CheckSummary = {
@@ -143,6 +153,7 @@ export type DetectionResult = {
   tags: CheckTags;
   detection: DetectionNode;
   detection_benchmark_trunk: DetectionBenchmark[];
+  severity?: DetectionSeverity;
   status: CheckResultStatus;
   reason: string;
   resource: string;
@@ -155,29 +166,30 @@ type CheckControlRunProperties = {
 };
 
 export type CheckControlRun = {
-  name: string;
-  title?: string;
+  data: LeafNodeData;
   description?: string;
+  error?: string;
+  name: string;
   panel_type: "control";
   properties?: CheckControlRunProperties;
   severity?: CheckSeverity | undefined;
-  tags?: CheckTags;
-  data: LeafNodeData;
-  summary: CheckSummary;
   status: DashboardRunState;
-  error?: string;
+  summary: CheckSummary;
+  tags?: CheckTags;
+  title?: string;
 };
 
 export type DetectionRun = {
-  name: string;
-  title?: string;
-  description?: string;
-  panel_type: "detection";
-  tags?: CheckTags;
   data: LeafNodeData;
-  summary: DetectionSummary;
-  status: DashboardRunState;
+  description?: string;
   error?: string;
+  name: string;
+  panel_type: "detection";
+  severity?: DetectionSeverity | undefined;
+  status: DashboardRunState;
+  summary: DetectionSummary;
+  tags?: CheckTags;
+  title?: string;
 };
 
 export type CheckDisplayGroupType =
