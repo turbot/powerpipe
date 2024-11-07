@@ -603,6 +603,10 @@ const includeResult = (
     const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
 
     switch (filter.type) {
+      case "detection": {
+        matches.push(valueRegex.test(checkResult.detection.name));
+        break;
+      }
       case "detection_benchmark": {
         let matchesTrunk = false;
         for (const benchmark of checkResult.detection_benchmark_trunk || []) {
@@ -613,18 +617,6 @@ const includeResult = (
           }
         }
         matches.push(matchesTrunk);
-        break;
-      }
-      case "detection": {
-        matches.push(valueRegex.test(checkResult.detection.name));
-        break;
-      }
-      case "severity": {
-        matches.push(valueRegex.test(checkResult.severity || ""));
-        break;
-      }
-      case "status": {
-        matches.push(valueRegex.test(checkResult.status.toString()));
         break;
       }
       case "dimension": {
@@ -643,7 +635,7 @@ const includeResult = (
         matches.push(matchesDimensions);
         break;
       }
-      case "control_tag": {
+      case "detection_tag": {
         // @ts-ignore
         const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
@@ -656,6 +648,10 @@ const includeResult = (
           }
         }
         matches.push(matchesTags);
+        break;
+      }
+      case "severity": {
+        matches.push(valueRegex.test(checkResult.severity || ""));
         break;
       }
       default:
