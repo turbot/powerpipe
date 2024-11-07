@@ -350,15 +350,15 @@ const CellValue = ({
       <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
         <button
           onClick={() => handleAddFilter(column.name, value)}
-          className="text-blue-500 hover:text-blue-700 focus:outline-none"
-          title="Add Filter"
+          className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+          title="Add value to include filter"
         >
           <Icon className="h-5 w-5" icon="add_circle"/>
         </button>
         <button
           onClick={() => handleRemoveFilter({ column: column.name, value })}
-          className="text-red-500 hover:text-red-700 focus:outline-none"
-          title="Exclude Filter"
+          className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+          title="Add value to exclude filter"
         >
           <Icon className="h-5 w-5" icon="do_not_disturb_on"/>
         </button>
@@ -477,11 +477,16 @@ const TableView = ({
             return (
               <div
                 key={index}
-                className="flex items-center bg-black-scale-2 text-black-scale-8 px-3 py-1 rounded-full shadow-sm"
+                className="flex items-center bg-black-scale-2 text-black-scale-8 px-3 py-1 rounded-md shadow-sm space-x-2"
               >
-                <span className="mr-2">
-                  {`${isActive ? '+ | ' : '- | '}${capitalize(filter.column)}: ${filter.value}`}
-                </span>
+                 <span className=" flex items-center space-x-2">
+                    {isActive ? (
+                      <Icon className="h-5 w-5  text-black-scale-6 " icon="add_circle"/>
+                    ) : (
+                      <Icon className="h-5 w-5  text-black-scale-6 " icon="do_not_disturb_on"/>
+                    )}
+                    <span >{` ${capitalize(filter.column)}: ${filter.value}`}</span>
+                  </span>
                 <button
                   onClick={() => {
                     if (isActive) {
@@ -528,7 +533,8 @@ const TableView = ({
                         isNumericCol(column.data_type) ? "text-right" : "text-left",
                       )}
                     >
-                      {capitalize(column.render("Header"))}
+                      
+                      {column.render("Header")}
                       {column.isSortedDesc ? (
                         <SortDescendingIcon className="inline-block h-4 w-4" />
                       ) : (
