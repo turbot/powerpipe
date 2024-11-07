@@ -60,7 +60,7 @@ class DetectionBenchmark implements DetectionNode {
       const nestedDefinition = panelsMap[nestedBenchmark.name];
       // @ts-ignore
       const benchmarks = nestedBenchmark.children?.filter(
-        (child) => child.panel_type === "benchmark",
+        (child) => child.panel_type === "detection_benchmark",
       );
       // @ts-ignore
       const detections = nestedBenchmark.children?.filter(
