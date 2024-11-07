@@ -6,9 +6,9 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const groupingKeys = [
-  "benchmark",
-  "control",
-  "control_tag",
+  "detection_benchmark",
+  "detection",
+  "detection_tag",
   "dimension",
   "reason",
   "resource",
@@ -17,7 +17,7 @@ const groupingKeys = [
   "status",
 ];
 
-const useCheckGroupingConfig = () => {
+const useDetectionGroupingConfig = () => {
   const [searchParams] = useSearchParams();
   return useMemo(() => {
     const rawGrouping = searchParams.get("grouping");
@@ -56,4 +56,4 @@ const useCheckGroupingConfig = () => {
   }, [searchParams]);
 };
 
-export default useCheckGroupingConfig;
+export default useDetectionGroupingConfig;
