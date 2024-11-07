@@ -1,7 +1,8 @@
 import {
   DetectionNode,
-  DetectionSummary,
   DetectionNodeStatus,
+  DetectionSeveritySummary,
+  DetectionSummary,
   GroupingNodeType,
 } from "../index";
 
@@ -53,6 +54,20 @@ class DetectionHierarchyNode implements DetectionNode {
     for (const child of this._children) {
       const nestedSummary = child.summary;
       summary.total += nestedSummary.total;
+    }
+    return summary;
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    const summary = {};
+    for (const child of this._children) {
+      for (const [severity, count] of Object.entries(child.severity_summary)) {
+        if (!summary[severity]) {
+          summary[severity] = count;
+        } else {
+          summary[severity] += count;
+        }
+      }
     }
     return summary;
   }

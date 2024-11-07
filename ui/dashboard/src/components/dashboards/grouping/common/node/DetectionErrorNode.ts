@@ -1,9 +1,10 @@
 import {
-  DetectionNodeStatus,
-  GroupingNodeType,
-  DetectionSummary,
   DetectionNode,
+  DetectionNodeStatus,
   DetectionResult,
+  DetectionSeveritySummary,
+  DetectionSummary,
+  GroupingNodeType,
 } from "../index";
 
 class DetectionErrorNode implements DetectionNode {
@@ -31,6 +32,15 @@ class DetectionErrorNode implements DetectionNode {
 
   get type(): GroupingNodeType {
     return "error";
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    // Bubble up the node's severity - always zero though as we have no results
+    const summary = {};
+    if (this._result.detection.severity) {
+      summary[this._result.detection.severity] = 0;
+    }
+    return summary;
   }
 
   get summary(): DetectionSummary {

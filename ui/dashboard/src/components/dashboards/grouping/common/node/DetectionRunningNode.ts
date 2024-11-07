@@ -2,8 +2,9 @@ import {
   GroupingNodeType,
   DetectionNode,
   DetectionNodeStatus,
-  DetectionSummary,
   DetectionResult,
+  DetectionSeveritySummary,
+  DetectionSummary,
 } from "../index";
 
 class DetectionRunningNode implements DetectionNode {
@@ -27,6 +28,15 @@ class DetectionRunningNode implements DetectionNode {
 
   get type(): GroupingNodeType {
     return "running";
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    // Bubble up the node's severity - always zero though as we have no results
+    const summary = {};
+    if (this._result.detection.severity) {
+      summary[this._result.detection.severity] = 0;
+    }
+    return summary;
   }
 
   get summary(): DetectionSummary {

@@ -9,6 +9,7 @@ import {
   GroupingNodeType,
   DetectionResult,
   DetectionRun,
+  DetectionSeveritySummary,
   DetectionSummary,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardLayoutNode, PanelsMap } from "@powerpipe/types";
@@ -99,6 +100,7 @@ class DetectionBenchmark implements DetectionNode {
           detection.name,
           detection.title,
           detection.description,
+          detection.severity,
           detection.data,
           detection.summary,
           detection.tags,
@@ -134,7 +136,7 @@ class DetectionBenchmark implements DetectionNode {
   }
 
   get type(): GroupingNodeType {
-    return "benchmark";
+    return "detection_benchmark";
   }
 
   get children(): DetectionNode[] {
@@ -162,6 +164,10 @@ class DetectionBenchmark implements DetectionNode {
       summary.total += nestedSummary.total;
     }
     return summary;
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    return {};
   }
 
   get status(): DetectionNodeStatus {

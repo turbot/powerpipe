@@ -1,15 +1,16 @@
 import {
   AddDetectionResultsAction,
-  DetectionDynamicColsMap,
   CheckNodeStatus,
-  GroupingNodeType,
-  DetectionResult,
   CheckResultStatus,
-  CheckSeveritySummary,
-  DetectionSummary,
-  CheckTags,
+  DetectionDynamicColsMap,
   DetectionNode,
+  DetectionResult,
+  DetectionSeverity,
+  DetectionSeveritySummary,
+  DetectionTags,
+  DetectionSummary,
   findDimension,
+  GroupingNodeType,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardRunState } from "@powerpipe/types";
 import {
@@ -27,9 +28,10 @@ class Detection implements DetectionNode {
   private readonly _name: string;
   private readonly _title: string | undefined;
   private readonly _description: string | undefined;
+  private readonly _severity: DetectionSeverity | undefined;
   private readonly _results: DetectionResult[];
   private readonly _summary: DetectionSummary;
-  private readonly _tags: CheckTags;
+  private readonly _tags: DetectionTags;
   private readonly _status: DashboardRunState;
   private readonly _error: string | undefined;
 
@@ -41,9 +43,10 @@ class Detection implements DetectionNode {
     name: string,
     title: string | undefined,
     description: string | undefined,
+    severity: DetectionSeverity | undefined,
     data: LeafNodeData | undefined,
     summary: DetectionSummary | undefined,
-    tags: CheckTags | undefined,
+    tags: DetectionTags | undefined,
     status: DashboardRunState,
     error: string | undefined,
     detection_benchmark_trunk: DetectionBenchmark[],
@@ -56,6 +59,7 @@ class Detection implements DetectionNode {
     this._name = name;
     this._title = title;
     this._description = description;
+    this._severity = severity;
     this._results = this._build_check_results(data);
     this._summary = summary || {
       total: this.results?.length || 0,
@@ -102,7 +106,11 @@ class Detection implements DetectionNode {
     return this._title || this._name;
   }
 
-  get severity_summary(): CheckSeveritySummary {
+  get severity(): DetectionSeverity | undefined {
+    return this._severity;
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
     return {};
   }
 
@@ -133,7 +141,7 @@ class Detection implements DetectionNode {
     return this._results;
   }
 
-  get tags(): CheckTags {
+  get tags(): DetectionTags {
     return this._tags;
   }
 
@@ -166,6 +174,7 @@ class Detection implements DetectionNode {
         detection_id: this._name,
         detection_title: this._title ? this._title : null,
         detection_description: this._description ? this._description : null,
+        severity: this._severity ? this._severity : null,
         reason: result.reason,
         resource: result.resource,
         status: result.status,
@@ -241,6 +250,7 @@ class Detection implements DetectionNode {
     return results.map((r) => ({
       ...r,
       type: "result",
+      severity: this.severity,
       tags: this.tags,
       detection_benchmark_trunk,
       detection: this,
