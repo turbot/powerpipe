@@ -370,8 +370,9 @@ type AvailableDashboardTags = {
 type AvailableDashboardType =
   | "available_dashboard"
   | "benchmark"
-  | "detection_benchmark"
   | "dashboard"
+  | "detection_benchmark"
+  | "detection"
   | "snapshot";
 
 export type AvailableDashboard = {
