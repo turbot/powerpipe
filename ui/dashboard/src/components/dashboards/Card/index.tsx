@@ -34,6 +34,7 @@ export interface CardProperties extends IDiffProperties {
   value?: any;
   icon?: string;
   href?: string;
+  loading?: boolean;
 }
 
 export type CardProps = PanelProperties &

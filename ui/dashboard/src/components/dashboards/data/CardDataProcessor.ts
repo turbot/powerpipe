@@ -48,7 +48,7 @@ export class CardDataProcessor {
     display_type: CardType | undefined,
   ): CardState => {
     return {
-      loading: status === "running",
+      loading: status === "running" || !!properties.loading,
       label: properties.label || null,
       value: isNumber(properties.value)
         ? properties.value.toLocaleString()

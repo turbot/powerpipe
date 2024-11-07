@@ -524,7 +524,7 @@ function recordFilterValues(
   filterValues.status[detectionResult.status] += 1;
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
-  // for (const dimension of checkResult.dimensions) {
+  // for (const dimension of detectionResult.dimensions) {
   //   if (!(dimension.key in filterValues.dimension.key)) {
   //     filterValues.dimension.key[dimension.key] = {
   //       [dimension.value]: 0,

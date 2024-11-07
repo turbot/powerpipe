@@ -122,14 +122,23 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       {
         name: `${props.definition.name}.container.summary.total`,
         width: 2,
-        display_type: totalSummary.total > 0 ? "alert" : "ok",
+        display_type:
+          totalSummary.total > 0
+            ? "alert"
+            : props.grouping.status === "complete"
+              ? "ok"
+              : null,
         properties: {
+          loading:
+            totalSummary.total === 0 && props.grouping.status === "running",
           label: "Total Detections",
           value: totalSummary.total,
           icon:
             totalSummary.total > 0
               ? "materialsymbols-solid:circle_notifications"
-              : "materialsymbols-solid:check_circle",
+              : props.grouping.status === "complete"
+                ? "materialsymbols-solid:check_circle"
+                : null,
         },
         diff_panel: !!diffTotalSummary
           ? {
