@@ -58,7 +58,7 @@ class Detection implements DetectionNode {
     this._description = description;
     this._results = this._build_check_results(data);
     this._summary = summary || {
-      total: 0,
+      total: this.results?.length || 0,
     };
     this._tags = tags || {};
     this._status = status;
@@ -111,7 +111,7 @@ class Detection implements DetectionNode {
   }
 
   get summary(): DetectionSummary {
-    return this._summary;
+    return { total: this._results?.length || 0 }; // this._summary;
   }
 
   get error(): string | undefined {
