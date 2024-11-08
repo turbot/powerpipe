@@ -110,12 +110,7 @@ const DateRangePicker = (props: InputProps) => {
     to?: dayjs.Dayjs | null;
     relative?: string | null;
     showCustom?: boolean;
-  }>({
-  from: dayjs(state.from), // Convert to dayjs object
-  to: state.to ? dayjs(state.to) : null, // Convert to dayjs object if present
-  relative: state.relative,
-  showCustom: state.showCustom,
-});
+  }>(state);
 
   useEffect(() => {
     setTempState(() => state);
@@ -125,6 +120,27 @@ const DateRangePicker = (props: InputProps) => {
   const [duration, setDuration] = useState(1);
   const [unitOfTime, setUnitOfTime] = useState("hours");
   const customButtonRef = useRef(null);
+  const customPanelRef = useRef(null);
+
+  // Handle click outside
+  useEffect(() => {
+    function handleClickOutside(event) {
+      if (customPanelRef.current && !customPanelRef.current.contains(event.target)) {
+        // Close the popup if the click is outside of the custom panel
+        setState((previous) => ({
+          ...previous,
+          showCustom: false,
+        }));
+      }
+    }
+
+    // Attach the event listener
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      // Cleanup the event listener on component unmount
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   const handlePresetChange = (preset) => {
     switch (preset) {
@@ -242,6 +258,7 @@ const DateRangePicker = (props: InputProps) => {
 
       {state.showCustom && (
         <div
+          ref={customPanelRef}
           className="absolute border border-table-border rounded-[5px] bg-dashboard-panel p-[20px] shadow-lg z-[1000]"
           style={{
             top:
