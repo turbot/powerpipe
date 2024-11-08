@@ -46,7 +46,8 @@ const SaveSnapshotButton = () => {
       }
       if (!!groupingConfig) {
         // @ts-ignore
-        metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
+        // TODO @mike re-include this
+        // metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
       }
       withMetadata.metadata = metadata;
       withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240607;
