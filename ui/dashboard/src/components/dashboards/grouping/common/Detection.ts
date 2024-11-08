@@ -12,6 +12,7 @@ import {
   DetectionSummary,
   findDimension,
   GroupingNodeType,
+  DetectionResultDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardRunState } from "@powerpipe/types";
 import {
