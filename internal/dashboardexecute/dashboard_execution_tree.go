@@ -228,7 +228,7 @@ func (*DashboardExecutionTree) GetNodeType() string {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
+func (e *DashboardExecutionTree) SetInputValues(inputValues *InputValues) {
 	slog.Debug("SetInputValues")
 	e.inputLock.Lock()
 	defer e.inputLock.Unlock()
@@ -241,7 +241,7 @@ func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
 		return
 	}
 
-	for name, value := range inputValues {
+	for name, value := range inputValues.Inputs {
 		slog.Debug("DashboardExecutionTree SetInput", "name", name, "value", value)
 		e.inputValues[name] = value
 		// publish runtime dependency

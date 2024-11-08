@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/powerpipe/internal/workspace"
 )
 
-func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, rootResource modconfig.ModTreeItem, inputs *InputValues) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)

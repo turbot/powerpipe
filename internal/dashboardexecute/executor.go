@@ -43,7 +43,7 @@ func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor
 
 var Executor *DashboardExecutor
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs map[string]any, workspace *workspace.PowerpipeWorkspace, opts ...backend.ConnectOption) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs *InputValues, workspace *workspace.PowerpipeWorkspace, opts ...backend.ConnectOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err == nil && ctx.Err() != nil {
@@ -75,7 +75,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 
 	// if inputs must be provided before execution (i.e. this is a batch dashboard execution),
 	// verify all required inputs are provided
-	if err = e.validateInputs(executionTree, inputs); err != nil {
+	if err = e.validateInputs(executionTree, inputs.Inputs); err != nil {
 		return err
 	}
 
@@ -83,7 +83,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.setExecution(sessionId, executionTree)
 
 	// if inputs have been passed, set them first
-	if len(inputs) > 0 {
+	if !inputs.Empty() {
 		executionTree.SetInputValues(inputs)
 	}
 
@@ -94,7 +94,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 
 // if inputs must be provided before execution (i.e. this is a batch dashboard execution),
 // verify all required inputs are provided
-func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree, inputs map[string]any) error {
+func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree, inputs map[string]interface{}) error {
 	if e.interactive {
 		// interactive dashboard execution - no need to validate
 		return nil
@@ -141,7 +141,7 @@ func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapsho
 	return snap, nil
 }
 
-func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string, inputs map[string]any, changedInput string) error {
+func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string, inputs *InputValues, changedInput string) error {
 	// find the execution
 	executionTree, found := e.executions[sessionId]
 	if !found {
@@ -151,7 +151,7 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 	// get the previous value of this input
 	inputPrevValue := executionTree.inputValues[changedInput]
 	// first see if any other inputs rely on the one which was just changed
-	clearedInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs)
+	clearedInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs.Inputs)
 	if len(clearedInputs) > 0 {
 		event := &dashboardevents.InputValuesCleared{
 			ClearedInputs: clearedInputs,
