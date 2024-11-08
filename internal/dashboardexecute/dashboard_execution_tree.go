@@ -68,10 +68,9 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 		executionTree.SetInputValues(inputs)
 	}
 	// TACTICAL
-	// if a time range has been passed, set the detection time range and add a backend option
+	// if a time range has been passed, set the detection time range
 	// (if time range is not set, From and To will be nil - this is expected and handled)
 	executionTree.DetectionTimeRange = inputs.DetectionTimeRange
-	opts = append(opts, backend.WithTimeRange(inputs.DetectionTimeRange))
 
 	// set the dashboard database and search patch config
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig(opts...)
@@ -366,9 +365,10 @@ func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 
 // function to get a client from one of the client maps
 func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.ConnectionStringProvider, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
-	// TODO K nee to accept opts???? or already in the connection???
-	// ask the provider for the connection string
-	cs := csp.GetConnectionString()
+	// ask the provider for the connection string, passing the filter
+	// TODO check connection type is tailpipe???
+	filter := connection.TailpipeDatabaseFilters{From: e.DetectionTimeRange.From, To: e.DetectionTimeRange.To}
+	cs := csp.GetConnectionString(connection.WithFilter(filter))
 	// if the default map already contains a client for this connection string, use that
 	if client := e.defaultClientMap.Get(cs, searchPathConfig); client != nil {
 		return client, nil
