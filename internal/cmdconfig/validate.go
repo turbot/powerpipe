@@ -32,7 +32,10 @@ func ValidateDatabaseArg() error {
 			// unexpected - all registered connections should implement this interface
 			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", databaseArg)
 		}
-		connectionString := csp.GetConnectionString()
+		connectionString, err := csp.GetConnectionString()
+		if err != nil {
+			return err
+		}
 		// update viper Database arg with the connection string
 		viper.Set(constants.ArgDatabase, connectionString)
 		// if no search path is set, set it to the connection's default search path

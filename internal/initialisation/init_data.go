@@ -177,7 +177,12 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-	client, err := db_client.NewDbClient(ctx, csp.GetConnectionString(), opts...)
+	connectionString, err := csp.GetConnectionString()
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
 	if err != nil {
 		i.Result.Error = err
 		return
