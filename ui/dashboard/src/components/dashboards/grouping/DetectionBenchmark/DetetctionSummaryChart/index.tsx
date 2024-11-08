@@ -2,6 +2,7 @@ import IntegerDisplay from "../../../../IntegerDisplay";
 import { CheckNodeStatus, DetectionSummary } from "../../common";
 import { classNames } from "@powerpipe/utils/styles";
 import Icon from "@powerpipe/components/Icon";
+import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
 
 type ProgressBarGroupProps = {
   children: JSX.Element | JSX.Element[];
@@ -38,7 +39,7 @@ const ProgressBarGroupTotal = ({
   className,
   total,
 }: ProgressBarGroupTotalProps) => (
-  <span className={classNames(className, "text-right text-sm font-semibold")}>
+  <span className={classNames(className, "text-right text-sm font-semibold flex justify-end")}>
     {total > 0 ? <IntegerDisplay num={total} withTitle={false} /> : "0"}
   </span>
 );
@@ -55,7 +56,7 @@ const AlertProgressBarGroupTotal = ({
 };
 
 const ProgressBarGroup = ({ children, className }: ProgressBarGroupProps) => (
-  <div className={classNames("flex h-3 items-center", className)}>
+  <div className={classNames("flex h-3 items-center justify-end space-x-2", className)}>
     {children}
   </div>
 );
@@ -102,13 +103,13 @@ const DetectionSummaryChart = ({
   let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
  
   return (
-    <div className="flex items-center justify-between">
+    <div className="flex items-center justify-between space-x-2">
       <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
         <ProgressBarGroup >
           <ProgressBar
             className={classNames(
               "border border-alert",
-               "bg-alert",
+                status === "running" ? "summary-chart-alarm-animate" : "bg-alert"
             )}
             percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
           />
@@ -123,9 +124,10 @@ const DetectionSummaryChart = ({
           />
         </div>
       )}
-    <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
+        <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
     </div>
   );
 };
+
 
 export default DetectionSummaryChart;
