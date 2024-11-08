@@ -101,32 +101,45 @@ const DetectionSummaryChart = ({
   }
  
   let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
+
+  const isRunning = status === "running";
+  const hasTotal = summary.total > 0;
  
-  return (
+   return (
     <div className="flex items-center justify-between space-x-2">
-      <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
-        <ProgressBarGroup >
-          <ProgressBar
-            className={classNames(
-              "border border-alert",
-                status === "running" ? "summary-chart-alarm-animate" : "bg-alert"
-            )}
-            percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
-          />
-        
-        </ProgressBarGroup>
-      </div>
-      {summary.total === 0 && (
-        <div className="flex justify-end w-full pr-4">
-          <Icon
-            className="h-6 w-6 text-ok fill-text-ok"
-            icon="materialsymbols-solid:check_circle"
-          />
+      {isRunning && (
+        <div className="mr-2">
+          <LoadingIndicator className=" w-5 h-5"/>
         </div>
       )}
-        <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
+
+      {hasTotal ? (
+        <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
+          <ProgressBarGroup>
+            <ProgressBar
+              className={classNames(
+                "border border-alert",
+                isRunning ? "summary-chart-alarm-animate" : "bg-alert"
+              )}
+              percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
+            />
+          </ProgressBarGroup>
+        </div>
+      ) : (
+        !isRunning && (
+          <div className="flex justify-end w-full pr-4">
+            <Icon
+              className="h-6 w-6 text-ok fill-text-ok"
+              icon="materialsymbols-solid:check_circle"
+            />
+          </div>
+        )
+      )}
+
+      <span className="text-sm font-semibold">{summary.total}</span>
     </div>
   );
+
 };
 
 
