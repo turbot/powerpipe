@@ -121,7 +121,7 @@ const getDetectionResultRowIconTitle = (total: number) => {
 
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
-    <div className="flex bg-dashboard-panel print:bg-white p-4 last:rounded-b-md space-x-4 overflow-x-auto">
+    <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <div className="flex flex-col md:flex-row flex-grow">
         <Table
           name={`${result.detection.name}.table`}

@@ -476,9 +476,9 @@ const TableView = ({
   }, [columns, renderTemplates, rows, templateRenderReady]);
 
   return (
-    <>
+    <div>
       {(activeFilters.length > 0 || excludedFilters.length > 0) && (
-        <div className="p-4 pb-2 rounded shadow-sm flex flex-wrap gap-2">
+        <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
           {[...activeFilters, ...excludedFilters].map((filter, index) => {
             const isActive = activeFilters.some(
               (f) => f.column === filter.column && f.value === filter.value,
@@ -629,10 +629,11 @@ const TableView = ({
           })}
         </tbody>
       </table>
-    </>
+    </div>
   );
 };
 
+// TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
   const { columns, hiddenColumns } = useMemo(
     () => getColumns(props.data ? props.data.columns : [], props.properties),
