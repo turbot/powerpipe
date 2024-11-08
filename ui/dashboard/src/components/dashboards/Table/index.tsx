@@ -353,14 +353,14 @@ const CellValue = ({
           className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
           title="Add value to include filter"
         >
-          <Icon className="h-5 w-5" icon="add_circle"/>
+          <Icon className="h-5 w-5" icon="add_circle" />
         </button>
         <button
           onClick={() => handleRemoveFilter({ column: column.name, value })}
           className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
           title="Add value to exclude filter"
         >
-          <Icon className="h-5 w-5" icon="do_not_disturb_on"/>
+          <Icon className="h-5 w-5" icon="do_not_disturb_on" />
         </button>
       </div>
     </div>
@@ -405,31 +405,40 @@ const TableView = ({
 
   const handleAddFilter = (column, value) => {
     const newFilter = { column, value };
-    if (!activeFilters.some(f => f.column === column && f.value === value)) {
+    if (!activeFilters.some((f) => f.column === column && f.value === value)) {
       setActiveFilters([...activeFilters, newFilter]);
-      setExcludedFilters(excludedFilters.filter(f => f.column !== column || f.value !== value));
+      setExcludedFilters(
+        excludedFilters.filter((f) => f.column !== column || f.value !== value),
+      );
     }
   };
 
   const handleRemoveFilter = (filter) => {
-    if (!excludedFilters.some(f => f.column === filter.column && f.value === filter.value)) {
+    if (
+      !excludedFilters.some(
+        (f) => f.column === filter.column && f.value === filter.value,
+      )
+    ) {
       setExcludedFilters([...excludedFilters, filter]);
-      setActiveFilters(activeFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+      setActiveFilters(
+        activeFilters.filter(
+          (f) => f.column !== filter.column || f.value !== filter.value,
+        ),
+      );
     }
   };
 
   const filteredData = useMemo(() => {
     let filtered = rowData;
 
-    if (activeFilters.length > 0) {
-      filtered = filtered.filter(row => {
-        return activeFilters.every(filter => row[filter.column] === filter.value);
-      });
-    }
-
-    if (excludedFilters.length > 0) {
-      filtered = filtered.filter(row => {
-        return excludedFilters.every(filter => row[filter.column] !== filter.value);
+    if (activeFilters.length > 0 || excludedFilters.length > 0) {
+      filtered = filtered.filter((row) => {
+        return (
+          activeFilters.every(
+            (filter) => row[filter.column] === filter.value,
+          ) &&
+          excludedFilters.every((filter) => row[filter.column] !== filter.value)
+        );
       });
     }
 
@@ -466,33 +475,51 @@ const TableView = ({
     doRender();
   }, [columns, renderTemplates, rows, templateRenderReady]);
 
-  const capitalize = (str) => str.charAt(0).toUpperCase() + str.slice(1);
-
   return (
     <div className="overflow-x-auto">
-       {(activeFilters.length > 0 || excludedFilters.length > 0) && (
-        <div className="mb-4 p-2 black-shade-2  rounded shadow-sm flex flex-wrap gap-2">
+      {(activeFilters.length > 0 || excludedFilters.length > 0) && (
+        <div className="p-4 pb-2 rounded shadow-sm flex flex-wrap gap-2">
           {[...activeFilters, ...excludedFilters].map((filter, index) => {
-            const isActive = activeFilters.some(f => f.column === filter.column && f.value === filter.value);
+            const isActive = activeFilters.some(
+              (f) => f.column === filter.column && f.value === filter.value,
+            );
             return (
               <div
                 key={index}
-                className="flex items-center bg-black-scale-2 text-black-scale-8 px-3 py-1 rounded-md shadow-sm space-x-2"
+                className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md shadow-sm space-x-2"
               >
-                 <span className=" flex items-center space-x-2">
-                    {isActive ? (
-                      <Icon className="h-5 w-5  text-black-scale-6 " icon="add_circle"/>
-                    ) : (
-                      <Icon className="h-5 w-5  text-black-scale-6 " icon="do_not_disturb_on"/>
-                    )}
-                    <span >{` ${capitalize(filter.column)}: ${filter.value}`}</span>
-                  </span>
+                <span className=" flex items-center space-x-2">
+                  {isActive ? (
+                    <Icon
+                      className="h-5 w-5 text-black-scale-6 "
+                      icon="add_circle"
+                    />
+                  ) : (
+                    <Icon
+                      className="h-5 w-5 text-black-scale-6 "
+                      icon="do_not_disturb_on"
+                    />
+                  )}
+                  <span>{` ${filter.column}: ${filter.value}`}</span>
+                </span>
                 <button
                   onClick={() => {
                     if (isActive) {
-                      setActiveFilters(activeFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+                      setActiveFilters(
+                        activeFilters.filter(
+                          (f) =>
+                            f.column !== filter.column ||
+                            f.value !== filter.value,
+                        ),
+                      );
                     } else {
-                      setExcludedFilters(excludedFilters.filter(f => f.column !== filter.column || f.value !== filter.value));
+                      setExcludedFilters(
+                        excludedFilters.filter(
+                          (f) =>
+                            f.column !== filter.column ||
+                            f.value !== filter.value,
+                        ),
+                      );
                     }
                   }}
                   className="text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
@@ -529,11 +556,12 @@ const TableView = ({
                       {...otherHeaderProps}
                       scope="col"
                       className={classNames(
-                        "py-3 text-left text-sm font-medium tracking-wider whitespace-nowrap pl-4",
-                        isNumericCol(column.data_type) ? "text-right" : "text-left",
+                        "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                        isNumericCol(column.data_type)
+                          ? "text-right"
+                          : "text-left",
                       )}
                     >
-                      
                       {column.render("Header")}
                       {column.isSortedDesc ? (
                         <SortDescendingIcon className="inline-block h-4 w-4" />
@@ -559,7 +587,7 @@ const TableView = ({
           {rows.length === 0 && (
             <tr>
               <td
-                className="px-4 py-4 align-top content-center text-sm italic whitespace-normal"
+                className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
                 colSpan={columns.length}
               >
                 No results
@@ -582,7 +610,7 @@ const TableView = ({
                         isNumericCol(cell.column.data_type) ? "text-right" : "",
                         cell.column.wrap === "all"
                           ? "break-keep"
-                          : "whitespace-normal",
+                          : "whitespace-nowrap",
                       )}
                     >
                       <MemoCellValue
