@@ -449,7 +449,7 @@ const DashboardProvider = ({
           dashboard: {
             full_name: state.selectedDashboard.full_name,
           },
-          input_values: state.selectedDashboardInputs,
+          input_values: { inputs: state.selectedDashboardInputs },
         },
       };
       if (!!state.searchPathPrefix.length) {
@@ -487,7 +487,7 @@ const DashboardProvider = ({
             full_name: state.selectedDashboard.full_name,
           },
           changed_input: state.lastChangedInput,
-          input_values: state.selectedDashboardInputs,
+          input_values: { inputs: state.selectedDashboardInputs },
         },
       });
     }
