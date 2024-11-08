@@ -12,7 +12,7 @@ import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useState, useRef, useEffect } from "react";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
-import "./DateRangePicker.css";
+// import "./DateRangePicker.css";
 dayjs.extend(utc);
 
 const presets = [
@@ -110,7 +110,12 @@ const DateRangePicker = (props: InputProps) => {
     to?: dayjs.Dayjs | null;
     relative?: string | null;
     showCustom?: boolean;
-  }>(state);
+  }>({
+  from: dayjs(state.from), // Convert to dayjs object
+  to: state.to ? dayjs(state.to) : null, // Convert to dayjs object if present
+  relative: state.relative,
+  showCustom: state.showCustom,
+});
 
   useEffect(() => {
     setTempState(() => state);
@@ -219,47 +224,45 @@ const DateRangePicker = (props: InputProps) => {
 
   return (
     <div className="flex flex-col max-w-23vw">
-      <div className="presets">
+      <div className="flex gap-[5px] mb-[10px] justify-between">
         {presets.map((preset) => (
-          <button
+         <button
             key={preset.value}
             onClick={() => handlePresetChange(preset.value)}
-            className={`preset-button ${state.relative === preset.value ? "active" : ""}`}
+            className={`py-[5px] px-[10px] bg-dashboard border border-table-border rounded cursor-pointer transition-colors duration-300 ${
+              state.relative === preset.value ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+            }`}
             ref={preset.value === "custom" ? customButtonRef : null}
           >
             {preset.label}
           </button>
+
         ))}
       </div>
 
       {state.showCustom && (
         <div
-          className="custom-popover"
+          className="absolute border border-table-border rounded-[5px] bg-dashboard-panel p-[20px] shadow-lg z-[1000]"
           style={{
-            position: "absolute",
             top:
-              customButtonRef.current?.getBoundingClientRect().bottom +
-              window.scrollY,
+              customButtonRef.current?.getBoundingClientRect().bottom + window.scrollY,
             left:
-              customButtonRef.current?.getBoundingClientRect().left +
-              window.scrollX,
-            zIndex: 1000,
-            border: "1px solid #ddd",
-            borderRadius: "5px",
-            backgroundColor: "#fff",
-            padding: "20px",
-            boxShadow: "0 2px 8px rgba(0, 0, 0, 0.15)",
+              customButtonRef.current?.getBoundingClientRect().left + window.scrollX,
           }}
         >
-          <div className="tabs">
+          <div className="flex gap-[10px] mb-[10px]">
             <button
-              className={`tab-button ${tab === "relative" ? "active" : ""}`}
+              className={`flex-1 py-[8px] cursor-pointer bg-dashboard border border-table-border text-center font-bold ${
+                tab === "relative" ? "bg-dashboard-panel text-foreground" : ""
+              }`}
               onClick={() => setTab("relative")}
             >
               Relative
             </button>
             <button
-              className={`tab-button ${tab === "absolute" ? "active" : ""}`}
+              className={`flex-1 py-[8px] cursor-pointer bg-dashboard border border-table-border text-center font-bold ${
+                tab === "absolute" ? "bg-dashboard-panel text-foreground" : ""
+              }`}
               onClick={() => setTab("absolute")}
             >
               Absolute
@@ -268,13 +271,43 @@ const DateRangePicker = (props: InputProps) => {
 
           {tab === "absolute" ? (
             <div className="absolute-panel">
-              <div className="calendar-container">
+              <div className="flex justify-center mb-[20px]">
                 <DayPicker
                   mode="range"
                   selected={{
                     from: tempState.from.utc().toDate(),
                     to: tempState.to?.utc().toDate(),
                   }}
+                  // onSelect={({ from, to }) => {
+                  //   // console.log({ from, to });
+                  //   const newFrom = new Date(
+                  //     from.getFullYear(),
+                  //     from.getMonth(),
+                  //     from.getDate(),
+                  //     tempState.from.hour(),
+                  //     tempState.from.minute(),
+                  //     tempState.from.second(),
+                  //   );
+                  //   const newTo = new Date(
+                  //     to.getFullYear(),
+                  //     to.getMonth(),
+                  //     to.getDate(),
+                  //     tempState.to?.hour() || 0,
+                  //     tempState.to?.minute() || 0,
+                  //     tempState.to?.second() || 0,
+                  //   );
+                  //   const parsedFrom = dayjs(newFrom).utc();
+                  //   const parsedTo = dayjs(newTo).utc();
+                  //   setTempState((previous) => ({
+                  //     ...previous,
+                  //     from: parsedFrom,
+                  //     to: parsedTo,
+                  //   }));
+                  //   // console.log({ from, to });
+                  //   // setStartDate(from);
+                  //   // setEndDate(to);
+                  // }}
+
                   onSelect={({ from, to }) => {
                     const newFrom = new Date(
                       from.getFullYear(),
@@ -300,13 +333,13 @@ const DateRangePicker = (props: InputProps) => {
                       to: parsedTo,
                     }));
                   }}
-                  className="single-day-picker"
+                   className="mx-auto react-day-picker bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light"
                   captionLayout="dropdown"
                   pagedNavigation
                 />
               </div>
-              <div className="time-inputs">
-                <div className="time-input-container">
+              <div className="flex gap-[20px] justify-between">
+                <div className="flex flex-col items-start w-[48%]">
                   <label>Start date</label>
                   <input
                     type="date"
@@ -317,6 +350,7 @@ const DateRangePicker = (props: InputProps) => {
                         from: dayjs(e.target.value).utc(),
                       }))
                     }
+                    className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
                   />
                   <label>Start time</label>
                   <input
@@ -331,9 +365,10 @@ const DateRangePicker = (props: InputProps) => {
                         ),
                       }));
                     }}
+                    className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
                   />
                 </div>
-                <div className="time-input-container">
+                <div className="flex flex-col items-start w-[48%]">
                   <label>End date</label>
                   <input
                     type="date"
@@ -344,6 +379,7 @@ const DateRangePicker = (props: InputProps) => {
                         to: dayjs(e.target.value).utc(),
                       }))
                     }
+                    className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
                   />
                   <label>End time</label>
                   <input
@@ -363,78 +399,90 @@ const DateRangePicker = (props: InputProps) => {
                         ),
                       }));
                     }}
+                    className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
                   />
                 </div>
               </div>
             </div>
           ) : (
-            <div className="relative-panel">
-              <div className="time-option-groups">
-                <label>Minutes</label>
-                <div className="option-group">
-                  {timeOptions.minutes.map((min) => (
-                    <button
-                      key={min}
-                      onClick={() => handleTimeOptionClick(min, "minute")}
-                      className={`time-option ${duration === min && unitOfTime === "minute" ? "active" : ""}`}
-                    >
-                      {min}
-                    </button>
-                  ))}
-                </div>
+            <div className="p-[10px]">
+              <div className="space-y-4">
+                    <label className="block text-[14px] mt-[15px] mb-[5px]">Minutes</label>
+                    <div className="flex gap-[8px] mb-[10px]">
+                      {timeOptions.minutes.map((min) => (
+                        <button
+                          key={min}
+                          onClick={() => handleTimeOptionClick(min, "minute")}
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                            duration === min && unitOfTime === "minute" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          }`}
+                        >
+                          {min}
+                        </button>
+                      ))}
+                    </div>
 
-                <label>Hours</label>
-                <div className="option-group">
-                  {timeOptions.hours.map((hour) => (
-                    <button
-                      key={hour}
-                      onClick={() => handleTimeOptionClick(hour, "hour")}
-                      className={`time-option ${duration === hour && unitOfTime === "hour" ? "active" : ""}`}
-                    >
-                      {hour}
-                    </button>
-                  ))}
-                </div>
+                    <label className="block text-[14px] mt-[15px] mb-[5px]">Hours</label>
+                    <div className="flex gap-[8px] mb-[10px]">
+                      {timeOptions.hours.map((hour) => (
+                        <button
+                          key={hour}
+                          onClick={() => handleTimeOptionClick(hour, "hour")}
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                            duration === hour && unitOfTime === "hour" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          }`}
+                        >
+                          {hour}
+                        </button>
+                      ))}
+                    </div>
 
-                <label>Days</label>
-                <div className="option-group">
-                  {timeOptions.days.map((day) => (
-                    <button
-                      key={day}
-                      onClick={() => handleTimeOptionClick(day, "day")}
-                      className={`time-option ${duration === day && unitOfTime === "day" ? "active" : ""}`}
-                    >
-                      {day}
-                    </button>
-                  ))}
-                </div>
+                    <label className="block text-[14px] mt-[15px] mb-[5px]">Days</label>
+                    <div className="flex gap-[8px] mb-[10px]">
+                      {timeOptions.days.map((day) => (
+                        <button
+                          key={day}
+                          onClick={() => handleTimeOptionClick(day, "day")}
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                            duration === day && unitOfTime === "day" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          }`}
+                        >
+                          {day}
+                        </button>
+                      ))}
+                    </div>
 
-                <label>Weeks</label>
-                <div className="option-group">
-                  {timeOptions.weeks.map((week) => (
-                    <button
-                      key={week}
-                      onClick={() => handleTimeOptionClick(week, "week")}
-                      className={`time-option ${duration === week && unitOfTime === "week" ? "active" : ""}`}
-                    >
-                      {week}
-                    </button>
-                  ))}
-                </div>
-              </div>
+                    <label className="block text-[14px] mt-[15px] mb-[5px]">Weeks</label>
+                    <div className="flex gap-[8px] mb-[10px]">
+                      {timeOptions.weeks.map((week) => (
+                        <button
+                          key={week}
+                          onClick={() => handleTimeOptionClick(week, "week")}
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                            duration === week && unitOfTime === "week" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          }`}
+                        >
+                          {week}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
-              <div className="duration-input">
-                <label>Duration</label>
+
+              <div className="flex items-center gap-[10px] mt-[15px]">
+                <label className="text-[14px]">Duration</label>
                 <input
                   type="number"
                   min={1}
                   max={999999999999}
                   value={duration}
                   onChange={(e) => setDuration(Number(e.target.value))}
+                  className="w-[60px] text-[14px] border border-table-border rounded-[4px] p-[5px] bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light"
                 />
                 <select
                   value={unitOfTime}
                   onChange={(e) => setUnitOfTime(e.target.value)}
+                  className="p-[5px] text-[14px] border border-table-border rounded-[4px] bg-dashboard"
                 >
                   <option value="minute">Minutes</option>
                   <option value="hour">Hours</option>
@@ -445,11 +493,17 @@ const DateRangePicker = (props: InputProps) => {
             </div>
           )}
 
-          <div className="actions">
-            <button className="apply-button" onClick={handleApply}>
+          <div className="flex gap-[10px] justify-end mt-[15px]">
+            <button
+              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] transition-colors duration-300 font-bold bg-blue-600 text-white hover:bg-blue-700"
+              onClick={handleApply}
+            >
               Apply
             </button>
-            <button className="cancel-button" onClick={handleCancel}>
+            <button
+              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] transition-colors duration-300 font-bold bg-gray-300 hover:bg-gray-400"
+              onClick={handleCancel}
+            >
               Cancel
             </button>
           </div>
