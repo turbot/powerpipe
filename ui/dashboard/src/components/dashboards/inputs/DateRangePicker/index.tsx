@@ -1,4 +1,5 @@
 import dayjs from "dayjs";
+import useDeepCompareEffect from "use-deep-compare-effect";
 import utc from "dayjs/plugin/utc";
 import { DashboardActions } from "@powerpipe/types";
 import { DayPicker } from "react-day-picker";
@@ -34,30 +35,6 @@ const timeOptions = {
 const DateRangePicker = (props: InputProps) => {
   const { dispatch, selectedDashboardInputs } = useDashboard();
   const stateValue = selectedDashboardInputs[props.name];
-
-  useEffect(() => {
-    if (!stateValue) {
-      return;
-    }
-    try {
-      const parsed = JSON.parse(stateValue);
-      setState((previous) => ({ ...previous, ...parsed }));
-    } catch (err) {
-      console.log("Parse error", err);
-    }
-  }, [stateValue]);
-
-  useEffect(() => {
-    if (stateValue) {
-      return;
-    }
-    setState(() => {
-      return {
-        from: dayjs().subtract(1, "day").utc(),
-        relative: "1d",
-      };
-    });
-  }, [stateValue]);
 
   const [state, setState] = useState<{
     from: dayjs.Dayjs;
@@ -96,6 +73,50 @@ const DateRangePicker = (props: InputProps) => {
     }
   });
 
+  useEffect(() => {
+    dispatch({
+      type: DashboardActions.SET_DASHBOARD_INPUT,
+      name: props.name,
+      value: JSON.stringify({
+        from: dayjs().subtract(1, "day").utc(),
+        to: null,
+        relative: "1d",
+      }),
+      recordInputsHistory: !!stateValue,
+    });
+  }, []);
+
+  useEffect(() => {
+    if (!stateValue) {
+      return;
+    }
+    if (stateValue === JSON.stringify(state)) {
+      return;
+    }
+    try {
+      const parsed = JSON.parse(stateValue);
+      setState((previous) => ({ ...previous, ...parsed }));
+    } catch (err) {
+      console.log("Parse error", err);
+    }
+  }, [stateValue, state]);
+
+  useDeepCompareEffect(() => {
+    if (state.showCustom) {
+      return;
+    }
+    dispatch({
+      type: DashboardActions.SET_DASHBOARD_INPUT,
+      name: props.name,
+      value: JSON.stringify({
+        from: state.from,
+        to: state.to,
+        relative: state.relative,
+      }),
+      recordInputsHistory: !!stateValue,
+    });
+  }, [state]);
+
   const [tempState, setTempState] = useState<{
     from: dayjs.Dayjs;
     to?: dayjs.Dayjs | null;
@@ -107,24 +128,12 @@ const DateRangePicker = (props: InputProps) => {
     setTempState(() => state);
   }, [state]);
 
-  // const [selectedPreset, setSelectedPreset] = useState("1h");
-  // const [from, setFrom] = useState<string | null>(null);
-  // const [to, setTo] = useState<string | null>(null);
-  // const [relative, setRelative] = useState<string | null>();
-  // const [startDate, setStartDate] = useState(null);
-  // const [endDate, setEndDate] = useState(null);
-  // const [startTime, setStartTime] = useState("00:00:00");
-  // const [endTime, setEndTime] = useState("23:59:59");
   const [tab, setTab] = useState("relative");
   const [duration, setDuration] = useState(1);
   const [unitOfTime, setUnitOfTime] = useState("hours");
-  // const [showCustomPanel, setShowCustomPanel] = useState(false);
   const customButtonRef = useRef(null);
 
-  // console.log({ state, startDate, startTime, endDate, endTime });
-
   const handlePresetChange = (preset) => {
-    console.log(preset);
     switch (preset) {
       case "1h":
         setDuration(1);
@@ -199,22 +208,6 @@ const DateRangePicker = (props: InputProps) => {
         }));
     }
   };
-
-  useEffect(() => {
-    if (state.showCustom) {
-      return;
-    }
-    dispatch({
-      type: DashboardActions.SET_DASHBOARD_INPUT,
-      name: props.name,
-      value: JSON.stringify({
-        from: state.from,
-        to: state.to,
-        relative: state.relative,
-      }),
-      recordInputsHistory: !!stateValue,
-    });
-  }, [state]);
 
   const handleApply = () => {
     setState({ ...tempState, showCustom: false });
@@ -295,7 +288,6 @@ const DateRangePicker = (props: InputProps) => {
                     to: tempState.to?.utc().toDate(),
                   }}
                   onSelect={({ from, to }) => {
-                    // console.log({ from, to });
                     const newFrom = new Date(
                       from.getFullYear(),
                       from.getMonth(),
@@ -319,9 +311,6 @@ const DateRangePicker = (props: InputProps) => {
                       from: parsedFrom,
                       to: parsedTo,
                     }));
-                    // console.log({ from, to });
-                    // setStartDate(from);
-                    // setEndDate(to);
                   }}
                   className="single-day-picker"
                   captionLayout="dropdown"
