@@ -440,6 +440,20 @@ const DashboardProvider = ({
       sendSocketMessage({
         action: SocketActions.CLEAR_DASHBOARD,
       });
+
+      const { "input.detection_range": detectionRange, ...rest } =
+        state.selectedDashboardInputs || {};
+      let detectionFrom, detectionTo;
+      if (detectionRange) {
+        try {
+          const parsed = JSON.parse(detectionRange);
+          detectionFrom = parsed.from;
+          detectionTo = parsed.to;
+        } catch (err) {
+          console.log("Parse error", err);
+        }
+      }
+
       const selectDashboardMessage: any = {
         action:
           state.selectedDashboard.type === "snapshot"
@@ -449,9 +463,25 @@ const DashboardProvider = ({
           dashboard: {
             full_name: state.selectedDashboard.full_name,
           },
-          input_values: { inputs: state.selectedDashboardInputs },
+          input_values: { inputs: rest },
         },
       };
+
+      if (detectionFrom) {
+        selectDashboardMessage.payload.input_values.detection_time_ranges =
+          selectDashboardMessage.payload.input_values.detection_time_ranges ||
+          {};
+        selectDashboardMessage.payload.input_values.detection_time_ranges.from =
+          detectionFrom;
+      }
+      if (detectionTo) {
+        selectDashboardMessage.payload.input_values.detection_time_ranges =
+          selectDashboardMessage.payload.input_values.detection_time_ranges ||
+          {};
+        selectDashboardMessage.payload.input_values.detection_time_ranges.to =
+          detectionTo;
+      }
+
       if (!!state.searchPathPrefix.length) {
         selectDashboardMessage.payload.search_path_prefix =
           state.searchPathPrefix;
@@ -480,16 +510,39 @@ const DashboardProvider = ({
         state.selectedDashboardInputs,
       )
     ) {
-      sendSocketMessage({
+      const { "input.detection_range": detectionRange, ...rest } =
+        state.selectedDashboardInputs || {};
+      let detectionFrom, detectionTo;
+      if (detectionRange) {
+        try {
+          const parsed = JSON.parse(detectionRange);
+          detectionFrom = parsed.from;
+          detectionTo = parsed.to;
+        } catch (err) {
+          console.log("Parse error", err);
+        }
+      }
+      const message = {
         action: SocketActions.INPUT_CHANGED,
         payload: {
           dashboard: {
             full_name: state.selectedDashboard.full_name,
           },
           changed_input: state.lastChangedInput,
-          input_values: { inputs: state.selectedDashboardInputs },
+          input_values: { inputs: rest },
         },
-      });
+      };
+      if (detectionFrom) {
+        message.payload.input_values.detection_time_ranges =
+          message.payload.input_values.detection_time_ranges || {};
+        message.payload.input_values.detection_time_ranges.from = detectionFrom;
+      }
+      if (detectionTo) {
+        message.payload.input_values.detection_time_ranges =
+          message.payload.input_values.detection_time_ranges || {};
+        message.payload.input_values.detection_time_ranges.to = detectionTo;
+      }
+      sendSocketMessage(message);
     }
   }, [
     previousSelectedDashboardStates,
