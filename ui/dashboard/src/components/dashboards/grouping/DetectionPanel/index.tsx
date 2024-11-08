@@ -22,6 +22,7 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { useMemo } from "react";
+import DetectionSummaryChart from "../DetectionBenchmark/DetetctionSummaryChart";
 
 const Table = getComponent("table");
 
@@ -275,7 +276,7 @@ const DetectionPanelSeverity = ({
 };
 
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
-  const { dispatch, groupingsConfig, nodeStates } = useDetectionGrouping();
+  const {firstChildSummaries, dispatch, groupingsConfig, nodeStates } = useDetectionGrouping();
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
@@ -365,7 +366,16 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                   severity_summary={node.severity_summary}
                 />
               </div>
-              <div>{node.summary.total}</div>
+               {/* <div className="TestName"> */}
+                <div className="flex-shrink-0 w-40 md:w-72 lg:w-96">
+                <DetectionSummaryChart
+                  status={node.status}
+                  summary={node.summary}
+                  firstChildSummaries={firstChildSummaries}
+                />
+              </div>
+              {/* <div>{node.summary.total}</div> */}
+              {/* </div> */}
             </div>
             {can_be_expanded && !expanded && (
               <ExpandCheckNodeIcon className="w-5 md:w-7 h-5 md:h-7 flex-shrink-0 text-foreground-lightest" />
