@@ -68,8 +68,11 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 
 	// if the database is a cloud workspace, resolve the connection string
 	if steampipeconfig.IsPipesWorkspaceConnectionString(csp) {
-		var err error
-		csp, err = GetPipesWorkspaceConnectionString(csp.GetConnectionString())
+		cs, err := csp.GetConnectionString()
+		if err != nil {
+			return nil, backend.SearchPathConfig{}, err
+		}
+		csp, err = GetPipesWorkspaceConnectionString(cs)
 		if err != nil {
 			return nil, backend.SearchPathConfig{}, err
 		}
@@ -117,8 +120,11 @@ func GetDefaultDatabaseConfig(opts ...backend.BackendOption) (connection.Connect
 
 	// if the database is a cloud workspace, resolve the connection string
 	if steampipeconfig.IsPipesWorkspaceConnectionString(csp) {
-		var err error
-		csp, err = GetPipesWorkspaceConnectionString(csp.GetConnectionString())
+		cs, err := csp.GetConnectionString()
+		if err != nil {
+			return nil, backend.SearchPathConfig{}, err
+		}
+		csp, err = GetPipesWorkspaceConnectionString(cs)
 		if err != nil {
 			return nil, backend.SearchPathConfig{}, err
 		}
