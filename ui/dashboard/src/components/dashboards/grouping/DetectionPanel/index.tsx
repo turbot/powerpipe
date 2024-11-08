@@ -3,6 +3,7 @@ import DetectionErrorNode from "@powerpipe/components/dashboards/grouping/common
 import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionKeyValuePairNode";
 import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionNode";
 import DetectionResultNode from "../common/node/DetectionResultNode";
+import DetectionSummaryChart from "@powerpipe/components/dashboards/grouping/DetetctionSummaryChart";
 import sortBy from "lodash/sortBy";
 import {
   AlarmIcon,
@@ -22,7 +23,6 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { useMemo } from "react";
-import DetectionSummaryChart from "../DetectionBenchmark/DetetctionSummaryChart";
 
 const Table = getComponent("table");
 
