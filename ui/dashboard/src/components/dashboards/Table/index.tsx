@@ -476,7 +476,7 @@ const TableView = ({
   }, [columns, renderTemplates, rows, templateRenderReady]);
 
   return (
-    <div className="overflow-x-auto">
+    <>
       {(activeFilters.length > 0 || excludedFilters.length > 0) && (
         <div className="p-4 pb-2 rounded shadow-sm flex flex-wrap gap-2">
           {[...activeFilters, ...excludedFilters].map((filter, index) => {
@@ -629,7 +629,7 @@ const TableView = ({
           })}
         </tbody>
       </table>
-    </div>
+    </>
   );
 };
 
