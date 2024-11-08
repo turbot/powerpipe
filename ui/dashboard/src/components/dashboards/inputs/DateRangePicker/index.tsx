@@ -47,6 +47,18 @@ const DateRangePicker = (props: InputProps) => {
     }
   }, [stateValue]);
 
+  useEffect(() => {
+    if (stateValue) {
+      return;
+    }
+    setState(() => {
+      return {
+        from: dayjs().subtract(1, "day").utc(),
+        relative: "1d",
+      };
+    });
+  }, [stateValue]);
+
   const [state, setState] = useState<{
     from: dayjs.Dayjs;
     to?: dayjs.Dayjs | null;
