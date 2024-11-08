@@ -74,6 +74,9 @@ const DateRangePicker = (props: InputProps) => {
   });
 
   useEffect(() => {
+    if (stateValue) {
+      return;
+    }
     dispatch({
       type: DashboardActions.SET_DASHBOARD_INPUT,
       name: props.name,
@@ -85,21 +88,6 @@ const DateRangePicker = (props: InputProps) => {
       recordInputsHistory: !!stateValue,
     });
   }, []);
-
-  useEffect(() => {
-    if (!stateValue) {
-      return;
-    }
-    if (stateValue === JSON.stringify(state)) {
-      return;
-    }
-    try {
-      const parsed = JSON.parse(stateValue);
-      setState((previous) => ({ ...previous, ...parsed }));
-    } catch (err) {
-      console.log("Parse error", err);
-    }
-  }, [stateValue, state]);
 
   useDeepCompareEffect(() => {
     if (state.showCustom) {
@@ -222,7 +210,7 @@ const DateRangePicker = (props: InputProps) => {
     setUnitOfTime(unit);
     setTempState((previous) => ({
       ...previous,
-      from: dayjs().subtract(1, "hour").utc(),
+      from: dayjs().subtract(value, unit).utc(),
       to: null,
       relative: `${value}${unit === "minute" ? "m" : unit === "hour" ? "h" : unit === "day" ? "d" : unit === "week" ? "w" : ""}`,
       showCustom: false,
