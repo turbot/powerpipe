@@ -1,6 +1,5 @@
 import CheckEditorAddItem from "../common/CheckEditorAddItem";
 import CreatableSelect from "react-select/creatable";
-// import has from "lodash/has";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";

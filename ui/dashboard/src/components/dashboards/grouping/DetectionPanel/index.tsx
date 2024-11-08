@@ -121,7 +121,7 @@ const getDetectionResultRowIconTitle = (total: number) => {
 
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
-    <div className="flex bg-dashboard-panel print:bg-white p-4 last:rounded-b-md space-x-4">
+    <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4">
       <div className="flex flex-col md:flex-row flex-grow">
         <Table
           name={`${result.detection.name}.table`}
@@ -276,7 +276,8 @@ const DetectionPanelSeverity = ({
 };
 
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
-  const {firstChildSummaries, dispatch, groupingsConfig, nodeStates } = useDetectionGrouping();
+  const { firstChildSummaries, dispatch, groupingsConfig, nodeStates } =
+    useDetectionGrouping();
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
@@ -366,8 +367,8 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                   severity_summary={node.severity_summary}
                 />
               </div>
-               {/* <div className="TestName"> */}
-                <div className="flex-shrink-0 w-40 md:w-72 lg:w-96">
+              {/* <div className="TestName"> */}
+              <div className="flex-shrink-0 w-40 md:w-72 lg:w-96">
                 <DetectionSummaryChart
                   status={node.status}
                   summary={node.summary}
