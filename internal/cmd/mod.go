@@ -171,7 +171,7 @@ func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
 		return nil
 	}
 
-	client, err := db_client.NewDbClient(ctx, defaultDatabase)
+	client, err := db_client.NewDbClient(ctx, defaultDatabase.GetConnectionString())
 	if err != nil {
 		// do not show warning if --force is set
 		if !viper.GetBool(constants.ArgForce) {

@@ -21,12 +21,22 @@ dashboard "testing_dashboard_inputs" {
       wrap = "all"
     }
   }
-}
+   detection "d1"{
+         title = "top level detection"
+         sql = "select 'r' as reason, 'foo' as resource, 'alarm' as status"
+    }
+
+ }
+
+
 
 query "query_input" {
+  param "new_input" {
+
+  }
   sql = <<-EOQ
     select
-      'value1' as "column 1",
+      $1 as "column 1",
       'value1' as "column 2"
   EOQ
 }

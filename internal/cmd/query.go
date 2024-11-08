@@ -134,7 +134,9 @@ func queryRun(cmd *cobra.Command, args []string) {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.FailOnError(err)
 	}
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, nil)
+
+	inputs := dashboardexecute.NewInputValues()
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)

@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
@@ -31,7 +32,7 @@ type LeafRun struct {
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete       func()
-	database         string
+	database         connection.ConnectionStringProvider
 	searchPathConfig backend.SearchPathConfig
 }
 

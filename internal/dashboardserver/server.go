@@ -375,7 +375,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
 
 			// was a search path passed into the execute command?
-			var opts []backend.ConnectOption
+			var opts []backend.BackendOption
 			if request.Payload.SearchPath != nil || request.Payload.SearchPathPrefix != nil {
 				opts = append(opts, backend.WithSearchPathConfig(backend.SearchPathConfig{
 					SearchPath:       request.Payload.SearchPath,

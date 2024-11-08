@@ -91,5 +91,6 @@ func registerConnections() {
 		connection.NewPostgresConnection,
 		connection.NewSqliteConnection,
 		connection.NewDuckDbConnection,
+		connection.NewTailpipeConnection,
 	)
 }

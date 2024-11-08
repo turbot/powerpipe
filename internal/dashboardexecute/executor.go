@@ -43,7 +43,7 @@ func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor
 
 var Executor *DashboardExecutor
 
-func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs *InputValues, workspace *workspace.PowerpipeWorkspace, opts ...backend.ConnectOption) (err error) {
+func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId string, rootResource modconfig.ModTreeItem, inputs *InputValues, workspace *workspace.PowerpipeWorkspace, opts ...backend.BackendOption) (err error) {
 	var executionTree *DashboardExecutionTree
 	defer func() {
 		if err == nil && ctx.Err() != nil {
@@ -68,23 +68,18 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.CancelExecutionForSession(ctx, sessionId)
 
 	// now create a new execution
-	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, e.defaultClient, opts...)
+	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, inputs, e.defaultClient, opts...)
 	if err != nil {
-		return err
-	}
-
-	// if inputs must be provided before execution (i.e. this is a batch dashboard execution),
-	// verify all required inputs are provided
-	if err = e.validateInputs(executionTree, inputs.Inputs); err != nil {
 		return err
 	}
 
 	// add to execution map
 	e.setExecution(sessionId, executionTree)
 
-	// if inputs have been passed, set them first
-	if !inputs.Empty() {
-		executionTree.SetInputValues(inputs)
+	// if inputs must be provided before execution (i.e. this is a batch dashboard execution),
+	// verify all required inputs are provided
+	if err = e.validateInputs(executionTree, inputs.Inputs); err != nil {
+		return err
 	}
 
 	go executionTree.Execute(ctx)

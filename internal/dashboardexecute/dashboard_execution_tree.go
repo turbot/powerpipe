@@ -3,14 +3,14 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/viper"
-	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"sync"
 	"time"
 
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
@@ -19,6 +19,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/workspace"
 )
 
@@ -43,11 +44,12 @@ type DashboardExecutionTree struct {
 	inputValues map[string]any
 	id          string
 	// active database and search path config (unless overridden at the resource level)
-	database         string
-	searchPathConfig backend.SearchPathConfig
+	database           connection.ConnectionStringProvider
+	searchPathConfig   backend.SearchPathConfig
+	DetectionTimeRange utils.TimeRange
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, inputs *InputValues, defaultClientMap *db_client.ClientMap, opts ...backend.BackendOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
@@ -60,6 +62,16 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 		inputValues:      make(map[string]any),
 	}
 	executionTree.id = fmt.Sprintf("%p", executionTree)
+
+	// if inputs have been passed, set them first
+	if !inputs.Empty() {
+		executionTree.SetInputValues(inputs)
+	}
+	// TACTICAL
+	// if a time range has been passed, set the detection time range and add a backend option
+	// (if time range is not set, From and To will be nil - this is expected and handled)
+	executionTree.DetectionTimeRange = inputs.DetectionTimeRange
+	opts = append(opts, backend.WithTimeRange(inputs.DetectionTimeRange))
 
 	// set the dashboard database and search patch config
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig(opts...)
@@ -353,14 +365,17 @@ func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 }
 
 // function to get a client from one of the client maps
-func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
+func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.ConnectionStringProvider, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
+	// TODO K nee to accept opts???? or already in the connection???
+	// ask the provider for the connection string
+	cs := csp.GetConnectionString()
 	// if the default map already contains a client for this connection string, use that
-	if client := e.defaultClientMap.Get(connectionString, searchPathConfig); client != nil {
+	if client := e.defaultClientMap.Get(cs, searchPathConfig); client != nil {
 		return client, nil
 	}
 
 	// otherwise get or create one
-	client, err := e.clientMap.GetOrCreate(ctx, connectionString, searchPathConfig)
+	client, err := e.clientMap.GetOrCreate(ctx, cs, searchPathConfig)
 	if err != nil {
 		return nil, err
 	}

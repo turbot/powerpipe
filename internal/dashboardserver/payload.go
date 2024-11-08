@@ -66,7 +66,7 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 	if err != nil {
 		return nil, err
 	}
-	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase, defaultSearchPathConfig)
+	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase.GetConnectionString(), defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -100,11 +100,11 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 	payload := DashboardMetadataPayload{
 		Action: "dashboard_metadata",
 		Metadata: DashboardMetadata{
-			Database: database,
+			Database: database.GetConnectionString(),
 		},
 	}
 
-	searchPath, err := getSearchPathMetadata(ctx, database, searchPathConfig)
+	searchPath, err := getSearchPathMetadata(ctx, database.GetConnectionString(), searchPathConfig)
 	if err != nil {
 		return nil, err
 	}

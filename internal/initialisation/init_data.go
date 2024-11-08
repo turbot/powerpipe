@@ -79,10 +79,14 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	}
 	i.Targets = targets
 
-	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase())
+	// TODO K breaking hack do not use viper for database
+	if db_client.DefaultDatabase == nil {
+		db_client.DefaultDatabase = w.Mod.GetDatabase()
 	}
+	// if the database is NOT set in viper, and the mod has a connection string, set it
+	//if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
+	//	viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase().)
+	//}
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
@@ -162,18 +166,18 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 	// create default client
 	// set the database and search patch config
-	database, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
 	// create client
-	var opts []backend.ConnectOption
+	var opts []backend.BackendOption
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-	client, err := db_client.NewDbClient(ctx, database, opts...)
+	client, err := db_client.NewDbClient(ctx, csp.GetConnectionString(), opts...)
 	if err != nil {
 		i.Result.Error = err
 		return
