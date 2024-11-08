@@ -301,7 +301,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		dashboardClients := s.getDashboardClients()
 		if sessionInfo, ok := dashboardClients[e.Session]; ok {
 			for _, clearedInput := range e.ClearedInputs {
-				delete(sessionInfo.DashboardInputs, clearedInput)
+				delete(sessionInfo.DashboardInputs.Inputs, clearedInput)
 			}
 		}
 		s.writePayloadToSession(e.Session, payload)
@@ -429,7 +429,7 @@ func (s *Server) addSession(session *melody.Session) {
 	s.addDashboardClient(sessionId, clientSession)
 }
 
-func (s *Server) setDashboardInputsForSession(sessionId string, inputs map[string]interface{}) {
+func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
 	dashboardClients := s.getDashboardClients()
 	if sessionInfo, ok := dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
@@ -442,7 +442,7 @@ func (s *Server) getSessionId(session *melody.Session) string {
 
 // functions providing locked access to member properties
 
-func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs map[string]interface{}) *DashboardClientInfo {
+func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs *dashboardexecute.InputValues) *DashboardClientInfo {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

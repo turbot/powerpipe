@@ -6,6 +6,7 @@ import (
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -106,7 +107,7 @@ type InputValuesClearedPayload struct {
 type DashboardClientInfo struct {
 	Session         *melody.Session
 	Dashboard       *string
-	DashboardInputs map[string]interface{}
+	DashboardInputs *dashboardexecute.InputValues
 }
 
 type ClientRequestDashboardPayload struct {
@@ -115,7 +116,7 @@ type ClientRequestDashboardPayload struct {
 
 type ClientRequestPayload struct {
 	Dashboard        ClientRequestDashboardPayload `json:"dashboard"`
-	InputValues      map[string]interface{}        `json:"input_values"`
+	InputValues      *dashboardexecute.InputValues `json:"input_values"`
 	ChangedInput     string                        `json:"changed_input"`
 	SearchPath       []string                      `json:"search_path"`
 	SearchPathPrefix []string                      `json:"search_path_prefix"`

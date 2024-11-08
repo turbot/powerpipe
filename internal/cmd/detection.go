@@ -137,7 +137,9 @@ func detectionRun[T DetectionTarget](cmd *cobra.Command, args []string) {
 	target, err := initData.GetSingleTarget()
 	error_helpers.FailOnError(err)
 
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, map[string]any{})
+	inputs := dashboardexecute.NewInputValues()
+
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)
