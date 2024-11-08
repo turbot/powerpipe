@@ -34,6 +34,7 @@ export type InputProps = BaseInputProps & {
 
 export type InputType =
   | "combo"
+  | "date_range"
   | "hidden"
   | "multicombo"
   | "multiselect"

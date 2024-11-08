@@ -10,6 +10,10 @@ import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import usePanelControls from "@powerpipe/hooks/usePanelControls";
+import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
+import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePicker";
+import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
   DetectionBenchmarkTreeProps,
   DetectionDisplayGroup,
@@ -17,8 +21,6 @@ import {
   DetectionNode,
   DetectionSummary,
 } from "@powerpipe/components/dashboards/grouping/common";
-import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
   getComponent,
   registerComponent,
@@ -28,14 +30,11 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
-import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { validateFilter } from "../CheckFilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
-import DateRangePicker from "./DateRangePicker/DateRangePicker";
-
 const Table = getComponent("table");
 
 type BenchmarkTableViewProps = {
@@ -392,7 +391,16 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         />
       )}
       <Grid name="temp">
-        <DateRangePicker />
+        <DateRangePicker
+          name="input.detection_range"
+          panel_type="input"
+          properties={{
+            name: "detection_range",
+            unqualified_name: "input.detection_range",
+            type: "text",
+          }}
+          type="text"
+        />
       </Grid>
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
