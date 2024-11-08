@@ -24,8 +24,8 @@ require (
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v0.10.0-rc.0
 	// develop branch d7decaf1e82d8538970cc7d7821d5a8f1c3994d4 (spp specific resource refactor)
-    github.com/turbot/pipe-fittings v1.6.6-0.20241030182756-d7decaf1e82d
-    github.com/turbot/steampipe-plugin-sdk/v5 v5.11.0
+	github.com/turbot/pipe-fittings v1.6.6-0.20241030182756-d7decaf1e82d
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.0
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.14.4

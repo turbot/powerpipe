@@ -21,7 +21,7 @@ type DbClient struct {
 	Backend backend.Backend
 }
 
-func NewDbClient(ctx context.Context, connectionString string, opts ...backend.ConnectOption) (_ *DbClient, err error) {
+func NewDbClient(ctx context.Context, connectionString string, opts ...backend.BackendOption) (_ *DbClient, err error) {
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
@@ -43,7 +43,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.C
 	}()
 
 	// process options - searhc path may have been passed in
-	config := backend.NewConnectConfig(opts)
+	config := backend.NewBackendConfig(opts)
 	config.MaxOpenConns = MaxDbConnections()
 	// if no search path override passed in as an option, use the viper config
 	if config.SearchPathConfig.Empty() {

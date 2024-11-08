@@ -7,7 +7,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func (c *DbClient) connect(ctx context.Context, opts ...backend.ConnectOption) error {
+func (c *DbClient) connect(ctx context.Context, opts ...backend.BackendOption) error {
 	utils.LogTime("db_client.establishConnectionPool start")
 	defer utils.LogTime("db_client.establishConnectionPool end")
 
