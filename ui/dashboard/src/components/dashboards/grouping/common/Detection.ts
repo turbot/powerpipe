@@ -11,6 +11,7 @@ import {
   DetectionSummary,
   findDimension,
   GroupingNodeType,
+  DetectionResultDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardRunState } from "@powerpipe/types";
 import {
@@ -269,22 +270,30 @@ class Detection implements DetectionNode {
       }
       dimensionColumns.push(col);
     }
+
+    // const recordDimensions = {};
+    const dimensions: DetectionResultDimension[] = [];
+    for (const row of data.rows) {
+      for (const column of dimensionColumns) {
+        // recordDimensions[column.name] = recordDimensions[column.name] || {};
+        const columnValue = row[column.name];
+        // if (!(columnValue in recordDimensions[column.name])) {
+        dimensions.push({
+          key: column.name,
+          value: columnValue,
+        });
+        //   recordDimensions[column.name][columnValue] = true;
+        // }
+      }
+    }
+
     const result = {
       rows: data.rows,
       columns: data.columns,
       detection: this,
-      dimensionColumns,
+      dimension_columns: dimensionColumns,
+      dimensions,
     };
-    // for (const row of data.rows) {
-    //   const result = {
-    //     reason: row.reason,
-    //     resource: row.resource,
-    //     status: row.status,
-    //     dimensions: dimensionColumns.map((col) => ({
-    //       key: col.name,
-    //       value: row[col.name],
-    //     })),
-    //   };
     // @ts-ignore
     results.push(result);
     return results;

@@ -69,7 +69,7 @@ const validateFilter = (filter: CheckFilter): boolean => {
     return filter.expressions.every(validateFilter);
   }
 
-  if (filter.operator === "equal") {
+  if (filter.operator === "equal" || filter.operator === "not_equal") {
     const valueExists = !!filter.value?.trim();
     const typeExists = !!filter.type?.trim();
     const keyExists = !!filter.key?.trim();
@@ -422,7 +422,8 @@ const CheckFilterEditorItem = ({
           </div>
         </>
       )} */}
-      <span>=</span>
+      {item.operator === "equal" && <span>=</span>}
+      {item.operator === "not_equal" && <span>!=</span>}
       <div className="grow min-w-52 max-w-72">
         <CheckFilterValueSelect
           index={index}

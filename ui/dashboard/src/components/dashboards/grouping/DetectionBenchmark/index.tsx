@@ -491,6 +491,7 @@ const BenchmarkTableView = ({
         name={`${definition.name}.table`}
         panel_type="table"
         data={benchmarkDataTable}
+        filterEnabled
       />
     </Panel>
   );

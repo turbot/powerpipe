@@ -608,6 +608,7 @@ const DashboardProvider = ({
 
     // Sync params into the URL
     const newParams = {
+      ...searchParams,
       ...state.selectedDashboardInputs,
     };
     if (!!searchPathPrefix.length) {
@@ -620,6 +621,7 @@ const DashboardProvider = ({
     featureFlags,
     navigationType,
     previousSelectedDashboardStates,
+    searchParams,
     setSearchParams,
     state.dataMode,
     state.recordInputsHistory,
