@@ -148,8 +148,8 @@ export type CheckResult = {
 export type DetectionResult = {
   rows?: LeafNodeDataRow[];
   columns?: LeafNodeDataColumn[];
-  dimensionColumns?: LeafNodeDataColumn[];
-  dimensions: CheckResultDimension[];
+  dimension_columns?: LeafNodeDataColumn[];
+  dimensions: DetectionResultDimension[];
   tags: CheckTags;
   detection: DetectionNode;
   detection_benchmark_trunk: DetectionBenchmark[];
@@ -223,7 +223,7 @@ export type DetectionDisplayGroup = {
   value?: string | undefined;
 };
 
-type BaseOperator = "and" | "equal";
+type BaseOperator = "and" | "equal" | "not_equal";
 export type CheckFilterOperator = BaseOperator;
 export type DetectionFilterOperator = BaseOperator;
 

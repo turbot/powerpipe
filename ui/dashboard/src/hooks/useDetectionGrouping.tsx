@@ -36,6 +36,7 @@ import {
 } from "@powerpipe/types";
 import { useDashboard } from "./useDashboard";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
+import { LeafNodeDataRow } from "@powerpipe/components/dashboards/common";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -524,27 +525,27 @@ function recordFilterValues(
   filterValues.status[detectionResult.status] += 1;
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
-  // for (const dimension of detectionResult.dimensions) {
-  //   if (!(dimension.key in filterValues.dimension.key)) {
-  //     filterValues.dimension.key[dimension.key] = {
-  //       [dimension.value]: 0,
-  //     };
-  //   }
-  //   if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
-  //     filterValues.dimension.key[dimension.key][dimension.value] = 0;
-  //   }
-  //   filterValues.dimension.key[dimension.key][dimension.value] += 1;
-  //
-  //   if (!(dimension.value in filterValues.dimension.value)) {
-  //     filterValues.dimension.value[dimension.value] = {
-  //       [dimension.key]: 0,
-  //     };
-  //   }
-  //   if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
-  //     filterValues.dimension.value[dimension.value][dimension.key] = 0;
-  //   }
-  //   filterValues.dimension.value[dimension.value][dimension.key] += 1;
-  // }
+  for (const dimension of detectionResult.dimensions) {
+    if (!(dimension.key in filterValues.dimension.key)) {
+      filterValues.dimension.key[dimension.key] = {
+        [dimension.value]: 0,
+      };
+    }
+    if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
+      filterValues.dimension.key[dimension.key][dimension.value] = 0;
+    }
+    filterValues.dimension.key[dimension.key][dimension.value] += 1;
+
+    if (!(dimension.value in filterValues.dimension.value)) {
+      filterValues.dimension.value[dimension.value] = {
+        [dimension.key]: 0,
+      };
+    }
+    if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
+      filterValues.dimension.value[dimension.value][dimension.key] = 0;
+    }
+    filterValues.dimension.value[dimension.value][dimension.key] += 1;
+  }
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(detectionResult.tags || {})) {
@@ -621,18 +622,31 @@ const includeResult = (
       }
       case "dimension": {
         // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
-        let matchesDimensions = false;
-        for (const dimension of checkResult.dimensions || []) {
-          if (
-            keyRegex.test(dimension.key) &&
-            valueRegex.test(dimension.value)
-          ) {
-            matchesDimensions = true;
-            break;
+        // const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
+        const newRows: LeafNodeDataRow[] = [];
+        let includeRow = false;
+        for (const row of checkResult.rows || []) {
+          includeRow = false;
+          if (filter.operator === "not_equal") {
+            includeRow =
+              !(filter.key in row) || row[filter.key] !== filter.value;
+          } else if (filter.operator === "equal") {
+            includeRow = filter.key in row && row[filter.key] === filter.value;
           }
+          if (includeRow) {
+            newRows.push(row);
+          } else {
+          }
+          // if (
+          //   keyRegex.test(dimension.key) &&
+          //   valueRegex.test(dimension.value)
+          // ) {
+          //   matchesDimensions = true;
+          //   break;
+          // }
         }
-        matches.push(matchesDimensions);
+        checkResult.rows = newRows;
+        matches.push(true);
         break;
       }
       case "detection_tag": {

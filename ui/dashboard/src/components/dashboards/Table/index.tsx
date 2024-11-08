@@ -1,7 +1,9 @@
 import ControlDimension from "../grouping/Benchmark/ControlDimension";
+import Icon from "@powerpipe/components/Icon";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import useDeepCompareEffect from "use-deep-compare-effect";
+import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -20,15 +22,16 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
+import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { memo, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { getComponent, registerComponent } from "../index";
 import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useSearchParams } from "react-router-dom";
 import { useSortBy, useTable } from "react-table";
-import Icon from "@powerpipe/components/Icon";
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
@@ -108,8 +111,12 @@ type CellValueProps = {
   rowTemplateData: RowRenderResult[];
   value: any;
   showTitle?: boolean;
-  handleAddFilter: (column: string, value: any) => void;
-  handleRemoveFilter: (filter: { column: string; value: any }) => void;
+  addFilter?: (
+    operator: "equal" | "not_equal",
+    key: string,
+    value: any,
+  ) => void;
+  filterEnabled?: boolean;
 };
 
 const CellValue = ({
@@ -118,8 +125,8 @@ const CellValue = ({
   rowTemplateData,
   value,
   showTitle = false,
-  handleAddFilter,
-  handleRemoveFilter,
+  addFilter,
+  filterEnabled = false,
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
@@ -347,22 +354,24 @@ const CellValue = ({
   ) : (
     <div className="flex items-center space-x-2 group">
       {cellContent}
-      <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-        <button
-          onClick={() => handleAddFilter(column.name, value)}
-          className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-          title="Add value to include filter"
-        >
-          <Icon className="h-5 w-5" icon="add_circle" />
-        </button>
-        <button
-          onClick={() => handleRemoveFilter({ column: column.name, value })}
-          className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-          title="Add value to exclude filter"
-        >
-          <Icon className="h-5 w-5" icon="do_not_disturb_on" />
-        </button>
-      </div>
+      {addFilter && (
+        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+          <button
+            onClick={() => addFilter("equal", column.name, value)}
+            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+            title="Add value to include filter"
+          >
+            <Icon className="h-5 w-5" icon="add_circle" />
+          </button>
+          <button
+            onClick={() => addFilter("not_equal", column.name, value)}
+            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+            title="Add value to exclude filter"
+          >
+            <Icon className="h-5 w-5" icon="do_not_disturb_on" />
+          </button>
+        </div>
+      )}
     </div>
   );
 };
@@ -390,64 +399,136 @@ export type TableProps = PanelDefinition &
   ExecutablePrimitiveProps & {
     display_type?: TableType;
     properties?: TableProperties;
+    filterEnabled?: boolean;
   };
+
+const useTableFilters = () => {
+  const urlFilters = useGroupingFilterConfig();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const expressions = urlFilters.expressions;
+  const filters: CheckFilter[] = [];
+
+  for (const expression of expressions || []) {
+    if (
+      expression.operator === "equal" &&
+      expression.type === "dimension" &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    } else if (
+      expression.operator === "not_equal" &&
+      expression.type === "dimension" &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    }
+  }
+
+  const addFilter = useCallback(
+    (operator: "equal" | "not_equal", key: string, value: any) => {
+      const index = urlFilters.expressions?.findIndex(
+        (e) => e.type === "dimension" && e.key === key && e.value === value,
+      );
+      let newFilters =
+        index !== undefined && index > -1
+          ? [
+              ...urlFilters.expressions?.slice(0, index),
+              ...urlFilters.expressions?.slice(index + 1),
+            ]
+          : urlFilters.expressions || [];
+      if (
+        newFilters.length === 1 &&
+        newFilters[0].operator === "equal" &&
+        !newFilters[0].type
+      ) {
+        newFilters = [
+          {
+            operator,
+            value,
+            type: "dimension",
+            key,
+            title: value,
+          },
+        ];
+      } else {
+        newFilters.push({
+          operator,
+          value,
+          type: "dimension",
+          key,
+          title: value,
+        });
+      }
+      urlFilters.expressions = newFilters;
+      searchParams.set("where", JSON.stringify(urlFilters));
+      setSearchParams(searchParams);
+    },
+    [urlFilters, searchParams, setSearchParams],
+  );
+
+  const removeFilter = useCallback(
+    (key: string, value: any) => {
+      const index = urlFilters.expressions?.findIndex(
+        (e) => e.type === "dimension" && e.key === key && e.value === value,
+      );
+      const newFilters =
+        index !== undefined
+          ? [
+              ...urlFilters.expressions?.slice(0, index),
+              ...urlFilters.expressions?.slice(index + 1),
+            ]
+          : urlFilters.expressions || [];
+      if (newFilters.length === 0) {
+        urlFilters.expressions = [{ operator: "equal" }];
+      } else {
+        urlFilters.expressions = newFilters;
+      }
+      searchParams.set("where", JSON.stringify(urlFilters));
+      setSearchParams(searchParams);
+    },
+    [urlFilters, searchParams, setSearchParams],
+  );
+
+  return {
+    filters,
+    addFilter,
+    removeFilter,
+  };
+};
 
 const TableView = ({
   rowData,
   columns,
   hiddenColumns,
   hasTopBorder = false,
+  filterEnabled = true,
 }) => {
-  const [activeFilters, setActiveFilters] = useState([]);
-  const [excludedFilters, setExcludedFilters] = useState([]);
+  const { filters, addFilter, removeFilter } = useTableFilters();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
 
-  const handleAddFilter = (column, value) => {
-    const newFilter = { column, value };
-    if (!activeFilters.some((f) => f.column === column && f.value === value)) {
-      setActiveFilters([...activeFilters, newFilter]);
-      setExcludedFilters(
-        excludedFilters.filter((f) => f.column !== column || f.value !== value),
-      );
-    }
-  };
-
-  const handleRemoveFilter = (filter) => {
-    if (
-      !excludedFilters.some(
-        (f) => f.column === filter.column && f.value === filter.value,
-      )
-    ) {
-      setExcludedFilters([...excludedFilters, filter]);
-      setActiveFilters(
-        activeFilters.filter(
-          (f) => f.column !== filter.column || f.value !== filter.value,
-        ),
-      );
-    }
-  };
-
-  const filteredData = useMemo(() => {
-    let filtered = rowData;
-
-    if (activeFilters.length > 0 || excludedFilters.length > 0) {
-      filtered = filtered.filter((row) => {
-        return (
-          activeFilters.every(
-            (filter) => row[filter.column] === filter.value,
-          ) &&
-          excludedFilters.every((filter) => row[filter.column] !== filter.value)
-        );
-      });
-    }
-
-    return filtered;
-  }, [rowData, activeFilters, excludedFilters]);
+  // const filteredData = useMemo(() => {
+  //   let filtered = rowData;
+  //
+  //   if (activeFilters.length > 0 || excludedFilters.length > 0) {
+  //     filtered = filtered.filter((row) => {
+  //       return (
+  //         activeFilters.every(
+  //           (filter) => row[filter.column] === filter.value,
+  //         ) &&
+  //         excludedFilters.every((filter) => row[filter.column] !== filter.value)
+  //       );
+  //     });
+  //   }
+  //
+  //   return filtered;
+  // }, [rowData, activeFilters, excludedFilters]);
 
   const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
     useTable(
-      { columns, data: filteredData, initialState: { hiddenColumns } },
+      { columns, data: rowData, initialState: { hiddenColumns } },
       useSortBy,
     );
 
@@ -477,56 +558,29 @@ const TableView = ({
 
   return (
     <div>
-      {(activeFilters.length > 0 || excludedFilters.length > 0) && (
+      {filterEnabled && filters.length > 0 && (
         <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
-          {[...activeFilters, ...excludedFilters].map((filter, index) => {
-            const isActive = activeFilters.some(
-              (f) => f.column === filter.column && f.value === filter.value,
-            );
+          {filters.map((filter) => {
             return (
               <div
-                key={index}
-                className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md shadow-sm space-x-2"
+                key={`${filter.operator}:${filter.key}:${filter.value}`}
+                className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
               >
-                <span className=" flex items-center space-x-2">
-                  {isActive ? (
-                    <Icon
-                      className="h-5 w-5 text-black-scale-6 "
-                      icon="add_circle"
-                    />
-                  ) : (
-                    <Icon
-                      className="h-5 w-5 text-black-scale-6 "
-                      icon="do_not_disturb_on"
-                    />
-                  )}
-                  <span>{` ${filter.column}: ${filter.value}`}</span>
-                </span>
-                <button
-                  onClick={() => {
-                    if (isActive) {
-                      setActiveFilters(
-                        activeFilters.filter(
-                          (f) =>
-                            f.column !== filter.column ||
-                            f.value !== filter.value,
-                        ),
-                      );
-                    } else {
-                      setExcludedFilters(
-                        excludedFilters.filter(
-                          (f) =>
-                            f.column !== filter.column ||
-                            f.value !== filter.value,
-                        ),
-                      );
-                    }
-                  }}
-                  className="text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
-                  title="Remove Filter"
+                <Icon
+                  className="w-4 h-4"
+                  icon={
+                    filter.operator === "equal"
+                      ? "add_circle"
+                      : "do_not_disturb_on"
+                  }
+                />
+                <span>{`${filter.key}: ${filter.value}`}</span>
+                <span
+                  onClick={() => removeFilter(filter.key, filter.value)}
+                  className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
                 >
-                  &times;
-                </button>
+                  <Icon className="w-4 h-4" icon="close" />
+                </span>
               </div>
             );
           })}
@@ -613,13 +667,13 @@ const TableView = ({
                           : "whitespace-nowrap",
                       )}
                     >
-                      <MemoCellValue
+                      <CellValue
                         column={cell.column}
                         rowIndex={index}
                         rowTemplateData={rowTemplateData}
                         value={cell.value}
-                        handleAddFilter={handleAddFilter}
-                        handleRemoveFilter={handleRemoveFilter}
+                        addFilter={addFilter}
+                        filterEnabled={filterEnabled}
                       />
                     </td>
                   );
@@ -650,6 +704,7 @@ const TableViewWrapper = (props: TableProps) => {
       columns={columns}
       hiddenColumns={hiddenColumns}
       hasTopBorder={!!props.title}
+      filterEnabled={props.filterEnabled}
     />
   ) : null;
 };
