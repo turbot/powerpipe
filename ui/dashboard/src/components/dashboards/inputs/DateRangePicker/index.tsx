@@ -37,7 +37,7 @@ const DateRangePicker = (props: InputProps) => {
 
   useEffect(() => {
     if (!stateValue) {
-      return "";
+      return;
     }
     try {
       const parsed = JSON.parse(stateValue);
