@@ -239,15 +239,17 @@ const DateRangePicker = (props: InputProps) => {
   };
 
   return (
-    <div className="flex flex-col max-w-23vw">
-      <div className="flex gap-[5px] mb-[10px] justify-between">
+    <div className="flex flex-col">
+      <div className="inline-flex space-x-2 mb-[10px]">
         {presets.map((preset) => (
          <button
             key={preset.value}
             onClick={() => handlePresetChange(preset.value)}
-            className={`py-[5px] px-[10px] bg-dashboard border border-table-border rounded cursor-pointer transition-colors duration-300 ${
-              state.relative === preset.value ? "bg-dashboard-panel text-foreground border-dashboard" : ""
-            }`}
+            className={`py-[5px] px-[10px] border rounded cursor-pointer 
+              ${state.relative === preset.value
+                ? "bg-dashboard-panel text-foreground border-dashboard"
+                : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard hover:scale-105"}
+              `}
             ref={preset.value === "custom" ? customButtonRef : null}
           >
             {preset.label}
@@ -431,7 +433,7 @@ const DateRangePicker = (props: InputProps) => {
                           key={min}
                           onClick={() => handleTimeOptionClick(min, "minute")}
                           className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
-                            duration === min && unitOfTime === "minute" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                            duration === min && unitOfTime === "minute" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
                           {min}
@@ -446,7 +448,7 @@ const DateRangePicker = (props: InputProps) => {
                           key={hour}
                           onClick={() => handleTimeOptionClick(hour, "hour")}
                           className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
-                            duration === hour && unitOfTime === "hour" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                            duration === hour && unitOfTime === "hour" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
                           {hour}
@@ -460,8 +462,8 @@ const DateRangePicker = (props: InputProps) => {
                         <button
                           key={day}
                           onClick={() => handleTimeOptionClick(day, "day")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
-                            duration === day && unitOfTime === "day" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
+                            duration === day && unitOfTime === "day" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
                           {day}
@@ -475,8 +477,8 @@ const DateRangePicker = (props: InputProps) => {
                         <button
                           key={week}
                           onClick={() => handleTimeOptionClick(week, "week")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
-                            duration === week && unitOfTime === "week" ? "bg-dashboard-panel text-foreground border-dashboard" : ""
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
+                            duration === week && unitOfTime === "week" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
                           {week}
