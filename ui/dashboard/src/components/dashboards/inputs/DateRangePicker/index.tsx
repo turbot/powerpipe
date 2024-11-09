@@ -245,21 +245,22 @@ const DateRangePicker = (props: InputProps) => {
     <div className="flex flex-col">
       <div className="inline-flex space-x-2 mb-[10px]">
         {presets.map((preset) => (
-         <button
+          <div
             key={preset.value}
             onClick={() => handlePresetChange(preset.value)}
-            className={`py-[5px] px-[10px] border rounded cursor-pointer 
-              ${state.relative === preset.value ||
-            (!presets.find((p) => p.value === state.relative) &&
-              preset.value === "custom")
-                ? "bg-dashboard-panel text-foreground border-dashboard"
-                : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"}
+            className={`py-1.5 px-2.5 border rounded-md cursor-pointer 
+              ${
+                state.relative === preset.value ||
+                (!presets.find((p) => p.value === state.relative) &&
+                  preset.value === "custom")
+                  ? "bg-dashboard-panel text-foreground border-dashboard"
+                  : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
+              }
               `}
             ref={preset.value === "custom" ? customButtonRef : null}
           >
             {preset.label}
-          </button>
-
+          </div>
         ))}
       </div>
 
@@ -433,66 +434,82 @@ const DateRangePicker = (props: InputProps) => {
           ) : (
             <div className="p-[10px]">
               <div className="space-y-4">
-                    <label className="block text-[14px] mt-[15px] mb-[5px]">Minutes</label>
-                    <div className="flex gap-[8px] mb-[10px]">
-                      {timeOptions.minutes.map((min) => (
-                        <button
-                          key={min}
-                          onClick={() => handleTimeOptionClick(min, "minute")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard ${
-                            duration === min && unitOfTime === "minute" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                          }`}
-                        >
-                          {min}
-                        </button>
-                      ))}
-                    </div>
+                <label className="block text-[14px] mt-[15px] mb-[5px]">
+                  Minutes
+                </label>
+                <div className="flex gap-[8px] mb-[10px]">
+                  {timeOptions.minutes.map((min) => (
+                    <button
+                      key={min}
+                      onClick={() => handleTimeOptionClick(min, "minute")}
+                      className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard ${
+                        duration === min && unitOfTime === "minute"
+                          ? "bg-dashboard-panel text-foreground border-dashboard"
+                          : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
+                      }`}
+                    >
+                      {min}
+                    </button>
+                  ))}
+                </div>
 
-                    <label className="block text-[14px] mt-[15px] mb-[5px]">Hours</label>
-                    <div className="flex gap-[8px] mb-[10px]">
-                      {timeOptions.hours.map((hour) => (
-                        <button
-                          key={hour}
-                          onClick={() => handleTimeOptionClick(hour, "hour")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                            duration === hour && unitOfTime === "hour" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                          }`}
-                        >
-                          {hour}
-                        </button>
-                      ))}
-                    </div>
+                <label className="block text-[14px] mt-[15px] mb-[5px]">
+                  Hours
+                </label>
+                <div className="flex gap-[8px] mb-[10px]">
+                  {timeOptions.hours.map((hour) => (
+                    <button
+                      key={hour}
+                      onClick={() => handleTimeOptionClick(hour, "hour")}
+                      className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
+                        duration === hour && unitOfTime === "hour"
+                          ? "bg-dashboard-panel text-foreground border-dashboard"
+                          : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
+                      }`}
+                    >
+                      {hour}
+                    </button>
+                  ))}
+                </div>
 
-                    <label className="block text-[14px] mt-[15px] mb-[5px]">Days</label>
-                    <div className="flex gap-[8px] mb-[10px]">
-                      {timeOptions.days.map((day) => (
-                        <button
-                          key={day}
-                          onClick={() => handleTimeOptionClick(day, "day")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                            duration === day && unitOfTime === "day" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                          }`}
-                        >
-                          {day}
-                        </button>
-                      ))}
-                    </div>
+                <label className="block text-[14px] mt-[15px] mb-[5px]">
+                  Days
+                </label>
+                <div className="flex gap-[8px] mb-[10px]">
+                  {timeOptions.days.map((day) => (
+                    <button
+                      key={day}
+                      onClick={() => handleTimeOptionClick(day, "day")}
+                      className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
+                        duration === day && unitOfTime === "day"
+                          ? "bg-dashboard-panel text-foreground border-dashboard"
+                          : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
+                      }`}
+                    >
+                      {day}
+                    </button>
+                  ))}
+                </div>
 
-                    <label className="block text-[14px] mt-[15px] mb-[5px]">Weeks</label>
-                    <div className="flex gap-[8px] mb-[10px]">
-                      {timeOptions.weeks.map((week) => (
-                        <button
-                          key={week}
-                          onClick={() => handleTimeOptionClick(week, "week")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                            duration === week && unitOfTime === "week" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                          }`}
-                        >
-                          {week}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
+                <label className="block text-[14px] mt-[15px] mb-[5px]">
+                  Weeks
+                </label>
+                <div className="flex gap-[8px] mb-[10px]">
+                  {timeOptions.weeks.map((week) => (
+                    <button
+                      key={week}
+                      onClick={() => handleTimeOptionClick(week, "week")}
+                      className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
+                        duration === week && unitOfTime === "week"
+                          ? "bg-dashboard-panel text-foreground border-dashboard"
+                          : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
+                      }`}
+                    >
+                      {week}
+                    </button>
+                  ))}
+                </div>
+              </div>
 
               <div className="flex items-center gap-[10px] mt-[15px]">
                 <label className="text-[14px]">Duration</label>
