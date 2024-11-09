@@ -100,7 +100,7 @@ class DetectionBenchmark implements DetectionNode {
           detection.name,
           detection.title,
           detection.description,
-          detection.severity,
+          detection.properties?.severity,
           detection.data,
           detection.summary,
           detection.tags,
