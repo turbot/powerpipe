@@ -145,19 +145,33 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 
 	// get the previous value of this input
 	inputPrevValue := executionTree.inputValues[changedInput]
+	// if there are any dependent inputs, set their value to nil and send an event to the UI
 	// first see if any other inputs rely on the one which was just changed
-	clearedInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs.Inputs)
-	if len(clearedInputs) > 0 {
+	dependentInputs := e.clearDependentInputs(executionTree.Root, changedInput, inputs.Inputs)
+	if len(dependentInputs) > 0 {
 		event := &dashboardevents.InputValuesCleared{
-			ClearedInputs: clearedInputs,
+			ClearedInputs: dependentInputs,
 			Session:       executionTree.sessionId,
 			ExecutionId:   executionTree.id,
 		}
 		executionTree.workspace.PublishDashboardEvent(ctx, event)
 	}
-	// if there are any dependent inputs, set their value to nil and send an event to the UI
-	// if the dashboard run is complete, just re-execute
-	if executionTree.GetRunStatus().IsFinished() || inputPrevValue != nil {
+
+	// has the time range changed
+	timeRangeChanged := !inputs.DetectionTimeRange.Equals(executionTree.DetectionTimeRange)
+	currentRunFinished := executionTree.GetRunStatus().IsFinished()
+	prevInputsExist := inputPrevValue != nil
+
+	// input has changed - should we immediately re-execute?
+
+	// we should re-execute if:
+	// - the execution has completed - reexecute
+	// - the time range has changed - reexecute
+	// - the input value was NOT previously nil
+	// (i.e. this is really a CHANGE of input not just the first time the inputs have been set)
+	// NOTE: if the previous input value is nil and we are currently executing we do not need to re-execute
+	// as the current execution will be waiting for the inputs to be available
+	if currentRunFinished || timeRangeChanged || prevInputsExist {
 		return e.ExecuteDashboard(
 			ctx,
 			sessionId,
@@ -166,7 +180,7 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 			executionTree.workspace)
 	}
 
-	// set the inputs
+	// ok we we are NOT re-executing - just set the inputs
 	executionTree.SetInputValues(inputs)
 
 	return nil
