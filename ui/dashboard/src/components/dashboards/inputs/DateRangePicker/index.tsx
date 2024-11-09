@@ -125,7 +125,10 @@ const DateRangePicker = (props: InputProps) => {
   // Handle click outside
   useEffect(() => {
     function handleClickOutside(event) {
-      if (customPanelRef.current && !customPanelRef.current.contains(event.target)) {
+      if (
+        customPanelRef.current &&
+        !customPanelRef.current.contains(event.target)
+      ) {
         // Close the popup if the click is outside of the custom panel
         setState((previous) => ({
           ...previous,
@@ -246,7 +249,9 @@ const DateRangePicker = (props: InputProps) => {
             key={preset.value}
             onClick={() => handlePresetChange(preset.value)}
             className={`py-[5px] px-[10px] border rounded cursor-pointer 
-              ${state.relative === preset.value
+              ${state.relative === preset.value ||
+            (!presets.find((p) => p.value === state.relative) &&
+              preset.value === "custom")
                 ? "bg-dashboard-panel text-foreground border-dashboard"
                 : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard hover:scale-105"}
               `}
@@ -264,9 +269,11 @@ const DateRangePicker = (props: InputProps) => {
           className="absolute border border-table-border rounded-[5px] bg-dashboard-panel p-[20px] shadow-lg z-[1000]"
           style={{
             top:
-              customButtonRef.current?.getBoundingClientRect().bottom + window.scrollY,
+              customButtonRef.current?.getBoundingClientRect().bottom +
+              window.scrollY,
             left:
-              customButtonRef.current?.getBoundingClientRect().left + window.scrollX,
+              customButtonRef.current?.getBoundingClientRect().left +
+              window.scrollX,
           }}
         >
           <div className="flex gap-[10px] mb-[10px]">
@@ -352,7 +359,7 @@ const DateRangePicker = (props: InputProps) => {
                       to: parsedTo,
                     }));
                   }}
-                   className="mx-auto react-day-picker bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light"
+                  className="mx-auto react-day-picker bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light"
                   captionLayout="dropdown"
                   pagedNavigation
                 />
@@ -486,7 +493,6 @@ const DateRangePicker = (props: InputProps) => {
                       ))}
                     </div>
                   </div>
-
 
               <div className="flex items-center gap-[10px] mt-[15px]">
                 <label className="text-[14px]">Duration</label>
