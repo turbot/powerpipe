@@ -33,6 +33,7 @@ import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
 import { useSortBy, useTable } from "react-table";
 
+
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
 
@@ -698,14 +699,59 @@ const TableViewWrapper = (props: TableProps) => {
     [columns, props.data],
   );
 
+    // State for managing column visibility
+  const [visibleColumns, setVisibleColumns] = useState(
+    columns.map((col) => ({ ...col, visible: !hiddenColumns.includes(col.name) }))
+  );
+
+  // Handler to toggle column visibility
+  const toggleColumnVisibility = (columnName) => {
+    setVisibleColumns((prevColumns) =>
+      prevColumns.map((col) =>
+        col.name === columnName ? { ...col, visible: !col.visible } : col
+      )
+    );
+  };
+
+  // Filter columns based on visibility state
+  const filteredColumns = useMemo(
+    () => visibleColumns.filter((col) => col.visible),
+    [visibleColumns]
+  );
+
+  // Render column selection UI
+  const renderColumnSelector = () => (
+    <div className="p-2 border-b mb-4">
+      <label className="block font-bold mb-2">Select Columns to Display:</label>
+      <div className="flex flex-wrap gap-2">
+        {visibleColumns.map((col) => (
+          <div key={col.name} className="flex items-center">
+            <input
+              type="checkbox"
+              checked={col.visible}
+              onChange={() => toggleColumnVisibility(col.name)}
+              id={`toggle-${col.name}`}
+            />
+            <label htmlFor={`toggle-${col.name}`} className="ml-2">
+              {col.title}
+            </label>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+
   return props.data ? (
-    <TableView
-      rowData={rowData}
-      columns={columns}
-      hiddenColumns={hiddenColumns}
-      hasTopBorder={!!props.title}
-      filterEnabled={props.filterEnabled}
-    />
+    <div>
+      {/* Render column selector UI */}
+      {/* {renderColumnSelector()}  */}
+      <TableView
+        rowData={rowData}
+        columns={visibleColumns} // Use filtered columns for the table
+        hiddenColumns={hiddenColumns}
+        hasTopBorder={!!props.title}
+      />
+    </div>
   ) : null;
 };
 
