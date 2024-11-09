@@ -632,9 +632,6 @@ const TableView = ({
                       scope="col"
                       className={classNames(
                         "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                        isNumericCol(column.data_type)
-                          ? "text-right"
-                          : "text-left",
                       )}
                     >
                       {column.render("Header")}

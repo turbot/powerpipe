@@ -189,116 +189,117 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     }
 
     // If we have at least 1 critical result
-    if (criticalRaw !== undefined) {
-      const total = critical;
-      const diffTotal = diffCritical;
-      summary_cards.push({
-        name: `${props.definition.name}.container.summary.severity.critical`,
-        width: 2,
-        display_type: total > 0 ? "severity" : "",
-        properties: {
-          label: "Critical",
-          value: total,
-          icon: "materialsymbols-solid:warning",
-        },
-        diff_panel: diff_severity_summary
-          ? {
-              name: `${props.definition.name}.container.summary.severity.diff.critical`,
-              width: 2,
-              display_type: diffTotal > 0 ? "severity" : "",
-              properties: {
-                label: "Critical",
-                value: diffTotal,
-                icon: "materialsymbols-solid:warning",
-              },
-            }
-          : null,
-      });
-    }
+    const criticalTotal = critical;
+    const criticalDiffTotal = diffCritical;
+    summary_cards.push({
+      name: `${props.definition.name}.container.summary.severity.critical`,
+      width: 2,
+      display_type: criticalTotal > 0 ? "severity" : "",
+      properties: {
+        loading: criticalTotal === 0 && props.grouping.status === "running",
+        label: "Critical",
+        value: criticalTotal,
+        icon: "materialsymbols-solid:warning",
+      },
+      diff_panel: diff_severity_summary
+        ? {
+            name: `${props.definition.name}.container.summary.severity.diff.critical`,
+            width: 2,
+            display_type: criticalDiffTotal > 0 ? "severity" : "",
+            properties: {
+              loading:
+                criticalDiffTotal === 0 && props.grouping.status === "running",
+              label: "Critical",
+              value: criticalDiffTotal,
+              icon: "materialsymbols-solid:warning",
+            },
+          }
+        : null,
+    });
 
     // If we have at least 1 high result
-    if (highRaw !== undefined) {
-      const total = high;
-      const diffTotal = diffHigh;
-      summary_cards.push({
-        name: `${props.definition.name}.container.summary.severity.high`,
-        width: 2,
-        display_type: total > 0 ? "severity" : "",
-        properties: {
-          label: "High",
-          value: total,
-          icon: "materialsymbols-solid:warning",
-        },
-        diff_panel: diff_severity_summary
-          ? {
-              name: `${props.definition.name}.container.summary.severity.diff.high`,
-              width: 2,
-              display_type: diffTotal > 0 ? "severity" : "",
-              properties: {
-                label: "High",
-                value: diffTotal,
-                icon: "materialsymbols-solid:warning",
-              },
-            }
-          : null,
-      });
-    }
+    const highTotal = high;
+    const diffHighTotal = diffHigh;
+    summary_cards.push({
+      name: `${props.definition.name}.container.summary.severity.high`,
+      width: 2,
+      display_type: highTotal > 0 ? "severity" : "",
+      properties: {
+        loading: highTotal === 0 && props.grouping.status === "running",
+        label: "High",
+        value: highTotal,
+        icon: "materialsymbols-solid:warning",
+      },
+      diff_panel: diff_severity_summary
+        ? {
+            name: `${props.definition.name}.container.summary.severity.diff.high`,
+            width: 2,
+            display_type: diffHighTotal > 0 ? "severity" : "",
+            properties: {
+              loading: highTotal === 0 && props.grouping.status === "running",
+              label: "High",
+              value: diffHighTotal,
+              icon: "materialsymbols-solid:warning",
+            },
+          }
+        : null,
+    });
 
     // If we have at least 1 medium result
-    if (mediumRaw !== undefined) {
-      const total = medium;
-      const diffTotal = diffMedium;
-      summary_cards.push({
-        name: `${props.definition.name}.container.summary.severity.medium`,
-        width: 2,
-        display_type: total > 0 ? "severity" : "",
-        properties: {
-          label: "Medium",
-          value: total,
-          icon: "materialsymbols-solid:warning",
-        },
-        diff_panel: diff_severity_summary
-          ? {
-              name: `${props.definition.name}.container.summary.severity.diff.medium`,
-              width: 2,
-              display_type: diffTotal > 0 ? "severity" : "",
-              properties: {
-                label: "Medium",
-                value: diffTotal,
-                icon: "materialsymbols-solid:warning",
-              },
-            }
-          : null,
-      });
-    }
+    const mediumTotal = medium;
+    const mediumDiffTotal = diffMedium;
+    summary_cards.push({
+      name: `${props.definition.name}.container.summary.severity.medium`,
+      width: 2,
+      display_type: mediumTotal > 0 ? "severity" : "",
+      properties: {
+        loading: mediumTotal === 0 && props.grouping.status === "running",
+        label: "Medium",
+        value: mediumTotal,
+        icon: "materialsymbols-solid:warning",
+      },
+      diff_panel: diff_severity_summary
+        ? {
+            name: `${props.definition.name}.container.summary.severity.diff.medium`,
+            width: 2,
+            display_type: mediumDiffTotal > 0 ? "severity" : "",
+            properties: {
+              loading: mediumTotal === 0 && props.grouping.status === "running",
+              label: "Medium",
+              value: mediumDiffTotal,
+              icon: "materialsymbols-solid:warning",
+            },
+          }
+        : null,
+    });
 
     // If we have at least 1 low result
-    if (lowRaw !== undefined) {
-      const total = low;
-      const diffTotal = diffLow;
-      summary_cards.push({
-        name: `${props.definition.name}.container.summary.severity.low`,
-        width: 2,
-        display_type: total > 0 ? "severity" : "",
-        properties: {
-          label: "Low",
-          value: total,
-          icon: "materialsymbols-solid:warning",
-        },
-        diff_panel: diff_severity_summary
-          ? {
-              name: `${props.definition.name}.container.summary.severity.diff.low`,
-              width: 2,
-              display_type: diffTotal > 0 ? "severity" : "",
-              properties: {
-                label: "Low",
-                value: diffTotal,
-                icon: "materialsymbols-solid:warning",
-              },
-            }
-          : null,
-      });
-    }
+    const lowTotal = low;
+    const lowDiffTotal = diffLow;
+    summary_cards.push({
+      name: `${props.definition.name}.container.summary.severity.low`,
+      width: 2,
+      display_type: lowTotal > 0 ? "severity" : "",
+      properties: {
+        loading: lowTotal === 0 && props.grouping.status === "running",
+        label: "Low",
+        value: lowTotal,
+        icon: "materialsymbols-solid:warning",
+      },
+      diff_panel: diff_severity_summary
+        ? {
+            name: `${props.definition.name}.container.summary.severity.diff.low`,
+            width: 2,
+            display_type: lowDiffTotal > 0 ? "severity" : "",
+            properties: {
+              loading: lowTotal === 0 && props.grouping.status === "running",
+              label: "Low",
+              value: lowDiffTotal,
+              icon: "materialsymbols-solid:warning",
+            },
+          }
+        : null,
+    });
 
     return summary_cards;
   }, [
