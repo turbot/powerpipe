@@ -253,7 +253,7 @@ const DateRangePicker = (props: InputProps) => {
             (!presets.find((p) => p.value === state.relative) &&
               preset.value === "custom")
                 ? "bg-dashboard-panel text-foreground border-dashboard"
-                : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard hover:scale-105"}
+                : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"}
               `}
             ref={preset.value === "custom" ? customButtonRef : null}
           >
@@ -439,7 +439,7 @@ const DateRangePicker = (props: InputProps) => {
                         <button
                           key={min}
                           onClick={() => handleTimeOptionClick(min, "minute")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard ${
                             duration === min && unitOfTime === "minute" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
@@ -454,7 +454,7 @@ const DateRangePicker = (props: InputProps) => {
                         <button
                           key={hour}
                           onClick={() => handleTimeOptionClick(hour, "hour")}
-                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard transition-colors duration-300 ${
+                          className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
                             duration === hour && unitOfTime === "hour" ? "bg-dashboard-panel text-foreground border-dashboard" : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
                           }`}
                         >
@@ -520,13 +520,13 @@ const DateRangePicker = (props: InputProps) => {
 
           <div className="flex gap-[10px] justify-end mt-[15px]">
             <button
-              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] transition-colors duration-300 font-bold bg-blue-600 text-white hover:bg-blue-700"
+              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] font-bold bg-blue-600 text-white hover:bg-blue-700"
               onClick={handleApply}
             >
               Apply
             </button>
             <button
-              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] transition-colors duration-300 font-bold bg-gray-300 hover:bg-gray-400"
+              className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] font-bold bg-gray-300 hover:bg-gray-400"
               onClick={handleCancel}
             >
               Cancel
