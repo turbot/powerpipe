@@ -88,9 +88,9 @@ const DetectionSummaryChart = ({
   const hasTotal = summary.total > 0;
 
   return (
-    <div className="flex items-center space-x-2">
-      {isRunning && (
-        <div className="flex items-center">
+    <div className="flex items-center space-x-2 justify-end">
+      {isRunning && !hasTotal && (
+        <div className="flex items-center justify-end">
           <LoadingIndicator className="w-5 h-5 mr-2" />
         </div>
       )}
@@ -103,12 +103,13 @@ const DetectionSummaryChart = ({
             display: isRunning ? "flex" : "block",
           }}
         >
-          <ProgressBarGroup>
+          <ProgressBarGroup className="flex-grow">
             <ProgressBar
               className={classNames(
                 "border border-alert",
                 isRunning ? "summary-chart-alarm-animate" : "bg-alert"
               )}
+              
               percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
             />
           </ProgressBarGroup>
