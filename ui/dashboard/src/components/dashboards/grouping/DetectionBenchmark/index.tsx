@@ -26,6 +26,7 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
