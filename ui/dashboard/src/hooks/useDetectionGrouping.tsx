@@ -314,7 +314,7 @@ const groupCheckItems = (
   temp: { _: DetectionNodeType[] },
   checkResult: DetectionResult,
   groupingsConfig: DetectionDisplayGroup[],
-  DetectionNodeStates: CheckGroupNodeStates,
+  detectionNodeStates: CheckGroupNodeStates,
   benchmarkChildrenLookup: { [name: string]: DetectionNodeType[] },
   groupingHierarchyKeys: string[],
 ) => {
@@ -349,12 +349,12 @@ const groupCheckItems = (
         if (currentGroupingConfig.type === "detection_benchmark") {
           checkResult.detection_benchmark_trunk.forEach(
             (benchmark) =>
-              (DetectionNodeStates[benchmark.name] = {
+              (detectionNodeStates[benchmark.name] = {
                 expanded: false,
               }),
           );
         } else {
-          DetectionNodeStates[groupKey] = {
+          detectionNodeStates[groupKey] = {
             expanded: false,
           };
         }
@@ -721,7 +721,8 @@ const useGroupingInternal = (
       [],
     );
 
-    const DetectionNodeStates: CheckGroupNodeStates = {};
+    const detectionNodeStates: CheckGroupNodeStates = {};
+    // console.log(detectionNodeStates);
     const result: DetectionNodeType[] = [];
     const temp = { _: result };
     const benchmarkChildrenLookup = {};
@@ -742,7 +743,7 @@ const useGroupingInternal = (
         temp,
         checkResult,
         groupingsConfig,
-        DetectionNodeStates,
+        detectionNodeStates,
         benchmarkChildrenLookup,
         [],
       );
@@ -764,7 +765,7 @@ const useGroupingInternal = (
       { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
-      DetectionNodeStates,
+      detectionNodeStates,
       filterValues,
     ] as const;
   }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
@@ -801,8 +802,8 @@ const GroupingProvider = ({
   useEffect(() => {
     if (
       previousGroupings &&
-      // @ts-ignore
-      previousGroupings.groupingsConfig === groupingsConfig
+      JSON.stringify(previousGroupings.groupingsConfig) ===
+        JSON.stringify(groupingsConfig)
     ) {
       return;
     }
