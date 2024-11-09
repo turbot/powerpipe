@@ -5,6 +5,7 @@ import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node
 import DetectionResultNode from "../common/node/DetectionResultNode";
 import DetectionSummaryChart from "@powerpipe/components/dashboards/grouping/DetetctionSummaryChart";
 import sortBy from "lodash/sortBy";
+import Table from "@powerpipe/components/dashboards/Table";
 import {
   AlarmIcon,
   CollapseBenchmarkIcon,
@@ -17,14 +18,11 @@ import {
   DetectionResult,
   DetectionSeveritySummary,
 } from "@powerpipe/components/dashboards/grouping/common";
-import { getComponent } from "@powerpipe/components/dashboards";
 import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { useMemo } from "react";
-
-const Table = getComponent("table");
 
 type DetectionChildrenProps = {
   depth: number;
@@ -127,6 +125,8 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
           name={`${result.detection.name}.table`}
           panel_type="table"
           data={{ rows: result.rows, columns: result.columns }}
+          filterEnabled
+          context={result.detection.name}
         />
       </div>
     </div>
