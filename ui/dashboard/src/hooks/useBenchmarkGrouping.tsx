@@ -914,7 +914,8 @@ const GroupingProvider = ({
     if (
       previousGroupings &&
       // @ts-ignore
-      previousGroupings.groupingsConfig === groupingsConfig
+      JSON.stringify(previousGroupings.groupingsConfig) ===
+        JSON.stringify(groupingsConfig)
     ) {
       return;
     }
