@@ -72,6 +72,8 @@ const DetectionSummaryChart = ({
 }: DetectionSummaryChartProps) => {
   let maxAlerts = 0;
   let maxNonAlerts = 0;
+
+  // Calculate max alerts
   for (const firstChildSummary of firstChildSummaries) {
     const currentMaxAlerts = firstChildSummary.total;
     if (currentMaxAlerts > maxAlerts) {
@@ -79,31 +81,35 @@ const DetectionSummaryChart = ({
     }
   }
 
+  // Calculate width for progress bar
   let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
 
   const isRunning = status === "running";
   const hasTotal = summary.total > 0;
 
   return (
-    <div className="flex items-center justify-between space-x-2">
+    <div className="flex items-center space-x-2">
       {isRunning && (
-        <div className="mr-2">
-          <LoadingIndicator className=" w-5 h-5" />
+        <div className="flex items-center">
+          <LoadingIndicator className="w-5 h-5 mr-2" />
         </div>
       )}
 
       {hasTotal ? (
-        <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
+        <div
+          className="my-auto px-0"
+          style={{
+            width: `${alertsWidth}%`,
+            display: isRunning ? "flex" : "block",
+          }}
+        >
           <ProgressBarGroup>
             <ProgressBar
               className={classNames(
                 "border border-alert",
-                isRunning ? "summary-chart-alarm-animate" : "bg-alert",
+                isRunning ? "summary-chart-alarm-animate" : "bg-alert"
               )}
-              percent={getDetectionSummaryChartPercent(
-                summary.total,
-                maxAlerts,
-              )}
+              percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
             />
           </ProgressBarGroup>
         </div>
