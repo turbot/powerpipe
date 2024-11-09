@@ -233,6 +233,7 @@ export type CheckFilter = {
   key?: string;
   value?: string;
   title?: string;
+  context?: string;
   expressions?: CheckFilter[];
 };
 
@@ -242,6 +243,7 @@ export type DetectionFilter = {
   key?: string;
   value?: string;
   title?: string;
+  context?: string;
   expressions?: DetectionFilter[];
 };
 

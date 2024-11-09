@@ -33,7 +33,6 @@ import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
 import { useSortBy, useTable } from "react-table";
 
-
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
 
@@ -116,8 +115,9 @@ type CellValueProps = {
     operator: "equal" | "not_equal",
     key: string,
     value: any,
+    context?: string,
   ) => void;
-  filterEnabled?: boolean;
+  context?: string;
 };
 
 const CellValue = ({
@@ -127,7 +127,7 @@ const CellValue = ({
   value,
   showTitle = false,
   addFilter,
-  filterEnabled = false,
+  context = "",
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
@@ -358,14 +358,14 @@ const CellValue = ({
       {addFilter && (
         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
-            onClick={() => addFilter("equal", column.name, value)}
+            onClick={() => addFilter("equal", column.name, value, context)}
             className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
             title="Add value to include filter"
           >
             <Icon className="h-5 w-5" icon="add_circle" />
           </button>
           <button
-            onClick={() => addFilter("not_equal", column.name, value)}
+            onClick={() => addFilter("not_equal", column.name, value, context)}
             className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
             title="Add value to exclude filter"
           >
@@ -401,6 +401,7 @@ export type TableProps = PanelDefinition &
     display_type?: TableType;
     properties?: TableProperties;
     filterEnabled?: boolean;
+    context?: string;
   };
 
 const useTableFilters = () => {
@@ -428,9 +429,18 @@ const useTableFilters = () => {
   }
 
   const addFilter = useCallback(
-    (operator: "equal" | "not_equal", key: string, value: any) => {
+    (
+      operator: "equal" | "not_equal",
+      key: string,
+      value: any,
+      context?: string,
+    ) => {
       const index = urlFilters.expressions?.findIndex(
-        (e) => e.type === "dimension" && e.key === key && e.value === value,
+        (e) =>
+          e.type === "dimension" &&
+          e.key === key &&
+          e.value === value &&
+          e.context === context,
       );
       let newFilters =
         index !== undefined && index > -1
@@ -451,6 +461,7 @@ const useTableFilters = () => {
             type: "dimension",
             key,
             title: value,
+            context,
           },
         ];
       } else {
@@ -460,6 +471,7 @@ const useTableFilters = () => {
           type: "dimension",
           key,
           title: value,
+          context,
         });
       }
       urlFilters.expressions = newFilters;
@@ -470,9 +482,13 @@ const useTableFilters = () => {
   );
 
   const removeFilter = useCallback(
-    (key: string, value: any) => {
+    (key: string, value: any, context: string) => {
       const index = urlFilters.expressions?.findIndex(
-        (e) => e.type === "dimension" && e.key === key && e.value === value,
+        (e) =>
+          e.type === "dimension" &&
+          e.key === key &&
+          e.value === value &&
+          e.context === context,
       );
       const newFilters =
         index !== undefined
@@ -505,6 +521,7 @@ const TableView = ({
   hiddenColumns,
   hasTopBorder = false,
   filterEnabled = true,
+  context = "",
 }) => {
   const { filters, addFilter, removeFilter } = useTableFilters();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
@@ -559,34 +576,37 @@ const TableView = ({
 
   return (
     <div>
-      {filterEnabled && filters.length > 0 && (
-        <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
-          {filters.map((filter) => {
-            return (
-              <div
-                key={`${filter.operator}:${filter.key}:${filter.value}`}
-                className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
-              >
-                <Icon
-                  className="w-4 h-4"
-                  icon={
-                    filter.operator === "equal"
-                      ? "add_circle"
-                      : "do_not_disturb_on"
-                  }
-                />
-                <span>{`${filter.key}: ${filter.value}`}</span>
-                <span
-                  onClick={() => removeFilter(filter.key, filter.value)}
-                  className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+      {filterEnabled &&
+        filters.filter((f) => f.context === context).length > 0 && (
+          <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
+            {filters.map((filter) => {
+              return (
+                <div
+                  key={`${filter.operator}:${filter.key}:${filter.value}`}
+                  className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
                 >
-                  <Icon className="w-4 h-4" icon="close" />
-                </span>
-              </div>
-            );
-          })}
-        </div>
-      )}
+                  <Icon
+                    className="w-4 h-4"
+                    icon={
+                      filter.operator === "equal"
+                        ? "add_circle"
+                        : "do_not_disturb_on"
+                    }
+                  />
+                  <span>{`${filter.key}: ${filter.value}`}</span>
+                  <span
+                    onClick={() =>
+                      removeFilter(filter.key, filter.value, filter.context)
+                    }
+                    className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                  >
+                    <Icon className="w-4 h-4" icon="close" />
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
 
       <table
         {...getTableProps()}
@@ -668,13 +688,14 @@ const TableView = ({
                           : "whitespace-nowrap",
                       )}
                     >
-                      <CellValue
+                      <MemoCellValue
                         column={cell.column}
                         rowIndex={index}
                         rowTemplateData={rowTemplateData}
                         value={cell.value}
                         addFilter={addFilter}
                         filterEnabled={filterEnabled}
+                        context={context}
                       />
                     </td>
                   );
@@ -699,47 +720,50 @@ const TableViewWrapper = (props: TableProps) => {
     [columns, props.data],
   );
 
-    // State for managing column visibility
-  const [visibleColumns, setVisibleColumns] = useState(
-    columns.map((col) => ({ ...col, visible: !hiddenColumns.includes(col.name) }))
-  );
+  // State for managing column visibility
+  // const [visibleColumns, setVisibleColumns] = useState(
+  //   columns.map((col) => ({
+  //     ...col,
+  //     visible: !hiddenColumns.includes(col.name),
+  //   })),
+  // );
 
   // Handler to toggle column visibility
-  const toggleColumnVisibility = (columnName) => {
-    setVisibleColumns((prevColumns) =>
-      prevColumns.map((col) =>
-        col.name === columnName ? { ...col, visible: !col.visible } : col
-      )
-    );
-  };
+  // const toggleColumnVisibility = (columnName) => {
+  //   setVisibleColumns((prevColumns) =>
+  //     prevColumns.map((col) =>
+  //       col.name === columnName ? { ...col, visible: !col.visible } : col,
+  //     ),
+  //   );
+  // };
 
   // Filter columns based on visibility state
-  const filteredColumns = useMemo(
-    () => visibleColumns.filter((col) => col.visible),
-    [visibleColumns]
-  );
+  // const filteredColumns = useMemo(
+  //   () => visibleColumns.filter((col) => col.visible),
+  //   [visibleColumns],
+  // );
 
   // Render column selection UI
-  const renderColumnSelector = () => (
-    <div className="p-2 border-b mb-4">
-      <label className="block font-bold mb-2">Select Columns to Display:</label>
-      <div className="flex flex-wrap gap-2">
-        {visibleColumns.map((col) => (
-          <div key={col.name} className="flex items-center">
-            <input
-              type="checkbox"
-              checked={col.visible}
-              onChange={() => toggleColumnVisibility(col.name)}
-              id={`toggle-${col.name}`}
-            />
-            <label htmlFor={`toggle-${col.name}`} className="ml-2">
-              {col.title}
-            </label>
-          </div>
-        ))}
-      </div>
-    </div>
-  );
+  // const renderColumnSelector = () => (
+  //   <div className="p-2 border-b mb-4">
+  //     <label className="block font-bold mb-2">Select Columns to Display:</label>
+  //     <div className="flex flex-wrap gap-2">
+  //       {visibleColumns.map((col) => (
+  //         <div key={col.name} className="flex items-center">
+  //           <input
+  //             type="checkbox"
+  //             checked={col.visible}
+  //             onChange={() => toggleColumnVisibility(col.name)}
+  //             id={`toggle-${col.name}`}
+  //           />
+  //           <label htmlFor={`toggle-${col.name}`} className="ml-2">
+  //             {col.title}
+  //           </label>
+  //         </div>
+  //       ))}
+  //     </div>
+  //   </div>
+  // );
 
   return props.data ? (
     <div>
@@ -747,9 +771,11 @@ const TableViewWrapper = (props: TableProps) => {
       {/* {renderColumnSelector()}  */}
       <TableView
         rowData={rowData}
-        columns={visibleColumns} // Use filtered columns for the table
+        columns={columns} // Use filtered columns for the table
         hiddenColumns={hiddenColumns}
         hasTopBorder={!!props.title}
+        filterEnabled={props.filterEnabled}
+        context={props.context}
       />
     </div>
   ) : null;
@@ -864,4 +890,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableView };
+export { TableView, TableViewWrapper };

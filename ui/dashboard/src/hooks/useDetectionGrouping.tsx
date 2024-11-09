@@ -623,27 +623,32 @@ const includeResult = (
       case "dimension": {
         // @ts-ignore
         // const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
-        const newRows: LeafNodeDataRow[] = [];
-        let includeRow = false;
-        for (const row of checkResult.rows || []) {
-          includeRow = false;
-          if (filter.operator === "not_equal") {
-            includeRow =
-              !(filter.key in row) || row[filter.key] !== filter.value;
-          } else if (filter.operator === "equal") {
-            includeRow = filter.key in row && row[filter.key] === filter.value;
+        let newRows: LeafNodeDataRow[] = [];
+        if (filter.context && checkResult.detection.name !== filter.context) {
+          newRows = checkResult.rows || [];
+        } else {
+          let includeRow = false;
+          for (const row of checkResult.rows || []) {
+            includeRow = false;
+            if (filter.operator === "not_equal") {
+              includeRow =
+                !(filter.key in row) || row[filter.key] !== filter.value;
+            } else if (filter.operator === "equal") {
+              includeRow =
+                filter.key in row && row[filter.key] === filter.value;
+            }
+            if (includeRow) {
+              newRows.push(row);
+            } else {
+            }
+            // if (
+            //   keyRegex.test(dimension.key) &&
+            //   valueRegex.test(dimension.value)
+            // ) {
+            //   matchesDimensions = true;
+            //   break;
+            // }
           }
-          if (includeRow) {
-            newRows.push(row);
-          } else {
-          }
-          // if (
-          //   keyRegex.test(dimension.key) &&
-          //   valueRegex.test(dimension.value)
-          // ) {
-          //   matchesDimensions = true;
-          //   break;
-          // }
         }
         checkResult.rows = newRows;
         matches.push(true);

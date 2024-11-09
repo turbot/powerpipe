@@ -30,12 +30,12 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
+import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import { validateFilter } from "../CheckFilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
-const Table = getComponent("table");
 
 type BenchmarkTableViewProps = {
   benchmark: DetectionBenchmarkType;
@@ -492,6 +492,7 @@ const BenchmarkTableView = ({
         panel_type="table"
         data={benchmarkDataTable}
         filterEnabled
+        context={definition.name}
       />
     </Panel>
   );
