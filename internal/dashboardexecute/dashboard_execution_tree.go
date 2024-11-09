@@ -240,6 +240,10 @@ func (e *DashboardExecutionTree) SetInputValues(inputValues *InputValues) {
 	e.inputLock.Lock()
 	defer e.inputLock.Unlock()
 
+	if inputValues == nil {
+		slog.Warn("SetInputValues - inputValues is nil")
+		return
+	}
 	// set the input values and publish the runtime dependencies (if root implements RuntimeDependencyPublisher)
 	runtimeDependencyPublisher, _ := e.Root.(RuntimeDependencyPublisher)
 	for name, value := range inputValues.Inputs {
