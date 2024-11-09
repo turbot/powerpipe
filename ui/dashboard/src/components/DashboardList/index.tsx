@@ -1,3 +1,4 @@
+import dayjs from "dayjs";
 import get from "lodash/get";
 import sortBy from "lodash/sortBy";
 import CallToActions from "../CallToActions";
@@ -78,11 +79,28 @@ const DashboardTag = ({
 const TitlePart = ({ part, searchPathPrefix }) => {
   const ExternalLink = getComponent("external_link");
 
+  const urlSearch = new URLSearchParams();
+  if (!!searchPathPrefix.length) {
+    urlSearch.set("search_path_prefix", searchPathPrefix);
+  }
+  if (part.type === "detection" || "detection_benchmark") {
+    urlSearch.set(
+      "input.detection_range",
+      JSON.stringify({
+        from: dayjs().subtract(1, "day").utc(),
+        to: null,
+        relative: "1d",
+      }),
+    );
+  }
+
+  const search = urlSearch.toString();
+
   return (
     <ExternalLink
       className="link-highlight hover:underline"
       ignoreDataMode
-      to={`/${part.full_name}${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+      to={`/${part.full_name}${!!search ? `?${search}` : ""}`}
     >
       {part.title || part.short_name}
     </ExternalLink>
@@ -92,13 +110,28 @@ const TitlePart = ({ part, searchPathPrefix }) => {
 const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
   const { dashboardsMap } = useDashboard();
   const ExternalLink = getComponent("external_link");
+  const urlSearch = new URLSearchParams();
+  if (!!searchPathPrefix.length) {
+    urlSearch.set("search_path_prefix", searchPathPrefix);
+  }
+  if (benchmark.type === "detection_benchmark") {
+    urlSearch.set(
+      "input.detection_range",
+      JSON.stringify({
+        from: dayjs().subtract(1, "day").utc(),
+        to: null,
+        relative: "1d",
+      }),
+    );
+  }
 
   if (!searchValue) {
+    const search = urlSearch.toString();
     return (
       <ExternalLink
         className="link-highlight hover:underline"
         ignoreDataMode
-        to={`/${benchmark.full_name}${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
+        to={`/${benchmark.full_name}${!!search ? `?${search}` : ""}`}
       >
         {benchmark.title || benchmark.short_name}
       </ExternalLink>
