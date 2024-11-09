@@ -22,10 +22,6 @@ import {
   DetectionSummary,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
-  getComponent,
-  registerComponent,
-} from "@powerpipe/components/dashboards";
-import {
   GroupingProvider,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
