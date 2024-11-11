@@ -3,6 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/pipe-fittings/connection"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -80,8 +81,14 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	i.Targets = targets
 
 	// TODO K breaking hack do not use viper for database
+	// this is because DefaultDatabase is now a ConnectionStringProvider
 	if db_client.DefaultDatabase == nil {
 		db_client.DefaultDatabase = w.Mod.GetDatabase()
+	}
+	// if database command line was passed, set default
+	// TODO K will we onl ypass connection strin gin db arg or coutl we pass connection name?
+	if db := viper.GetString(constants.ArgDatabase); db != "" {
+		db_client.DefaultDatabase = connection.NewConnectionString(db)
 	}
 	// if the database is NOT set in viper, and the mod has a connection string, set it
 	//if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
