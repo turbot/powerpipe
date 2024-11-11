@@ -51,7 +51,7 @@ const IntegerDisplay = ({
     m: one_million,
   };
   const numberFormatter = (num) => {
-    if (isNil(num) || isObject(num)) {
+    if (num === null || num === undefined || isNil(num) || isObject(num)) {
       return;
     }
 
@@ -83,7 +83,11 @@ const IntegerDisplay = ({
   return (
     <span
       className={className}
-      title={withTitle && num ? num.toLocaleString() : undefined}
+      title={
+        withTitle && num !== null && num !== undefined
+          ? num.toLocaleString()
+          : undefined
+      }
     >
       {numberFormatter(num)}
     </span>

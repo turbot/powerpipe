@@ -235,7 +235,7 @@ const DetectionPanelSeverity = ({
 
   return (
     <>
-      {critical !== undefined && (
+      {critical !== undefined && critical !== null && (
         <DetectionPanelSeverityBadge
           label="Critical"
           count={critical}
@@ -244,7 +244,7 @@ const DetectionPanelSeverity = ({
           }`}
         />
       )}
-      {high !== undefined && (
+      {high !== undefined && high !== null && (
         <DetectionPanelSeverityBadge
           label="High"
           count={high}
@@ -253,7 +253,7 @@ const DetectionPanelSeverity = ({
           }`}
         />
       )}{" "}
-      {medium !== undefined && (
+      {medium !== undefined && medium !== null && (
         <DetectionPanelSeverityBadge
           label="Medium"
           count={medium}
@@ -262,7 +262,7 @@ const DetectionPanelSeverity = ({
           }`}
         />
       )}{" "}
-      {low !== undefined && (
+      {low !== undefined && low !== null && (
         <DetectionPanelSeverityBadge
           label="Low"
           count={low}
