@@ -37,6 +37,9 @@ const Child = ({
           showControls={showPanelControls}
         />
       );
+    case "check_grouping":
+      const CheckGrouping = getComponent("check_grouping");
+      return <CheckGrouping {...panelDefinition} />;
     case "detection_benchmark":
     case "detection":
       const DetectionBenchmark = getComponent("detection_benchmark");

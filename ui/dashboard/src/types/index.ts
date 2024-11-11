@@ -322,6 +322,8 @@ export type DashboardPanelType =
   | "benchmark_tree"
   | "card"
   | "chart"
+  | "check_grouping"
+  | "check_panel"
   | "container"
   | "control"
   | "dashboard"

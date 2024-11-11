@@ -40,6 +40,7 @@ import "@powerpipe/components/dashboards/inputs/TextInput";
 import "@powerpipe/components/dashboards/inputs/Input";
 
 // Check
+import "@powerpipe/components/dashboards/grouping/CheckGrouping";
 import "@powerpipe/components/dashboards/grouping/Benchmark";
 
 // Detection
