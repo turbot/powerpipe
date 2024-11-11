@@ -8,9 +8,16 @@ const story = {
 
 export default story;
 
-const Template = (args) => (
-  <PanelStoryDecorator definition={args} panelType="card" />
-);
+const Template = (args) => {
+  const { diffPanelsMap, ...rest } = args;
+  return (
+    <PanelStoryDecorator
+      diffPanelsMap={diffPanelsMap}
+      definition={args}
+      panelType="card"
+    />
+  );
+};
 
 export const Loading = Template.bind({});
 Loading.args = {
@@ -393,27 +400,32 @@ SimpleDiffUp.args = {
     rows: [
       {
         label: "Encrypted EC2 Instances",
-        value: 5,
+        value: 5, // Current state value
         type: "ok",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff",
-    diff_data: {
-      columns: [
-        { name: "label", data_type: "TEXT" },
-        { name: "value", data_type: "INT8" },
-        { name: "type", data_type: "TEXT" },
-      ],
-      rows: [
-        {
-          label: "Encrypted EC2 Instances",
-          value: 1,
-          type: "ok",
-        },
-      ],
+    data_mode: "diff", // If applicable for your logic
+  },
+  diffPanelsMap: {
+    "card.story": {
+      // Moved diff_data here as diff_panel
+      data: {
+        columns: [
+          { name: "label", data_type: "TEXT" },
+          { name: "value", data_type: "INT8" },
+          { name: "type", data_type: "TEXT" },
+        ],
+        rows: [
+          {
+            label: "Encrypted EC2 Instances",
+            value: 1, // Previous state value for diff calculation
+            type: "ok",
+          },
+        ],
+      },
     },
   },
 };
@@ -429,27 +441,32 @@ SimpleDiffDown.args = {
     rows: [
       {
         label: "Encrypted EC2 Instances",
-        value: 1,
+        value: 1, // Current state value
         type: "ok",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff",
-    diff_data: {
-      columns: [
-        { name: "label", data_type: "TEXT" },
-        { name: "value", data_type: "INT8" },
-        { name: "type", data_type: "TEXT" },
-      ],
-      rows: [
-        {
-          label: "Encrypted EC2 Instances",
-          value: 5,
-          type: "ok",
-        },
-      ],
+    data_mode: "diff", // If applicable for your logic
+  },
+  diffPanelsMap: {
+    "card.story": {
+      // Moved diff_data here as diff_panel
+      data: {
+        columns: [
+          { name: "label", data_type: "TEXT" },
+          { name: "value", data_type: "INT8" },
+          { name: "type", data_type: "TEXT" },
+        ],
+        rows: [
+          {
+            label: "Encrypted EC2 Instances",
+            value: 5, // Previous state value for diff calculation
+            type: "ok",
+          },
+        ],
+      },
     },
   },
 };
@@ -465,27 +482,32 @@ SimpleDiffNoChange.args = {
     rows: [
       {
         label: "Encrypted EC2 Instances",
-        value: 5,
+        value: 5, // Current state value
         type: "ok",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff",
-    diff_data: {
-      columns: [
-        { name: "label", data_type: "TEXT" },
-        { name: "value", data_type: "INT8" },
-        { name: "type", data_type: "TEXT" },
-      ],
-      rows: [
-        {
-          label: "Encrypted EC2 Instances",
-          value: 5,
-          type: "ok",
-        },
-      ],
+    data_mode: "diff", // If applicable for your logic
+  },
+  diffPanelsMap: {
+    "card.story": {
+      // Moved diff_data here as diff_panel
+      data: {
+        columns: [
+          { name: "label", data_type: "TEXT" },
+          { name: "value", data_type: "INT8" },
+          { name: "type", data_type: "TEXT" },
+        ],
+        rows: [
+          {
+            label: "Encrypted EC2 Instances",
+            value: 5, // Previous state value for diff calculation
+            type: "ok",
+          },
+        ],
+      },
     },
   },
 };

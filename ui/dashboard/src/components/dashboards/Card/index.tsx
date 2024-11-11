@@ -78,13 +78,26 @@ const useCardState = ({
   status,
 }: CardProps) => {
   const [calculatedProperties, setCalculatedProperties] = useState<CardState>(
-    new CardDataProcessor().getDefaultState(status, properties, display_type),
+    new CardDataProcessor().getDefaultState(
+      status,
+      diff_panel,
+      properties,
+      display_type
+    )
   );
 
   useDeepCompareEffect(() => {
     const diff = new CardDataProcessor();
+    const newState = diff.buildCardState(
+      data,
+      diff_panel,
+      display_type,
+      properties,
+      status
+    );
+    setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, diff_panel, display_type, properties, status),
+      diff.buildCardState(data, diff_panel, display_type, properties, status)
     );
   }, [
     data,
@@ -127,17 +140,32 @@ const Value = ({ loading, value }) => {
   return <Label value={value} />;
 };
 
-const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
+const CardDiffDisplay: React.FC<{
+  diff: CardDiffDisplayProps;
+  value: number;
+}> = ({ diff, value }) => {
   if (!diff || diff.direction === "none") {
     return null;
   }
+
+  // Calculate the original value based on direction
+  const originalValue =
+    diff.direction === "up" ? value - diff.value : value + diff.value;
+
+  // Calculate percentage change if originalValue is not zero
+  // Calculate percentage change with sign based on direction
+  const percentageChange =
+    originalValue !== 0
+      ? `${diff.direction === "up" ? "+" : "-"}${((diff.value / originalValue) * 100).toFixed(1)}`
+      : null;
+
   return (
-    <div
+    <span
       className={classNames(
-        "inline-flex rounded-lg px-2 font-medium md:mt-2 lg:mt-0 space-x-1 text-lg",
+        "inline-flex rounded-lg px-2 font-medium md:mt-2 space-x-1 text-lg",
         diff.status === "ok" ? "text-ok" : null,
-        diff.status === "alert" ? "text-alert" : null,
-        diff.status === "alert" ? "text-severity" : null,
+        diff.status === "alert" ? "text-alert" : null
+        // diff.status === "alert" ? "text-severity" : null
       )}
     >
       <span aria-hidden="true" className={classNames("self-end")}>
@@ -150,12 +178,32 @@ const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
       {(diff.direction === "up" || diff.direction === "down") && (
         <>
           {/*@ts-ignore*/}
-          <IntegerDisplay num={diff.value || null} />
+          <div className="flex items-baseline space-x-1">
+            <span className="text-lg font-semibold">
+              {/*@ts-ignore*/}
+              <IntegerDisplay num={diff.value || null} />
+            </span>
+            {percentageChange !== null && (
+              <span className="text-sm ">({percentageChange}%)</span>
+            )}
+          </div>
         </>
       )}
-    </div>
+    </span>
   );
 };
+
+const ValueWithDiff = ({ loading, value, diff }) => (
+  console.log("ValueWithDiff:", { loading, value, diff }),
+  (
+    <div className="flex items-center space-x-2">
+      {" "}
+      {/* Adjusts flex to align elements inline */}
+      <Value loading={loading} value={value} />
+      {diff && <CardDiffDisplay diff={diff} value={value} />}
+    </div>
+  )
+);
 
 const Card = (props: CardProps) => {
   const ExternalLink = getComponent("external_link");
@@ -163,7 +211,7 @@ const Card = (props: CardProps) => {
   const { searchPathPrefix } = useDashboard();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
-    state.href || null,
+    state.href || null
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
 
@@ -192,7 +240,7 @@ const Card = (props: CardProps) => {
     const doRender = async () => {
       const renderedResults = await renderTemplates(
         { card: state.href as string },
-        [renderData],
+        [renderData]
       );
       if (
         !renderedResults ||
@@ -204,7 +252,7 @@ const Card = (props: CardProps) => {
       } else if (renderedResults[0].card.result) {
         const withSearchPathPrefix = injectSearchPathPrefix(
           renderedResults[0].card.result,
-          searchPathPrefix,
+          searchPathPrefix
         );
         setRenderedHref(withSearchPathPrefix);
         setRenderError(null);
@@ -221,7 +269,7 @@ const Card = (props: CardProps) => {
       className={classNames(
         "overflow-hidden bg-dashboard-panel text-foreground print:bg-white print:text-black shadow-sm p-3 pr-5",
         getWrapperClasses(state.type),
-        !state.icon ? "pl-4" : undefined,
+        !state.icon ? "pl-4" : undefined
       )}
     >
       <div className="flex space-x-3">
@@ -246,7 +294,11 @@ const Card = (props: CardProps) => {
             </p>
           </dt>
           <dd className="font-semibold text-3xl mt-1 mb-1">
-            <Value loading={state.loading} value={state.value} />
+            <ValueWithDiff
+              loading={state.loading}
+              value={state.value}
+              diff={state.diff}
+            />
           </dd>
         </div>
       </div>
