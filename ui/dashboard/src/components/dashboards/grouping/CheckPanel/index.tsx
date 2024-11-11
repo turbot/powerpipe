@@ -377,6 +377,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                 <CheckSummaryChart
                   status={node.status}
                   summary={node.summary}
+                  summaryDiff={node.summary_diff}
                   firstChildSummaries={firstChildSummaries}
                 />
               </div>

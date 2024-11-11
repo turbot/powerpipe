@@ -36,6 +36,7 @@ export type CheckNode = {
   severity_summary: CheckSeveritySummary;
   status: CheckNodeStatus;
   summary: CheckSummary;
+  summary_diff: CheckSummary;
   children?: CheckNode[];
   data?: LeafNodeData;
   error?: string;
