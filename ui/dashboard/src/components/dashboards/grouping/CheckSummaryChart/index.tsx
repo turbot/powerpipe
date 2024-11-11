@@ -126,6 +126,7 @@ const AlertProgressBarGroupDiffTotal = ({
   if (!summary) {
     return null;
   }
+
   const diffTotal = summary.error + summary.alarm;
 
   if (diffTotal === 0) {
@@ -149,9 +150,11 @@ const NonAlertProgressBarGroupDiffTotal = ({
   className,
   summary,
 }: NonAlertProgressBarGroupDiffTotalProps) => {
-  const nonAlertDiffTotal = summary.ok + summary.info + summary.skip;
+  if (!summary) {
+    return null;
+  }
 
-  console.log({ summary, nonAlertDiffTotal });
+  const nonAlertDiffTotal = summary.ok + summary.info + summary.skip;
 
   if (nonAlertDiffTotal === 0) {
     return null;
