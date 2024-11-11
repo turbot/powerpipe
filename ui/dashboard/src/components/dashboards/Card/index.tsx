@@ -75,7 +75,11 @@ const useCardState = ({
   status,
 }: CardProps) => {
   const [calculatedProperties, setCalculatedProperties] = useState<CardState>(
-    new CardDataProcessor().getDefaultState(status, properties, display_type),
+    new CardDataProcessor().getDefaultState(
+      status,
+      properties,
+      display_type
+    )
   );
 
   useDeepCompareEffect(() => {
@@ -84,13 +88,19 @@ const useCardState = ({
       data,
       display_type,
       properties,
-      status,
+      status
     );
     setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, display_type, properties, status),
+      diff.buildCardState(data, display_type, properties, status)
     );
-  }, [data, display_type, properties, setCalculatedProperties, status]);
+  }, [
+    data,
+    display_type,
+    properties,
+    setCalculatedProperties,
+    status,
+  ]);
 
   return calculatedProperties;
 };
@@ -192,7 +202,7 @@ const Card = (props: CardProps) => {
   const { searchPathPrefix } = useDashboard();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
-    state.href || null,
+    state.href || null
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
 
@@ -221,7 +231,7 @@ const Card = (props: CardProps) => {
     const doRender = async () => {
       const renderedResults = await renderTemplates(
         { card: state.href as string },
-        [renderData],
+        [renderData]
       );
       if (
         !renderedResults ||
@@ -233,7 +243,7 @@ const Card = (props: CardProps) => {
       } else if (renderedResults[0].card.result) {
         const withSearchPathPrefix = injectSearchPathPrefix(
           renderedResults[0].card.result,
-          searchPathPrefix,
+          searchPathPrefix
         );
         setRenderedHref(withSearchPathPrefix);
         setRenderError(null);
@@ -250,7 +260,7 @@ const Card = (props: CardProps) => {
       className={classNames(
         "overflow-hidden bg-dashboard-panel text-foreground print:bg-white print:text-black shadow-sm p-3 pr-5",
         getWrapperClasses(state.type),
-        !state.icon ? "pl-4" : undefined,
+        !state.icon ? "pl-4" : undefined
       )}
     >
       <div className="flex space-x-3">

@@ -39,7 +39,7 @@ export class CardDataProcessor {
   getDefaultState = (
     status: DashboardRunState,
     properties: CardProperties,
-    display_type: CardType | undefined,
+    display_type: CardType | undefined
   ): CardState => {
     return {
       loading: status === "running" || !!properties?.loading,
@@ -58,7 +58,7 @@ export class CardDataProcessor {
     data: LeafNodeData | undefined,
     display_type: CardType | undefined,
     properties: CardProperties,
-    status: DashboardRunState,
+    status: DashboardRunState
   ): CardState {
     if (!data || !hasData(data)) {
       return this.getDefaultState(status, properties, display_type);
@@ -70,7 +70,7 @@ export class CardDataProcessor {
   parseData(
     data: LeafNodeData,
     display_type: CardType | undefined,
-    properties: CardProperties,
+    properties: CardProperties
   ): CardState {
     const dataFormat = this.getDataFormat(data);
     if (dataFormat === "simple") {
@@ -112,7 +112,7 @@ export class CardDataProcessor {
         type: formalType || display_type || null,
         icon: getIconForType(
           formalType || display_type,
-          formalIcon || properties.icon,
+          formalIcon || properties.icon
         ),
         href: formalHref || properties.href || null,
       };
@@ -122,7 +122,7 @@ export class CardDataProcessor {
   diff(
     properties: IDiffProperties,
     state: CardState,
-    previous_state: CardState,
+    previous_state: CardState
   ): CardDiffState {
     // If the columns aren't numeric then we can't diff...
     if (state.value_number === null || previous_state.value_number === null) {
