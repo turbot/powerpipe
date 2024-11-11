@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"github.com/spf13/viper"
 	"github.com/turbot/powerpipe/internal/resources"
+	"log/slog"
 
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/app_specific"
@@ -92,17 +93,22 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 }
 
 func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *workspace.PowerpipeWorkspace) ([]byte, error) {
+	slog.Debug("calling buildDashboardMetadataPayload")
+
 	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
+		slog.Warn("error getting default database config", "error", err)
 		return nil, err
 	}
 	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, w.Mod, defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
+		slog.Warn("error getting database config for resource", "error", err)
 		return nil, err
 	}
 
 	connectionString, err := database.GetConnectionString()
 	if err != nil {
+		slog.Warn("error getting connection string", "error", err)
 		return nil, err
 	}
 	payload := DashboardMetadataPayload{
@@ -114,11 +120,17 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 
 	searchPath, err := getSearchPathMetadata(ctx, connectionString, searchPathConfig)
 	if err != nil {
+		slog.Warn("error getting search path metadata", "error", err)
 		return nil, err
 	}
 	payload.Metadata.SearchPath = searchPath
 
-	return json.Marshal(payload)
+	res, err := json.Marshal(payload)
+	if err != nil {
+		slog.Warn("error marshalling payload", "error", err)
+		return nil, err
+	}
+	return res, nil
 }
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
