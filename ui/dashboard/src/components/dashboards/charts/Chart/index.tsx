@@ -543,13 +543,21 @@ const getSeriesForChartType = (
   const seriesNames =
     transform === "crosstab"
       ? rowSeriesLabels
-      : data.columns.slice(1).map((col) => col.name);
+      : data.columns
+          .slice(1)
+          .filter((col) => col.name !== "_diff")
+          .map((col) => col.name);
   const seriesLength = seriesNames.length;
+  const hasDiffCol = !!data.columns.find((col) => col.name === "_diff");
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     let seriesName = seriesNames[seriesIndex];
     let seriesColor = "auto";
     let seriesOverrides;
     if (properties) {
+      if (seriesName.startsWith("_diff_")) {
+        seriesName = `${seriesName.split("_")[2]} (Previous)`;
+      }
+
       if (properties.series && properties.series[seriesName]) {
         seriesOverrides = properties.series[seriesName];
       }
@@ -567,7 +575,7 @@ const getSeriesForChartType = (
         series.push({
           name: seriesName,
           type: "bar",
-          ...(properties && properties.grouping === "compare"
+          ...(hasDiffCol || (properties && properties.grouping === "compare")
             ? {}
             : { stack: "total" }),
           itemStyle: {
