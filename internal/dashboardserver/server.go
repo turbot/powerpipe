@@ -352,6 +352,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			}
 			_ = session.Write(payload)
 		case "get_dashboard_metadata":
+			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
 			dashboard := s.getResource(request.Payload.Dashboard.FullName)
 			if dashboard == nil {
 				return
