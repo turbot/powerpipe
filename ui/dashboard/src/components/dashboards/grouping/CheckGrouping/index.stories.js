@@ -58,6 +58,7 @@ DiffBenchmark.args = {
         sort: "1",
         name: "aws_compliance.benchmark.cis_v400_1",
         title: "1 Identity and Access Management",
+        panel_type: "benchmark",
         status: "complete",
         summary: { alarm: 10, ok: 10, info: 5, skip: 5, error: 2 },
         summary_diff: { alarm: 2, ok: -4, info: 0, skip: 0, error: 2 },
