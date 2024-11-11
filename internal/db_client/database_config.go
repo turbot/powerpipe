@@ -16,7 +16,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	searchPathConfig := defaultSearchPathConfig
 
 	// if there is no default search path, check if the mod has a search path
-	// (it's database field may refer to a connection with a search path)
+	// (its database field may refer to a connection with a search path)
 	if searchPathConfig.Empty() {
 		searchPathConfig.SearchPath = workspaceMod.GetSearchPath()
 		searchPathConfig.SearchPathPrefix = workspaceMod.GetSearchPathPrefix()
