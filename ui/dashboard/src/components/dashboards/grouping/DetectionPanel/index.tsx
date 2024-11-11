@@ -258,7 +258,7 @@ const DetectionPanelSeverity = ({
           label="Medium"
           count={medium}
           title={`${medium.toLocaleString()} medium severity ${
-            high === 1 ? "result" : "results"
+            medium === 1 ? "result" : "results"
           }`}
         />
       )}{" "}
@@ -266,8 +266,8 @@ const DetectionPanelSeverity = ({
         <DetectionPanelSeverityBadge
           label="Low"
           count={low}
-          title={`${high.toLocaleString()} low severity ${
-            high === 1 ? "result" : "results"
+          title={`${low.toLocaleString()} low severity ${
+            low === 1 ? "result" : "results"
           }`}
         />
       )}
