@@ -6,6 +6,7 @@ import {
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
 import { CheckNode } from "../common";
+import { registerComponent } from "@powerpipe/components/dashboards";
 import { useCallback, useEffect, useState } from "react";
 
 type CheckGroupingProps = {
@@ -44,5 +45,7 @@ const CheckGrouping = ({ node }: CheckGroupingProps) => {
     </div>
   );
 };
+
+registerComponent("check_grouping", CheckGrouping);
 
 export default CheckGrouping;
