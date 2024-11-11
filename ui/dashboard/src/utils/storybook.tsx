@@ -17,6 +17,9 @@ type PanelStoryDecoratorProps = {
   panels?: {
     [key: string]: any;
   };
+  diffPanelsMap?: {
+    [key: string]: any;
+  };
   status?: DashboardRunState;
   additionalProperties?: {
     [key: string]: any;
@@ -31,6 +34,7 @@ const stubDashboardSearch: DashboardSearch = {
 export const PanelStoryDecorator = ({
   definition = {},
   panels = {},
+  diffPanelsMap = {},
   panelType,
   status = "complete",
   additionalProperties = {},
@@ -123,6 +127,10 @@ export const PanelStoryDecorator = ({
         render: { headless: false, snapshotCompleteDiv: false },
         snapshot: null,
         snapshotFileName: null,
+
+        diff: {
+          panelsMap: diffPanelsMap,
+        },
       }}
     >
       <Dashboard showPanelControls={false} />
