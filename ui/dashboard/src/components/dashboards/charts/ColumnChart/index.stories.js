@@ -311,3 +311,21 @@ MultiTimeSeriesGrouped.args = MultiTimeSeriesGroupedDefaults;
 export const MultiTimeSeriesCrosstab = Template.bind({});
 MultiTimeSeriesCrosstab.storyName = "Multiple Time Series (crosstabbed)";
 MultiTimeSeriesCrosstab.args = MultiTimeSeriesCrosstabDefaults;
+
+export const SingleSeriesDiff = Template.bind({});
+SingleSeriesDiff.storyName = "Single Series Diff";
+SingleSeriesDiff.args = {
+  data: {
+    columns: [
+      { name: "Type", data_type: "TEXT" },
+      { name: "_diff", data_type: "INT8" },
+      { name: "_diff_Count", data_type: "INT8" },
+      { name: "Count", data_type: "INT8" },
+    ],
+    rows: [
+      { Type: "User", Count: 12, _diff: "updated", _diff_Count: 10 },
+      { Type: "Policy", Count: 93, _diff: "updated", _diff_Count: 100 },
+      { Type: "Role", Count: 48, _diff: "updated", _diff_Count: 50 },
+    ],
+  },
+};
