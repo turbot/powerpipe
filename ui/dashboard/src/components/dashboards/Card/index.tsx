@@ -78,12 +78,7 @@ const useCardState = ({
   status,
 }: CardProps) => {
   const [calculatedProperties, setCalculatedProperties] = useState<CardState>(
-    new CardDataProcessor().getDefaultState(
-      status,
-      diff_panel,
-      properties,
-      display_type
-    )
+    new CardDataProcessor().getDefaultState(status, properties, display_type),
   );
 
   useDeepCompareEffect(() => {
@@ -93,11 +88,11 @@ const useCardState = ({
       diff_panel,
       display_type,
       properties,
-      status
+      status,
     );
     setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, diff_panel, display_type, properties, status)
+      diff.buildCardState(data, diff_panel, display_type, properties, status),
     );
   }, [
     data,
@@ -164,7 +159,7 @@ const CardDiffDisplay: React.FC<{
       className={classNames(
         "inline-flex rounded-lg px-2 font-medium md:mt-2 space-x-1 text-lg",
         diff.status === "ok" ? "text-ok" : null,
-        diff.status === "alert" ? "text-alert" : null
+        diff.status === "alert" ? "text-alert" : null,
         // diff.status === "alert" ? "text-severity" : null
       )}
     >
@@ -194,15 +189,12 @@ const CardDiffDisplay: React.FC<{
 };
 
 const ValueWithDiff = ({ loading, value, diff }) => (
-  console.log("ValueWithDiff:", { loading, value, diff }),
-  (
-    <div className="flex items-center space-x-2">
-      {" "}
-      {/* Adjusts flex to align elements inline */}
-      <Value loading={loading} value={value} />
-      {diff && <CardDiffDisplay diff={diff} value={value} />}
-    </div>
-  )
+  <div className="flex items-center space-x-2">
+    {" "}
+    {/* Adjusts flex to align elements inline */}
+    <Value loading={loading} value={value} />
+    {diff && <CardDiffDisplay diff={diff} value={value} />}
+  </div>
 );
 
 const Card = (props: CardProps) => {
@@ -211,7 +203,7 @@ const Card = (props: CardProps) => {
   const { searchPathPrefix } = useDashboard();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
-    state.href || null
+    state.href || null,
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
 
@@ -240,7 +232,7 @@ const Card = (props: CardProps) => {
     const doRender = async () => {
       const renderedResults = await renderTemplates(
         { card: state.href as string },
-        [renderData]
+        [renderData],
       );
       if (
         !renderedResults ||
@@ -252,7 +244,7 @@ const Card = (props: CardProps) => {
       } else if (renderedResults[0].card.result) {
         const withSearchPathPrefix = injectSearchPathPrefix(
           renderedResults[0].card.result,
-          searchPathPrefix
+          searchPathPrefix,
         );
         setRenderedHref(withSearchPathPrefix);
         setRenderError(null);
@@ -269,7 +261,7 @@ const Card = (props: CardProps) => {
       className={classNames(
         "overflow-hidden bg-dashboard-panel text-foreground print:bg-white print:text-black shadow-sm p-3 pr-5",
         getWrapperClasses(state.type),
-        !state.icon ? "pl-4" : undefined
+        !state.icon ? "pl-4" : undefined,
       )}
     >
       <div className="flex space-x-3">
