@@ -4,12 +4,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"maps"
 	"net/http"
 	"net/url"
 	"os"
 	"path/filepath"
+
+	"github.com/r3labs/diff/v3"
 )
 
 type DiffPaths struct {
@@ -37,13 +38,12 @@ func Diff(paths DiffPaths) ([]byte, error) {
 
 	diffSnap := maps.Clone(currentSnap)
 
-	slog.Debug("previousSnap", "previousSnap", previousSnap)
-	slog.Debug("currentSnap", "currentSnap", currentSnap)
-	slog.Debug("diffSnap", "diffSnap", diffSnap)
+	changeLog, err := diff.Diff(previousSnap, currentSnap)
+	if err != nil {
+		return nil, fmt.Errorf("failed to diff snapshots: %w", err)
+	}
 
-	// TODO: Create New SnapshotDiff struct
-	// TODO: Iterate Panels, Compare, & Update SnapshotDiff
-	// TODO: Marshal SnapshotDiff to JSON and return
+	err = updateDiffSnap(changeLog, &diffSnap)
 
 	out, err := json.Marshal(diffSnap)
 	if err != nil {
@@ -108,4 +108,8 @@ func loadSnapshot(path string) (map[string]interface{}, error) {
 	}
 
 	return snapshot, nil
+}
+
+func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) error {
+	return nil
 }
