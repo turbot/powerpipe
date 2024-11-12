@@ -527,6 +527,22 @@ const getOptionOverridesForChartType = (
   return overrides;
 };
 
+const matchDiffColumn = (name: string) => /^(.*?)_diff/.exec(name);
+
+const isDiffColumn = (name: string) => !!matchDiffColumn(name);
+
+const parseDiffColumn = (name: string) => {
+  // const match = /^(.*)_diff(_[a-z\d]{4})?$/.exec(name);
+  const match = matchDiffColumn(name);
+  if (!match) {
+    return { isDiff: false };
+  }
+  return {
+    isDiff: true,
+    pairedColumn: match[1],
+  };
+};
+
 const getSeriesForChartType = (
   type: ChartType = "column",
   data: LeafNodeData | undefined,
@@ -539,6 +555,10 @@ const getSeriesForChartType = (
   if (!data) {
     return [];
   }
+
+  // Keep a map of the series names with their index and configured color override
+  const seriesMap = {};
+
   const series: any[] = [];
   const seriesNames =
     transform === "crosstab"
@@ -547,18 +567,38 @@ const getSeriesForChartType = (
           .slice(1)
           .filter((col) => col.name !== "_diff")
           .map((col) => col.name);
+  const seriesNamesWithoutDiffColumns = seriesNames.filter(
+    (s) => !isDiffColumn(s),
+  );
   const seriesLength = seriesNames.length;
   const hasDiffCol = !!data.columns.find((col) => col.name === "_diff");
+
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     let seriesName = seriesNames[seriesIndex];
+    const diff = parseDiffColumn(seriesName);
     let seriesColor = "auto";
+    const seriesMapSettings = {
+      index: seriesIndex,
+      // Don't set if a diff - see if we set it below via override for paired column
+      // and if not, then we'll try to look up the colour from the paired column index
+      color: diff.isDiff ? undefined : seriesColor,
+      isDiff: diff.isDiff,
+      pairedColumn: diff.pairedColumn,
+      pairedColumnIndex: diff.isDiff
+        ? seriesNamesWithoutDiffColumns.indexOf(diff.pairedColumn)
+        : -1,
+    };
     let seriesOverrides;
-    if (properties) {
-      if (seriesName.startsWith("_diff_")) {
-        seriesName = `${seriesName.split("_")[2]} (Previous)`;
-      }
 
-      if (properties.series && properties.series[seriesName]) {
+    if (diff.isDiff) {
+      seriesName = `${seriesName.split("_")[0]} (Diff)`;
+    }
+
+    if (properties) {
+      if (
+        properties.series &&
+        properties.series[diff.pairedColumn || seriesName]
+      ) {
         seriesOverrides = properties.series[seriesName];
       }
       if (seriesOverrides && seriesOverrides.title) {
@@ -566,7 +606,17 @@ const getSeriesForChartType = (
       }
       if (seriesOverrides && seriesOverrides.color) {
         seriesColor = getColorOverride(seriesOverrides.color, themeColors);
+        seriesMapSettings.color = seriesColor;
       }
+
+      seriesMap[seriesName] = seriesMapSettings;
+    }
+
+    if (diff.isDiff && seriesMapSettings.color === undefined) {
+      seriesMapSettings.color =
+        themeColors.charts[
+          seriesMapSettings.pairedColumnIndex % themeColors.charts.length
+        ];
     }
 
     switch (type) {
@@ -586,7 +636,42 @@ const getSeriesForChartType = (
                   ? [0, 5, 5, 0]
                   : [5, 5, 0, 0]
                 : undefined,
-            color: seriesColor,
+            color: !diff.isDiff
+              ? seriesMapSettings.color
+              : {
+                  type: "pattern",
+                  image: (() => {
+                    // Create a canvas for the pattern
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = 8; // Pattern size
+                    canvas.height = 8;
+
+                    // Set base color
+                    const baseColor = seriesMapSettings.color;
+
+                    // Define the colors
+                    const lightColor = lightenColor(baseColor, 0.3);
+                    // const darkColor = darkenColor(baseColor, 0.2);
+
+                    // Draw light background
+                    ctx.fillStyle = lightColor;
+                    ctx.fillRect(0, 0, 8, 8);
+
+                    // Draw wider diagonal dark lines
+                    ctx.strokeStyle = baseColor;
+                    ctx.lineWidth = 4; // Increase line width for wider lines
+                    ctx.beginPath();
+                    ctx.moveTo(-2, 6); // Adjust start and end points for better alignment
+                    ctx.lineTo(6, -2);
+                    ctx.moveTo(2, 10);
+                    ctx.lineTo(10, 2);
+                    ctx.stroke();
+
+                    return canvas;
+                  })(),
+                  repeat: "repeat",
+                },
             borderColor: themeColors.dashboardPanel,
             borderWidth: 1,
           },
@@ -677,6 +762,34 @@ const getSeriesForChartType = (
   }
   return series;
 };
+
+// Utility functions for color adjustments
+function lightenColor(color, amount) {
+  const [r, g, b] = hexToRgb(color);
+  return rgbToHex(
+    Math.min(255, r + amount * 255),
+    Math.min(255, g + amount * 255),
+    Math.min(255, b + amount * 255),
+  );
+}
+
+function darkenColor(color, amount) {
+  const [r, g, b] = hexToRgb(color);
+  return rgbToHex(
+    Math.max(0, r - amount * 255),
+    Math.max(0, g - amount * 255),
+    Math.max(0, b - amount * 255),
+  );
+}
+
+function hexToRgb(hex) {
+  const bigint = parseInt(hex.slice(1), 16);
+  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+}
+
+function rgbToHex(r, g, b) {
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
 
 const adjustGridConfig = (
   config: EChartsOption,
