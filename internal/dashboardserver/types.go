@@ -4,10 +4,12 @@ import (
 	"fmt"
 	"time"
 
+	"gopkg.in/olahol/melody.v1"
+
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"gopkg.in/olahol/melody.v1"
+	"github.com/turbot/powerpipe/internal/snapshot"
 )
 
 type ListenType string
@@ -120,6 +122,7 @@ type ClientRequestPayload struct {
 	ChangedInput     string                        `json:"changed_input"`
 	SearchPath       []string                      `json:"search_path"`
 	SearchPathPrefix []string                      `json:"search_path_prefix"`
+	SnapshotDiff     *snapshot.DiffPaths           `json:"snapshot_diff"`
 }
 
 type ClientRequest struct {

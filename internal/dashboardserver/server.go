@@ -4,12 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"log/slog"
 	"os"
 	"reflect"
 	"strings"
 	"sync"
+
+	"github.com/turbot/powerpipe/internal/snapshot"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+
+	"gopkg.in/olahol/melody.v1"
 
 	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
@@ -21,7 +25,6 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/workspace"
-	"gopkg.in/olahol/melody.v1"
 )
 
 type Server struct {
@@ -327,6 +330,7 @@ func (s *Server) InitAsync(ctx context.Context) {
 }
 
 func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Session, msg []byte) {
+	// TODO: #error #refactor - error handling is inconsistent, needs reviewing as per: https://github.com/turbot/powerpipe/issues/548
 	return func(session *melody.Session, msg []byte) {
 
 		sessionId := s.getSessionId(session)
@@ -404,6 +408,13 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		case "clear_dashboard":
 			s.setDashboardInputsForSession(sessionId, nil)
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
+		case "get_snapshot_diff":
+			var snapBytes []byte
+			snapBytes, err = snapshot.Diff(*request.Payload.SnapshotDiff)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_snapshot_diff"))
+			}
+			_ = session.Write(snapBytes)
 		}
 	}
 }
