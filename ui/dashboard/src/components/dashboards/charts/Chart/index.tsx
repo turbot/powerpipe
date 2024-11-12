@@ -32,6 +32,7 @@ import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
+import { isDiffColumn, parseDiffColumn } from "@powerpipe/utils/data";
 
 const getThemeColorsWithPointOverrides = (
   type: ChartType = "column",
@@ -525,22 +526,6 @@ const getOptionOverridesForChartType = (
   }
 
   return overrides;
-};
-
-const matchDiffColumn = (name: string) => /^(.*?)_diff/.exec(name);
-
-const isDiffColumn = (name: string) => !!matchDiffColumn(name);
-
-const parseDiffColumn = (name: string) => {
-  // const match = /^(.*)_diff(_[a-z\d]{4})?$/.exec(name);
-  const match = matchDiffColumn(name);
-  if (!match) {
-    return { isDiff: false };
-  }
-  return {
-    isDiff: true,
-    pairedColumn: match[1],
-  };
 };
 
 const getSeriesForChartType = (

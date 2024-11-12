@@ -17,6 +17,7 @@ import {
 } from "@powerpipe/constants/icons";
 import {
   BasePrimitiveProps,
+  ColumnDiffState,
   ExecutablePrimitiveProps,
   isNumericCol,
   LeafNodeDataColumn,
@@ -32,6 +33,8 @@ import { RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
 import { useSortBy, useTable } from "react-table";
+import { ThemeNames } from "@powerpipe/hooks/useTheme";
+import { tableRowDiffColumn } from "@powerpipe/utils/data";
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
@@ -46,6 +49,7 @@ type TableColumnInfo = {
   wrap: TableColumnWrap;
   href_template?: string;
   sortType?: any;
+  diff: ColumnDiffState;
 };
 
 const getColumns = (
@@ -85,6 +89,7 @@ const getColumns = (
       data_type: col.data_type,
       wrap: colWrap,
       sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
+      diff: col.__diff || "none",
     };
     if (colHref) {
       colInfo.href_template = colHref;
@@ -110,6 +115,7 @@ type CellValueProps = {
   rowIndex: number;
   rowTemplateData: RowRenderResult[];
   value: any;
+  diffValue: any;
   showTitle?: boolean;
   addFilter?: (
     operator: "equal" | "not_equal",
@@ -117,6 +123,7 @@ type CellValueProps = {
     value: any,
     context?: string,
   ) => void;
+  filterEnabled: boolean;
   context?: string;
 };
 
@@ -125,14 +132,21 @@ const CellValue = ({
   rowIndex,
   rowTemplateData,
   value,
+  diffValue,
   showTitle = false,
   addFilter,
+  filterEnabled,
   context = "",
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+
+  const diffValueSpacer =
+    diffValue || typeof diffValue === "boolean"
+      ? "flex items-center space-x-2"
+      : undefined;
 
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
@@ -168,17 +182,27 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
+        className={classNames("link-highlight", diffValueSpacer)}
         title={showTitle ? `${column.title}=null` : undefined}
       >
-        <>null</>
+        <span>null</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {JSON.stringify(diffValue, null, 2)}
+          </span>
+        )}
       </ExternalLink>
     ) : (
       <span
-        className="text-foreground-lightest"
+        className={classNames("text-foreground-lightest", diffValueSpacer)}
         title={showTitle ? `${column.title}=null` : undefined}
       >
-        <>null</>
+        <span>null</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {JSON.stringify(diffValue, null, 2)}
+          </span>
+        )}
       </span>
     );
   } else if (dataType === "control_status") {
@@ -241,17 +265,31 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
-        title={showTitle ? `${column.title}=${value.toString()}` : undefined}
+        className={classNames("link-highlight", diffValueSpacer)}
+        title={showTitle ? `${column.title}=${value?.toString()}` : undefined}
       >
-        <>{value.toString()}</>
+        <span>{value?.toString()}</span>
+        {!!diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </ExternalLink>
     ) : (
       <span
-        className={classNames(value ? null : "text-foreground-light")}
-        title={showTitle ? `${column.title}=${value.toString()}` : undefined}
+        className={classNames(
+          "tabular-nums",
+          value ? null : "text-foreground-light",
+          diffValueSpacer,
+        )}
+        title={showTitle ? `${column.title}=${value?.toString()}` : undefined}
       >
-        <>{value.toString()}</>
+        <span>{value?.toString()}</span>
+        {(diffValue || diffValue?.toString() === "false") && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </span>
     );
   } else if (dataType === "jsonb" || isObject(value)) {
@@ -259,25 +297,43 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
+        className={classNames("link-highlight", diffValueSpacer)}
         title={showTitle ? `${column.title}=${asJsonString}` : undefined}
       >
-        <>{asJsonString}</>
+        <span>{asJsonString}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {JSON.stringify(diffValue, null, 2)}
+          </span>
+        )}
       </ExternalLink>
     ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
-        {asJsonString}
+      <span
+        className={diffValueSpacer}
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
+        <span>{asJsonString}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {JSON.stringify(diffValue, null, 2)}
+          </span>
+        )}
       </span>
     );
   } else if (dataType === "text") {
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
         <ExternalLink
-          className="link-highlight tabular-nums"
+          className={classNames("link-highlight tabular-nums", diffValueSpacer)}
           to={value}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
-          {value}
+          <span>{value}</span>
+          {diffValue && (
+            <span className="text-foreground-lighter line-through">
+              {diffValue.toString()}
+            </span>
+          )}
         </ExternalLink>
       );
     }
@@ -286,11 +342,16 @@ const CellValue = ({
     if (mdMatch) {
       cellContent = (
         <ExternalLink
-          className="tabular-nums"
+          className={classNames("link-highlight tabular-nums", diffValueSpacer)}
           to={mdMatch[2]}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
-          {mdMatch[1]}
+          <span>{mdMatch[1]}</span>
+          {diffValue && (
+            <span className="text-foreground-lighter line-through">
+              {diffValue.toString()}
+            </span>
+          )}
         </ExternalLink>
       );
     }
@@ -298,34 +359,54 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames("link-highlight tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value}
+        <span>{value}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames("tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value}
+        <span>{value}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </span>
     );
   } else if (isNumericCol(dataType)) {
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames("link-highlight tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value.toLocaleString()}
+        <span>{value.toLocaleString()}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toLocaleString()}
+          </span>
+        )}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames("tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value.toLocaleString()}
+        <span>{value.toLocaleString()}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toLocaleString()}
+          </span>
+        )}
       </span>
     );
   }
@@ -333,17 +414,27 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames("link-highlight tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value}
+        <span>{value}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames("tabular-nums", diffValueSpacer)}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
-        {value}
+        <span>{value}</span>
+        {diffValue && (
+          <span className="text-foreground-lighter line-through">
+            {diffValue.toString()}
+          </span>
+        )}
       </span>
     );
   }
@@ -355,7 +446,7 @@ const CellValue = ({
   ) : (
     <div className="flex items-center space-x-2 group">
       {cellContent}
-      {addFilter && (
+      {filterEnabled && addFilter && (
         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={() => addFilter("equal", column.name, value, context)}
@@ -520,9 +611,12 @@ const TableView = ({
   columns,
   hiddenColumns,
   hasTopBorder = false,
-  filterEnabled = true,
+  filterEnabled = false,
   context = "",
 }) => {
+  const {
+    themeContext: { theme },
+  } = useDashboard();
   const { filters, addFilter, removeFilter } = useTableFilters();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
@@ -670,9 +764,20 @@ const TableView = ({
             prepareRow(row);
             const { key, ...otherRowProps } = row.getRowProps();
             return (
-              <tr key={key} {...otherRowProps}>
+              <tr
+                key={key}
+                {...otherRowProps}
+                className={classNames(
+                  row.original?.__diff === "deleted" ? "bg-red-100" : null,
+                  row.original?.__diff === "inserted" ? "bg-green-100" : null,
+                )}
+              >
                 {row.cells.map((cell) => {
                   const { key, ...otherCellProps } = cell.getCellProps();
+                  const diff = tableRowDiffColumn(
+                    row.original,
+                    cell.column.name,
+                  );
                   return (
                     <td
                       key={key}
@@ -683,6 +788,21 @@ const TableView = ({
                         cell.column.wrap === "all"
                           ? "break-keep"
                           : "whitespace-nowrap",
+                        cell.column.diff === "deleted"
+                          ? theme.name === ThemeNames.STEAMPIPE_DARK
+                            ? "bg-red-900"
+                            : "bg-red-100"
+                          : null,
+                        cell.column.diff === "inserted"
+                          ? theme.name === ThemeNames.STEAMPIPE_DARK
+                            ? "bg-green-900"
+                            : "bg-green-100"
+                          : null,
+                        diff.hasDiffColumn
+                          ? theme.name === ThemeNames.STEAMPIPE_DARK
+                            ? "bg-amber-900"
+                            : "bg-amber-100"
+                          : null,
                       )}
                     >
                       <MemoCellValue
@@ -693,6 +813,7 @@ const TableView = ({
                         addFilter={addFilter}
                         filterEnabled={filterEnabled}
                         context={context}
+                        diffValue={diff.diffValue}
                       />
                     </td>
                   );
