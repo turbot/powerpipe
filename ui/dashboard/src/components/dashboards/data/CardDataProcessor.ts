@@ -45,10 +45,10 @@ export class CardDataProcessor {
   getDefaultState = (
     status: DashboardRunState,
     properties: CardProperties,
-    display_type: CardType | undefined
+    display_type: CardType | undefined,
   ): CardState => {
     return {
-      loading: status === "running" || !!properties.loading,
+      loading: status === "running" || !!properties?.loading,
       label: properties.label || null,
       value: isNumber(properties.value)
         ? properties.value.toLocaleString()
@@ -65,7 +65,7 @@ export class CardDataProcessor {
     diff_panel: PanelDefinition | undefined,
     display_type: CardType | undefined,
     properties: CardProperties,
-    status: DashboardRunState
+    status: DashboardRunState,
   ): CardState {
     if (!data || !hasData(data)) {
       const state = this.getDefaultState(status, properties, display_type);
@@ -73,7 +73,7 @@ export class CardDataProcessor {
         const diffState = this.getDefaultState(
           status,
           diff_panel.properties,
-          display_type
+          display_type,
         );
         state.diff = this.diff(properties, state, diffState) as CardDiffState;
       }
@@ -86,7 +86,7 @@ export class CardDataProcessor {
       const diffState = this.parseData(
         diff_panel.data,
         display_type,
-        properties
+        properties,
       );
       state.diff = this.diff(properties, state, diffState) as CardDiffState;
     }
@@ -96,7 +96,7 @@ export class CardDataProcessor {
   parseData(
     data: LeafNodeData,
     display_type: CardType | undefined,
-    properties: CardProperties
+    properties: CardProperties,
   ): CardState {
     const dataFormat = this.getDataFormat(data);
     if (dataFormat === "simple") {
@@ -138,7 +138,7 @@ export class CardDataProcessor {
         type: formalType || display_type || null,
         icon: getIconForType(
           formalType || display_type,
-          formalIcon || properties.icon
+          formalIcon || properties.icon,
         ),
         href: formalHref || properties.href || null,
       };
@@ -148,7 +148,7 @@ export class CardDataProcessor {
   diff(
     properties: IDiffProperties,
     state: CardState,
-    previous_state: CardState
+    previous_state: CardState,
   ): CardDiffState {
     // If the columns aren't numeric then we can't diff...
     if (state.value_number === null || previous_state.value_number === null) {
