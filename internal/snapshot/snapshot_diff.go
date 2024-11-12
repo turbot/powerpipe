@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"maps"
 	"net/http"
 	"net/url"
 	"os"
@@ -34,22 +35,22 @@ func Diff(paths DiffPaths) ([]byte, error) {
 		return nil, fmt.Errorf("failed to load current snapshot: %w", err)
 	}
 
+	diffSnap := maps.Clone(currentSnap)
+
 	slog.Debug("previousSnap", "previousSnap", previousSnap)
 	slog.Debug("currentSnap", "currentSnap", currentSnap)
+	slog.Debug("diffSnap", "diffSnap", diffSnap)
 
-	//if previousSnap.Layout.Name != currentSnap.Layout.Name {
-	//	return nil, fmt.Errorf("previous snapshot '%s' is not comparable to current snapshot '%s'", previousSnap.Layout.Name, currentSnap.Layout.Name)
-	//}
+	// TODO: Create New SnapshotDiff struct
+	// TODO: Iterate Panels, Compare, & Update SnapshotDiff
+	// TODO: Marshal SnapshotDiff to JSON and return
 
-	// TODO: REMOVE TACTICAL
-	out, err := json.Marshal(currentSnap)
+	out, err := json.Marshal(diffSnap)
 	if err != nil {
 		return nil, fmt.Errorf("failed to marshal diff snapshot: %w", err)
 	}
 	return out, nil
-	// TODO: Create New SnapshotDiff struct
-	// TODO: Iterate Panels, Compare, & Update SnapshotDiff
-	// TODO: Marshal SnapshotDiff to JSON and return
+
 }
 
 func validateDiffPath(path string) error {
@@ -70,7 +71,7 @@ func validateDiffPath(path string) error {
 	return err
 }
 
-func loadSnapshot(path string) (*map[string]interface{}, error) {
+func loadSnapshot(path string) (map[string]interface{}, error) {
 	var bytes []byte
 	var err error
 	var u *url.URL
@@ -106,5 +107,5 @@ func loadSnapshot(path string) (*map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to unmarshal snapshot: %w", err)
 	}
 
-	return &snapshot, nil
+	return snapshot, nil
 }
