@@ -28,6 +28,7 @@ import {
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
 import { useMemo } from "react";
+import Icon from "@powerpipe/components/Icon";
 
 type CheckChildrenProps = {
   depth: number;
@@ -142,17 +143,83 @@ const getCheckResultRowIconTitle = (status: CheckResultStatus) => {
   }
 };
 
+const renderDiffIcons = (result) => {
+  if (result.diff === "inserted") {
+    return (
+      <div className="flex items-center">
+        {/* Inserted icon */}
+        <Icon
+          className="h-5 w-5 text-foreground-light fill-text-foreground-light mr-1"
+          icon="materialsymbols-solid:add_circle"
+        />
+        {/* Arrow icon */}
+        <Icon
+          className="h-5 w-5 text-foreground-light fill-text-foreground-light mx-1"
+          icon="materialsymbols-solid:trending_flat"
+        />
+        {/* Status icon */}
+        <CheckResultRowStatusIcon status={result.status} />
+      </div>
+    );
+  } else if (result.diff === "deleted") {
+    return (
+      <div className="flex items-center">
+        {/* Status icon */}
+        <CheckResultRowStatusIcon status={result.status} />
+        {/* Arrow icon */}
+        <Icon
+          className="h-5 w-5 text-foreground-light fill-text-foreground-light mx-1"
+          icon="materialsymbols-solid:trending_flat"
+        />
+        {/* Deleted icon */}
+        <Icon
+          className="h-5 w-5 text-foreground-light fill-text-foreground-light ml-1"
+          icon="materialsymbols-solid:cancel"
+        />
+      </div>
+    );
+  } else if (result.diff === "updated") {
+    return (
+      <div className="flex items-center">
+        {/* Status icon */}
+        <CheckResultRowStatusIcon status={result.status} />
+        {/* Arrow icon */}
+        <Icon
+          className="h-5 w-5 text-foreground-light fill-text-foreground-light mx-1"
+          icon="materialsymbols-solid:trending_flat"
+        />
+        {/* Status diff icon */}
+        <CheckResultRowStatusIcon status={result.status_diff} />
+      </div>
+    );
+  }
+  // Default case for "none" or other values
+  return (
+    <div className="flex items-center">
+      {/* Render only the status icon, but keep the same flex structure for consistent alignment */}
+      <CheckResultRowStatusIcon status={result.status} />
+      <Icon
+        className="h-5 w-5 text-foreground-light fill-text-foreground-light mx-1"
+        icon="materialsymbols-solid:arrow_range"
+      />
+      <CheckResultRowStatusIcon status={result.status} />
+    </div>
+  );
+};
+
 const CheckResultRow = ({ result }: CheckResultRowProps) => {
   return (
     <div className="flex bg-dashboard-panel print:bg-white p-4 last:rounded-b-md space-x-4">
       <div
-        className="flex-shrink-0"
+        className="flex-shrink-0 flex"
         title={getCheckResultRowIconTitle(result.status)}
       >
-        <CheckResultRowStatusIcon status={result.status} />
+        {renderDiffIcons(result)}
       </div>
       <div className="flex flex-col md:flex-row flex-grow">
-        <div className="md:flex-grow leading-4 mt-px">{result.reason}</div>
+        <div className="md:flex-grow leading-4 mt-px flex items-center">
+          {result.reason}
+        </div>
         <div className="flex space-x-2 mt-2 md:mt-px md:text-right">
           {(result.dimensions || []).map((dimension) => (
             <ControlDimension
@@ -195,7 +262,11 @@ const CheckErrorRow = ({ error }: CheckErrorRowProps) => {
   );
 };
 
-const CheckResults = ({ empties, errors, results }: CheckResultsProps) => {
+const CheckResults = ({
+  empties = [],
+  errors = [],
+  results = [],
+}: CheckResultsProps) => {
   if (empties.length === 0 && errors.length === 0 && results.length === 0) {
     return null;
   }
@@ -203,7 +274,7 @@ const CheckResults = ({ empties, errors, results }: CheckResultsProps) => {
   return (
     <div
       className={classNames(
-        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto",
+        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto"
       )}
     >
       {empties.map((emptyNode) => (
@@ -242,7 +313,7 @@ const CheckPanelSeverityBadge = ({
         count > 0 ? "border-severity" : "border-skip",
         count > 0
           ? "bg-severity text-white divide-white"
-          : "text-skip divide-skip",
+          : "text-skip divide-skip"
       )}
       title={title}
     >
@@ -332,7 +403,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
             : null,
           node.type === "benchmark" || node.type === "control"
             ? "print:break-inside-avoid-page"
-            : null,
+            : null
         )}
       >
         <section
@@ -344,7 +415,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                 error_nodes.length > 0 ||
                 result_nodes.length > 0)
               ? "rounded-b-none border-b-0"
-              : null,
+              : null
           )}
           onClick={() =>
             can_be_expanded
