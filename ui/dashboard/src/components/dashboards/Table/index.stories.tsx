@@ -296,3 +296,278 @@ LineViewWrapColumn.args = {
     },
   },
 };
+
+export const DiffDeletedColumn = Template.bind({});
+DiffDeletedColumn.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL", __diff: "deleted" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        Encrypted: false,
+        Info: { foo: "bar" },
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Encrypted: false,
+        Info: { foobar: "barfoo" },
+      },
+      {
+        Region: "eu-west-2",
+        "Resource Count": 198,
+        Encrypted: true,
+        Info: null,
+      },
+    ],
+  },
+};
+
+export const DiffInsertedColumn = Template.bind({});
+DiffInsertedColumn.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL", __diff: "inserted" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        Encrypted: false,
+        Info: { foo: "bar" },
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Encrypted: false,
+        Info: { foobar: "barfoo" },
+      },
+      {
+        Region: "eu-west-2",
+        "Resource Count": 198,
+        Encrypted: true,
+        Info: null,
+      },
+    ],
+  },
+};
+
+export const DiffDeletedRow = Template.bind({});
+DiffDeletedRow.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        Encrypted: false,
+        Info: { foo: "bar" },
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Encrypted: false,
+        Info: { foobar: "barfoo" },
+        __diff: "deleted",
+      },
+      {
+        Region: "eu-west-2",
+        "Resource Count": 198,
+        Encrypted: true,
+        Info: null,
+      },
+    ],
+  },
+};
+
+export const DiffUpdatedColumns = Template.bind({});
+DiffUpdatedColumns.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        "Resource Count_diff_1234": 112,
+        Encrypted: false,
+        Info: { foo: "bar" },
+        __diff: "updated",
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Encrypted: false,
+        Encrypted_diff: true,
+        Info: { foobar: "barfoo" },
+        __diff: "updated",
+      },
+      {
+        Region: "eu-west-2",
+        Region_diff: "eu-west-1",
+        __diff: "updated",
+        "Resource Count": 198,
+        Encrypted: true,
+        Info: null,
+      },
+    ],
+  },
+};
+
+export const DiffInsertedRow = Template.bind({});
+DiffInsertedRow.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        Encrypted: false,
+        Info: { foo: "bar" },
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Encrypted: false,
+        Info: { foobar: "barfoo" },
+        __diff: "inserted",
+      },
+      {
+        Region: "eu-west-2",
+        "Resource Count": 198,
+        Encrypted: true,
+        Info: null,
+      },
+    ],
+  },
+};
+
+export const ComplexDiff = Template.bind({});
+ComplexDiff.args = {
+  data: {
+    columns: [
+      { name: "Region", data_type: "TEXT" },
+      { name: "Resource Count", data_type: "INT8" },
+      { name: "Encrypted", data_type: "BOOL", __diff: "deleted" },
+      { name: "Info", data_type: "JSONB" },
+    ],
+    rows: [
+      {
+        Region: "us-east-1",
+        "Resource Count": 246,
+        Encrypted: true,
+        Info: null,
+      },
+      {
+        Region: "us-east-2",
+        "Resource Count": 146,
+        Encrypted: false,
+        Info: { foo: "bar" },
+        __diff: "deleted",
+      },
+      {
+        Region: "us-west-1",
+        "Resource Count": 57,
+        "Resource Count_diff": 80,
+        Encrypted: true,
+        Info: { bar: "foo" },
+      },
+      {
+        Region: "eu-west-1",
+        "Resource Count": 290,
+        Info: { foobar: "barfoo" },
+        __diff: "inserted",
+      },
+      {
+        Region: "eu-west-2",
+        "Resource Count": 198,
+        Encrypted: true,
+        Encrypted_diff: false,
+        Info: null,
+      },
+    ],
+  },
+};

@@ -33,10 +33,13 @@ export type BasePrimitiveProps = {
   width?: Width;
 };
 
+export type ColumnDiffState = "none" | "inserted" | "updated" | "deleted";
+
 export type LeafNodeDataColumn = {
   name: string;
   original_name?: string;
   data_type: string;
+  __diff?: ColumnDiffState;
 };
 
 export type LeafNodeDataRow = {
