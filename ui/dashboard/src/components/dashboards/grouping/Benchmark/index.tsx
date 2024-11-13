@@ -99,8 +99,6 @@ const Benchmark = (props: InnerCheckProps) => {
       return [];
     }
 
-    console.log(props);
-
     const totalSummary = props.firstChildSummaries.reduce(
       (cumulative, current) => {
         cumulative.error += current.error;

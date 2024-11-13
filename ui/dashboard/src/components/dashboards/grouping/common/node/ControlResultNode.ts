@@ -65,18 +65,23 @@ class ControlResultNode implements CheckNode {
     };
     if (this.result.status_diff === "alarm") {
       summary.alarm_diff += 1;
+      summary.__diff = "updated";
     }
     if (this.result.status_diff === "error") {
       summary.error_diff += 1;
+      summary.__diff = "updated";
     }
     if (this.result.status_diff === "ok") {
       summary.ok_diff += 1;
+      summary.__diff = "updated";
     }
     if (this.result.status_diff === "info") {
       summary.info_diff += 1;
+      summary.__diff = "updated";
     }
     if (this.result.status_diff === "skip") {
       summary.skip_diff += 1;
+      summary.__diff = "updated";
     }
 
     if (this._result.status === "alarm") {
@@ -109,8 +114,6 @@ class ControlResultNode implements CheckNode {
         summary.skip_diff += 1;
       }
     }
-
-    console.log("summary", summary);
     return summary;
   }
 
