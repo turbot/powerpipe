@@ -98,7 +98,7 @@ If you're interested in developing [Powerpipe mods](https://hub.powerpipe.io), s
 
 ## Turbot Pipes
 
-Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud.
+Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud. In a Pipes workspace you can use [Steampipe](https://github.com/turbot/steampipe) for data access, Powerpipe to visualize query results, and [Flowpipe](https://github.com/turbot/flowpipe) to automate workflow.
 
 ## Open source and contributing
 
