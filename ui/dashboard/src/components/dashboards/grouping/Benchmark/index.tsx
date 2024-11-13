@@ -99,6 +99,8 @@ const Benchmark = (props: InnerCheckProps) => {
       return [];
     }
 
+    console.log(props);
+
     const totalSummary = props.firstChildSummaries.reduce(
       (cumulative, current) => {
         cumulative.error += current.error;
@@ -108,7 +110,7 @@ const Benchmark = (props: InnerCheckProps) => {
         cumulative.skip += current.skip;
         return cumulative;
       },
-      { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 }
+      { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
     );
 
     let diffTotalSummary: CheckSummary | null = null;
@@ -125,7 +127,7 @@ const Benchmark = (props: InnerCheckProps) => {
           cumulative.skip += current.skip;
           return cumulative;
         },
-        { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 }
+        { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
       );
     }
 
@@ -325,7 +327,7 @@ const Benchmark = (props: InnerCheckProps) => {
     const split = filterName.split(".");
     filterName = split[split.length - 1];
     const expressionHasFilter = !!expressions?.find(
-      (expr) => expr.type === "status"
+      (expr) => expr.type === "status",
     );
     let newFilter: CheckFilter;
     if (expressionHasFilter) {
@@ -400,7 +402,7 @@ const Benchmark = (props: InnerCheckProps) => {
         {summaryCards
           .filter(({ name }) => {
             const statusFromExpressions = expressions?.find(
-              (expr) => expr.type === "status"
+              (expr) => expr.type === "status",
             )?.value;
             if (statusFromExpressions) {
               return name.includes(statusFromExpressions);
@@ -465,7 +467,7 @@ const BenchmarkTableView = ({
 }: BenchmarkTableViewProps) => {
   const benchmarkDataTable = useMemo(
     () => benchmark.get_data_table(),
-    [benchmark]
+    [benchmark],
   );
 
   return (

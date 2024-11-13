@@ -61,24 +61,8 @@ class ControlResultNode implements CheckNode {
       skip_diff: 0,
       error: 0,
       error_diff: 0,
-      __diff: "updated",
+      __diff: "none",
     };
-    if (this._result.status === "alarm") {
-      summary.alarm += 1;
-    }
-    if (this._result.status === "error") {
-      summary.error += 1;
-    }
-    if (this._result.status === "ok") {
-      summary.ok += 1;
-    }
-    if (this._result.status === "info") {
-      summary.info += 1;
-    }
-    if (this._result.status === "skip") {
-      summary.skip += 1;
-    }
-
     if (this.result.status_diff === "alarm") {
       summary.alarm_diff += 1;
     }
@@ -94,6 +78,39 @@ class ControlResultNode implements CheckNode {
     if (this.result.status_diff === "skip") {
       summary.skip_diff += 1;
     }
+
+    if (this._result.status === "alarm") {
+      summary.alarm += 1;
+      if (!this._result.status_diff) {
+        summary.alarm_diff += 1;
+      }
+    }
+    if (this._result.status === "error") {
+      summary.error += 1;
+      if (!this._result.status_diff) {
+        summary.error_diff += 1;
+      }
+    }
+    if (this._result.status === "ok") {
+      summary.ok += 1;
+      if (!this._result.status_diff) {
+        summary.ok_diff += 1;
+      }
+    }
+    if (this._result.status === "info") {
+      summary.info += 1;
+      if (!this._result.status_diff) {
+        summary.info_diff += 1;
+      }
+    }
+    if (this._result.status === "skip") {
+      summary.skip += 1;
+      if (!this._result.status_diff) {
+        summary.skip_diff += 1;
+      }
+    }
+
+    console.log("summary", summary);
     return summary;
   }
 

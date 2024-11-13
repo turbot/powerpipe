@@ -23,7 +23,7 @@ const SnapshotDiffButton = () => {
       </button>
       <input
         ref={fileInputRef}
-        accept=".application/json, .pps, .sps"
+        accept="application/json, .pps, .sps"
         className="hidden"
         id="snapshot-diff"
         name="snapshot-diff"

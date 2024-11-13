@@ -213,7 +213,6 @@ export const getCheckSummaryChartPercent = (value, total) => {
 const CheckSummaryChart = ({
   status,
   summary,
-  summaryDiff,
   firstChildSummaries,
 }: CheckSummaryChartProps) => {
   let maxAlerts = 0;
@@ -229,13 +228,6 @@ const CheckSummaryChart = ({
       maxNonAlerts = currentMaxNonAlerts;
     }
   }
-  // const [alarm, error, ok, info, skip] = ensureMinPercentages(name, [
-  //   summary.alarm,
-  //   summary.error,
-  //   summary.ok,
-  //   summary.info,
-  //   summary.skip,
-  // ]);
   let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
   let nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts);
   if (alertsWidth > nonAlertsWidth) {
@@ -263,10 +255,7 @@ const CheckSummaryChart = ({
             percent={getCheckSummaryChartPercent(summary.error, maxAlerts)}
           />
           <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
-          <AlertProgressBarGroupDiffTotal
-            className="mr-2"
-            summary={summaryDiff}
-          />
+          <AlertProgressBarGroupDiffTotal className="mr-2" summary={summary} />
         </ProgressBarGroup>
       </div>
       <div
@@ -301,7 +290,7 @@ const CheckSummaryChart = ({
           <NonAlertProgressBarGroupTotal className="ml-2" summary={summary} />
           <NonAlertProgressBarGroupDiffTotal
             className="ml-2"
-            summary={summaryDiff}
+            summary={summary}
           />
         </ProgressBarGroup>
       </div>
