@@ -75,10 +75,18 @@ export class CardDataProcessor {
   ): CardState {
     const dataFormat = this.getDataFormat(data);
     if (dataFormat === "simple") {
+      const hasDiff =
+        get(data, "rows[0].__diff", null) !== null &&
+        get(data, "rows[0].__diff", null) !== "none";
       const firstCol = data.columns[0];
       const isNumericValue = isNumericCol(firstCol.data_type);
       const row = data.rows[0];
       const value = row[firstCol.name];
+      const valueDiff = row[`${firstCol.name}_diff`];
+      const value_number_diff =
+        valueDiff !== undefined && valueDiff !== null && isNumber(valueDiff)
+          ? valueDiff
+          : null;
       return {
         loading: false,
         label: firstCol.name,
@@ -87,16 +95,15 @@ export class CardDataProcessor {
             ? value.toLocaleString()
             : value,
         value_number: isNumericValue && isNumber(value) ? value : null,
+        diff: this.diff(hasDiff, value, value_number_diff, display_type),
         type: display_type || null,
         icon: getIconForType(display_type, properties.icon),
         href: properties.href || null,
       };
     } else {
-      const diffColumn = data.columns.find((c) => c.name === "__diff");
-      const diffColumnValue = diffColumn
-        ? get(data, `rows[0].${diffColumn.name}`, null)
-        : null;
-      const hasDiff = diffColumnValue !== null && diffColumnValue !== "none";
+      const hasDiff =
+        get(data, "rows[0].__diff", null) !== null &&
+        get(data, "rows[0].__diff", null) !== "none";
       const formalLabel = get(data, "rows[0].label", null);
       const formalValue = get(data, `rows[0].value`, null);
       const formalDiffValue = get(data, `rows[0].value_diff`, null);
@@ -104,12 +111,7 @@ export class CardDataProcessor {
       const formalIcon = get(data, `rows[0].icon`, null);
       const formalHref = get(data, `rows[0].href`, null);
       const valueCol = getColumn(data.columns, "value");
-      const valueDiffCol = hasDiff
-        ? getColumn(data.columns, "value_diff")
-        : null;
       const isNumericValue = !!valueCol && isNumericCol(valueCol.data_type);
-      const isNumericDiffValue =
-        !!valueDiffCol && isNumericCol(valueDiffCol.data_type);
       const value =
         formalValue !== null && formalValue !== undefined && isNumericValue
           ? formalValue.toLocaleString()
@@ -119,11 +121,9 @@ export class CardDataProcessor {
           ? formalValue
           : null;
       let value_number_diff;
-      if (valueDiffCol) {
+      if (formalDiffValue) {
         value_number_diff =
-          formalDiffValue && isNumericDiffValue && isNumber(formalDiffValue)
-            ? formalDiffValue
-            : null;
+          formalDiffValue && isNumber(formalDiffValue) ? formalDiffValue : null;
       }
 
       return {
@@ -184,7 +184,6 @@ export class CardDataProcessor {
     } else if (direction === "down") {
       value = previousValue - currentValue;
       value_percent = Math.ceil((value / previousValue) * 100);
-      console.log({ previousValue, currentValue, value, value_percent });
       status =
         displayType === "alert"
           ? "ok"

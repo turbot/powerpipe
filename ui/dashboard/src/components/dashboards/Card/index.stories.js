@@ -385,12 +385,61 @@ FormalDataFormatAsTable.args = {
 export const SimpleDiffUp = Template.bind({});
 SimpleDiffUp.args = {
   data: {
+    columns: [{ name: "Buckets", data_type: "INT8" }],
+    rows: [
+      {
+        Buckets: 5, // Current state value
+        Buckets_diff: 1, // Previous state value
+        __diff: "updated",
+      },
+    ],
+  },
+  properties: {
+    type: "table",
+  },
+};
+
+export const SimpleDiffDown = Template.bind({});
+SimpleDiffDown.args = {
+  data: {
+    columns: [{ name: "Buckets", data_type: "INT8" }],
+    rows: [
+      {
+        Buckets: 1, // Current state value
+        Buckets_diff: 5, // Previous state value
+        __diff: "updated",
+      },
+    ],
+  },
+  properties: {
+    type: "table",
+  },
+};
+
+export const SimpleDiffNoChange = Template.bind({});
+SimpleDiffNoChange.args = {
+  data: {
+    columns: [{ name: "Buckets", data_type: "INT8" }],
+    rows: [
+      {
+        Buckets: 5, // Current state value
+        Buckets_diff: 5, // Previous state value
+        __diff: "none",
+      },
+    ],
+  },
+  properties: {
+    type: "table",
+  },
+};
+
+export const FormalDiffUp = Template.bind({});
+FormalDiffUp.args = {
+  data: {
     columns: [
       { name: "label", data_type: "TEXT" },
       { name: "value", data_type: "INT8" },
-      { name: "value_diff", data_type: "INT8" },
       { name: "type", data_type: "TEXT" },
-      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {
@@ -407,15 +456,13 @@ SimpleDiffUp.args = {
   },
 };
 
-export const SimpleDiffDown = Template.bind({});
-SimpleDiffDown.args = {
+export const FormalDiffDown = Template.bind({});
+FormalDiffDown.args = {
   data: {
     columns: [
       { name: "label", data_type: "TEXT" },
       { name: "value", data_type: "INT8" },
-      { name: "value_diff", data_type: "INT8" },
       { name: "type", data_type: "TEXT" },
-      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {
@@ -432,8 +479,8 @@ SimpleDiffDown.args = {
   },
 };
 
-export const SimpleDiffNoChange = Template.bind({});
-SimpleDiffNoChange.args = {
+export const FormalDiffNoChange = Template.bind({});
+FormalDiffNoChange.args = {
   data: {
     columns: [
       { name: "label", data_type: "TEXT" },
