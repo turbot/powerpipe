@@ -275,7 +275,7 @@ const CheckResults = ({
   return (
     <div
       className={classNames(
-        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto"
+        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto",
       )}
     >
       {empties.map((emptyNode) => (
@@ -314,7 +314,7 @@ const CheckPanelSeverityBadge = ({
         count > 0 ? "border-severity" : "border-skip",
         count > 0
           ? "bg-severity text-white divide-white"
-          : "text-skip divide-skip"
+          : "text-skip divide-skip",
       )}
       title={title}
     >
@@ -404,7 +404,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
             : null,
           node.type === "benchmark" || node.type === "control"
             ? "print:break-inside-avoid-page"
-            : null
+            : null,
         )}
       >
         <section
@@ -416,7 +416,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                 error_nodes.length > 0 ||
                 result_nodes.length > 0)
               ? "rounded-b-none border-b-0"
-              : null
+              : null,
           )}
           onClick={() =>
             can_be_expanded
@@ -450,7 +450,6 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                 <CheckSummaryChart
                   status={node.status}
                   summary={node.summary}
-                  summaryDiff={node.summary_diff}
                   firstChildSummaries={firstChildSummaries}
                 />
               </div>

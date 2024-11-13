@@ -37,7 +37,6 @@ export type CheckNode = {
   severity_summary: CheckSeveritySummary;
   status: CheckNodeStatus;
   summary: CheckSummary;
-  summary_diff: CheckSummary;
   children?: CheckNode[];
   data?: LeafNodeData;
   error?: string;
@@ -281,7 +280,7 @@ export type AddDetectionResultsAction = (results: DetectionResult[]) => void;
 
 export const findDimension = (
   dimensions?: CheckResultDimension[],
-  key?: string
+  key?: string,
 ) => {
   if (!dimensions || !key) {
     return undefined;
