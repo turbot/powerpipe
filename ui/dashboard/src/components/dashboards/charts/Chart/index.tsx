@@ -535,7 +535,8 @@ const getSeriesForChartType = (
   rowSeriesLabels: string[],
   transform: ChartTransform,
   shouldBeTimeSeries: boolean,
-  themeColors
+  themeColors,
+  dataset
 ) => {
   if (!data) {
     return [];
@@ -695,27 +696,126 @@ const getSeriesForChartType = (
         });
         break;
       case "pie":
-        series.push({
-          name: seriesName,
-          type: "pie",
-          center: ["50%", "40%"],
-          radius: "50%",
-          label: { color: themeColors.foreground, fontSize: 10 },
-          emphasis: {
-            itemStyle: {
-              color: "inherit",
-              shadowBlur: 5,
-              shadowOffsetX: 0,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
+        if (diff.isDiff) {
+          // Multi-series pie (donut) logic
+          series.push({
+            name: seriesName + " (Original)",
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: ["20%", "40%"], // Inner radius for donut effect
+            data: dataset.slice(1).map((item) => {
+              return {
+                value: item[2], // 'Count'
+                name: item[0], // 'Type'
+              };
+            }),
+            label: {
+              position: "outside",
+              formatter: "{b}: {c}",
+              color: themeColors.foreground,
+              fontSize: 10,
             },
-          },
-          itemStyle: {
-            borderRadius: 5,
-            borderColor: themeColors.dashboardPanel,
-            borderWidth: 2,
-          },
-        });
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+                shadowBlur: 5,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+          });
+
+          series.push({
+            name: seriesName + " (Diff)",
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: ["45%", "65%"], // Outer radius for donut effect
+            data: dataset.slice(1).map((item, index) => {
+              // Get the matching color from the inner series
+              const matchingColor =
+                themeColors.charts[index % themeColors.charts.length];
+              return {
+                value: item[1], // 'Count_diff'
+                name: item[0], // 'Type'
+                itemStyle: {
+                  color: {
+                    type: "pattern",
+                    image: (() => {
+                      // Create a canvas for the hatching pattern
+                      const canvas = document.createElement("canvas");
+                      const ctx = canvas.getContext("2d");
+                      canvas.width = 8; // Pattern size
+                      canvas.height = 8;
+
+                      // Fill the background with the matching color
+                      ctx.fillStyle = matchingColor;
+                      ctx.fillRect(0, 0, 8, 8);
+
+                      // Draw the hatching pattern (e.g., diagonal lines)
+                      ctx.strokeStyle = lightenColor(matchingColor, 0.3); // Use a slightly lighter color for contrast
+                      ctx.lineWidth = 2; // Adjust line width for desired effect
+                      ctx.beginPath();
+                      ctx.moveTo(0, 8); // Start from bottom left
+                      ctx.lineTo(8, 0); // Draw diagonal line to top right
+                      ctx.stroke();
+
+                      return canvas;
+                    })(),
+                    repeat: "repeat",
+                  },
+                  borderColor: themeColors.dashboardPanel,
+                  borderWidth: 2,
+                  borderRadius: 5,
+                },
+              };
+            }),
+            label: {
+              position: "outside",
+              formatter: "{b}: {c}",
+              color: themeColors.foreground,
+              fontSize: 10,
+            },
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+                shadowBlur: 5,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+          });
+        } else {
+          // Single-series pie (standard pie logic)
+          series.push({
+            name: seriesName,
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: "50%",
+            label: { color: themeColors.foreground, fontSize: 10 },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+              },
+            },
+          });
+        }
         break;
+
       case "area":
         series.push({
           name: seriesName,
@@ -730,7 +830,46 @@ const getSeriesForChartType = (
           emphasis: {
             focus: "series",
           },
-          itemStyle: { color: seriesColor },
+          itemStyle: {
+            color: !diff.isDiff
+              ? seriesMapSettings.color
+              : {
+                  type: "pattern",
+                  image: (() => {
+                    // Create a canvas for the pattern
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = 8; // Pattern size
+                    canvas.height = 8;
+
+                    // Set base color
+                    const baseColor = seriesMapSettings.color;
+
+                    // Define the colors
+                    const lightColor = lightenColor(baseColor, 0.3);
+                    // const darkColor = darkenColor(baseColor, 0.2);
+
+                    // Draw light background
+                    ctx.fillStyle = lightColor;
+                    ctx.fillRect(0, 0, 8, 8);
+
+                    // Draw wider diagonal dark lines
+                    ctx.strokeStyle = baseColor;
+                    ctx.lineWidth = 4; // Increase line width for wider lines
+                    ctx.beginPath();
+                    ctx.moveTo(-2, 6); // Adjust start and end points for better alignment
+                    ctx.lineTo(6, -2);
+                    ctx.moveTo(2, 10);
+                    ctx.lineTo(10, 2);
+                    ctx.stroke();
+
+                    return canvas;
+                  })(),
+                  repeat: "repeat",
+                },
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 1,
+          },
         });
         break;
       case "line":
@@ -829,7 +968,8 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     rowSeriesLabels,
     transform,
     treatAsTimeSeries,
-    themeColors
+    themeColors,
+    dataset
   );
   const config = merge(
     getCommonBaseOptions(),
