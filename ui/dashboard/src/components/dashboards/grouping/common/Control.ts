@@ -50,7 +50,7 @@ class Control implements CheckNode {
     status: DashboardRunState,
     error: string | undefined,
     benchmark_trunk: Benchmark[],
-    add_control_results: AddControlResultsAction
+    add_control_results: AddControlResultsAction,
   ) {
     this._sortIndex = sortIndex;
     this._group_id = group_id;
@@ -92,7 +92,7 @@ class Control implements CheckNode {
       add_control_results([this._build_control_empty_result(benchmark_trunk)]);
     } else {
       add_control_results(
-        this._build_control_results(benchmark_trunk, this._results)
+        this._build_control_results(benchmark_trunk, this._results),
       );
     }
   }
@@ -151,7 +151,6 @@ class Control implements CheckNode {
           : baseSummary.error || 0,
       __diff: baseSummary.__diff || "updated", // Preserve __diff if it exists or default to "updated"
     };
-    //return this._summary;
   }
 
   get error(): string | undefined {
@@ -228,7 +227,7 @@ class Control implements CheckNode {
   }
 
   private _build_control_loading_node = (
-    benchmark_trunk: Benchmark[]
+    benchmark_trunk: Benchmark[],
   ): CheckResult => {
     return {
       type: "loading",
@@ -244,7 +243,7 @@ class Control implements CheckNode {
 
   private _build_control_error_node = (
     benchmark_trunk: Benchmark[],
-    error: string
+    error: string,
   ): CheckResult => {
     return {
       type: "error",
@@ -260,7 +259,7 @@ class Control implements CheckNode {
   };
 
   private _build_control_empty_result = (
-    benchmark_trunk: Benchmark[]
+    benchmark_trunk: Benchmark[],
   ): CheckResult => {
     return {
       type: "empty",
@@ -277,7 +276,7 @@ class Control implements CheckNode {
 
   private _build_control_results = (
     benchmark_trunk: Benchmark[],
-    results: CheckResult[]
+    results: CheckResult[],
   ): CheckResult[] => {
     return results.map((r) => ({
       ...r,

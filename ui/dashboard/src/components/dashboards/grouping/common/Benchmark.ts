@@ -40,7 +40,7 @@ class Benchmark implements CheckNode {
     controls: DashboardLayoutNode[] | undefined,
     panelsMap: PanelsMap,
     trunk: Benchmark[],
-    add_control_results?: AddControlResultsAction
+    add_control_results?: AddControlResultsAction,
   ) {
     this._sortIndex = sortIndex;
     this._all_control_results = [];
@@ -64,17 +64,17 @@ class Benchmark implements CheckNode {
       const nestedDefinition = panelsMap[nestedBenchmark.name];
       // @ts-ignore
       const benchmarks = nestedBenchmark.children?.filter(
-        (child) => child.panel_type === "benchmark"
+        (child) => child.panel_type === "benchmark",
       );
       // @ts-ignore
       const controls = nestedBenchmark.children?.filter(
-        (child) => child.panel_type === "control"
+        (child) => child.panel_type === "control",
       );
       nestedBenchmarks.push(
         new Benchmark(
           `benchmark-${padStart(
             benchmarkIndex.toString(),
-            lengthMaxBenchmarkIndex
+            lengthMaxBenchmarkIndex,
           )}`,
           nestedDefinition.name,
           nestedDefinition.title,
@@ -84,8 +84,8 @@ class Benchmark implements CheckNode {
           controls,
           panelsMap,
           thisTrunk,
-          this._add_control_results
-        )
+          this._add_control_results,
+        ),
       );
     });
     const nestedControls: Control[] = [];
@@ -110,8 +110,8 @@ class Benchmark implements CheckNode {
           control.status,
           control.error,
           thisTrunk,
-          this._add_control_results
-        )
+          this._add_control_results,
+        ),
       );
     });
     this._benchmarks = nestedBenchmarks;
@@ -170,7 +170,7 @@ class Benchmark implements CheckNode {
       skip_diff: 0,
       error: 0,
       error_diff: 0,
-      __diff: "updated",
+      __diff: "none",
     };
     for (const benchmark of this._benchmarks) {
       const nestedSummary = benchmark.summary;
@@ -270,13 +270,13 @@ class Benchmark implements CheckNode {
       columns.push({
         name: tag,
         data_type: "TEXT",
-      })
+      }),
     );
     Object.keys(dimensions).forEach((dimension) =>
       columns.push({
         name: dimension,
         data_type: "TEXT",
-      })
+      }),
     );
     const rows = this.get_data_rows(Object.keys(tags), Object.keys(dimensions));
     // let rows: LeafNodeDataRow[] = [];

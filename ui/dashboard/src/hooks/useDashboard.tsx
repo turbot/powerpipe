@@ -148,7 +148,6 @@ const DashboardProvider = ({
         },
       },
     };
-    console.log(JSON.stringify(payload));
     sendSocketMessage(payload);
   }, [sendSocketMessage, socketReady, state.dataMode, state.diff]);
 
