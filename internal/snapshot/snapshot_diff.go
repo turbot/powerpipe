@@ -115,26 +115,32 @@ func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) 
 		var err error
 		topLevel := change.Path[0]
 		switch topLevel {
-		case "layout", "panels":
+		case "layout":
 			switch change.Type {
 			case "create":
 				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "inserted")
-				if topLevel == "panels" {
-					// PANEL SPECIFIC LOGIC
-					fmt.Println("a")
-				}
 			case "delete":
 				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "deleted")
-				if topLevel == "panels" {
-					// PANEL SPECIFIC LOGIC
-					fmt.Println("a")
-				}
+				// TODO: #snapshot we need to extract the deleted layout item and inject into the diff
 			case "update":
 				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "updated")
-				if topLevel == "panels" {
-					// PANEL SPECIFIC LOGIC
-					fmt.Println("a")
-				}
+			default:
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("failed to update diff snapshot: %w", err)
+			}
+		case "panels":
+			switch change.Type {
+			case "create":
+				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "inserted")
+			case "delete":
+				fmt.Println("delete")
+			case "update":
+				updatePath := change.Path[:len(change.Path)-1]
+				updateKey := fmt.Sprintf("%s_diff", change.Path[len(change.Path)-1])
+				err = addKeyValueAtPath(*diffSnap, updatePath, "__diff", "updated")
+				err = addKeyValueAtPath(*diffSnap, updatePath, updateKey, change.From)
 			default:
 				continue
 			}
