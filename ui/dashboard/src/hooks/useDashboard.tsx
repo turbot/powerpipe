@@ -135,7 +135,7 @@ const DashboardProvider = ({
       !socketReady ||
       state.dataMode !== "diff" ||
       !state.snapshot ||
-      !state.diff.snapshot
+      !state.diff?.snapshot
     ) {
       return;
     }
