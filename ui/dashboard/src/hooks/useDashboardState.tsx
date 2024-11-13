@@ -29,6 +29,7 @@ import {
 import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,
+  SnapshotDataToExecutionCompleteSchemaMigrator,
 } from "@powerpipe/utils/schema";
 import { useCallback, useReducer } from "react";
 
@@ -155,6 +156,50 @@ const reducer = (state: IDashboardContext, action) => {
         diff: {
           snapshot: action.snapshot,
         },
+      };
+    }
+    case DashboardActions.SNAPSHOT_DIFF: {
+      const eventMigrator = new SnapshotDataToExecutionCompleteSchemaMigrator();
+      const migratedEvent = eventMigrator.toLatest(action.snapshot);
+      const layout = migratedEvent.snapshot.layout;
+      const panels = migratedEvent.snapshot.panels;
+      const rootLayoutPanel = migratedEvent.snapshot.layout;
+      const rootPanel = panels[rootLayoutPanel.name];
+      let dashboard;
+
+      if (rootPanel.panel_type !== "dashboard") {
+        dashboard = wrapDefinitionInArtificialDashboard(rootPanel, layout);
+      } else {
+        dashboard = {
+          ...rootPanel,
+          ...layout,
+        };
+      }
+
+      const panelsMap = migratePanelStatuses(
+        panels,
+        migratedEvent.schema_version,
+      );
+
+      // Replace the whole dashboard as this event contains everything
+      return {
+        ...state,
+        dataMode: "diff",
+        error: null,
+        panelsLog: updatePanelsLogFromCompletedPanels(
+          state.panelsLog,
+          panels,
+          migratedEvent.snapshot.end_time,
+        ),
+        diff: null,
+        panelsMap,
+        dashboard,
+        progress: 100,
+        snapshot: migratedEvent.snapshot,
+        state: "complete",
+        selectedDashboardInputs: migratedEvent.snapshot.inputs,
+        lastChangedInput: null,
+        recordInputsHistory: false,
       };
     }
     case DashboardActions.EXECUTION_COMPLETE: {

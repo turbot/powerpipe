@@ -168,6 +168,7 @@ export const DashboardActions: IActions = {
   SET_DATA_MODE: "set_data_mode",
   SET_REFETCH_DASHBOARD: "set_refetch_dashboard",
   SHOW_CUSTOMIZE_BENCHMARK_PANEL: "show_customize_benchmark_panel",
+  SNAPSHOT_DIFF: "snapshot_diff",
   HIDE_CUSTOMIZE_BENCHMARK_PANEL: "hide_customize_benchmark_panel",
   WORKSPACE_ERROR: "workspace_error",
 };

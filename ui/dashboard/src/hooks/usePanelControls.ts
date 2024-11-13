@@ -40,13 +40,6 @@ const usePanelControls = (definition: PanelDefinition, show = false) => {
   const [customControls, setCustomControls] = useState<IPanelControl[]>([]);
 
   useEffect(() => {
-    // console.log({
-    //   customControls,
-    //   definition,
-    //   getBasePanelControls,
-    //   setPanelControls,
-    //   show,
-    // });
     setPanelControls([...customControls, ...getBasePanelControls()]);
   }, [
     customControls,
