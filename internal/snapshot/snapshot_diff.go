@@ -9,6 +9,7 @@ import (
 	"net/url"
 	"os"
 	"path/filepath"
+	"strconv"
 
 	"github.com/r3labs/diff/v3"
 )
@@ -109,5 +110,89 @@ func loadSnapshotFromJson(s string) ([]byte, error) {
 }
 
 func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) error {
+
+	for _, change := range changeLog {
+		var err error
+		topLevel := change.Path[0]
+		switch topLevel {
+		case "layout", "panels":
+			switch change.Type {
+			case "create":
+				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "inserted")
+				if topLevel == "panels" {
+					// PANEL SPECIFIC LOGIC
+					fmt.Println("a")
+				}
+			case "delete":
+				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "deleted")
+				if topLevel == "panels" {
+					// PANEL SPECIFIC LOGIC
+					fmt.Println("a")
+				}
+			case "update":
+				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "updated")
+				if topLevel == "panels" {
+					// PANEL SPECIFIC LOGIC
+					fmt.Println("a")
+				}
+			default:
+				continue
+			}
+			if err != nil {
+				return fmt.Errorf("failed to update diff snapshot: %w", err)
+			}
+		default:
+			continue
+		}
+	}
 	return nil
+}
+
+func addKeyValueAtPath(diffSnap map[string]interface{}, path []string, key string, value interface{}) error {
+	var current interface{} = diffSnap
+
+	// traverse path
+	for i, p := range path {
+		// end o path
+		if i == len(path)-1 {
+			switch typedCurrent := current.(type) {
+			case map[string]interface{}:
+				typedCurrent[key] = value
+				return nil
+			case []interface{}:
+				index, err := strconv.Atoi(p)
+				if err != nil || index < 0 || index >= len(typedCurrent) {
+					return fmt.Errorf("invalid index at path element '%s'", p)
+				}
+
+				if targetMap, ok := typedCurrent[index].(map[string]interface{}); ok {
+					targetMap[key] = value
+					return nil
+				}
+
+				return fmt.Errorf("expected map at index %d, got %T", index, typedCurrent[index])
+			default:
+				return fmt.Errorf("expected map or slice at path element '%s', got %T", p, current)
+			}
+		}
+
+		// traverse deeper
+		switch typedCurrent := current.(type) {
+		case map[string]interface{}:
+			if next, ok := typedCurrent[p]; ok {
+				current = next
+			} else {
+				return fmt.Errorf("path element '%s' not found", p)
+			}
+		case []interface{}:
+			index, err := strconv.Atoi(p)
+			if err != nil || index < 0 || index >= len(typedCurrent) {
+				return fmt.Errorf("invalid index '%s' at path element '%s'", p, p)
+			}
+			current = typedCurrent[index]
+		default:
+			return fmt.Errorf("expected map or slice at path element '%s', got %T", p, current)
+		}
+	}
+	return fmt.Errorf("failed to traverse path")
 }
