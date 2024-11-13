@@ -388,19 +388,22 @@ SimpleDiffUp.args = {
     columns: [
       { name: "label", data_type: "TEXT" },
       { name: "value", data_type: "INT8" },
+      { name: "value_diff", data_type: "INT8" },
       { name: "type", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {
         label: "Encrypted EC2 Instances",
         value: 5, // Current state value
+        value_diff: 1, // Previous state value
         type: "ok",
+        __diff: "updated",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff", // If applicable for your logic
   },
 };
 
@@ -410,19 +413,22 @@ SimpleDiffDown.args = {
     columns: [
       { name: "label", data_type: "TEXT" },
       { name: "value", data_type: "INT8" },
+      { name: "value_diff", data_type: "INT8" },
       { name: "type", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {
         label: "Encrypted EC2 Instances",
         value: 1, // Current state value
+        value_diff: 5, // Previous state value
         type: "ok",
+        __diff: "updated",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff", // If applicable for your logic
   },
 };
 
@@ -432,18 +438,21 @@ SimpleDiffNoChange.args = {
     columns: [
       { name: "label", data_type: "TEXT" },
       { name: "value", data_type: "INT8" },
+      { name: "value_dff", data_type: "INT8" },
       { name: "type", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {
         label: "Encrypted EC2 Instances",
         value: 5, // Current state value
+        value_diff: 5, // Previous state value
         type: "ok",
+        __diff: "none",
       },
     ],
   },
   properties: {
     type: "table",
-    data_mode: "diff", // If applicable for your logic
   },
 };
