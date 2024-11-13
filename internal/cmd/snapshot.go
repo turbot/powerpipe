@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"encoding/json"
 	"github.com/spf13/cobra"
 
 	"github.com/turbot/pipe-fittings/cmdconfig"
@@ -47,12 +48,16 @@ func snapshotDiffCmd() *cobra.Command {
 }
 
 func runSnapshotDiffCmd(cmd *cobra.Command, args []string) {
-	bytes, err := snapshot.Diff(snapshot.DiffPaths{
+	snap, err := snapshot.Diff(snapshot.DiffPaths{
 		Previous: args[0],
 		Current:  args[1],
 	})
 	error_helpers.FailOnError(err)
 
 	// TODO: #cli DO THIS PROPERLY!
-	cmd.Println(string(bytes))
+	snapBytes, err := json.Marshal(snap)
+	if snapBytes != nil {
+		error_helpers.FailOnError(err)
+	}
+	cmd.Println(string(snapBytes))
 }

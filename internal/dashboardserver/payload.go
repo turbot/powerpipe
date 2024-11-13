@@ -133,6 +133,22 @@ func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModT
 	return res, nil
 }
 
+func buildSnapshotDiffPayload(_ context.Context, snapshot map[string]interface{}) ([]byte, error) {
+	slog.Debug("calling buildSnapshotDiffPayload")
+
+	payload := SnapshotDiffPayload{
+		Action:   "snapshot_diff",
+		Snapshot: snapshot,
+	}
+
+	res, err := json.Marshal(payload)
+	if err != nil {
+		return nil, fmt.Errorf("failed to marshal snapshot diff: %w", err)
+	}
+
+	return res, nil
+}
+
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
 	// if backend supports search path, get it
 	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)

@@ -139,13 +139,17 @@ const DashboardProvider = ({
     ) {
       return;
     }
-    sendSocketMessage({
+    const payload = {
       action: SocketActions.GET_SNAPSHOT_DIFF,
       payload: {
-        current: state.snapshot,
-        previous: state.diff.snapshot,
+        snapshot_diff: {
+          previous: JSON.stringify(state.diff.snapshot),
+          current: JSON.stringify(state.snapshot),
+        },
       },
-    });
+    };
+    console.log(JSON.stringify(payload));
+    sendSocketMessage(payload);
   }, [sendSocketMessage, socketReady, state.dataMode, state.diff]);
 
   useEffect(() => {
