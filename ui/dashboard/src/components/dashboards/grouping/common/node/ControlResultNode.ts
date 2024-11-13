@@ -52,10 +52,16 @@ class ControlResultNode implements CheckNode {
   get summary(): CheckSummary {
     const summary = {
       alarm: 0,
+      alarm_diff: 0,
       ok: 0,
+      ok_diff: 0,
       info: 0,
+      info_diff: 0,
       skip: 0,
+      skip_diff: 0,
       error: 0,
+      error_diff: 0,
+      __diff: "updated",
     };
     if (this._result.status === "alarm") {
       summary.alarm += 1;
@@ -71,6 +77,22 @@ class ControlResultNode implements CheckNode {
     }
     if (this._result.status === "skip") {
       summary.skip += 1;
+    }
+
+    if (this.result.status_diff === "alarm") {
+      summary.alarm_diff += 1;
+    }
+    if (this.result.status_diff === "error") {
+      summary.error_diff += 1;
+    }
+    if (this.result.status_diff === "ok") {
+      summary.ok_diff += 1;
+    }
+    if (this.result.status_diff === "info") {
+      summary.info_diff += 1;
+    }
+    if (this.result.status_diff === "skip") {
+      summary.skip_diff += 1;
     }
     return summary;
   }

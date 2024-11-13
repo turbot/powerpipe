@@ -38,7 +38,7 @@ class Benchmark implements CheckNode {
     controls: DashboardLayoutNode[] | undefined,
     panelsMap: PanelsMap,
     trunk: Benchmark[],
-    add_control_results?: AddControlResultsAction,
+    add_control_results?: AddControlResultsAction
   ) {
     this._sortIndex = sortIndex;
     this._all_control_results = [];
@@ -61,17 +61,17 @@ class Benchmark implements CheckNode {
       const nestedDefinition = panelsMap[nestedBenchmark.name];
       // @ts-ignore
       const benchmarks = nestedBenchmark.children?.filter(
-        (child) => child.panel_type === "benchmark",
+        (child) => child.panel_type === "benchmark"
       );
       // @ts-ignore
       const controls = nestedBenchmark.children?.filter(
-        (child) => child.panel_type === "control",
+        (child) => child.panel_type === "control"
       );
       nestedBenchmarks.push(
         new Benchmark(
           `benchmark-${padStart(
             benchmarkIndex.toString(),
-            lengthMaxBenchmarkIndex,
+            lengthMaxBenchmarkIndex
           )}`,
           nestedDefinition.name,
           nestedDefinition.title,
@@ -80,8 +80,8 @@ class Benchmark implements CheckNode {
           controls,
           panelsMap,
           thisTrunk,
-          this._add_control_results,
-        ),
+          this._add_control_results
+        )
       );
     });
     const nestedControls: Control[] = [];
@@ -106,8 +106,8 @@ class Benchmark implements CheckNode {
           control.status,
           control.error,
           thisTrunk,
-          this._add_control_results,
-        ),
+          this._add_control_results
+        )
       );
     });
     this._benchmarks = nestedBenchmarks;
@@ -153,27 +153,46 @@ class Benchmark implements CheckNode {
   get summary(): CheckSummary {
     const summary = {
       alarm: 0,
+      alarm_diff: 0,
       ok: 0,
+      ok_diff: 0,
       info: 0,
+      info_diff: 0,
       skip: 0,
+      skip_diff: 0,
       error: 0,
+      error_diff: 0,
+      __diff: "updated",
     };
     for (const benchmark of this._benchmarks) {
       const nestedSummary = benchmark.summary;
       summary.alarm += nestedSummary.alarm;
+      summary.alarm_diff += nestedSummary.alarm_diff;
       summary.ok += nestedSummary.ok;
+      summary.ok_diff += nestedSummary.ok_diff;
       summary.info += nestedSummary.info;
+      summary.info_diff += nestedSummary.info_diff;
       summary.skip += nestedSummary.skip;
+      summary.skip_diff += nestedSummary.skip_diff;
       summary.error += nestedSummary.error;
+      summary.error_diff += nestedSummary.error_diff;
+      summary.__diff = nestedSummary.__diff;
     }
     for (const control of this._controls) {
       const nestedSummary = control.summary;
       summary.alarm += nestedSummary.alarm;
+      summary.alarm_diff += nestedSummary.alarm_diff;
       summary.ok += nestedSummary.ok;
+      summary.ok_diff += nestedSummary.ok_diff;
       summary.info += nestedSummary.info;
+      summary.info_diff += nestedSummary.info_diff;
       summary.skip += nestedSummary.skip;
+      summary.skip_diff += nestedSummary.skip_diff;
       summary.error += nestedSummary.error;
+      summary.error_diff += nestedSummary.error_diff;
+      summary.__diff = nestedSummary.__diff;
     }
+
     return summary;
   }
 
@@ -243,13 +262,13 @@ class Benchmark implements CheckNode {
       columns.push({
         name: tag,
         data_type: "TEXT",
-      }),
+      })
     );
     Object.keys(dimensions).forEach((dimension) =>
       columns.push({
         name: dimension,
         data_type: "TEXT",
-      }),
+      })
     );
     const rows = this.get_data_rows(Object.keys(tags), Object.keys(dimensions));
     // let rows: LeafNodeDataRow[] = [];
