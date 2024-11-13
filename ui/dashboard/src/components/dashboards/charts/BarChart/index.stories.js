@@ -289,3 +289,83 @@ SingleSeriesYAxisNoLabels.args = {
     },
   },
 };
+
+export const SingleSeriesDiff = Template.bind({});
+SingleSeriesDiff.storyName = "Single Series Diff";
+SingleSeriesDiff.args = {
+  data: {
+    columns: [
+      { name: "Type", data_type: "TEXT" },
+      { name: "_diff", data_type: "INT8" },
+      { name: "Count_diff", data_type: "INT8" },
+      { name: "Count", data_type: "INT8" },
+    ],
+    rows: [
+      { Type: "User", Count: 12, Count_diff: 10, _diff: "updated" },
+      { Type: "Policy", Count: 93, Count_diff: 100, _diff: "updated" },
+      { Type: "Role", Count: 48, Count_diff: 50, _diff: "updated" },
+    ],
+  },
+};
+
+export const MultiSeriesGroupedDiff = Template.bind({});
+MultiSeriesGroupedDiff.storyName = "Multi-Series (grouped)";
+MultiSeriesGroupedDiff.args = {
+  data: {
+    columns: [
+      { name: "Country", data_type: "TEXT" },
+      { name: "Men", data_type: "INT8" },
+      { name: "Men_diff", data_type: "INT8" },
+      { name: "Women", data_type: "INT8" },
+      { name: "Women_diff", data_type: "INT8" },
+      { name: "Children", data_type: "INT8" },
+      { name: "Children_diff", data_type: "INT8" },
+      { name: "_diff", data_type: "INT8" },
+    ],
+    rows: [
+      {
+        Country: "England",
+        Men: 16000000,
+        Men_diff: -1000000,
+        Women: 13000000,
+        Women_diff: 500000,
+        Children: 8000000,
+        Children_diff: 100000,
+        _diff: "updated",
+      },
+      {
+        Country: "Scotland",
+        Men: 8000000,
+        Men_diff: 200000,
+        Women: 7000000,
+        Women_diff: -300000,
+        Children: 3000000,
+        Children_diff: 50000,
+        _diff: "updated",
+      },
+      {
+        Country: "Wales",
+        Men: 5000000,
+        Men_diff: -500000,
+        Women: 3000000,
+        Women_diff: 100000,
+        Children: 2500000,
+        Children_diff: -20000,
+        _diff: "unchanged",
+      },
+      {
+        Country: "Northern Ireland",
+        Men: 3000000,
+        Men_diff: 100000,
+        Women: 2000000,
+        Women_diff: -100000,
+        Children: 1000000,
+        Children_diff: 10000,
+        _diff: "updated",
+      },
+    ],
+  },
+  properties: {
+    grouping: "compare",
+  },
+};

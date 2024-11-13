@@ -306,3 +306,72 @@ MultiTimeSeries.args = MultiTimeSeriesDefaults;
 export const MultiTimeSeriesGrouped = Template.bind({});
 MultiTimeSeriesGrouped.storyName = "Multiple Time Series (grouped)";
 MultiTimeSeriesGrouped.args = MultiTimeSeriesGroupedDefaults;
+
+export const SingleSeriesDiff = Template.bind({});
+SingleSeriesDiff.storyName = "Single Series Diff";
+SingleSeriesDiff.args = {
+  data: {
+    columns: [
+      { name: "Type", data_type: "TEXT" },
+      { name: "_diff", data_type: "INT8" },
+      { name: "Count_diff", data_type: "INT8" },
+      { name: "Count", data_type: "INT8" },
+    ],
+    rows: [
+      { Type: "User", Count: 12, Count_diff: 10, _diff: "updated" },
+      { Type: "Policy", Count: 93, Count_diff: 100, _diff: "updated" },
+      { Type: "Role", Count: 48, Count_diff: 50, _diff: "updated" },
+    ],
+  },
+};
+
+export const SingleTimeSeriesDiff = Template.bind({});
+SingleTimeSeriesDiff.storyName = "Single Time Series Diff";
+SingleTimeSeriesDiff.args = {
+  data: {
+    columns: [
+      { name: "time", data_type: "TIMESTAMP" },
+      { name: "Count", data_type: "INT8" },
+      { name: "Count_diff", data_type: "INT8" },
+      { name: "_diff", data_type: "TEXT" },
+    ],
+    rows: [
+      {
+        time: "2023-01-01T00:00:00.000",
+        Count: 20,
+        Count_diff: 18,
+        _diff: "updated",
+      },
+      {
+        time: "2023-02-01T00:00:00.000",
+        Count: 32,
+        Count_diff: 40,
+        _diff: "updated",
+      },
+      {
+        time: "2023-04-01T00:00:00.000",
+        Count: -15,
+        Count_diff: -25,
+        _diff: "updated",
+      },
+      {
+        time: "2023-05-01T00:00:00.000",
+        Count: 18,
+        Count_diff: 20,
+        _diff: "updated",
+      },
+      {
+        time: "2023-06-01T00:00:00.000",
+        Count: -9,
+        Count_diff: -4,
+        _diff: "updated",
+      },
+      {
+        time: "2023-12-01T00:00:00.000",
+        Count: 3,
+        Count_diff: 7,
+        _diff: "updated",
+      },
+    ],
+  },
+};
