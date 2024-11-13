@@ -102,164 +102,136 @@ const Benchmark = (props: InnerCheckProps) => {
     const totalSummary = props.firstChildSummaries.reduce(
       (cumulative, current) => {
         cumulative.error += current.error;
+        cumulative.error_diff += current.error_diff || 0;
         cumulative.alarm += current.alarm;
+        cumulative.alarm_diff += current.alarm_diff || 0;
         cumulative.ok += current.ok;
+        cumulative.ok_diff += current.ok_diff || 0;
         cumulative.info += current.info;
+        cumulative.info_diff += current.info_diff || 0;
         cumulative.skip += current.skip;
+        cumulative.skip_diff += current.skip_diff || 0;
         return cumulative;
       },
-      { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
+      {
+        error: 0,
+        error_diff: 0,
+        alarm: 0,
+        alarm_diff: 0,
+        ok: 0,
+        ok_diff: 0,
+        info: 0,
+        info_diff: 0,
+        skip: 0,
+        skip_diff: 0,
+      },
     );
-
-    let diffTotalSummary: CheckSummary | null = null;
-    if (
-      props.diffFirstChildSummaries &&
-      props.diffFirstChildSummaries?.length > 0
-    ) {
-      diffTotalSummary = props.diffFirstChildSummaries.reduce(
-        (cumulative, current) => {
-          cumulative.error += current.error;
-          cumulative.alarm += current.alarm;
-          cumulative.ok += current.ok;
-          cumulative.info += current.info;
-          cumulative.skip += current.skip;
-          return cumulative;
-        },
-        { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
-      );
-    }
 
     const summary_cards = [
       {
         name: `${props.definition.name}.container.summary.ok`,
         width: 2,
         display_type: totalSummary.ok > 0 ? "ok" : "skip",
-        properties: {
-          label: "OK",
-          value: totalSummary.ok,
-          // icon: "materialsymbols-solid:check",
-          icon: "materialsymbols-solid:check_circle",
-          // icon: "materialsymbols-outline:check_circle",
+        data: {
+          columns: [{ name: "OK", data_type: "INT8" }],
+          rows: [
+            {
+              OK: totalSummary.ok,
+              OK_diff: totalSummary.ok_diff,
+              __diff:
+                totalSummary.ok !== totalSummary.ok_diff ? "updated" : "none",
+            },
+          ],
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.ok.diff`,
-              width: 2,
-              display_type: diffTotalSummary.ok > 0 ? "ok" : "skip",
-              properties: {
-                label: "OK",
-                value: diffTotalSummary.ok,
-                // icon: "materialsymbols-solid:check",
-                icon: "materialsymbols-solid:check_circle",
-                // icon: "materialsymbols-outline:check_circle",
-              },
-            }
-          : null,
+        properties: {
+          icon: "materialsymbols-solid:check_circle",
+        },
       },
       {
         name: `${props.definition.name}.container.summary.alarm`,
         width: 2,
         display_type: totalSummary.alarm > 0 ? "alert" : "skip",
-        properties: {
-          label: "Alarm",
-          value: totalSummary.alarm,
-          icon: "materialsymbols-solid:circle_notifications",
-          // icon: "materialsymbols-solid:circle_notifications",
-          // icon: "materialsymbols-outline:circle_notifications",
+        data: {
+          columns: [{ name: "Alarm", data_type: "INT8" }],
+          rows: [
+            {
+              Alarm: totalSummary.alarm,
+              Alarm_diff: totalSummary.alarm_diff,
+              __diff:
+                totalSummary.alarm !== totalSummary.alarm_diff
+                  ? "updated"
+                  : "none",
+            },
+          ],
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.alarm.diff`,
-              width: 2,
-              display_type: diffTotalSummary.alarm > 0 ? "alert" : "skip",
-              properties: {
-                label: "Alarm",
-                value: diffTotalSummary.alarm,
-                icon: "materialsymbols-solid:circle_notifications",
-                // icon: "materialsymbols-solid:circle_notifications",
-                // icon: "materialsymbols-outline:circle_notifications",
-              },
-            }
-          : null,
+        properties: {
+          icon: "materialsymbols-solid:circle_notifications",
+        },
       },
       {
         name: `${props.definition.name}.container.summary.error`,
         width: 2,
         display_type: totalSummary.error > 0 ? "alert" : "skip",
+        data: {
+          columns: [{ name: "Error", data_type: "INT8" }],
+          rows: [
+            {
+              Error: totalSummary.error,
+              Error_diff: totalSummary.error_diff,
+              __diff:
+                totalSummary.error !== totalSummary.error_diff
+                  ? "updated"
+                  : "none",
+            },
+          ],
+        },
         properties: {
           label: "Error",
           value: totalSummary.error,
-          // icon: "materialsymbols-solid:priority_high",
           icon: "materialsymbols-solid:error",
-          // icon: "materialsymbols-outline:error",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.error.diff`,
-              width: 2,
-              display_type: diffTotalSummary.error > 0 ? "alert" : "skip",
-              properties: {
-                label: "Error",
-                value: diffTotalSummary.error,
-                // icon: "materialsymbols-solid:priority_high",
-                icon: "materialsymbols-solid:error",
-                // icon: "materialsymbols-outline:error",
-              },
-            }
-          : null,
       },
       {
         name: `${props.definition.name}.container.summary.info`,
         width: 2,
         display_type: totalSummary.info > 0 ? "info" : "skip",
-        properties: {
-          label: "Info",
-          value: totalSummary.info,
-          // icon: "materialsymbols-solid:info_i",
-          icon: "materialsymbols-solid:info",
-          // icon: "materialsymbols-outline:info",
+        data: {
+          columns: [{ name: "Info", data_type: "INT8" }],
+          rows: [
+            {
+              Info: totalSummary.info,
+              Info_diff: totalSummary.info_diff,
+              __diff:
+                totalSummary.info !== totalSummary.info_diff
+                  ? "updated"
+                  : "none",
+            },
+          ],
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.info.diff`,
-              width: 2,
-              display_type: diffTotalSummary.info > 0 ? "info" : "skip",
-              properties: {
-                label: "Info",
-                value: diffTotalSummary.info,
-                // icon: "materialsymbols-solid:info_i",
-                icon: "materialsymbols-solid:info",
-                // icon: "materialsymbols-outline:info",
-              },
-            }
-          : null,
+        properties: {
+          icon: "materialsymbols-solid:info",
+        },
       },
       {
         name: `${props.definition.name}.container.summary.skip`,
         width: 2,
         display_type: "skip",
-        properties: {
-          label: "Skipped",
-          value: totalSummary.skip,
-          // icon: "materialsymbols-solid:arrow_right_alt",
-          icon: "materialsymbols-solid:arrow_circle_right",
-          // icon: "materialsymbols-outline:arrow_circle_right",
+        data: {
+          columns: [{ name: "Skipped", data_type: "INT8" }],
+          rows: [
+            {
+              Skipped: totalSummary.skip,
+              Skipped_diff: totalSummary.skip_diff,
+              __diff:
+                totalSummary.skip !== totalSummary.skip_diff
+                  ? "updated"
+                  : "none",
+            },
+          ],
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.skip.diff`,
-              width: 2,
-              display_type: "skip",
-              properties: {
-                label: "Skipped",
-                value: diffTotalSummary.skip,
-                // icon: "materialsymbols-solid:arrow_right_alt",
-                icon: "materialsymbols-solid:arrow_circle_right",
-                // icon: "materialsymbols-solid:arrow_circle_right",
-                // icon: "materialsymbols-outline:arrow_circle_right",
-              },
-            }
-          : null,
+        properties: {
+          icon: "materialsymbols-solid:arrow_circle_right",
+        },
       },
     ];
 
@@ -410,6 +382,7 @@ const Benchmark = (props: InnerCheckProps) => {
           .map((summaryCard) => {
             const cardProps: CardProps = {
               name: summaryCard.name,
+              data: summaryCard.data,
               dashboard: props.definition.dashboard,
               display_type: summaryCard.display_type as CardType,
               panel_type: "card",

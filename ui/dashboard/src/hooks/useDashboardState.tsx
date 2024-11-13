@@ -149,8 +149,6 @@ const reducer = (state: IDashboardContext, action) => {
         return state;
       }
 
-      console.log(action);
-
       return {
         ...state,
         dataMode: "diff",

@@ -63,23 +63,23 @@ class ControlResultNode implements CheckNode {
       error_diff: 0,
       __diff: "none",
     };
-    if (this.result.status_diff === "alarm") {
+    if (this._result.status_diff === "alarm") {
       summary.alarm_diff += 1;
       summary.__diff = "updated";
     }
-    if (this.result.status_diff === "error") {
+    if (this._result.status_diff === "error") {
       summary.error_diff += 1;
       summary.__diff = "updated";
     }
-    if (this.result.status_diff === "ok") {
+    if (this._result.status_diff === "ok") {
       summary.ok_diff += 1;
       summary.__diff = "updated";
     }
-    if (this.result.status_diff === "info") {
+    if (this._result.status_diff === "info") {
       summary.info_diff += 1;
       summary.__diff = "updated";
     }
-    if (this.result.status_diff === "skip") {
+    if (this._result.status_diff === "skip") {
       summary.skip_diff += 1;
       summary.__diff = "updated";
     }
@@ -120,13 +120,6 @@ class ControlResultNode implements CheckNode {
   get status(): CheckNodeStatus {
     // If we have results, this node is complete
     return "complete";
-
-    // for (const child of this.children || []) {
-    //   if (child.status === "running") {
-    //     return "running";
-    //   }
-    // }
-    // return "complete";
   }
 
   get severity_summary(): CheckSeveritySummary {

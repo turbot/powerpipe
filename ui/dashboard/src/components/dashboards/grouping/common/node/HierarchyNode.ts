@@ -18,7 +18,7 @@ class HierarchyNode implements CheckNode {
     name: string,
     title: string,
     sort: string,
-    children: CheckNode[]
+    children: CheckNode[],
   ) {
     this._type = type;
     this._name = name;
@@ -104,7 +104,7 @@ class HierarchyNode implements CheckNode {
     for (const otherChild of other.children || []) {
       // Check for existing child with this name
       const matchingSelfChild = this.children.find(
-        (selfChild) => selfChild.name === otherChild.name
+        (selfChild) => selfChild.name === otherChild.name,
       );
 
       if (matchingSelfChild) {

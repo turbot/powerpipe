@@ -12,7 +12,7 @@ import {
 
 export interface CardDiffState extends IPanelDiff {
   value?: number;
-  value_percent?: "infinity" | number;
+  value_percent?: number;
   direction: "none" | "up" | "down";
   status?: "ok" | "alert" | "severity" | null;
 }
@@ -168,11 +168,14 @@ export class CardDataProcessor {
           : "down";
 
     let value: number;
-    let value_percent: "infinity" | number;
+    let value_percent: number | undefined;
     let status: "ok" | "alert" | "severity" | null = null;
     if (direction === "up") {
       value = currentValue - previousValue;
-      value_percent = Math.ceil((value / previousValue) * 100);
+      value_percent =
+        previousValue === 0
+          ? undefined
+          : Math.ceil((value / previousValue) * 100);
       status =
         displayType === "alert"
           ? "alert"
@@ -183,7 +186,10 @@ export class CardDataProcessor {
               : null;
     } else if (direction === "down") {
       value = previousValue - currentValue;
-      value_percent = Math.ceil((value / previousValue) * 100);
+      value_percent =
+        previousValue === 0
+          ? undefined
+          : Math.ceil((value / previousValue) * 100);
       status =
         displayType === "alert"
           ? "ok"
