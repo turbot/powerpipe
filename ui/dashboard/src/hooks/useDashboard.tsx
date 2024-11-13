@@ -125,6 +125,24 @@ const DashboardProvider = ({
   }, [dispatch, state.cliMode, stateDefaults]);
 
   useEffect(() => {
+    if (
+      !socketReady ||
+      state.dataMode !== "diff" ||
+      !state.snapshot ||
+      !state.diff.snapshot
+    ) {
+      return;
+    }
+    sendSocketMessage({
+      action: SocketActions.GET_SNAPSHOT_DIFF,
+      payload: {
+        current: state.snapshot,
+        previous: state.diff.snapshot,
+      },
+    });
+  }, [sendSocketMessage, socketReady, state.dataMode, state.diff]);
+
+  useEffect(() => {
     dispatch({
       type: DashboardActions.SET_SEARCH_PATH_PREFIX,
       search_path_prefix: searchPathPrefix,

@@ -4,6 +4,7 @@ import {
   DashboardCliMode,
   DashboardDataMode,
   DashboardDataModeCLISnapshot,
+  DashboardDataModeDiff,
   DashboardDataModeLive,
   IActions,
   ReceivedSocketMessagePayload,
@@ -15,6 +16,7 @@ export const SocketActions: IActions = {
   GET_AVAILABLE_DASHBOARDS: "get_available_dashboards",
   GET_DASHBOARD_METADATA: "get_dashboard_metadata",
   GET_SERVER_METADATA: "get_server_metadata",
+  GET_SNAPSHOT_DIFF: "get_snapshot_diff",
   SELECT_DASHBOARD: "select_dashboard",
   SELECT_SNAPSHOT: "select_snapshot",
   INPUT_CHANGED: "input_changed",
@@ -62,6 +64,7 @@ const useDashboardWebSocket = (
       reconnectInterval: 3000,
     },
     dataMode === DashboardDataModeLive ||
+      dataMode === DashboardDataModeDiff ||
       dataMode === DashboardDataModeCLISnapshot,
   );
 

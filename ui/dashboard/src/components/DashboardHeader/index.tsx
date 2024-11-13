@@ -7,6 +7,7 @@ import SaveSnapshotButton from "@powerpipe/components/SaveSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "@powerpipe/components/dashboards";
+import SnapshotDiffButton from "@powerpipe/components/SnapshotDiffButton";
 
 const DashboardHeader = () => {
   const ExternalLink = getComponent("external_link");
@@ -24,6 +25,7 @@ const DashboardHeader = () => {
           <DashboardTagGroupSelect />
           <SaveSnapshotButton />
           <OpenSnapshotButton />
+          <SnapshotDiffButton />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
           <ExternalLink
