@@ -1,17 +1,10 @@
 import get from "lodash/get";
 import isNumber from "lodash/isNumber";
 import { CardProperties } from "@powerpipe/components/dashboards/Card";
-import {
-  DashboardPanelType,
-  DashboardRunState,
-  PanelDefinition,
-} from "@powerpipe/types";
+import { DashboardPanelType, DashboardRunState } from "@powerpipe/types";
 import { getColumn, hasData } from "@powerpipe/utils/data";
 import { getIconForType } from "@powerpipe/utils/card";
-import {
-  IDiffProperties,
-  IPanelDiff,
-} from "@powerpipe/components/dashboards/data/types";
+import { IPanelDiff } from "@powerpipe/components/dashboards/data/types";
 import {
   isNumericCol,
   LeafNodeData,
@@ -62,35 +55,17 @@ export class CardDataProcessor {
 
   buildCardState(
     data: LeafNodeData | undefined,
-    diff_panel: PanelDefinition | undefined,
     display_type: CardType | undefined,
     properties: CardProperties,
     status: DashboardRunState,
   ): CardState {
     if (!data || !hasData(data)) {
       const state = this.getDefaultState(status, properties, display_type);
-      if (!!diff_panel && !!diff_panel.properties) {
-        const diffState = this.getDefaultState(
-          status,
-          diff_panel.properties,
-          display_type,
-        );
-        state.diff = this.diff(properties, state, diffState) as CardDiffState;
-      }
+      state.diff = { direction: "none" };
       return state;
     }
 
-    const state = this.parseData(data, display_type, properties);
-
-    if (!!diff_panel && !!diff_panel.data) {
-      const diffState = this.parseData(
-        diff_panel.data,
-        display_type,
-        properties,
-      );
-      state.diff = this.diff(properties, state, diffState) as CardDiffState;
-    }
-    return state;
+    return this.parseData(data, display_type, properties);
   }
 
   parseData(
@@ -117,24 +92,51 @@ export class CardDataProcessor {
         href: properties.href || null,
       };
     } else {
+      const diffColumn = data.columns.find((c) => c.name === "__diff");
+      const diffColumnValue = diffColumn
+        ? get(data, `rows[0].${diffColumn.name}`, null)
+        : null;
+      const hasDiff = diffColumnValue !== null && diffColumnValue !== "none";
       const formalLabel = get(data, "rows[0].label", null);
       const formalValue = get(data, `rows[0].value`, null);
+      const formalDiffValue = get(data, `rows[0].value_diff`, null);
       const formalType = get(data, `rows[0].type`, null);
       const formalIcon = get(data, `rows[0].icon`, null);
       const formalHref = get(data, `rows[0].href`, null);
       const valueCol = getColumn(data.columns, "value");
+      const valueDiffCol = hasDiff
+        ? getColumn(data.columns, "value_diff")
+        : null;
       const isNumericValue = !!valueCol && isNumericCol(valueCol.data_type);
+      const isNumericDiffValue =
+        !!valueDiffCol && isNumericCol(valueDiffCol.data_type);
+      const value =
+        formalValue !== null && formalValue !== undefined && isNumericValue
+          ? formalValue.toLocaleString()
+          : formalValue;
+      const value_number =
+        formalValue && isNumericValue && isNumber(formalValue)
+          ? formalValue
+          : null;
+      let value_number_diff;
+      if (valueDiffCol) {
+        value_number_diff =
+          formalDiffValue && isNumericDiffValue && isNumber(formalDiffValue)
+            ? formalDiffValue
+            : null;
+      }
+
       return {
         loading: false,
         label: formalLabel,
-        value:
-          formalValue !== null && formalValue !== undefined && isNumericValue
-            ? formalValue.toLocaleString()
-            : formalValue,
-        value_number:
-          formalValue && isNumericValue && isNumber(formalValue)
-            ? formalValue
-            : null,
+        value,
+        value_number,
+        diff: this.diff(
+          hasDiff,
+          value_number,
+          value_number_diff,
+          formalType || display_type,
+        ),
         type: formalType || display_type || null,
         icon: getIconForType(
           formalType || display_type,
@@ -146,21 +148,22 @@ export class CardDataProcessor {
   }
 
   diff(
-    properties: IDiffProperties,
-    state: CardState,
-    previous_state: CardState,
+    hasDiff: boolean,
+    currentValue: number | null,
+    previousValue: number | null,
+    displayType: CardType | undefined,
   ): CardDiffState {
     // If the columns aren't numeric then we can't diff...
-    if (state.value_number === null || previous_state.value_number === null) {
+    if (!hasDiff || currentValue === null || previousValue === null) {
       return {
         direction: "none",
       };
     }
 
     const direction =
-      state.value_number > previous_state.value_number
+      currentValue > previousValue
         ? "up"
-        : state.value_number === previous_state.value_number
+        : currentValue === previousValue
           ? "none"
           : "down";
 
@@ -168,35 +171,31 @@ export class CardDataProcessor {
     let value_percent: "infinity" | number;
     let status: "ok" | "alert" | "severity" | null = null;
     if (direction === "up") {
-      value = state.value_number - previous_state.value_number;
+      value = currentValue - previousValue;
+      value_percent = Math.ceil((value / previousValue) * 100);
       status =
-        state.type === "alert"
+        displayType === "alert"
           ? "alert"
-          : state.type === "ok"
+          : displayType === "ok"
             ? "ok"
-            : state.type === "severity"
+            : displayType === "severity"
               ? "severity"
               : null;
     } else if (direction === "down") {
-      value = previous_state.value_number - state.value_number;
+      value = previousValue - currentValue;
+      value_percent = Math.ceil((value / previousValue) * 100);
+      console.log({ previousValue, currentValue, value, value_percent });
       status =
-        state.type === "alert"
+        displayType === "alert"
           ? "ok"
-          : state.type === "ok"
+          : displayType === "ok"
             ? "alert"
-            : state.type === "severity"
+            : displayType === "severity"
               ? "ok"
               : null;
     } else {
       value = 0;
-    }
-
-    if (state.value_number === 0) {
-      value_percent = "infinity";
-    } else if (value === 0) {
       value_percent = 0;
-    } else {
-      value_percent = Math.ceil((value / state.value_number) * 100);
     }
 
     return {

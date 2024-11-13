@@ -16,7 +16,6 @@ import {
 } from "../data/CardDataProcessor";
 import { classNames } from "@powerpipe/utils/styles";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { PanelDefinition, PanelProperties } from "@powerpipe/types";
 import { getComponent, registerComponent } from "../index";
 import {
   getIconClasses,
@@ -24,6 +23,7 @@ import {
   getWrapperClasses,
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
+import { PanelProperties } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
@@ -42,8 +42,6 @@ export type CardProps = PanelProperties &
   ExecutablePrimitiveProps & {
     display_type?: CardType;
     properties: CardProperties;
-  } & {
-    diff_panel?: PanelDefinition;
   };
 
 type CardState = {
@@ -55,10 +53,6 @@ type CardState = {
   href: string | null;
   diff?: CardDiffState;
 };
-
-interface CardDiffDisplayProps {
-  diff: CardDiffState | undefined;
-}
 
 // TODO diffing
 // Need to know we're in diff mode
@@ -72,7 +66,6 @@ interface CardDiffDisplayProps {
 
 const useCardState = ({
   data,
-  diff_panel,
   display_type,
   properties,
   status,
@@ -85,23 +78,15 @@ const useCardState = ({
     const diff = new CardDataProcessor();
     const newState = diff.buildCardState(
       data,
-      diff_panel,
       display_type,
       properties,
       status,
     );
     setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, diff_panel, display_type, properties, status),
+      diff.buildCardState(data, display_type, properties, status),
     );
-  }, [
-    data,
-    diff_panel,
-    display_type,
-    properties,
-    setCalculatedProperties,
-    status,
-  ]);
+  }, [data, display_type, properties, setCalculatedProperties, status]);
 
   return calculatedProperties;
 };
@@ -135,24 +120,10 @@ const Value = ({ loading, value }) => {
   return <Label value={value} />;
 };
 
-const CardDiffDisplay: React.FC<{
-  diff: CardDiffDisplayProps;
-  value: number;
-}> = ({ diff, value }) => {
+const CardDiffDisplay = ({ diff }: { diff: CardDiffState | undefined }) => {
   if (!diff || diff.direction === "none") {
     return null;
   }
-
-  // Calculate the original value based on direction
-  const originalValue =
-    diff.direction === "up" ? value - diff.value : value + diff.value;
-
-  // Calculate percentage change if originalValue is not zero
-  // Calculate percentage change with sign based on direction
-  const percentageChange =
-    originalValue !== 0
-      ? `${diff.direction === "up" ? "+" : "-"}${((diff.value / originalValue) * 100).toFixed(1)}`
-      : null;
 
   return (
     <span
@@ -178,8 +149,8 @@ const CardDiffDisplay: React.FC<{
               {/*@ts-ignore*/}
               <IntegerDisplay num={diff.value || null} />
             </span>
-            {percentageChange !== null && (
-              <span className="text-sm ">({percentageChange}%)</span>
+            {diff.value_percent !== undefined && (
+              <span className="text-sm ">({diff.value_percent}%)</span>
             )}
           </div>
         </>
@@ -193,7 +164,7 @@ const ValueWithDiff = ({ loading, value, diff }) => (
     {" "}
     {/* Adjusts flex to align elements inline */}
     <Value loading={loading} value={value} />
-    {diff && <CardDiffDisplay diff={diff} value={value} />}
+    {diff && <CardDiffDisplay diff={diff} />}
   </div>
 );
 
