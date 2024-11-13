@@ -145,6 +145,7 @@ export type CheckResult = {
   benchmark_trunk: Benchmark[];
   status: CheckResultStatus;
   status_diff?: CheckResultStatus;
+  __diff?: "none" | "updated";
   reason: string;
   resource: string;
   severity?: CheckSeverity;

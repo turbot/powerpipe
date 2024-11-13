@@ -310,6 +310,7 @@ class Control implements CheckNode {
         resource: row.resource,
         status: row.status,
         status_diff: row.status_diff,
+        __diff: row.__diff,
         dimensions: dimensionColumns.map((col) => ({
           key: col.name,
           value: row[col.name],
