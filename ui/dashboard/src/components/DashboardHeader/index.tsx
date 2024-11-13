@@ -2,6 +2,7 @@ import DashboardSearch from "@powerpipe/components/DashboardSearch";
 import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
 import ManageSearchPathButton from "@powerpipe/components/ManageSearchPathButton";
 import PowerpipeLogo from "@powerpipe/components/DashboardHeader/PowerpipeLogo";
+import SnapshotDiffButton from "@powerpipe/components/SnapshotDiffButton";
 import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
@@ -22,6 +23,7 @@ const DashboardHeader = () => {
           <ManageSearchPathButton />
           <DashboardTagGroupSelect />
           <SplitSnapshotButton />
+          <SnapshotDiffButton />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
           <ExternalLink

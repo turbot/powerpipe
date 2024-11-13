@@ -62,7 +62,7 @@ export type IDashboardContext = {
   snapshot_metadata_loaded: boolean;
 
   diff?: {
-    snapshotFileName: string;
+    snapshot: DashboardSnapshot | null;
   };
 
   filterAndGroupControlPanel?: string;
@@ -82,12 +82,17 @@ export type IThemeContext = {
 };
 
 export const DashboardDataModeLive = "live";
+export const DashboardDataModeDiff = "diff";
 export const DashboardDataModeCLISnapshot = "cli_snapshot";
 export const DashboardDataModeCloudSnapshot = "cloud_snapshot";
 
 export type DashboardCliMode = "powerpipe" | "steampipe";
 
-export type DashboardDataMode = "live" | "cli_snapshot" | "cloud_snapshot";
+export type DashboardDataMode =
+  | "live"
+  | "cli_snapshot"
+  | "diff"
+  | "cloud_snapshot";
 
 export type PanelDataMode = "diff";
 
@@ -141,10 +146,10 @@ export const DashboardActions: IActions = {
   SERVER_METADATA: "server_metadata",
   DASHBOARD_METADATA: "dashboard_metadata",
   DELETE_DASHBOARD_INPUT: "delete_dashboard_input",
-  DIFF_SNAPSHOT: "diff_snapshot",
   EXECUTION_COMPLETE: "execution_complete",
   EXECUTION_ERROR: "execution_error",
   EXECUTION_STARTED: "execution_started",
+  GET_SNAPSHOT_DIFF: "get_snapshot_diff",
   INPUT_VALUES_CLEARED: "input_values_cleared",
   LEAF_NODE_COMPLETE: "leaf_node_complete",
   LEAF_NODE_UPDATED: "leaf_node_updated",

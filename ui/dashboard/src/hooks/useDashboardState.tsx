@@ -143,22 +143,18 @@ const reducer = (state: IDashboardContext, action) => {
         state: "running",
       };
     }
-    case DashboardActions.DIFF_SNAPSHOT: {
-      // If we're in live mode, do nothing
-      if (state.dataMode === DashboardDataModeLive) {
+    case DashboardActions.GET_SNAPSHOT_DIFF: {
+      if (!state.snapshot) {
         return state;
       }
 
-      const eventMigrator = new ExecutionCompleteSchemaMigrator();
-      const migratedEvent = eventMigrator.toLatest(action);
-      const panels = migratedEvent.snapshot.panels;
-      const panelsMap = migratePanelStatuses(panels, action.schema_version);
+      console.log(action);
 
       return {
         ...state,
+        dataMode: "diff",
         diff: {
-          panelsMap,
-          snapshotFileName: action.snapshotFileName,
+          snapshot: action.snapshot,
         },
       };
     }
