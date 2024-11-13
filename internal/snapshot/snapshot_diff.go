@@ -19,14 +19,6 @@ type DiffPaths struct {
 }
 
 func Diff(paths DiffPaths) ([]byte, error) {
-	// Validate paths
-	if err := validateDiffPath(paths.Previous); err != nil {
-		return nil, fmt.Errorf("invalid previous path: %s", err)
-	}
-	if err := validateDiffPath(paths.Current); err != nil {
-		return nil, fmt.Errorf("invalid current path: %s", err)
-	}
-
 	previousSnap, err := loadSnapshot(paths.Previous)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load previous snapshot: %w", err)
@@ -53,52 +45,21 @@ func Diff(paths DiffPaths) ([]byte, error) {
 
 }
 
-func validateDiffPath(path string) error {
-	// check if parses as URL
-	_, err := url.ParseRequestURI(path)
-	if err == nil {
-		return nil
-	}
-
-	// check if valid file path && exists
-	if _, err = os.Stat(path); err == nil || os.IsNotExist(err) {
-		absPath, pathErr := filepath.Abs(path)
-		if pathErr == nil && absPath != "" {
-			return nil
-		}
-	}
-
-	return err
-}
-
 func loadSnapshot(path string) (map[string]interface{}, error) {
 	var bytes []byte
 	var err error
-	var u *url.URL
-	// Check if the path is a URL
-	u, err = url.ParseRequestURI(path)
-	if err == nil && u.Scheme != "" && u.Host != "" {
-		// Load content from URL
-		resp, httpErr := http.Get(path)
-		if httpErr != nil {
-			return nil, fmt.Errorf("failed to fetch URL content: %w", httpErr)
-		}
-		defer resp.Body.Close()
 
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("received non-200 HTTP status: %d", resp.StatusCode)
-		}
+	source := determineSource(path)
 
-		bytes, err = io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read response body: %w", err)
-		}
-	} else {
-		// Load content from file
+	switch source {
+	case "url":
+		bytes, err = loadSnapshotFromUrl(path)
+	case "file":
 		bytes, err = os.ReadFile(path)
-		if err != nil {
-			return nil, fmt.Errorf("failed to read file content: %w", err)
-		}
+	case "snapshot":
+		bytes, err = loadSnapshotFromJson(path)
+	default:
+		return nil, fmt.Errorf("expected url, filePath or json, got %v", path)
 	}
 
 	var snapshot map[string]interface{}
@@ -108,6 +69,47 @@ func loadSnapshot(path string) (map[string]interface{}, error) {
 	}
 
 	return snapshot, nil
+}
+
+func determineSource(path string) string {
+	u, err := url.ParseRequestURI(path)
+	if err == nil && u.Scheme != "" && u.Host != "" {
+		return "url"
+	}
+
+	if _, err = os.Stat(path); err == nil || os.IsNotExist(err) {
+		absPath, pathErr := filepath.Abs(path)
+		if pathErr == nil && absPath != "" {
+			return "file"
+		}
+	}
+
+	return "snapshot"
+}
+
+func loadSnapshotFromUrl(url string) ([]byte, error) {
+	resp, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch URL content: %w", err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("received non-200 HTTP status: %d", resp.StatusCode)
+	}
+
+	bytes, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, fmt.Errorf("failed to read response body: %w", err)
+	}
+
+	return bytes, nil
+}
+
+func loadSnapshotFromJson(s string) ([]byte, error) {
+	var js json.RawMessage
+	err := json.Unmarshal([]byte(s), &js)
+	return js, err
 }
 
 func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) error {
