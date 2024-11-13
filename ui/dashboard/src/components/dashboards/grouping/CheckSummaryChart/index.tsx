@@ -92,7 +92,7 @@ const AlertProgressBarGroupTotal = ({
   const alertTotal = summary.error + summary.alarm;
   const newClassName = classNames(
     className,
-    alertTotal > 0 ? "text-alert" : "text-foreground-lightest",
+    alertTotal > 0 ? "text-alert" : "text-foreground-lightest"
   );
   return <ProgressBarGroupTotal className={newClassName} total={alertTotal} />;
 };
@@ -127,7 +127,8 @@ const AlertProgressBarGroupDiffTotal = ({
     return null;
   }
 
-  const diffTotal = summary.error + summary.alarm;
+  const diffTotal =
+    summary.error_diff - summary.error + (summary.alarm_diff - summary.alarm);
 
   if (diffTotal === 0) {
     return null;
@@ -135,13 +136,13 @@ const AlertProgressBarGroupDiffTotal = ({
 
   const newClassName = classNames(
     className,
-    diffTotal > 0 ? "text-alert" : "text-foreground-lightest",
+    diffTotal < 0 ? "text-alert" : "text-ok"
   );
   return (
     <ProgressBarGroupTotal
       className={newClassName}
-      total={diffTotal}
-      direction={diffTotal > 0 ? "up" : "down"}
+      total={Math.abs(diffTotal)}
+      direction={diffTotal > 0 ? "down" : "up"}
     />
   );
 };
@@ -154,7 +155,11 @@ const NonAlertProgressBarGroupDiffTotal = ({
     return null;
   }
 
-  const nonAlertDiffTotal = summary.ok + summary.info + summary.skip;
+  const nonAlertDiffTotal =
+    summary.ok_diff -
+    summary.ok +
+    (summary.info_diff - summary.info) +
+    (summary.skip_diff - summary.skip);
 
   if (nonAlertDiffTotal === 0) {
     return null;
@@ -169,12 +174,15 @@ const NonAlertProgressBarGroupDiffTotal = ({
     textClassName = "text-ok";
   }
 
-  const newClassName = classNames(className, textClassName);
+  const newClassName = classNames(
+    className,
+    nonAlertDiffTotal > 0 ? "text-alert" : "text-ok"
+  );
   return (
     <ProgressBarGroupTotal
       className={newClassName}
-      total={nonAlertDiffTotal}
-      direction={nonAlertDiffTotal > 0 ? "up" : "down"}
+      total={Math.abs(nonAlertDiffTotal)}
+      direction={nonAlertDiffTotal > 0 ? "down" : "up"}
     />
   );
 };
@@ -243,14 +251,14 @@ const CheckSummaryChart = ({
           <ProgressBar
             className={classNames(
               "border border-alert",
-              status === "running" ? "summary-chart-alarm-animate" : "bg-alert",
+              status === "running" ? "summary-chart-alarm-animate" : "bg-alert"
             )}
             percent={getCheckSummaryChartPercent(summary.alarm, maxAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-alert",
-              status === "running" ? "summary-chart-error-animate" : null,
+              status === "running" ? "summary-chart-error-animate" : null
             )}
             percent={getCheckSummaryChartPercent(summary.error, maxAlerts)}
           />
@@ -261,7 +269,7 @@ const CheckSummaryChart = ({
       <div
         className={classNames(
           "h-6 w-0 border-l border-black-scale-4",
-          status === "running" ? "subtle-ping" : null,
+          status === "running" ? "subtle-ping" : null
         )}
       />
       <div className="my-auto px-0" style={{ width: `${nonAlertsWidth}%` }}>
@@ -269,21 +277,21 @@ const CheckSummaryChart = ({
           <ProgressBar
             className={classNames(
               "border border-ok",
-              status === "running" ? "summary-chart-ok-animate" : "bg-ok",
+              status === "running" ? "summary-chart-ok-animate" : "bg-ok"
             )}
             percent={getCheckSummaryChartPercent(summary.ok, maxNonAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-info",
-              status === "running" ? "summary-chart-info-animate" : "bg-info",
+              status === "running" ? "summary-chart-info-animate" : "bg-info"
             )}
             percent={getCheckSummaryChartPercent(summary.info, maxNonAlerts)}
           />
           <ProgressBar
             className={classNames(
               "border border-skip",
-              status === "running" ? "summary-chart-skip-animate" : "bg-skip",
+              status === "running" ? "summary-chart-skip-animate" : "bg-skip"
             )}
             percent={getCheckSummaryChartPercent(summary.skip, maxNonAlerts)}
           />
