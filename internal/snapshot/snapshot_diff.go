@@ -163,7 +163,10 @@ func addKeyValueAtPath(diffSnap map[string]interface{}, path []string, key strin
 		if i == len(path)-1 {
 			switch typedCurrent := current.(type) {
 			case map[string]interface{}:
-				typedCurrent[key] = value
+				if targetMap, ok := typedCurrent[p].(map[string]interface{}); ok {
+					targetMap[key] = value
+					return nil
+				}
 				return nil
 			case []interface{}:
 				index, err := strconv.Atoi(p)
