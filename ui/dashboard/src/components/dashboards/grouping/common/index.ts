@@ -83,10 +83,16 @@ export type DetectionSeveritySummary =
 
 export type CheckSummary = {
   alarm: number;
+  alarm_diff?: number;
   ok: number;
+  ok_diff?: number;
   info: number;
+  info_diff?: number;
   skip: number;
+  skip_diff?: number;
   error: number;
+  error_diff?: number;
+  __diff?: "updated";
 };
 
 export type DetectionSummary = {
@@ -142,6 +148,7 @@ export type CheckResult = {
   control: CheckNode;
   benchmark_trunk: Benchmark[];
   status: CheckResultStatus;
+  status_diff?: CheckResultStatus;
   reason: string;
   resource: string;
   severity?: CheckSeverity;
@@ -274,7 +281,7 @@ export type AddDetectionResultsAction = (results: DetectionResult[]) => void;
 
 export const findDimension = (
   dimensions?: CheckResultDimension[],
-  key?: string,
+  key?: string
 ) => {
   if (!dimensions || !key) {
     return undefined;

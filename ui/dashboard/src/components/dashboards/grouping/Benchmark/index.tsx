@@ -104,7 +104,7 @@ const Benchmark = (props: InnerCheckProps) => {
         cumulative.skip += current.skip;
         return cumulative;
       },
-      { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
+      { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 }
     );
 
     const summary_cards = [
@@ -290,7 +290,7 @@ const BenchmarkTableView = ({
 }: BenchmarkTableViewProps) => {
   const benchmarkDataTable = useMemo(
     () => benchmark.get_data_table(),
-    [benchmark],
+    [benchmark]
   );
 
   return (

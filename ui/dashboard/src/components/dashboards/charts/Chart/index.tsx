@@ -800,7 +800,7 @@ const getSeriesForChartType = (
             name: seriesName,
             type: "pie",
             center: ["50%", "50%"],
-            radius: "50%",
+            radius: ["30%", "50%"],
             label: { color: themeColors.foreground, fontSize: 10 },
             itemStyle: {
               borderRadius: 5,

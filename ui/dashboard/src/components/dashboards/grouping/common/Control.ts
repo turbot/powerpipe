@@ -50,7 +50,7 @@ class Control implements CheckNode {
     status: DashboardRunState,
     error: string | undefined,
     benchmark_trunk: Benchmark[],
-    add_control_results: AddControlResultsAction,
+    add_control_results: AddControlResultsAction
   ) {
     this._sortIndex = sortIndex;
     this._group_id = group_id;
@@ -63,10 +63,16 @@ class Control implements CheckNode {
     this._results = this._build_check_results(data);
     this._summary = summary || {
       alarm: 0,
+      alarm_diff: 0,
       ok: 0,
+      ok_diff: 0,
       info: 0,
+      info_diff: 0,
       skip: 0,
+      skip_diff: 0,
       error: 0,
+      error_diff: 0,
+      __diff: "updated",
     };
     this._tags = tags || {};
     this._status = status;
@@ -86,7 +92,7 @@ class Control implements CheckNode {
       add_control_results([this._build_control_empty_result(benchmark_trunk)]);
     } else {
       add_control_results(
-        this._build_control_results(benchmark_trunk, this._results),
+        this._build_control_results(benchmark_trunk, this._results)
       );
     }
   }
@@ -116,7 +122,36 @@ class Control implements CheckNode {
   }
 
   get summary(): CheckSummary {
-    return this._summary;
+    let baseSummary = this._summary;
+    return {
+      alarm: baseSummary.alarm || 0,
+      alarm_diff:
+        baseSummary.alarm_diff !== undefined
+          ? baseSummary.alarm_diff
+          : baseSummary.alarm || 0,
+      ok: baseSummary.ok || 0,
+      ok_diff:
+        baseSummary.ok_diff !== undefined
+          ? baseSummary.ok_diff
+          : baseSummary.ok || 0,
+      info: baseSummary.info || 0,
+      info_diff:
+        baseSummary.info_diff !== undefined
+          ? baseSummary.info_diff
+          : baseSummary.info || 0,
+      skip: baseSummary.skip || 0,
+      skip_diff:
+        baseSummary.skip_diff !== undefined
+          ? baseSummary.skip_diff
+          : baseSummary.skip || 0,
+      error: baseSummary.error || 0,
+      error_diff:
+        baseSummary.error_diff !== undefined
+          ? baseSummary.error_diff
+          : baseSummary.error || 0,
+      __diff: baseSummary.__diff || "updated", // Preserve __diff if it exists or default to "updated"
+    };
+    //return this._summary;
   }
 
   get error(): string | undefined {
@@ -193,7 +228,7 @@ class Control implements CheckNode {
   }
 
   private _build_control_loading_node = (
-    benchmark_trunk: Benchmark[],
+    benchmark_trunk: Benchmark[]
   ): CheckResult => {
     return {
       type: "loading",
@@ -209,7 +244,7 @@ class Control implements CheckNode {
 
   private _build_control_error_node = (
     benchmark_trunk: Benchmark[],
-    error: string,
+    error: string
   ): CheckResult => {
     return {
       type: "error",
@@ -225,7 +260,7 @@ class Control implements CheckNode {
   };
 
   private _build_control_empty_result = (
-    benchmark_trunk: Benchmark[],
+    benchmark_trunk: Benchmark[]
   ): CheckResult => {
     return {
       type: "empty",
@@ -242,7 +277,7 @@ class Control implements CheckNode {
 
   private _build_control_results = (
     benchmark_trunk: Benchmark[],
-    results: CheckResult[],
+    results: CheckResult[]
   ): CheckResult[] => {
     return results.map((r) => ({
       ...r,
@@ -275,6 +310,7 @@ class Control implements CheckNode {
         reason: row.reason,
         resource: row.resource,
         status: row.status,
+        status_diff: row.status_diff,
         dimensions: dimensionColumns.map((col) => ({
           key: col.name,
           value: row[col.name],
