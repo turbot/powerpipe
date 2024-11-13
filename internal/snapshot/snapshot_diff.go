@@ -18,7 +18,7 @@ type DiffPaths struct {
 	Current  string `json:"current"`
 }
 
-func Diff(paths DiffPaths) ([]byte, error) {
+func Diff(paths DiffPaths) (map[string]interface{}, error) {
 	previousSnap, err := loadSnapshot(paths.Previous)
 	if err != nil {
 		return nil, fmt.Errorf("failed to load previous snapshot: %w", err)
@@ -37,11 +37,7 @@ func Diff(paths DiffPaths) ([]byte, error) {
 
 	err = updateDiffSnap(changeLog, &diffSnap)
 
-	out, err := json.Marshal(diffSnap)
-	if err != nil {
-		return nil, fmt.Errorf("failed to marshal diff snapshot: %w", err)
-	}
-	return out, nil
+	return diffSnap, nil
 
 }
 

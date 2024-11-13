@@ -193,7 +193,13 @@ type ServerMetadataPayload struct {
 	Action   string         `json:"action"`
 	Metadata ServerMetadata `json:"metadata"`
 }
+
 type DashboardMetadataPayload struct {
 	Action   string            `json:"action"`
 	Metadata DashboardMetadata `json:"metadata"`
+}
+
+type SnapshotDiffPayload struct {
+	Action   string                 `json:"action"`
+	Snapshot map[string]interface{} `json:"snapshot"`
 }
