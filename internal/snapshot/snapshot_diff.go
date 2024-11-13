@@ -36,7 +36,7 @@ func Diff(paths DiffPaths) (map[string]interface{}, error) {
 		return nil, fmt.Errorf("failed to diff snapshots: %w", err)
 	}
 
-	err = updateDiffSnap(changeLog, &diffSnap)
+	err = updateDiffSnap(changeLog, diffSnap)
 
 	return diffSnap, nil
 
@@ -109,7 +109,7 @@ func loadSnapshotFromJson(s string) ([]byte, error) {
 	return js, err
 }
 
-func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) error {
+func updateDiffSnap(changeLog diff.Changelog, diffSnap map[string]interface{}) error {
 
 	for _, change := range changeLog {
 		var err error
@@ -118,12 +118,13 @@ func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) 
 		case "layout":
 			switch change.Type {
 			case "create":
-				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "inserted")
+				err = addKeyValueAtPath(diffSnap, change.Path, "__diff", "inserted")
 			case "delete":
-				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "deleted")
-				// TODO: #snapshot we need to extract the deleted layout item and inject into the diff
+				deletedValue := change.From.(map[string]interface{})
+				deletedValue["__diff"] = "deleted"
+				err = addValueToSliceAtPath(diffSnap, change.Path[:len(change.Path)-1], deletedValue)
 			case "update":
-				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "updated")
+				err = addKeyValueAtPath(diffSnap, change.Path, "__diff", "updated")
 			default:
 				continue
 			}
@@ -133,14 +134,21 @@ func updateDiffSnap(changeLog diff.Changelog, diffSnap *map[string]interface{}) 
 		case "panels":
 			switch change.Type {
 			case "create":
-				err = addKeyValueAtPath(*diffSnap, change.Path, "__diff", "inserted")
+				err = addKeyValueAtPath(diffSnap, change.Path, "__diff", "inserted")
 			case "delete":
-				fmt.Println("delete")
+				deletedValue := change.From.(map[string]interface{})
+				deletedValue["__diff"] = "deleted"
+				finalPathSegment := change.Path[len(change.Path)-1]
+				if _, e := strconv.Atoi(finalPathSegment); e == nil {
+					err = addValueToSliceAtPath(diffSnap, change.Path[:len(change.Path)-1], deletedValue)
+				} else {
+					err = addKeyValueAtPath(diffSnap, change.Path[:len(change.Path)-1], change.Path[len(change.Path)-1], deletedValue)
+				}
 			case "update":
 				updatePath := change.Path[:len(change.Path)-1]
 				updateKey := fmt.Sprintf("%s_diff", change.Path[len(change.Path)-1])
-				err = addKeyValueAtPath(*diffSnap, updatePath, "__diff", "updated")
-				err = addKeyValueAtPath(*diffSnap, updatePath, updateKey, change.From)
+				err = addKeyValueAtPath(diffSnap, updatePath, "__diff", "updated")
+				err = addKeyValueAtPath(diffSnap, updatePath, updateKey, change.From)
 			default:
 				continue
 			}
@@ -179,9 +187,52 @@ func addKeyValueAtPath(diffSnap map[string]interface{}, path []string, key strin
 					return nil
 				}
 
-				return fmt.Errorf("expected map at index %d, got %T", index, typedCurrent[index])
+				return fmt.Errorf("expected map at path element '%s', got %T", p, typedCurrent[index])
 			default:
 				return fmt.Errorf("expected map or slice at path element '%s', got %T", p, current)
+			}
+		}
+
+		// traverse deeper
+		switch typedCurrent := current.(type) {
+		case map[string]interface{}:
+			if next, ok := typedCurrent[p]; ok {
+				current = next
+			} else {
+				return fmt.Errorf("path element '%s' not found", p)
+			}
+		case []interface{}:
+			index, err := strconv.Atoi(p)
+			if err != nil || index < 0 || index >= len(typedCurrent) {
+				return fmt.Errorf("invalid index '%s' at path element '%s'", p, p)
+			}
+			current = typedCurrent[index]
+		default:
+			return fmt.Errorf("expected map or slice at path element '%s', got %T", p, current)
+		}
+	}
+	return fmt.Errorf("failed to traverse path")
+}
+
+func addValueToSliceAtPath(diffSnap map[string]interface{}, path []string, value interface{}) error {
+	var current interface{} = diffSnap
+
+	// traverse path
+	for i, p := range path {
+		// end o path
+		if i == len(path)-1 {
+			switch typedCurrent := current.(type) {
+			case map[string]interface{}:
+				if targetSlice, ok := typedCurrent[p].([]interface{}); ok {
+					targetSlice = append(targetSlice, value)
+					typedCurrent[p] = targetSlice
+					return nil
+				}
+			case []interface{}:
+				typedCurrent = append(typedCurrent, value)
+				return nil
+			default:
+				return fmt.Errorf("expected slice at path element '%s', got %T", p, current)
 			}
 		}
 
