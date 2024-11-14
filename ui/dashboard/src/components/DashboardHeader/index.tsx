@@ -8,6 +8,7 @@ import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "@powerpipe/components/dashboards";
 import SnapshotDiffButton from "@powerpipe/components/SnapshotDiffButton";
+import SplitButton from "../SpiltSnapButton";
 
 const DashboardHeader = () => {
   const ExternalLink = getComponent("external_link");
@@ -15,7 +16,7 @@ const DashboardHeader = () => {
     <>
       <div
         className={classNames(
-          "flex w-screen px-4 py-3 items-center justify-between space-x-2 md:space-x-4 bg-dashboard-panel border-b border-divide print:hidden",
+          "flex w-screen px-4 py-3 items-center justify-between space-x-2 md:space-x-4 bg-dashboard-panel border-b border-divide print:hidden"
         )}
       >
         <PowerpipeLogo />
@@ -23,9 +24,10 @@ const DashboardHeader = () => {
           <DashboardSearch />
           <ManageSearchPathButton />
           <DashboardTagGroupSelect />
-          <SaveSnapshotButton />
-          <OpenSnapshotButton />
-          <SnapshotDiffButton />
+          {/* <SaveSnapshotButton /> */}
+          {/* <OpenSnapshotButton /> */}
+          {/* <SnapshotDiffButton /> */}
+          <SplitButton />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
           <ExternalLink
