@@ -115,9 +115,7 @@ export class CardDataProcessor {
           ? formalValue.toLocaleString()
           : formalValue;
       const value_number =
-        formalValue && isNumericValue && isNumber(formalValue)
-          ? formalValue
-          : null;
+        isNumericValue && isNumber(formalValue) ? formalValue : null;
       let value_number_diff;
       if (formalDiffValue) {
         value_number_diff =
