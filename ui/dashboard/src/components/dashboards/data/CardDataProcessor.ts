@@ -119,7 +119,11 @@ export class CardDataProcessor {
       let value_number_diff;
       if (formalDiffValue) {
         value_number_diff =
-          formalDiffValue && isNumber(formalDiffValue) ? formalDiffValue : null;
+          formalDiffValue !== null &&
+          formalDiffValue !== undefined &&
+          isNumber(formalDiffValue)
+            ? formalDiffValue
+            : null;
       }
 
       return {
