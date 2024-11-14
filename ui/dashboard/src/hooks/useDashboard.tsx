@@ -10,6 +10,7 @@ import {
   DashboardCliMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
+  DashboardDataModeDiff,
   DashboardDataModeLive,
   DashboardDataOptions,
   DashboardRenderOptions,
@@ -234,9 +235,23 @@ const DashboardProvider = ({
 
   useEffect(() => {
     if (
+      location.pathname === "/" &&
+      (state.dataMode === DashboardDataModeCLISnapshot ||
+        state.dataMode === DashboardDataModeDiff)
+    ) {
+      dispatch({
+        type: DashboardActions.SET_DATA_MODE,
+        dataMode: DashboardDataModeLive,
+      });
+    }
+  }, [dispatch, location, state.dataMode]);
+
+  useEffect(() => {
+    if (
       !!dashboard_name &&
       !location.pathname.startsWith("/snapshot/") &&
-      state.dataMode === DashboardDataModeCLISnapshot
+      (state.dataMode === DashboardDataModeCLISnapshot ||
+        state.dataMode === DashboardDataModeDiff)
     ) {
       dispatch({
         type: DashboardActions.SET_DATA_MODE,
@@ -672,7 +687,8 @@ const DashboardProvider = ({
     if (
       !state.availableDashboardsLoaded ||
       !dashboard_name ||
-      state.dataMode === DashboardDataModeCLISnapshot
+      state.dataMode === DashboardDataModeCLISnapshot ||
+      state.dataMode === DashboardDataModeDiff
     ) {
       return;
     }
@@ -692,7 +708,8 @@ const DashboardProvider = ({
   useEffect(() => {
     if (
       location.pathname.startsWith("/snapshot/") &&
-      state.dataMode !== DashboardDataModeCLISnapshot
+      state.dataMode !== DashboardDataModeCLISnapshot &&
+      state.dataMode !== DashboardDataModeDiff
     ) {
       navigate("/");
     }

@@ -40,6 +40,7 @@ const DashboardApp = ({
     <Routes>
       <Route path="/" element={dashboards} />
       <Route path="/snapshot/:dashboard_name" element={dashboards} />
+      {/*<Route path="/snapshot_diff/:dashboard_name" element={dashboards} />*/}
       <Route path="/:dashboard_name" element={dashboards} />
     </Routes>
   );
