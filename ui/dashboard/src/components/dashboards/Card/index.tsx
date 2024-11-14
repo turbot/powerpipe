@@ -23,7 +23,7 @@ import {
   getWrapperClasses,
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
-import { PanelProperties } from "@powerpipe/types";
+import { DashboardDataModeDiff, PanelProperties } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
@@ -121,7 +121,12 @@ const Value = ({ loading, value }) => {
 };
 
 const CardDiffDisplay = ({ diff }: { diff: CardDiffState | undefined }) => {
-  if (!diff || diff.direction === "none") {
+  const { dataMode } = useDashboard();
+  if (
+    dataMode !== DashboardDataModeDiff ||
+    !diff ||
+    diff.direction === "none"
+  ) {
     return null;
   }
 
