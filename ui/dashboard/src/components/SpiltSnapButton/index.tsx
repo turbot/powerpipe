@@ -197,7 +197,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           </NeutralButton>
         )}
 
-        {(isSnapshot || isLive || dataMode == DashboardDataModeDiff) && (
+        {(isSnapshot || dataMode == DashboardDataModeDiff) && (
           <NeutralButton
             type="button"
             className="inline-flex items-center space-x-2 shadow-none rounded-r-none"

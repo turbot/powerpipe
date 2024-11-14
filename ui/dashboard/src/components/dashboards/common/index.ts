@@ -136,17 +136,18 @@ const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
 };
 
 const defaultDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
-  const hasDiffCol = !!data.columns.find((col) => col.name === "_diff");
+  const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
+
   return {
     dataset: [
       hasDiffCol
         ? data.columns
-            .filter((col) => col.name !== "_diff")
+            .filter((col) => col.name !== "__diff")
             .map((col) => col.name)
         : data.columns.map((col) => col.name),
       ...data.rows.map((row) =>
         data.columns
-          .filter((col) => col.name !== "_diff")
+          .filter((col) => col.name !== "__diff")
           .map((col) => row[col.name]),
       ),
     ],

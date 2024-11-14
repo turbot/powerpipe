@@ -318,8 +318,6 @@ SingleSeriesDiff.args = {
   data: {
     columns: [
       { name: "Type", data_type: "TEXT" },
-      { name: "_diff", data_type: "INT8" },
-      { name: "Count_diff", data_type: "INT8" },
       { name: "Count", data_type: "INT8" },
     ],
     rows: [
@@ -336,7 +334,7 @@ MultiSeriesStackedWithDiff.args = {
   data: {
     columns: [
       { name: "Country", data_type: "TEXT" },
-      { name: "_diff", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
       { name: "Men", data_type: "INT8" },
       { name: "Men_diff", data_type: "INT8" },
       { name: "Women", data_type: "INT8" },
