@@ -19,7 +19,7 @@ const SnapshotHeader = () => {
           <Icon className="h-5 w-5" icon="photo_camera" />
           <span className="font-medium">Snapshot:</span>
           <span className="text-foreground-lighter">{snapshotFileName}</span>
-          <SnapshotDiffButton />
+          {/* <SnapshotDiffButton /> */}
         </div>
       </div>
     </>

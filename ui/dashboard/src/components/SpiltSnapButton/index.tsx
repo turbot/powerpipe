@@ -12,6 +12,7 @@ import {
   DashboardDataModeLive,
   DashboardActions,
   DashboardSnapshotMetadata,
+  DashboardDataModeDiff,
 } from "@powerpipe/types";
 import { EXECUTION_SCHEMA_VERSION_20240607 } from "@powerpipe/constants/versions";
 import {
@@ -196,7 +197,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           </NeutralButton>
         )}
 
-        {isSnapshot && (
+        {(isSnapshot || isLive || dataMode == DashboardDataModeDiff) && (
           <NeutralButton
             type="button"
             className="inline-flex items-center space-x-2 shadow-none rounded-r-none"
