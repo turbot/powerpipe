@@ -1,10 +1,12 @@
 import { DashboardActions } from "../../types";
 import { useDashboard } from "../../hooks/useDashboard";
+import { useNavigate } from "react-router-dom";
 import { useRef } from "react";
 
 const SnapshotDiffButton = () => {
   const { dispatch, snapshot } = useDashboard();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
+  const navigate = useNavigate();
 
   if (!snapshot) {
     return null;
@@ -41,12 +43,14 @@ const SnapshotDiffButton = () => {
 
             e.target.value = "";
             try {
+              navigate(`/snapshot/diff`);
               const data = JSON.parse(fr.result.toString());
               dispatch({
                 type: DashboardActions.GET_SNAPSHOT_DIFF,
                 snapshot: data,
               });
             } catch (err: any) {
+              console.log(err);
               dispatch({
                 type: DashboardActions.WORKSPACE_ERROR,
                 error: "Unable to load snapshot:" + err.message,

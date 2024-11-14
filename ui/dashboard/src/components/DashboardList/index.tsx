@@ -468,10 +468,10 @@ const DashboardList = () => {
 
 const DashboardListWrapper = ({ wrapperClassName = "" }) => {
   const { dashboard_name } = useParams();
-  const { dataMode, search } = useDashboard();
+  const { search } = useDashboard();
 
   // If we have a dashboard selected and no search, we don't want to show the list
-  if ((dataMode === "diff" || dashboard_name) && !search.value) {
+  if (dashboard_name && !search.value) {
     return null;
   }
 
