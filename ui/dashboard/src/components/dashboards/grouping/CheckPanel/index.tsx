@@ -145,7 +145,7 @@ const getCheckResultRowIconTitle = (status: CheckResultStatus) => {
 };
 
 const renderDiffIcons = (result) => {
-  if (result.diff === "inserted") {
+  if (result.__diff === "inserted") {
     return (
       <div className="flex items-center">
         {/* Inserted icon */}
@@ -162,7 +162,7 @@ const renderDiffIcons = (result) => {
         <CheckResultRowStatusIcon status={result.status} />
       </div>
     );
-  } else if (result.diff === "deleted") {
+  } else if (result.__diff === "deleted") {
     return (
       <div className="flex items-center">
         {/* Status icon */}
@@ -179,18 +179,18 @@ const renderDiffIcons = (result) => {
         />
       </div>
     );
-  } else if (result.diff === "updated") {
+  } else if (result.__diff === "updated") {
     return (
       <div className="flex items-center">
         {/* Status icon */}
-        <CheckResultRowStatusIcon status={result.status} />
+        <CheckResultRowStatusIcon status={result.status_diff} />
         {/* Arrow icon */}
         <Icon
           className="h-5 w-5 text-foreground-light fill-text-foreground-light mx-1"
           icon="materialsymbols-solid:trending_flat"
         />
         {/* Status diff icon */}
-        <CheckResultRowStatusIcon status={result.status_diff} />
+        <CheckResultRowStatusIcon status={result.status} />
       </div>
     );
   }
@@ -209,6 +209,7 @@ const renderDiffIcons = (result) => {
 };
 
 const CheckResultRow = ({ result }: CheckResultRowProps) => {
+  console.log(result);
   return (
     <div className="flex bg-dashboard-panel print:bg-white p-4 last:rounded-b-md space-x-4">
       <div
@@ -275,7 +276,7 @@ const CheckResults = ({
   return (
     <div
       className={classNames(
-        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto",
+        "border-t shadow-sm rounded-b-md divide-y divide-table-divide border-divide print:shadow-none print:border print:break-before-avoid-page print:break-after-avoid-page print:break-inside-auto"
       )}
     >
       {empties.map((emptyNode) => (
@@ -314,7 +315,7 @@ const CheckPanelSeverityBadge = ({
         count > 0 ? "border-severity" : "border-skip",
         count > 0
           ? "bg-severity text-white divide-white"
-          : "text-skip divide-skip",
+          : "text-skip divide-skip"
       )}
       title={title}
     >
@@ -404,7 +405,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
             : null,
           node.type === "benchmark" || node.type === "control"
             ? "print:break-inside-avoid-page"
-            : null,
+            : null
         )}
       >
         <section
@@ -416,7 +417,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                 error_nodes.length > 0 ||
                 result_nodes.length > 0)
               ? "rounded-b-none border-b-0"
-              : null,
+              : null
           )}
           onClick={() =>
             can_be_expanded
