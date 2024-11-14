@@ -313,7 +313,7 @@ SingleSeriesDiff.args = {
   data: {
     columns: [
       { name: "Type", data_type: "TEXT" },
-      { name: "_diff", data_type: "INT8" },
+      { name: "__diff", data_type: "INT8" },
       { name: "Count_diff", data_type: "INT8" },
       { name: "Count", data_type: "INT8" },
     ],
@@ -333,7 +333,7 @@ SingleTimeSeriesDiff.args = {
       { name: "time", data_type: "TIMESTAMP" },
       { name: "Count", data_type: "INT8" },
       { name: "Count_diff", data_type: "INT8" },
-      { name: "_diff", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
     ],
     rows: [
       {

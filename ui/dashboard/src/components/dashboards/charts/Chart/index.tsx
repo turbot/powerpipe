@@ -32,14 +32,18 @@ import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
-import { isDiffColumn, parseDiffColumn } from "@powerpipe/utils/data";
+import {
+  isDiffColumn,
+  parseDiffColumn,
+  tableRowDiffColumn,
+} from "@powerpipe/utils/data";
 
 const getThemeColorsWithPointOverrides = (
   type: ChartType = "column",
   series: any[],
   seriesOverrides: ChartSeries | undefined,
   dataset: any[][],
-  themeColorValues
+  themeColorValues,
 ) => {
   if (isEmpty(themeColorValues)) {
     return [];
@@ -55,7 +59,7 @@ const getThemeColorsWithPointOverrides = (
           newThemeColors.push(
             themeColorValues.charts[
               (rowIndex - 1) % themeColorValues.charts.length
-            ]
+            ],
           );
         }
       }
@@ -70,7 +74,7 @@ const getThemeColorsWithPointOverrides = (
           if (pointOverride && pointOverride.color) {
             newThemeColors[dataRowIndex] = getColorOverride(
               pointOverride.color,
-              themeColorValues
+              themeColorValues,
             );
           }
         });
@@ -86,7 +90,7 @@ const getThemeColorsWithPointOverrides = (
           newThemeColors.push(
             themeColorValues.charts[
               seriesIndex % themeColorValues.charts.length
-            ]
+            ],
           );
         }
       }
@@ -165,7 +169,7 @@ const getCommonBaseOptionsForChartType = (
   shouldBeTimeSeries: boolean,
   series: any[],
   seriesOverrides: ChartSeries | undefined,
-  themeColors
+  themeColors,
 ) => {
   switch (type) {
     case "bar":
@@ -175,7 +179,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -219,7 +223,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -269,7 +273,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: series ? series.length > 1 : false,
@@ -316,7 +320,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: false,
@@ -332,7 +336,7 @@ const getCommonBaseOptionsForChartType = (
           series,
           seriesOverrides,
           dataset,
-          themeColors
+          themeColors,
         ),
         legend: {
           show: false,
@@ -349,7 +353,7 @@ const getCommonBaseOptionsForChartType = (
 const getOptionOverridesForChartType = (
   type: ChartType = "column",
   properties: ChartProperties | undefined,
-  shouldBeTimeSeries: boolean
+  shouldBeTimeSeries: boolean,
 ) => {
   if (!properties) {
     return {};
@@ -536,7 +540,7 @@ const getSeriesForChartType = (
   transform: ChartTransform,
   shouldBeTimeSeries: boolean,
   themeColors,
-  dataset
+  dataset,
 ) => {
   if (!data) {
     return [];
@@ -551,17 +555,20 @@ const getSeriesForChartType = (
       ? rowSeriesLabels
       : data.columns
           .slice(1)
-          .filter((col) => col.name !== "_diff")
+          .filter((col) => col.name !== "__diff")
           .map((col) => col.name);
   const seriesNamesWithoutDiffColumns = seriesNames.filter(
-    (s) => !isDiffColumn(s)
+    (s) => !isDiffColumn(s),
   );
   const seriesLength = seriesNames.length;
-  const hasDiffCol = !!data.columns.find((col) => col.name === "_diff");
+  const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
+
+  console.log({ data, hasDiffCol });
 
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     let seriesName = seriesNames[seriesIndex];
     const diff = parseDiffColumn(seriesName);
+    console.log(diff);
     let seriesColor = "auto";
     const seriesMapSettings = {
       index: seriesIndex,
@@ -635,6 +642,8 @@ const getSeriesForChartType = (
 
                     // Set base color
                     const baseColor = seriesMapSettings.color;
+
+                    console.log(seriesMapSettings);
 
                     // Define the colors
                     const lightColor = lightenColor(baseColor, 0.3);
@@ -896,7 +905,7 @@ function lightenColor(color, amount) {
   return rgbToHex(
     Math.min(255, r + amount * 255),
     Math.min(255, g + amount * 255),
-    Math.min(255, b + amount * 255)
+    Math.min(255, b + amount * 255),
   );
 }
 
@@ -905,7 +914,7 @@ function darkenColor(color, amount) {
   return rgbToHex(
     Math.max(0, r - amount * 255),
     Math.max(0, g - amount * 255),
-    Math.max(0, b - amount * 255)
+    Math.max(0, b - amount * 255),
   );
 }
 
@@ -920,7 +929,7 @@ function rgbToHex(r, g, b) {
 
 const adjustGridConfig = (
   config: EChartsOption,
-  properties: ChartProperties | undefined
+  properties: ChartProperties | undefined,
 ) => {
   let newConfig = { ...config };
   if (!!newConfig?.xAxis?.name) {
@@ -953,23 +962,78 @@ const adjustGridConfig = (
   return newConfig;
 };
 
+const injectDiffColumns = (data: LeafNodeData) => {
+  const diffSeriesToAdd = {};
+  let newColumns = [...data.columns];
+  for (const row of data.rows) {
+    const keys = Object.keys(row);
+    for (const key of keys) {
+      if (key === "__diff" || key.endsWith("_diff") || !!diffSeriesToAdd[key]) {
+        continue;
+      }
+      const diff = tableRowDiffColumn(row, key);
+      if (
+        diff.hasDiffColumn &&
+        !data.columns.find((c) => c.name === `${key}_diff`)
+      ) {
+        diffSeriesToAdd[`${key}_diff`] = key;
+      }
+
+      // if (hasDiffCol(key)) const series = seriesWithDiffs[key] || [];
+      // series.push(row[key]);
+      // seriesWithDiffs[key] = series;
+    }
+  }
+
+  console.log(diffSeriesToAdd);
+
+  const diffCol = newColumns.find((c) => c.name === "__diff");
+  for (const diffSeries of Object.keys(diffSeriesToAdd)) {
+    const matchingColumnIndex = newColumns.findIndex(
+      (c) => c.name === diffSeriesToAdd[diffSeries],
+    );
+    const matchingColumn = newColumns.find(
+      (c) => c.name === diffSeriesToAdd[diffSeries],
+    );
+    if (!matchingColumn) {
+      continue;
+    }
+    newColumns = [
+      ...newColumns.slice(0, matchingColumnIndex),
+      { ...matchingColumn, name: `${matchingColumn.name}_diff` },
+      matchingColumn,
+      ...newColumns.slice(matchingColumnIndex + 1),
+    ];
+  }
+
+  if (!diffCol) {
+    newColumns = [...newColumns, { name: "__diff" }];
+  }
+
+  return { columns: newColumns, rows: data.rows };
+};
+
 const buildChartOptions = (props: ChartProps, themeColors: any) => {
+  const updatedData = injectDiffColumns(props.data);
+  // props.data = updatedData;
+
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
-    props.data,
-    props.properties
+    updatedData,
+    props.properties,
   );
+  console.log({ updatedData, dataset });
   const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
-    props.data?.columns[0].data_type.toLowerCase() || ""
+    updatedData?.columns[0].data_type.toLowerCase() || "",
   );
   const series = getSeriesForChartType(
     props.display_type || "column",
-    props.data,
+    updatedData,
     props.properties,
     rowSeriesLabels,
     transform,
     treatAsTimeSeries,
     themeColors,
-    dataset
+    dataset,
   );
   const config = merge(
     getCommonBaseOptions(),
@@ -980,19 +1044,19 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
       treatAsTimeSeries,
       series,
       props.properties?.series,
-      themeColors
+      themeColors,
     ),
     getOptionOverridesForChartType(
       props.display_type || "column",
       props.properties,
-      treatAsTimeSeries
+      treatAsTimeSeries,
     ),
     { series },
     {
       dataset: {
         source: dataset,
       },
-    }
+    },
   );
   return adjustGridConfig(config, props.properties);
 };
@@ -1007,7 +1071,7 @@ const handleClick = async (
   params: any,
   navigate,
   renderTemplates,
-  searchPathPrefix
+  searchPathPrefix,
 ) => {
   const componentType = params.componentType;
   if (componentType !== "series") {
@@ -1022,12 +1086,12 @@ const handleClick = async (
       }
       const renderedResults = await renderTemplates(
         { graph_node: params.data.href as string },
-        [params.data]
+        [params.data],
       );
       let rowRenderResult = renderedResults[0];
       const withSearchPathPrefix = injectSearchPathPrefix(
         rowRenderResult.graph_node.result,
-        searchPathPrefix
+        searchPathPrefix,
       );
       navigate(withSearchPathPrefix);
   }
