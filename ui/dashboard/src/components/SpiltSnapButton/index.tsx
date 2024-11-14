@@ -38,7 +38,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
   const fileInputRefForDiff = useRef<HTMLInputElement | null>(null);
   const navigate = useNavigate();
 
-  const isDashBoard = !selectedDashboard && !snapshot;
+  const isDashboardList = !selectedDashboard && !snapshot;
 
   const isLive = selectedDashboard && dataMode === DashboardDataModeLive;
 
@@ -170,7 +170,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           className="inline-flex items-center space-x-2 shadow-none rounded-r-none"
           onClick={handleMainButtonClick}
         ></NeutralButton> */}
-        {isDashBoard && (
+        {isDashboardList && (
           <NeutralButton
             type="button"
             className="inline-flex items-center space-x-2 shadow-none rounded-r-none"
@@ -238,10 +238,10 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           </NeutralButton>
         )}
 
-        {!isDashBoard && (
+        {!isDashboardList && (
           <Menu as="div" className="relative flex border rounded-r-md">
             <Menu.Button
-              className="px-2 py-2 text-foreground font-medium text-sm rounded-r-md rounded-r-md"
+              className="px-2 py-2 text-foreground font-medium text-sm rounded-r-md"
               aria-haspopup="true"
             >
               {/* <ChevronDownIcon className="w-5 h-5" aria-hidden="true" /> */}
@@ -250,87 +250,85 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
                 icon="materialsymbols-solid:arrow_drop_down"
               />
             </Menu.Button>
-            <Menu.Items className="absolute top-full left-0 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 divide-y divide-gray-100 focus:outline-none">
-              <div className="py-1">
-                {isLive && (
-                  <Menu.Item>
-                    {({ active }) => (
-                      <NeutralButton
-                        type="button"
-                        className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
-                        onClick={saveSnapshot}
-                      >
-                        <Icon
-                          className="inline-block text-foreground-lighter w-5 h-5 -mt-0.5"
-                          icon="heroicons-outline:camera"
-                        />
-                        <span className="hidden lg:block">Snap</span>
-                      </NeutralButton>
-                    )}
-                  </Menu.Item>
+            <Menu.Items className="absolute top-full right-0 w-40 rounded-md shadow-lg bg-white ring-1 ring-black ring-opacity-5 z-50 divide-y divide-gray-100 focus:outline-none">
+              {isLive && (
+                <Menu.Item>
+                  {({ active }) => (
+                    <NeutralButton
+                      type="button"
+                      className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
+                      onClick={saveSnapshot}
+                    >
+                      <Icon
+                        className="inline-block text-foreground-lighter w-5 h-5 -mt-0.5"
+                        icon="heroicons-outline:camera"
+                      />
+                      <span className="hidden lg:block">Snap</span>
+                    </NeutralButton>
+                  )}
+                </Menu.Item>
+              )}
+              <Menu.Item>
+                {({ active }) => (
+                  <>
+                    <NeutralButton
+                      type="button"
+                      className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
+                      onClick={() => {
+                        if (fileInputRefForDiff.current) {
+                          fileInputRefForDiff.current.click(); // Ensure this triggers the click on the input
+                        }
+                      }}
+                    >
+                      <Icon
+                        className="inline-block text-foreground-lighter w-5 h-5"
+                        icon="difference"
+                      />
+                      <span className="hidden lg:block">Diff</span>
+                    </NeutralButton>
+                    <input
+                      ref={fileInputRefForDiff}
+                      accept="application/json, .pps, .sps"
+                      className="hidden"
+                      id="snapshot-diff"
+                      name="snapshot-diff"
+                      type="file"
+                      onChange={handleDiffOpen}
+                    />
+                  </>
                 )}
-                <Menu.Item>
-                  {({ active }) => (
-                    <>
-                      <NeutralButton
-                        type="button"
-                        className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
-                        onClick={() => {
-                          if (fileInputRefForDiff.current) {
-                            fileInputRefForDiff.current.click(); // Ensure this triggers the click on the input
-                          }
-                        }}
-                      >
-                        <Icon
-                          className="inline-block text-foreground-lighter w-5 h-5 -mt-0.5"
-                          icon="difference"
-                        />
-                        <span className="hidden lg:block">Diff</span>
-                      </NeutralButton>
-                      <input
-                        ref={fileInputRefForDiff}
-                        accept="application/json, .pps, .sps"
-                        className="hidden"
-                        id="snapshot-diff"
-                        name="snapshot-diff"
-                        type="file"
-                        onChange={handleDiffOpen}
+              </Menu.Item>
+              <Menu.Item>
+                {({ active }) => (
+                  <>
+                    <NeutralButton
+                      type="button"
+                      className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
+                      onClick={() => {
+                        if (fileInputRef.current) {
+                          fileInputRef.current.click(); // Ensure this triggers the click on the input
+                        }
+                      }}
+                    >
+                      <Icon
+                        className="inline-block text-foreground-lighter w-5 -mt-0.5"
+                        icon="heroicons-outline:folder-open"
                       />
-                    </>
-                  )}
-                </Menu.Item>
-                <Menu.Item>
-                  {({ active }) => (
-                    <>
-                      <NeutralButton
-                        type="button"
-                        className="inline-flex items-center space-x-2 shadow-none rounded-none w-full"
-                        onClick={() => {
-                          if (fileInputRef.current) {
-                            fileInputRef.current.click(); // Ensure this triggers the click on the input
-                          }
-                        }}
-                      >
-                        <Icon
-                          className="inline-block text-foreground-lighter w-5 -mt-0.5"
-                          icon="heroicons-outline:folder-open"
-                        />
-                        <span className="hidden lg:block">Open</span>
-                      </NeutralButton>
-                      {/* Move the input outside of NeutralButton */}
-                      <input
-                        ref={fileInputRef}
-                        accept="application/json, .pps, .sps"
-                        className="hidden"
-                        id="open-snapshot"
-                        name="open-snapshot"
-                        type="file"
-                        onChange={handleFileOpen}
-                      />
-                    </>
-                  )}
-                </Menu.Item>
-              </div>
+                      <span className="hidden lg:block">Open</span>
+                    </NeutralButton>
+                    {/* Move the input outside of NeutralButton */}
+                    <input
+                      ref={fileInputRef}
+                      accept="application/json, .pps, .sps"
+                      className="hidden"
+                      id="open-snapshot"
+                      name="open-snapshot"
+                      type="file"
+                      onChange={handleFileOpen}
+                    />
+                  </>
+                )}
+              </Menu.Item>
             </Menu.Items>
           </Menu>
         )}
