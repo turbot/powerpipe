@@ -11245,10 +11245,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"jq-web@npm:0.6.0":
-  version: 0.6.0
-  resolution: "jq-web@npm:0.6.0"
-  checksum: 10c0/0d0ce729616ce48c36a05e489c971b8af9680038a3657f3124b7e8cd20c9c09218fb458b75c120a06c7ab85491d0e75b1be023b3ceeaf702850687ae10414103
+"jq-wasm@npm:0.0.9":
+  version: 0.0.9
+  resolution: "jq-wasm@npm:0.0.9"
+  checksum: 10c0/e5b56b13c9d04c4c6c880dc4335fa8c31211cce42c8d2edea09cf054d4ae7e5a1f413fb53462fa59d1ac56b5ab8505023126ac68460f210b4518b7eb9521f746
   languageName: node
   linkType: hard
 
@@ -14606,7 +14606,7 @@ __metadata:
     framer-motion: "npm:11.11.17"
     fs-extra: "npm:11.2.0"
     if-node-version: "npm:1.1.1"
-    jq-web: "npm:0.6.0"
+    jq-wasm: "npm:0.0.9"
     lint-staged: "npm:15.2.10"
     lodash: "npm:4.17.21"
     npm-run-all: "npm:4.1.5"
