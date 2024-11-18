@@ -30,7 +30,7 @@
     "echarts-gl": "2.0.9",
     "file-saver": "2.0.5",
     "framer-motion": "11.11.17",
-    "jq-web": "0.6.0",
+    "jq-wasm": "0.0.9",
     "lodash": "4.17.21",
     "react": "18.3.1",
     "react-cool-img": "1.2.12",
