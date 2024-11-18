@@ -24,11 +24,12 @@
 # Dashboard UI
 /ui/dashboard/.idea
 /ui/dashboard/.vscode
-/ui/dashboard/build
+/ui/dashboard/.yarn/install-state.gz
 /ui/dashboard/assets
+/ui/dashboard/build
 /ui/dashboard/node_modules
-/ui/dashboard/src/icons/materialSymbols.ts
 /ui/dashboard/output
+/ui/dashboard/src/icons/materialSymbols.ts
 /ui/dashboard/yarn-debug.log*
 /ui/dashboard/yarn-error.log*
 /internal/dashboardassets/assets.tar.gz
