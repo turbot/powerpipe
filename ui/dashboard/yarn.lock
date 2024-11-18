@@ -3600,6 +3600,18 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@tanstack/react-table@npm:8.20.5":
+  version: 8.20.5
+  resolution: "@tanstack/react-table@npm:8.20.5"
+  dependencies:
+    "@tanstack/table-core": "npm:8.20.5"
+  peerDependencies:
+    react: ">=16.8"
+    react-dom: ">=16.8"
+  checksum: 10c0/574fa62fc6868a3b1113dbd043323f8b73aeb60555609caa164d5137a14636d4502784a961191afde2ec46f33f8c2bbfc4561d27a701c3d084e899a632dda3c8
+  languageName: node
+  linkType: hard
+
 "@tanstack/react-virtual@npm:^3.0.0-beta.60":
   version: 3.10.9
   resolution: "@tanstack/react-virtual@npm:3.10.9"
@@ -3609,6 +3621,13 @@ __metadata:
     react: ^16.8.0 || ^17.0.0 || ^18.0.0
     react-dom: ^16.8.0 || ^17.0.0 || ^18.0.0
   checksum: 10c0/a854b6fb2bdccec9e581442def5ed6ee568fd2b12178e70450c03d9e60a1e5794be71c4ad3f385af717872c039e569ff88c52adb11a2ddf2c02ded3f83bc851d
+  languageName: node
+  linkType: hard
+
+"@tanstack/table-core@npm:8.20.5":
+  version: 8.20.5
+  resolution: "@tanstack/table-core@npm:8.20.5"
+  checksum: 10c0/3c27b5debd61b6bd9bfbb40bfc7c5d5af90873ae1a566b20e3bf2d2f4f2e9a78061c081aacc5259a00e256f8df506ec250eb5472f5c01ff04baf9918b554982b
   languageName: node
   linkType: hard
 
@@ -14580,6 +14599,7 @@ __metadata:
     "@tailwindcss/forms": "npm:0.5.9"
     "@tailwindcss/line-clamp": "npm:0.4.4"
     "@tailwindcss/typography": "npm:0.5.15"
+    "@tanstack/react-table": "npm:8.20.5"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
     "@testing-library/react": "npm:16.0.1"
@@ -14627,7 +14647,6 @@ __metadata:
     react-scripts: "npm:5.0.1"
     react-select: "npm:5.8.3"
     react-syntax-highlighter: "npm:15.6.1"
-    react-table: "npm:7.8.0"
     react-time-picker: "npm:7.0.0"
     react-use-websocket: "npm:4.11.0"
     reactflow: "npm:11.11.4"
@@ -15348,15 +15367,6 @@ __metadata:
   peerDependencies:
     react: ">= 0.14.0"
   checksum: 10c0/4a4cf4695c45d7a6b25078970fb79ae5a85edeba5be0a2508766ee18e8aee1c0c4cdd97bf54f5055e4af671fe7e5e71348e81cafe09a0eb07a763ae876b7f073
-  languageName: node
-  linkType: hard
-
-"react-table@npm:7.8.0":
-  version: 7.8.0
-  resolution: "react-table@npm:7.8.0"
-  peerDependencies:
-    react: ^16.8.3 || ^17.0.0-0 || ^18.0.0
-  checksum: 10c0/592938cb331331a4b10a67e881458ccf590c16639e2781a0329ca0803bad92991c9b9a2a3b1db1dce0de9ad325195fc5b38e1ea13813f8a55a35c94dc194757a
   languageName: node
   linkType: hard
 

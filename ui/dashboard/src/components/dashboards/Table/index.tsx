@@ -24,22 +24,27 @@ import {
 } from "../common";
 import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, useCallback, useEffect, useMemo, useState } from "react";
-import { getComponent, registerComponent } from "../index";
 import { PanelDefinition } from "@powerpipe/types";
 import { RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
-import { useSortBy, useTable } from "react-table";
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
 
 type TableColumnInfo = {
-  Header: string;
+  header: string;
   title: string;
-  accessor: string;
+  accessorKey: string;
   name: string;
   data_type: string;
   display?: "all" | "none";
@@ -78,9 +83,9 @@ const getColumns = (
     }
 
     const colInfo: TableColumnInfo = {
-      Header: col.original_name || col.name,
+      header: col.original_name || col.name,
       title: col.original_name || col.name,
-      accessor: col.name,
+      accessorKey: col.name,
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
@@ -546,35 +551,39 @@ const TableView = ({
   //   return filtered;
   // }, [rowData, activeFilters, excludedFilters]);
 
-  const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
-    useTable(
-      { columns, data: rowData, initialState: { hiddenColumns } },
-      useSortBy,
-    );
+  const table = useReactTable({
+    columns,
+    data: rowData,
+    // initialState: { hiddenColumns },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+  });
 
-  useDeepCompareEffect(() => {
-    if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
-      setRowTemplateData([]);
-      return;
-    }
+  const rows = table.getRowModel().rows;
 
-    const doRender = async () => {
-      const templates = Object.fromEntries(
-        columns
-          .filter((col) => col.display !== "none" && !!col.href_template)
-          .map((col) => [col.name, col.href_template as string]),
-      );
-      if (isEmpty(templates)) {
-        setRowTemplateData([]);
-        return;
-      }
-      const data = rows.map((row) => row.values);
-      const renderedResults = await renderTemplates(templates, data);
-      setRowTemplateData(renderedResults || []);
-    };
-
-    doRender();
-  }, [columns, renderTemplates, rows, templateRenderReady]);
+  // useDeepCompareEffect(() => {
+  //   if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
+  //     setRowTemplateData([]);
+  //     return;
+  //   }
+  //
+  //   const doRender = async () => {
+  //     const templates = Object.fromEntries(
+  //       columns
+  //         .filter((col) => col.display !== "none" && !!col.href_template)
+  //         .map((col) => [col.name, col.href_template as string]),
+  //     );
+  //     if (isEmpty(templates)) {
+  //       setRowTemplateData([]);
+  //       return;
+  //     }
+  //     const data = rows.map((row) => row.values);
+  //     const renderedResults = await renderTemplates(templates, data);
+  //     setRowTemplateData(renderedResults || []);
+  //   };
+  //
+  //   doRender();
+  // }, [columns, renderTemplates, rows, templateRenderReady]);
 
   return (
     <div>
@@ -611,53 +620,42 @@ const TableView = ({
         )}
 
       <table
-        {...getTableProps()}
         className={classNames(
           "min-w-full divide-y divide-table-divide overflow-hidden",
           hasTopBorder ? "border-t border-divide" : null,
         )}
       >
         <thead className="text-table-head border-b border-divide">
-          {headerGroups.map((headerGroup) => {
-            const { key, ...otherHeaderGroupProps } =
-              headerGroup.getHeaderGroupProps();
-            return (
-              <tr key={key} {...otherHeaderGroupProps}>
-                {headerGroup.headers.map((column) => {
-                  const { key, ...otherHeaderProps } = column.getHeaderProps(
-                    column.getSortByToggleProps(),
-                  );
-                  return (
-                    <th
-                      key={key}
-                      {...otherHeaderProps}
-                      scope="col"
+          {table.getHeaderGroups().map((headerGroup) => (
+            <tr key={headerGroup.id}>
+              {headerGroup.headers.map((header) => (
+                <th
+                  key={header.id}
+                  scope="col"
+                  className={classNames(
+                    "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                  )}
+                >
+                  {flexRender(
+                    header.column.columnDef.header,
+                    header.getContext(),
+                  )}
+                  {header.isSortedDesc ? (
+                    <SortDescendingIcon className="inline-block h-4 w-4" />
+                  ) : (
+                    <SortAscendingIcon
                       className={classNames(
-                        "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                        "inline-block h-4 w-4",
+                        !header.isSorted ? "invisible" : null,
                       )}
-                    >
-                      {column.render("Header")}
-                      {column.isSortedDesc ? (
-                        <SortDescendingIcon className="inline-block h-4 w-4" />
-                      ) : (
-                        <SortAscendingIcon
-                          className={classNames(
-                            "inline-block h-4 w-4",
-                            !column.isSorted ? "invisible" : null,
-                          )}
-                        />
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            );
-          })}
+                    />
+                  )}
+                </th>
+              ))}
+            </tr>
+          ))}
         </thead>
-        <tbody
-          {...getTableBodyProps()}
-          className="divide-y divide-table-divide"
-        >
+        <tbody className="divide-y divide-table-divide">
           {rows.length === 0 && (
             <tr>
               <td
@@ -669,29 +667,32 @@ const TableView = ({
             </tr>
           )}
           {rows.map((row, index) => {
-            prepareRow(row);
-            const { key, ...otherRowProps } = row.getRowProps();
             return (
-              <tr key={key} {...otherRowProps}>
-                {row.cells.map((cell) => {
-                  const { key, ...otherCellProps } = cell.getCellProps();
+              <tr key={row.id}>
+                {row.getVisibleCells().map((cell) => {
+                  // console.log(cell.column.columnDef);
                   return (
                     <td
-                      key={key}
-                      {...otherCellProps}
+                      key={cell.id}
                       className={classNames(
                         "px-4 py-4 align-top content-center text-sm",
-                        isNumericCol(cell.column.data_type) ? "text-right" : "",
-                        cell.column.wrap === "all"
+                        isNumericCol(cell.column.columnDef.data_type)
+                          ? "text-right"
+                          : "",
+                        cell.column.columnDef.wrap === "all"
                           ? "break-keep"
                           : "whitespace-nowrap",
                       )}
                     >
+                      {/*{flexRender(*/}
+                      {/*  cell.column.columnDef.cell,*/}
+                      {/*  cell.getContext(),*/}
+                      {/*)}*/}
                       <MemoCellValue
-                        column={cell.column}
+                        column={cell.column.columnDef}
                         rowIndex={index}
                         rowTemplateData={rowTemplateData}
-                        value={cell.value}
+                        value={cell.getValue()}
                         addFilter={addFilter}
                         filterEnabled={filterEnabled}
                         context={context}
@@ -799,9 +800,9 @@ const LineView = (props: TableProps) => {
         props.properties.columns[col.original_name || col.name];
       const newColDef: TableColumnInfo = {
         ...col,
-        Header: col.original_name || col.name,
+        header: col.original_name || col.name,
         title: col.original_name || col.name,
-        accessor: col.name,
+        accessorKey: col.name,
         display: columnOverrides?.display ? columnOverrides.display : "all",
         wrap: columnOverrides?.wrap ? columnOverrides.wrap : "none",
         href_template: columnOverrides?.href,
