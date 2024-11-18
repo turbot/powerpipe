@@ -16575,7 +16575,7 @@ __metadata:
     react-select: "npm:5.8.0"
     react-syntax-highlighter: "npm:15.5.0"
     react-table: "npm:7.8.0"
-    react-use-websocket: "npm:4.8.1"
+    react-use-websocket: "npm:4.11.1"
     reactflow: "npm:11.11.4"
     remark-gfm: "npm:4.0.0"
     semver: "npm:7.6.3"
@@ -17307,13 +17307,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use-websocket@npm:4.8.1":
-  version: 4.8.1
-  resolution: "react-use-websocket@npm:4.8.1"
-  peerDependencies:
-    react: ">= 18.0.0"
-    react-dom: ">= 18.0.0"
-  checksum: 10c0/9106947334badc06d8af635328f1420068098130eac8f6da90e7d13cf37037cf1cf0bd528103ca3689a38097a70e10d3b577f143078254e9dd3b9aa429395116
+"react-use-websocket@npm:4.11.1":
+  version: 4.11.1
+  resolution: "react-use-websocket@npm:4.11.1"
+  checksum: 10c0/c60a6976b8944f049871ecd86306b0fffa4aa4412090dec11ee8ed037bde49c8f21689525ff0fa8e0a2a50aa8787c8f4ef044cadc80fc5b6be009a51d58d4347
   languageName: node
   linkType: hard
 
