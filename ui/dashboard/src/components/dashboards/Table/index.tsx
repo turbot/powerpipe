@@ -117,6 +117,7 @@ type CellValueProps = {
     value: any,
     context?: string,
   ) => void;
+  filterEnabled?: boolean;
   context?: string;
 };
 
@@ -127,6 +128,7 @@ const CellValue = ({
   value,
   showTitle = false,
   addFilter,
+  filterEnabled = false,
   context = "",
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
@@ -355,7 +357,7 @@ const CellValue = ({
   ) : (
     <div className="flex items-center space-x-2 group">
       {cellContent}
-      {addFilter && (
+      {filterEnabled && addFilter && (
         <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
           <button
             onClick={() => addFilter("equal", column.name, value, context)}
@@ -520,7 +522,7 @@ const TableView = ({
   columns,
   hiddenColumns,
   hasTopBorder = false,
-  filterEnabled = true,
+  filterEnabled = false,
   context = "",
 }) => {
   const { filters, addFilter, removeFilter } = useTableFilters();
