@@ -4,7 +4,9 @@
 [![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
 [![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com)
 
-[Powerpipe](https://powerpipe.io) is **Dashboards for DevOps**. Use it to visualize any data source, and run compliance benchmarks and controls, for effective decision-making and ongoing compliance monitoring.
+## Dashboards for DevOps
+
+Use [Powerpipe](https://powerpipe.io) to visualize any data source and run compliance benchmarks and controls that enable effective decision-making and ongoing compliance monitoring.
 
 **Dashboards and reports**. High-level dashboards provide a quick overview. Use them to highlight misconfigurations and hotspots. [Filter](https://powerpipe.io/docs/run/benchmark/benchmark-dashboard#filtering--grouping), pivot, and [snapshot](https://powerpipe.io/docs/run/snapshots) results.
 
@@ -96,7 +98,7 @@ If you're interested in developing [Powerpipe mods](https://hub.powerpipe.io), s
 
 ## Turbot Pipes
 
-Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud.
+Bring your team to [Turbot Pipes](https://turbot.com/pipes) to use Powerpipe together in the cloud. In a Pipes workspace you can use [Steampipe](https://github.com/turbot/steampipe) for data access, Powerpipe to visualize query results, and [Flowpipe](https://github.com/turbot/flowpipe) to automate workflow.
 
 ## Open source and contributing
 
