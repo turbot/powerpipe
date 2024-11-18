@@ -27,7 +27,7 @@ const buildDashboards = (
   const dashboardsMap = {};
   const builtDashboards: AvailableDashboard[] = [];
 
-  for (const [, dashboard] of Object.entries(dashboards)) {
+  for (const [, dashboard] of Object.entries(dashboards || {})) {
     const builtDashboard: AvailableDashboard = {
       title: dashboard.title,
       full_name: dashboard.full_name,
@@ -41,7 +41,7 @@ const buildDashboards = (
     builtDashboards.push(builtDashboard);
   }
 
-  for (const [, benchmark] of Object.entries(benchmarks)) {
+  for (const [, benchmark] of Object.entries(benchmarks || {})) {
     const builtBenchmark: AvailableDashboard = {
       title: benchmark.title,
       full_name: benchmark.full_name,
@@ -57,7 +57,9 @@ const buildDashboards = (
     builtDashboards.push(builtBenchmark);
   }
 
-  for (const [, detection_benchmark] of Object.entries(detection_benchmarks)) {
+  for (const [, detection_benchmark] of Object.entries(
+    detection_benchmarks || {},
+  )) {
     const builtBenchmark: AvailableDashboard = {
       title: detection_benchmark.title,
       full_name: detection_benchmark.full_name,
