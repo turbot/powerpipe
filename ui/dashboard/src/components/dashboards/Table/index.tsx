@@ -32,11 +32,14 @@ import {
 } from "@tanstack/react-table";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
-import { RowRenderResult } from "../common/types";
+import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useSearchParams } from "react-router-dom";
+import { useVirtualizer } from "@tanstack/react-virtual";
+
+const ExternalLink = getComponent("external_link");
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
@@ -143,7 +146,6 @@ const CellValue = ({
   filterEnabled = false,
   context = "",
 }: CellValueProps) => {
-  const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -152,8 +154,8 @@ const CellValue = ({
     const renderedTemplateObj = rowTemplateData[rowIndex];
 
     if (!renderedTemplateObj) {
-      setHref(null);
-      setError(null);
+      setHref(() => null);
+      setError(() => null);
       return;
     }
     const renderedTemplateForColumn = renderedTemplateObj[column.name];
@@ -174,10 +176,9 @@ const CellValue = ({
       setHref(null);
       setError(renderedTemplateForColumn.error);
     }
-  }, [column, rowIndex, rowTemplateData]);
+  }, [column, rowIndex, rowTemplateData, searchPathPrefix]);
 
   let cellContent;
-  const dataType = column.data_type.toLowerCase();
   if (value === null || value === undefined) {
     cellContent = href ? (
       <ExternalLink
@@ -195,7 +196,10 @@ const CellValue = ({
         <>null</>
       </span>
     );
-  } else if (dataType === "control_status") {
+  }
+
+  const dataType = column.data_type.toLowerCase();
+  if (dataType === "control_status") {
     switch (value) {
       case "alarm":
         cellContent = (
@@ -369,24 +373,24 @@ const CellValue = ({
   ) : (
     <div className="flex items-center space-x-2 group">
       {cellContent}
-      {filterEnabled && addFilter && (
-        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={() => addFilter("equal", column.name, value, context)}
-            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-            title="Add value to include filter"
-          >
-            <Icon className="h-5 w-5" icon="add_circle" />
-          </button>
-          <button
-            onClick={() => addFilter("not_equal", column.name, value, context)}
-            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-            title="Add value to exclude filter"
-          >
-            <Icon className="h-5 w-5" icon="do_not_disturb_on" />
-          </button>
-        </div>
-      )}
+      {/*{filterEnabled && addFilter && (*/}
+      {/*  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">*/}
+      {/*    <button*/}
+      {/*      onClick={() => addFilter("equal", column.name, value, context)}*/}
+      {/*      className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"*/}
+      {/*      title="Add value to include filter"*/}
+      {/*    >*/}
+      {/*      <Icon className="h-5 w-5" icon="add_circle" />*/}
+      {/*    </button>*/}
+      {/*    <button*/}
+      {/*      onClick={() => addFilter("not_equal", column.name, value, context)}*/}
+      {/*      className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"*/}
+      {/*      title="Add value to exclude filter"*/}
+      {/*    >*/}
+      {/*      <Icon className="h-5 w-5" icon="do_not_disturb_on" />*/}
+      {/*    </button>*/}
+      {/*  </div>*/}
+      {/*)}*/}
     </div>
   );
 };
@@ -529,8 +533,610 @@ const useTableFilters = () => {
   };
 };
 
-const TableView = ({
-  rowData,
+// const TableView = ({
+//   data,
+//   columns,
+//   columnVisibility,
+//   hasTopBorder = false,
+//   filterEnabled = false,
+//   context = "",
+// }) => {
+//   const { filters, addFilter, removeFilter } = useTableFilters();
+//   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
+//   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
+//
+//   const table = useReactTable({
+//     data,
+//     columns,
+//     initialState: { columnVisibility },
+//     getCoreRowModel: getCoreRowModel(),
+//     getSortedRowModel: getSortedRowModel(),
+//     debugTable: true,
+//   });
+//
+//   const { rows } = table.getRowModel();
+//
+//   const visibleColumns = table.getVisibleLeafColumns();
+//
+//   //The virtualizers need to know the scrollable container element
+//   const tableContainerRef = useRef<HTMLDivElement>(null);
+//
+//   //we are using a slightly different virtualization strategy for columns (compared to virtual rows) in order to support dynamic row heights
+//   const columnVirtualizer = useVirtualizer({
+//     count: visibleColumns.length,
+//     estimateSize: (index) => 100, // visibleColumns[index].getSize(), //estimate width of each column for accurate scrollbar dragging
+//     getScrollElement: () => tableContainerRef.current,
+//     horizontal: true,
+//     overscan: 3, //how many columns to render on each side off screen each way (adjust this for performance)
+//   });
+//
+//   //dynamic row height virtualization - alternatively you could use a simpler fixed row height strategy without the need for `measureElement`
+//   const rowVirtualizer = useVirtualizer({
+//     count: rows.length,
+//     estimateSize: () => 46.5, //estimate row height for accurate scrollbar dragging
+//     getScrollElement: () => tableContainerRef.current,
+//     //measure dynamic row height, except in firefox because it measures table border height incorrectly
+//     measureElement:
+//       typeof window !== "undefined" &&
+//       navigator.userAgent.indexOf("Firefox") === -1
+//         ? (element) => element?.getBoundingClientRect().height
+//         : undefined,
+//     overscan: 5,
+//   });
+//
+//   const virtualColumns = columnVirtualizer.getVirtualItems();
+//   const virtualRows = rowVirtualizer.getVirtualItems();
+//
+//   //different virtualization strategy for columns - instead of absolute and translateY, we add empty columns to the left and right
+//   let virtualPaddingLeft: number | undefined;
+//   let virtualPaddingRight: number | undefined;
+//
+//   if (columnVirtualizer && virtualColumns?.length) {
+//     virtualPaddingLeft = virtualColumns[0]?.start ?? 0;
+//     virtualPaddingRight =
+//       columnVirtualizer.getTotalSize() -
+//       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
+//   }
+//
+//   //All important CSS styles are included as inline styles for this example. This is not recommended for your code.
+//   return (
+//     <div
+//       className="overflow-auto relative min-h-[100px] h-[400px] max-h-[800px] w-full"
+//       ref={tableContainerRef}
+//     >
+//       {/* Even though we're still using semantic table tags, we must use CSS grid and flexbox for dynamic row heights */}
+//       <table
+//         className={classNames(
+//           "grid min-w-full divide-y divide-table-divide",
+//           hasTopBorder ? "border-t border-divide" : null,
+//         )}
+//       >
+//         <thead className="grid sticky top-0 z-[1] text-table-head border-b border-divide">
+//           {table.getHeaderGroups().map((headerGroup) => (
+//             <tr key={headerGroup.id} className="flex w-full">
+//               {virtualPaddingLeft ? (
+//                 //fake empty column to the left for virtualization scroll padding
+//                 <th
+//                   className={classNames("flex", `w-[${virtualPaddingLeft}]`)}
+//                 />
+//               ) : null}
+//               {virtualColumns.map((vc) => {
+//                 const header = headerGroup.headers[vc.index];
+//                 return (
+//                   <th
+//                     key={header.id}
+//                     className={classNames(
+//                       "flex py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+//                       //`w-[${header.getSize()}]`,
+//                     )}
+//                   >
+//                     <div
+//                       {...{
+//                         className: header.column.getCanSort()
+//                           ? "cursor-pointer select-none"
+//                           : "",
+//                         onClick: header.column.getToggleSortingHandler(),
+//                       }}
+//                     >
+//                       {flexRender(
+//                         header.column.columnDef.header,
+//                         header.getContext(),
+//                       )}
+//                       {{
+//                         asc: (
+//                           <SortAscendingIcon
+//                             className={classNames("inline-block h-4 w-4")}
+//                           />
+//                         ),
+//                         desc: (
+//                           <SortDescendingIcon className="inline-block h-4 w-4" />
+//                         ),
+//                       }[header.column.getIsSorted() as string] ?? null}
+//                     </div>
+//                   </th>
+//                 );
+//               })}
+//               {virtualPaddingRight ? (
+//                 //fake empty column to the right for virtualization scroll padding
+//                 <th
+//                   className={classNames("flex", `w-[${virtualPaddingRight}]`)}
+//                 />
+//               ) : null}
+//             </tr>
+//           ))}
+//         </thead>
+//         <tbody
+//           className={classNames(
+//             "grid relative divide-y divide-table-divide",
+//             `h-[${rowVirtualizer.getTotalSize()}px]`, //tells scrollbar how big the table is
+//           )}
+//         >
+//           {virtualRows.map((virtualRow, rowIndex) => {
+//             const row = rows[virtualRow.index] as Row<KeyValuePairs>;
+//             const visibleCells = row.getVisibleCells();
+//
+//             return (
+//               <tr
+//                 key={row.id}
+//                 data-index={virtualRow.index} //needed for dynamic row height measurement
+//                 ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
+//                 className="flex absolute w-full"
+//                 style={{
+//                   transform: `translateY(${virtualRow.start}px)`, //this should always be a `style` as it changes on scroll
+//                 }}
+//               >
+//                 {virtualPaddingLeft ? (
+//                   //fake empty column to the left for virtualization scroll padding
+//                   <td style={{ display: "flex", width: virtualPaddingLeft }} />
+//                 ) : null}
+//                 {virtualColumns.map((vc) => {
+//                   const cell = visibleCells[vc.index];
+//                   return (
+//                     <td
+//                       key={cell.id}
+//                       className={classNames(
+//                         "flex px-4 py-4 align-top content-center text-sm",
+//                         isNumericCol(cell.column.columnDef.data_type)
+//                           ? "text-right"
+//                           : "",
+//                         cell.column.columnDef.wrap === "all"
+//                           ? "break-keep"
+//                           : "whitespace-nowrap",
+//                       )}
+//                       // style={{
+//                       //   width: cell.column.getSize(),
+//                       // }}
+//                     >
+//                       {/*{flexRender(*/}
+//                       {/*  cell.column.columnDef.cell,*/}
+//                       {/*  cell.getContext(),*/}
+//                       {/*)}*/}
+//                       <MemoCellValue
+//                         column={cell.column.columnDef}
+//                         rowIndex={rowIndex}
+//                         rowTemplateData={rowTemplateData}
+//                         value={cell.getValue()}
+//                         addFilter={addFilter}
+//                         filterEnabled={filterEnabled}
+//                         context={context}
+//                       />
+//                     </td>
+//                   );
+//                 })}
+//                 {virtualPaddingRight ? (
+//                   //fake empty column to the right for virtualization scroll padding
+//                   <td style={{ display: "flex", width: virtualPaddingRight }} />
+//                 ) : null}
+//               </tr>
+//             );
+//           })}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
+// const TableView2 = ({
+//   data,
+//   columns,
+//   columnVisibility,
+//   filterEnabled = false,
+//   hasTopBorder = false,
+//   context = "",
+// }) => {
+//   const table = useReactTable({
+//     data,
+//     columns,
+//     initialState: { columnVisibility },
+//     getCoreRowModel: getCoreRowModel(),
+//     getSortedRowModel: getSortedRowModel(),
+//     debugTable: true,
+//   });
+//
+//   const { rows } = table.getRowModel();
+//
+//   const visibleColumns = table.getVisibleLeafColumns();
+//
+//   //The virtualizers need to know the scrollable container element
+//   const tableContainerRef = useRef<HTMLDivElement>(null);
+//
+//   //we are using a slightly different virtualization strategy for columns (compared to virtual rows) in order to support dynamic row heights
+//   const columnVirtualizer = useVirtualizer({
+//     count: visibleColumns.length,
+//     estimateSize: (index) => visibleColumns[index].getSize(), //estimate width of each column for accurate scrollbar dragging
+//     getScrollElement: () => tableContainerRef.current,
+//     horizontal: true,
+//     overscan: 3, // how many columns to render on each side off screen each way (adjust this for performance)
+//   });
+//
+//   //dynamic row height virtualization - alternatively you could use a simpler fixed row height strategy without the need for `measureElement`
+//   const rowVirtualizer = useVirtualizer({
+//     count: rows.length,
+//     estimateSize: () => 46.5, //estimate row height for accurate scrollbar dragging
+//     getScrollElement: () => tableContainerRef.current,
+//     //measure dynamic row height, except in firefox because it measures table border height incorrectly
+//     measureElement:
+//       typeof window !== "undefined" &&
+//       navigator.userAgent.indexOf("Firefox") === -1
+//         ? (element) => element?.getBoundingClientRect().height
+//         : undefined,
+//     overscan: 5, // how many row to render on each side off screen each way (adjust this for performance)
+//   });
+//
+//   const virtualColumns = columnVirtualizer.getVirtualItems();
+//   const virtualRows = rowVirtualizer.getVirtualItems();
+//
+//   //different virtualization strategy for columns - instead of absolute and translateY, we add empty columns to the left and right
+//   let virtualPaddingLeft: number | undefined;
+//   let virtualPaddingRight: number | undefined;
+//
+//   if (columnVirtualizer && virtualColumns?.length) {
+//     virtualPaddingLeft = virtualColumns[0]?.start ?? 0;
+//     virtualPaddingRight =
+//       columnVirtualizer.getTotalSize() -
+//       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
+//   }
+//
+//   console.log({ rows, data, visibleColumns, virtualColumns, virtualRows });
+//
+//   //All important CSS styles are included as inline styles for this example. This is not recommended for your code.
+//   return (
+//     <div
+//       ref={tableContainerRef}
+//       className="overflow-auto relative h-[800px] w-full"
+//     >
+//       {/* Even though we're still using sematic table tags, we must use CSS grid and flexbox for dynamic row heights */}
+//       <table
+//         className={classNames(
+//           "grid divide-y divide-table-divide",
+//           hasTopBorder ? "border-t border-divide" : null,
+//         )}
+//       >
+//         <thead className="grid sticky top-0 z-[1] text-table-head border-b border-divide">
+//           {table.getHeaderGroups().map((headerGroup) => (
+//             <tr key={headerGroup.id} className="flex w-full">
+//               {virtualPaddingLeft ? (
+//                 //fake empty column to the left for virtualization scroll padding
+//                 <th className={`flex w-[${virtualPaddingLeft}]`} />
+//               ) : null}
+//               {virtualColumns.map((vc) => {
+//                 const header = headerGroup.headers[vc.index];
+//                 return (
+//                   <th
+//                     key={header.id}
+//                     className={classNames(
+//                       "flex py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4 w-auto",
+//                       //`w-[${header.getSize()}]`,
+//                     )}
+//                   >
+//                     <div
+//                       className={classNames(
+//                         header.column.getCanSort()
+//                           ? "cursor-pointer select-none"
+//                           : null,
+//                       )}
+//                       onClick={header.column.getToggleSortingHandler()}
+//                     >
+//                       {flexRender(
+//                         header.column.columnDef.header,
+//                         header.getContext(),
+//                       )}
+//                       {{
+//                         asc: (
+//                           <SortAscendingIcon
+//                             className={classNames("inline-block h-4 w-4")}
+//                           />
+//                         ),
+//                         desc: (
+//                           <SortDescendingIcon className="inline-block h-4 w-4" />
+//                         ),
+//                       }[header.column.getIsSorted() as string] ?? null}
+//                     </div>
+//                   </th>
+//                 );
+//               })}
+//               {virtualPaddingRight ? (
+//                 //fake empty column to the right for virtualization scroll padding
+//                 <th
+//                   className={classNames("flex", `w-[${virtualPaddingRight}]`)}
+//                 />
+//               ) : null}
+//             </tr>
+//           ))}
+//         </thead>
+//         <tbody
+//           className={classNames(
+//             "grid relative",
+//             `h-[${rowVirtualizer.getTotalSize()}px]`,
+//           )}
+//         >
+//           {virtualRows.map((virtualRow) => {
+//             const row = rows[virtualRow.index] as Row<KeyValuePairs>;
+//             const visibleCells = row.getVisibleCells();
+//
+//             return (
+//               <tr
+//                 key={row.id}
+//                 data-index={virtualRow.index} //needed for dynamic row height measurement
+//                 ref={(node) => rowVirtualizer.measureElement(node)} //measure dynamic row height
+//                 className={"flex absolute w-full"}
+//                 style={{
+//                   transform: `translateY(${virtualRow.start}px)`, //this should always be a `style` as it changes on scroll
+//                 }}
+//               >
+//                 {virtualPaddingLeft ? (
+//                   //fake empty column to the left for virtualization scroll padding
+//                   <td
+//                     className={classNames("flex", `w-[${virtualPaddingLeft}]`)}
+//                   />
+//                 ) : null}
+//                 {virtualColumns.map((vc) => {
+//                   const cell = visibleCells[vc.index];
+//                   return (
+//                     <td
+//                       key={cell.id}
+//                       className="flex px-4 py-4 align-top content-center text-sm w-auto"
+//                       // style={{
+//                       //   width: cell.column.getSize(),
+//                       // }}
+//                     >
+//                       {flexRender(
+//                         cell.column.columnDef.cell,
+//                         cell.getContext(),
+//                       )}
+//                     </td>
+//                   );
+//                 })}
+//                 {virtualPaddingRight ? (
+//                   //fake empty column to the right for virtualization scroll padding
+//                   <td
+//                     className={classNames("flex", `w-[${virtualPaddingRight}]`)}
+//                   />
+//                 ) : null}
+//               </tr>
+//             );
+//           })}
+//         </tbody>
+//       </table>
+//     </div>
+//   );
+// };
+
+const TableViewVirtualizedRows = ({
+  data,
+  columns,
+  columnVisibility,
+  hasTopBorder = false,
+  filterEnabled = false,
+  context = "",
+}) => {
+  const { filters, addFilter, removeFilter } = useTableFilters();
+  const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
+  const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
+  const parentRef = useRef<HTMLDivElement>(null);
+
+  const table = useReactTable<KeyValuePairs>({
+    data,
+    columns,
+    initialState: { columnVisibility },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    //debugTable: true,
+  });
+
+  const { rows } = table.getRowModel();
+
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 46.5,
+    overscan: 10,
+  });
+
+  const virtualizedRows = virtualizer.getVirtualItems();
+
+  useEffect(() => {
+    if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
+      setRowTemplateData([]);
+      return;
+    }
+
+    const doRender = async () => {
+      const templates = Object.fromEntries(
+        columns
+          .filter((col) => col.display !== "none" && !!col.href_template)
+          .map((col) => [col.name, col.href_template as string]),
+      );
+      if (isEmpty(templates)) {
+        setRowTemplateData([]);
+        return;
+      }
+      const data = virtualizedRows.map((virtualRow) => {
+        const row = rows[virtualRow.index];
+        return row.original;
+      });
+      const renderedResults = await renderTemplates(templates, data);
+      setRowTemplateData(renderedResults || []);
+    };
+
+    doRender();
+  }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
+
+  return (
+    <div>
+      {filterEnabled &&
+        filters.filter((f) => f.context === context).length > 0 && (
+          <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
+            {filters.map((filter) => {
+              return (
+                <div
+                  key={`${filter.operator}:${filter.key}:${filter.value}`}
+                  className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
+                >
+                  <Icon
+                    className="w-4 h-4"
+                    icon={
+                      filter.operator === "equal"
+                        ? "add_circle"
+                        : "do_not_disturb_on"
+                    }
+                  />
+                  <span>{`${filter.key}: ${filter.value}`}</span>
+                  <span
+                    onClick={() =>
+                      removeFilter(filter.key, filter.value, filter.context)
+                    }
+                    className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                  >
+                    <Icon className="w-4 h-4" icon="close" />
+                  </span>
+                </div>
+              );
+            })}
+          </div>
+        )}
+      <div
+        ref={parentRef}
+        className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
+      >
+        <div className={`h-[${virtualizer.getTotalSize()}px}]`}>
+          <table
+            className={classNames(
+              "w-full divide-y divide-table-divide",
+              hasTopBorder ? "border-t border-divide" : null,
+            )}
+          >
+            <thead className="text-table-head border-b border-divide">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        scope="col"
+                        className={classNames(
+                          "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                        )}
+                        //style={{ width: header.getSize() }}
+                      >
+                        {header.isPlaceholder ? null : (
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none"
+                                : "",
+                              onClick: header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: (
+                                <SortAscendingIcon
+                                  className={classNames("inline-block h-4 w-4")}
+                                />
+                              ),
+                              desc: (
+                                <SortDescendingIcon className="inline-block h-4 w-4" />
+                              ),
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-table-divide">
+              {rows.length === 0 && (
+                <tr>
+                  <td
+                    className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                    colSpan={columns.length}
+                  >
+                    No results
+                  </td>
+                </tr>
+              )}
+              {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                const row = rows[virtualRow.index];
+                return (
+                  <tr
+                    key={row.id}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${
+                        virtualRow.start - index * virtualRow.size
+                      }px)`,
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <td
+                          key={cell.id}
+                          className={classNames(
+                            "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
+                            isNumericCol(cell.column.columnDef.data_type)
+                              ? "text-right"
+                              : "",
+                            cell.column.columnDef.wrap === "all"
+                              ? "break-keep"
+                              : "whitespace-nowrap",
+                          )}
+                        >
+                          {/*{flexRender(*/}
+                          {/*  cell.column.columnDef.cell,*/}
+                          {/*  cell.getContext(),*/}
+                          {/*)}*/}
+                          <CellValue
+                            column={cell.column.columnDef}
+                            rowIndex={index}
+                            rowTemplateData={rowTemplateData}
+                            value={cell.getValue()}
+                            addFilter={addFilter}
+                            filterEnabled={filterEnabled}
+                            context={context}
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+const TableView3 = ({
+  data,
   columns,
   columnVisibility,
   hasTopBorder = false,
@@ -560,7 +1166,7 @@ const TableView = ({
 
   const table = useReactTable({
     columns,
-    data: rowData,
+    data,
     initialState: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
@@ -773,18 +1379,14 @@ const TableViewWrapper = (props: TableProps) => {
   // );
 
   return props.data ? (
-    <div>
-      {/* Render column selector UI */}
-      {/* {renderColumnSelector()}  */}
-      <TableView
-        rowData={rowData}
-        columns={columns} // Use filtered columns for the table
-        columnVisibility={columnVisibility}
-        hasTopBorder={!!props.title}
-        filterEnabled={props.filterEnabled}
-        context={props.context}
-      />
-    </div>
+    <TableViewVirtualizedRows
+      data={rowData}
+      columns={columns} // Use filtered columns for the table
+      columnVisibility={columnVisibility}
+      hasTopBorder={!!props.title}
+      filterEnabled={props.filterEnabled}
+      context={props.context}
+    />
   ) : null;
 };
 
@@ -897,4 +1499,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableView, TableViewWrapper };
+export { TableViewWrapper };
