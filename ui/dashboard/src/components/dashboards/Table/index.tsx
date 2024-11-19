@@ -24,18 +24,22 @@ import {
 } from "../common";
 import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
+import { createPortal } from "react-dom";
 import {
   flexRender,
   getCoreRowModel,
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
+import { formatDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { KeyValuePairs, RowRenderResult } from "../common/types";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
@@ -133,6 +137,7 @@ type CellValueProps = {
     context?: string,
   ) => void;
   filterEnabled?: boolean;
+  isScrolling?: boolean;
   context?: string;
 };
 
@@ -141,14 +146,19 @@ const CellValue = ({
   rowIndex,
   rowTemplateData,
   value,
-  showTitle = false,
   addFilter,
+  showTitle = false,
   filterEnabled = false,
+  isScrolling = false,
   context = "",
 }: CellValueProps) => {
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [referenceElement, setReferenceElement] = useState();
+  const [showCellControls, setShowCellControls] = useState<boolean>(false);
+  // const [popperElement, setPopperElement] = useState();
+  // const { styles, attributes } = usePopper(referenceElement, popperElement);
 
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
@@ -180,7 +190,7 @@ const CellValue = ({
 
   let cellContent;
   if (value === null || value === undefined) {
-    cellContent = href ? (
+    return href ? (
       <ExternalLink
         to={href}
         className="link-highlight"
@@ -255,7 +265,7 @@ const CellValue = ({
         ))}
       </div>
     );
-  } else if (dataType === "bool") {
+  } else if (dataType === "bool" || dataType === "boolean") {
     cellContent = href ? (
       <ExternalLink
         to={href}
@@ -272,22 +282,7 @@ const CellValue = ({
         <>{value.toString()}</>
       </span>
     );
-  } else if (dataType === "jsonb" || isObject(value)) {
-    const asJsonString = JSON.stringify(value, null, 2);
-    cellContent = href ? (
-      <ExternalLink
-        to={href}
-        className="link-highlight"
-        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
-      >
-        <>{asJsonString}</>
-      </ExternalLink>
-    ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
-        {asJsonString}
-      </span>
-    );
-  } else if (dataType === "text") {
+  } else if (dataType === "text" || dataType === "varchar") {
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
         <ExternalLink
@@ -311,7 +306,41 @@ const CellValue = ({
           {mdMatch[1]}
         </ExternalLink>
       );
+    } else {
+      cellContent = href ? (
+        <ExternalLink
+          to={href}
+          className="link-highlight tabular-nums"
+          title={showTitle ? `${column.title}=${value}` : undefined}
+        >
+          {value}
+        </ExternalLink>
+      ) : (
+        <span
+          className="tabular-nums"
+          title={showTitle ? `${column.title}=${value}` : undefined}
+        >
+          {value}
+        </span>
+      );
     }
+  } else if (dataType === "date") {
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {formatDate(value)}
+      </ExternalLink>
+    ) : (
+      <span
+        className="tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {formatDate(value)}
+      </span>
+    );
   } else if (dataType === "timestamp" || dataType === "timestamptz") {
     cellContent = href ? (
       <ExternalLink
@@ -327,6 +356,25 @@ const CellValue = ({
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
+      </span>
+    );
+  } else if (
+    dataType === "jsonb" ||
+    dataType === "varchar[]" ||
+    isObject(value)
+  ) {
+    const asJsonString = JSON.stringify(value, null, 2);
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight"
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
+        <>{asJsonString}</>
+      </ExternalLink>
+    ) : (
+      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
+        {asJsonString}
       </span>
     );
   } else if (isNumericCol(dataType)) {
@@ -370,27 +418,126 @@ const CellValue = ({
     <span className="flex items-center space-x-2" title={error}>
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
+  ) : isScrolling || !filterEnabled || !addFilter ? (
+    cellContent
   ) : (
-    <div className="flex items-center space-x-2 group">
+    <div
+      ref={setReferenceElement}
+      className="w-full"
+      onMouseEnter={() => setShowCellControls(true)}
+      onMouseLeave={() => setShowCellControls(false)}
+    >
       {cellContent}
-      {/*{filterEnabled && addFilter && (*/}
-      {/*  <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100">*/}
-      {/*    <button*/}
-      {/*      onClick={() => addFilter("equal", column.name, value, context)}*/}
-      {/*      className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"*/}
-      {/*      title="Add value to include filter"*/}
-      {/*    >*/}
-      {/*      <Icon className="h-5 w-5" icon="add_circle" />*/}
-      {/*    </button>*/}
-      {/*    <button*/}
-      {/*      onClick={() => addFilter("not_equal", column.name, value, context)}*/}
-      {/*      className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"*/}
-      {/*      title="Add value to exclude filter"*/}
-      {/*    >*/}
-      {/*      <Icon className="h-5 w-5" icon="do_not_disturb_on" />*/}
-      {/*    </button>*/}
-      {/*  </div>*/}
-      {/*)}*/}
+      {showCellControls && (
+        <CellControls
+          referenceElement={referenceElement}
+          column={column}
+          value={value}
+          context={context}
+          addFilter={addFilter}
+        />
+      )}
+    </div>
+    // <Popover className="relative">
+    //   <Popover.Button ref={setReferenceElement} as="div">
+    //     {cellContent}
+    //   </Popover.Button>
+    //
+    //   <Popover.Panel
+    //     ref={setPopperElement}
+    //     style={styles.popper}
+    //     {...attributes.popper}
+    //     className="absolute z-10"
+    //   >
+    //     <div className="absolute left-full right-auto z-50 flex items-center space-x-1">
+    //       <div
+    //         onClick={() => addFilter("equal", column.name, value, context)}
+    //         className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+    //         title="Filter by this value"
+    //       >
+    //         <Icon className="h-5 w-5" icon="add_circle" />
+    //       </div>
+    //       <div
+    //         onClick={() => addFilter("not_equal", column.name, value, context)}
+    //         className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
+    //         title="Exclude value from results"
+    //       >
+    //         <Icon className="h-5 w-5" icon="do_not_disturb_on" />
+    //       </div>
+    //     </div>
+    //   </Popover.Panel>
+    // </Popover>
+  );
+};
+
+const CellControls = ({
+  referenceElement,
+  column,
+  value,
+  context,
+  addFilter,
+}) => {
+  const [popperElement, setPopperElement] = useState(null);
+  // Need to define memoized / stable modifiers else the usePopper hook will infinitely re-render
+  // const noFlip = useMemo(() => ({ name: "flip", enabled: false }), []);
+  const offset = useMemo(() => {
+    return {
+      name: "offset",
+      options: {
+        offset: [4, 1],
+      },
+    };
+  }, []);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [offset],
+    placement: "right-end",
+  });
+
+  return (
+    <>
+      {createPortal(
+        <ThemeProvider>
+          <ThemeWrapper>
+            <div
+              // @ts-ignore
+              ref={setPopperElement}
+              style={{ ...styles.popper }}
+              {...attributes.popper}
+            >
+              <div className="flex border border-black-scale-3 rounded-md divide-x divide-divide">
+                <CellControl
+                  icon="add_circle"
+                  title="Filter by this value"
+                  onClick={() =>
+                    addFilter("equal", column.name, value, context)
+                  }
+                />
+                <CellControl
+                  icon="do_not_disturb_on"
+                  title="Exclude value from results"
+                  onClick={() =>
+                    addFilter("not_equal", column.name, value, context)
+                  }
+                />
+              </div>
+            </div>
+          </ThemeWrapper>
+        </ThemeProvider>,
+        // @ts-ignore as this element definitely exists
+        document.getElementById("portals"),
+      )}
+    </>
+  );
+};
+
+const CellControl = ({ icon, title, onClick }) => {
+  return (
+    <div
+      onClick={onClick}
+      className="px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground hover:bg-dashboard"
+      title={title}
+    >
+      <Icon className="h-4 w-4" icon={icon} />
     </div>
   );
 };
@@ -797,8 +944,6 @@ const useTableFilters = () => {
 //       (virtualColumns[virtualColumns.length - 1]?.end ?? 0);
 //   }
 //
-//   console.log({ rows, data, visibleColumns, virtualColumns, virtualRows });
-//
 //   //All important CSS styles are included as inline styles for this example. This is not recommended for your code.
 //   return (
 //     <div
@@ -922,6 +1067,38 @@ const useTableFilters = () => {
 //   );
 // };
 
+const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
+  const isScrolling = useRef<boolean>(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const handleScroll = () => {
+    if (!isScrolling.current) {
+      isScrolling.current = true;
+    }
+
+    clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      isScrolling.current = false;
+    }, 200); // Wait for 200ms after scrolling stops
+  };
+
+  useEffect(() => {
+    if (!scrollElement) {
+      return;
+    }
+
+    scrollElement.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      scrollElement.removeEventListener("scroll", handleScroll);
+      isScrolling.current = false;
+      clearTimeout(scrollTimeout.current);
+    };
+  }, [scrollElement]);
+
+  return isScrolling.current;
+};
+
 const TableViewVirtualizedRows = ({
   data,
   columns,
@@ -934,6 +1111,8 @@ const TableViewVirtualizedRows = ({
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
+  // const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const isScrolling = useDisableHoverOnScroll(parentRef.current);
 
   const table = useReactTable<KeyValuePairs>({
     data,
@@ -1117,8 +1296,9 @@ const TableViewVirtualizedRows = ({
                             rowIndex={index}
                             rowTemplateData={rowTemplateData}
                             value={cell.getValue()}
-                            addFilter={addFilter}
                             filterEnabled={filterEnabled}
+                            isScrolling={isScrolling}
+                            addFilter={addFilter}
                             context={context}
                           />
                         </td>
@@ -1283,7 +1463,6 @@ const TableView3 = ({
             return (
               <tr key={row.id}>
                 {row.getVisibleCells().map((cell) => {
-                  // console.log(cell.column.columnDef);
                   return (
                     <td
                       key={cell.id}
