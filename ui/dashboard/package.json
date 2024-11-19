@@ -21,6 +21,7 @@
     "@popperjs/core": "2.11.8",
     "@supabase/sql-formatter": "4.0.3",
     "@tanstack/react-table": "8.20.5",
+    "@tanstack/react-virtual": "3.10.9",
     "color-convert": "2.0.1",
     "copy-to-clipboard": "3.3.3",
     "dagre": "0.8.5",

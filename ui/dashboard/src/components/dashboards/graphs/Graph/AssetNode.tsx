@@ -265,7 +265,7 @@ const AssetNode = ({
       return;
     }
     setRenderedHref(withSearchPathPrefix);
-  }, [id, renderedHref, renderResults]);
+  }, [id, renderedHref, renderResults, searchPathPrefix]);
 
   const isExpandedNode = useMemo(
     () => !!expandedNodes[id],

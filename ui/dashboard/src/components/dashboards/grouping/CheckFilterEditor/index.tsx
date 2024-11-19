@@ -39,13 +39,13 @@ type CheckFilterTypeSelectProps = {
   update: (index: number, updatedItem: CheckFilter) => void;
 };
 
-type CheckFilterKeySelectProps = {
-  index: number;
-  item: CheckFilter;
-  type: CheckFilterType;
-  update: (index: number, updatedItem: CheckFilter) => void;
-  filterKey: string | undefined;
-};
+// type CheckFilterKeySelectProps = {
+//   index: number;
+//   item: CheckFilter;
+//   type: CheckFilterType;
+//   update: (index: number, updatedItem: CheckFilter) => void;
+//   filterKey: string | undefined;
+// };
 
 type CheckFilterValueSelectProps = {
   className?: string;
@@ -98,7 +98,7 @@ const CheckFilterTypeSelect = ({
   const allFilters = useMemo(
     () =>
       Object.entries(filterValues || {})
-        .reduce((acc: any[], [key, value]): any[] => {
+        .reduce((acc: any[], [key]): any[] => {
           if (filterValues[key]?.hasOwnProperty("key")) {
             let group: any = {
               label: filterTypeMap[key],
@@ -164,7 +164,7 @@ const CheckFilterTypeSelect = ({
         // @ts-ignore
         !existingTypes.includes(t?.value),
     );
-  }, [filter, type]);
+  }, [allFilters, filter, type]);
 
   const styles = useSelectInputStyles();
 
@@ -211,60 +211,60 @@ const CheckFilterTypeSelect = ({
   );
 };
 
-const CheckFilterKeySelect = ({
-  index,
-  item,
-  type,
-  filterKey,
-  update,
-}: CheckFilterKeySelectProps) => {
-  const [currentKey, setCurrentKey] = useState(filterKey);
-  const { context: filterValues } = useDashboardControls();
-
-  useDeepCompareEffect(() => {
-    update(index, {
-      ...item,
-      key: currentKey,
-    });
-  }, [currentKey, index, item]);
-
-  const keys = useMemo(() => {
-    return Object.keys(filterValues ? filterValues[type]?.key || {} : {}).map(
-      (k) => ({
-        value: k,
-        label: k,
-      }),
-    );
-  }, [filterValues, type]);
-
-  const styles = useSelectInputStyles();
-
-  return (
-    <Select
-      className="basic-single"
-      classNamePrefix="select"
-      components={{
-        // @ts-ignore
-        MultiValueLabel: MultiValueLabelWithTags,
-        // @ts-ignore
-        Option: OptionWithTags,
-        // @ts-ignore
-        SingleValue: SingleValueWithTags,
-      }}
-      // @ts-ignore as this element definitely exists
-      menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) =>
-        setCurrentKey((t as SelectOption).value as CheckDisplayGroupType)
-      }
-      options={keys}
-      inputId={`${type}.input`}
-      placeholder={`Choose a ${type}…`}
-      // @ts-ignore
-      styles={styles}
-      value={keys.find((t) => t.value === filterKey)}
-    />
-  );
-};
+// const CheckFilterKeySelect = ({
+//   index,
+//   item,
+//   type,
+//   filterKey,
+//   update,
+// }: CheckFilterKeySelectProps) => {
+//   const [currentKey, setCurrentKey] = useState(filterKey);
+//   const { context: filterValues } = useDashboardControls();
+//
+//   useDeepCompareEffect(() => {
+//     update(index, {
+//       ...item,
+//       key: currentKey,
+//     });
+//   }, [currentKey, index, item]);
+//
+//   const keys = useMemo(() => {
+//     return Object.keys(filterValues ? filterValues[type]?.key || {} : {}).map(
+//       (k) => ({
+//         value: k,
+//         label: k,
+//       }),
+//     );
+//   }, [filterValues, type]);
+//
+//   const styles = useSelectInputStyles();
+//
+//   return (
+//     <Select
+//       className="basic-single"
+//       classNamePrefix="select"
+//       components={{
+//         // @ts-ignore
+//         MultiValueLabel: MultiValueLabelWithTags,
+//         // @ts-ignore
+//         Option: OptionWithTags,
+//         // @ts-ignore
+//         SingleValue: SingleValueWithTags,
+//       }}
+//       // @ts-ignore as this element definitely exists
+//       menuPortalTarget={document.getElementById("portals")}
+//       onChange={(t) =>
+//         setCurrentKey((t as SelectOption).value as CheckDisplayGroupType)
+//       }
+//       options={keys}
+//       inputId={`${type}.input`}
+//       placeholder={`Choose a ${type}…`}
+//       // @ts-ignore
+//       styles={styles}
+//       value={keys.find((t) => t.value === filterKey)}
+//     />
+//   );
+// };
 
 const CheckFilterValueSelect = ({
   className,
@@ -300,7 +300,7 @@ const CheckFilterValueSelect = ({
       );
       return keys
         .filter(([k]) => k === item?.key)
-        .flatMap(([k, v]) => {
+        .flatMap(([, v]) => {
           const keys = Object.keys(v as any);
           return keys.map((key) => ({
             value: key,

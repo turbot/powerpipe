@@ -3612,7 +3612,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@tanstack/react-virtual@npm:^3.0.0-beta.60":
+"@tanstack/react-virtual@npm:3.10.9, @tanstack/react-virtual@npm:^3.0.0-beta.60":
   version: 3.10.9
   resolution: "@tanstack/react-virtual@npm:3.10.9"
   dependencies:
@@ -14600,6 +14600,7 @@ __metadata:
     "@tailwindcss/line-clamp": "npm:0.4.4"
     "@tailwindcss/typography": "npm:0.5.15"
     "@tanstack/react-table": "npm:8.20.5"
+    "@tanstack/react-virtual": "npm:3.10.9"
     "@testing-library/dom": "npm:10.4.0"
     "@testing-library/jest-dom": "npm:6.6.3"
     "@testing-library/react": "npm:16.0.1"

@@ -78,7 +78,7 @@ const RowPropertyItemValue = ({
       setHref(null);
       setError(renderedTemplateForProperty.error);
     }
-  }, [name, rowTemplateData]);
+  }, [name, rowTemplateData, searchPathPrefix]);
 
   const wrapClassName = wrap ? "whitespace-normal" : "truncate";
   const linkClassName = classNames("link-highlight", wrapClassName);
