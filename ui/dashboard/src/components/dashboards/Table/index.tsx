@@ -56,12 +56,19 @@ type TableColumnInfo = {
 const getColumns = (
   cols: LeafNodeDataColumn[],
   properties?: TableProperties,
-): { columns: TableColumnInfo[]; hiddenColumns: string[] } => {
+): {
+  columns: TableColumnInfo[];
+  columnVisibility: {
+    [key: string]: boolean;
+  };
+} => {
   if (!cols || cols.length === 0) {
-    return { columns: [], hiddenColumns: [] };
+    return { columns: [], columnVisibility: {} };
   }
 
-  const hiddenColumns: string[] = [];
+  const columnVisibility: {
+    [key: string]: boolean;
+  } = {};
   const columns: TableColumnInfo[] = cols.map((col) => {
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
@@ -72,7 +79,7 @@ const getColumns = (
     ) {
       const c = properties.columns[col.original_name || col.name];
       if (c.display === "none") {
-        hiddenColumns.push(col.name);
+        columnVisibility[col.name] = false;
       }
       if (c.wrap) {
         colWrap = c.wrap as TableColumnWrap;
@@ -96,7 +103,7 @@ const getColumns = (
     }
     return colInfo;
   });
-  return { columns, hiddenColumns };
+  return { columns, columnVisibility };
 };
 
 const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
@@ -525,7 +532,7 @@ const useTableFilters = () => {
 const TableView = ({
   rowData,
   columns,
-  hiddenColumns,
+  columnVisibility,
   hasTopBorder = false,
   filterEnabled = false,
   context = "",
@@ -554,36 +561,36 @@ const TableView = ({
   const table = useReactTable({
     columns,
     data: rowData,
-    // initialState: { hiddenColumns },
+    initialState: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
   const rows = table.getRowModel().rows;
 
-  // useDeepCompareEffect(() => {
-  //   if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
-  //     setRowTemplateData([]);
-  //     return;
-  //   }
-  //
-  //   const doRender = async () => {
-  //     const templates = Object.fromEntries(
-  //       columns
-  //         .filter((col) => col.display !== "none" && !!col.href_template)
-  //         .map((col) => [col.name, col.href_template as string]),
-  //     );
-  //     if (isEmpty(templates)) {
-  //       setRowTemplateData([]);
-  //       return;
-  //     }
-  //     const data = rows.map((row) => row.values);
-  //     const renderedResults = await renderTemplates(templates, data);
-  //     setRowTemplateData(renderedResults || []);
-  //   };
-  //
-  //   doRender();
-  // }, [columns, renderTemplates, rows, templateRenderReady]);
+  useDeepCompareEffect(() => {
+    if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
+      setRowTemplateData([]);
+      return;
+    }
+
+    const doRender = async () => {
+      const templates = Object.fromEntries(
+        columns
+          .filter((col) => col.display !== "none" && !!col.href_template)
+          .map((col) => [col.name, col.href_template as string]),
+      );
+      if (isEmpty(templates)) {
+        setRowTemplateData([]);
+        return;
+      }
+      const data = rows.map((row) => row.original);
+      const renderedResults = await renderTemplates(templates, data);
+      setRowTemplateData(renderedResults || []);
+    };
+
+    doRender();
+  }, [columns, renderTemplates, rows, templateRenderReady]);
 
   return (
     <div>
@@ -640,16 +647,16 @@ const TableView = ({
                     header.column.columnDef.header,
                     header.getContext(),
                   )}
-                  {header.isSortedDesc ? (
-                    <SortDescendingIcon className="inline-block h-4 w-4" />
-                  ) : (
-                    <SortAscendingIcon
-                      className={classNames(
-                        "inline-block h-4 w-4",
-                        !header.isSorted ? "invisible" : null,
-                      )}
-                    />
-                  )}
+                  {{
+                    asc: (
+                      <SortAscendingIcon
+                        className={classNames("inline-block h-4 w-4")}
+                      />
+                    ),
+                    desc: (
+                      <SortDescendingIcon className="inline-block h-4 w-4" />
+                    ),
+                  }[header.column.getIsSorted() as string] ?? null}
                 </th>
               ))}
             </tr>
@@ -711,7 +718,7 @@ const TableView = ({
 
 // TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
-  const { columns, hiddenColumns } = useMemo(
+  const { columns, columnVisibility } = useMemo(
     () => getColumns(props.data ? props.data.columns : [], props.properties),
     [props.data, props.properties],
   );
@@ -772,7 +779,7 @@ const TableViewWrapper = (props: TableProps) => {
       <TableView
         rowData={rowData}
         columns={columns} // Use filtered columns for the table
-        hiddenColumns={hiddenColumns}
+        columnVisibility={columnVisibility}
         hasTopBorder={!!props.title}
         filterEnabled={props.filterEnabled}
         context={props.context}
