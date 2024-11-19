@@ -316,10 +316,7 @@ const AssetNode = ({
     <div className="relative">
       {!renderedHref && innerIcon}
       {renderedHref && (
-        <ExternalLink
-          className="block flex flex-col items-center"
-          to={renderedHref}
-        >
+        <ExternalLink className="flex flex-col items-center" to={renderedHref}>
           {innerIcon}
         </ExternalLink>
       )}
@@ -365,10 +362,7 @@ const AssetNode = ({
     <>
       {!renderedHref && innerNodeLabel}
       {renderedHref && (
-        <ExternalLink
-          className="block flex flex-col items-center"
-          to={renderedHref}
-        >
+        <ExternalLink className="flex flex-col items-center" to={renderedHref}>
           {innerNodeLabel}
         </ExternalLink>
       )}
