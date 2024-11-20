@@ -2179,12 +2179,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@heroicons/react@npm:2.1.5":
-  version: 2.1.5
-  resolution: "@heroicons/react@npm:2.1.5"
+"@heroicons/react@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@heroicons/react@npm:2.2.0"
   peerDependencies:
-    react: ">= 16"
-  checksum: 10c0/d0ca2d017545da103ed8e90e9e6679d46329c1b09bb4c06ff509b0fe7cfbba7034409ea24b0469fabd2a0a9b144e8e717f58de924615e0b0a1bed7b51fcc5940
+    react: ">= 16 || ^19.0.0-rc"
+  checksum: 10c0/f8d3cf689b56716339c91df3542f3948115042d1e70e6bc940a3f3e347c0bc78b56aa563917fbd7ce097fe2f38ebb21bffb0db39be914cbc545a754bddae9ab4
   languageName: node
   linkType: hard
 
@@ -4374,12 +4374,21 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/node@npm:*, @types/node@npm:22.9.0, @types/node@npm:^22.0.0":
+"@types/node@npm:*, @types/node@npm:^22.0.0":
   version: 22.9.0
   resolution: "@types/node@npm:22.9.0"
   dependencies:
     undici-types: "npm:~6.19.8"
   checksum: 10c0/3f46cbe0a49bab4ba30494025e4c8a6e699b98ac922857aa1f0209ce11a1313ee46e6808b8f13fe5b8b960a9d7796b77c8d542ad4e9810e85ef897d5593b5d51
+  languageName: node
+  linkType: hard
+
+"@types/node@npm:22.9.1":
+  version: 22.9.1
+  resolution: "@types/node@npm:22.9.1"
+  dependencies:
+    undici-types: "npm:~6.19.8"
+  checksum: 10c0/ea489ae603aa8874e4e88980aab6f2dad09c755da779c88dd142983bfe9609803c89415ca7781f723072934066f63daf2b3339ef084a8ad1a8079cf3958be243
   languageName: node
   linkType: hard
 
@@ -14583,7 +14592,7 @@ __metadata:
     "@chromatic-com/storybook": "npm:3.2.2"
     "@craco/craco": "npm:7.1.0"
     "@headlessui/react": "npm:1.7.19"
-    "@heroicons/react": "npm:2.1.5"
+    "@heroicons/react": "npm:2.2.0"
     "@material-symbols/svg-300": "npm:0.27.0"
     "@popperjs/core": "npm:2.11.8"
     "@storybook/addon-actions": "npm:8.4.4"
@@ -14608,7 +14617,7 @@ __metadata:
     "@types/echarts": "npm:4.9.22"
     "@types/jest": "npm:29.5.14"
     "@types/lodash": "npm:4.17.13"
-    "@types/node": "npm:22.9.0"
+    "@types/node": "npm:22.9.1"
     "@types/react": "npm:18.3.12"
     "@types/react-dom": "npm:18.3.1"
     autoprefixer: "npm:10.4.20"
@@ -14649,7 +14658,7 @@ __metadata:
     react-select: "npm:5.8.3"
     react-syntax-highlighter: "npm:15.6.1"
     react-time-picker: "npm:7.0.0"
-    react-use-websocket: "npm:4.11.0"
+    react-use-websocket: "npm:4.11.1"
     reactflow: "npm:11.11.4"
     remark-gfm: "npm:4.0.0"
     semver: "npm:7.6.3"
@@ -15408,10 +15417,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-use-websocket@npm:4.11.0":
-  version: 4.11.0
-  resolution: "react-use-websocket@npm:4.11.0"
-  checksum: 10c0/4ff2ecc2efc70bb33d54066d1d3b56673dde04376647bee593485f17df74984a2af05cd7685c7f6a8ec779bb3d4febf90aaf57a0930ddad8b51aa424caaaf733
+"react-use-websocket@npm:4.11.1":
+  version: 4.11.1
+  resolution: "react-use-websocket@npm:4.11.1"
+  checksum: 10c0/c60a6976b8944f049871ecd86306b0fffa4aa4412090dec11ee8ed037bde49c8f21689525ff0fa8e0a2a50aa8787c8f4ef044cadc80fc5b6be009a51d58d4347
   languageName: node
   linkType: hard
 
