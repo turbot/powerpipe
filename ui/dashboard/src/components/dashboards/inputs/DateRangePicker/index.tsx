@@ -13,7 +13,6 @@ import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useState, useRef, useEffect } from "react";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
-// import "./DateRangePicker.css";
 dayjs.extend(utc);
 
 const presets = [
@@ -436,7 +435,7 @@ const DateRangePicker = (props: InputProps) => {
                             from.getDate(),
                             tempState.from.hour(),
                             tempState.from.minute(),
-                            tempState.from.second()
+                            tempState.from.second(),
                           );
                           const newTo = new Date(
                             to.getFullYear(),
@@ -444,7 +443,7 @@ const DateRangePicker = (props: InputProps) => {
                             to.getDate(),
                             tempState.to?.hour() || 0,
                             tempState.to?.minute() || 0,
-                            tempState.to?.second() || 0
+                            tempState.to?.second() || 0,
                           );
                           const parsedFrom = dayjs(newFrom).utc();
                           const parsedTo = dayjs(newTo).utc();
@@ -482,7 +481,7 @@ const DateRangePicker = (props: InputProps) => {
                             setTempState((previous) => ({
                               ...previous,
                               from: dayjs(
-                                `${tempState.from.format("YYYY")}-${tempState.from.format("MM")}-${tempState.from.format("DD")} ${e.target.value}`
+                                `${tempState.from.format("YYYY")}-${tempState.from.format("MM")}-${tempState.from.format("DD")} ${e.target.value}`,
                               ),
                             }));
                           }}
@@ -518,7 +517,7 @@ const DateRangePicker = (props: InputProps) => {
                             setTempState((previous) => ({
                               ...previous,
                               from: dayjs(
-                                `${toTime.format("YYYY")}-${toTime.format("MM")}-${toTime.format("DD")} ${e.target.value}`
+                                `${toTime.format("YYYY")}-${toTime.format("MM")}-${toTime.format("DD")} ${e.target.value}`,
                               ),
                             }));
                           }}
