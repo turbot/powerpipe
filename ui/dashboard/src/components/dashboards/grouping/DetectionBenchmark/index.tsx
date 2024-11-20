@@ -191,24 +191,24 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.critical`,
       width: 2,
-      display_type: criticalTotal > 0 ? "severity" : "",
+      display_type: criticalTotal > 0 ? "severity-critical" : "",
       properties: {
         loading: criticalTotal === 0 && props.grouping.status === "running",
         label: "Critical",
         value: criticalTotal,
-        icon: "materialsymbols-solid:warning",
+        icon: "materialsymbols-solid:pulse_alert",
       },
       diff_panel: diff_severity_summary
         ? {
             name: `${props.definition.name}.container.summary.severity.diff.critical`,
             width: 2,
-            display_type: criticalDiffTotal > 0 ? "severity" : "",
+            display_type: criticalDiffTotal > 0 ? "severity-critical" : "",
             properties: {
               loading:
                 criticalDiffTotal === 0 && props.grouping.status === "running",
               label: "Critical",
               value: criticalDiffTotal,
-              icon: "materialsymbols-solid:warning",
+              icon: "materialsymbols-solid:pulse_alert",
             },
           }
         : null,
@@ -220,7 +220,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.high`,
       width: 2,
-      display_type: highTotal > 0 ? "severity" : "",
+      display_type: highTotal > 0 ? "severity-high" : "",
       properties: {
         loading: highTotal === 0 && props.grouping.status === "running",
         label: "High",
@@ -231,7 +231,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         ? {
             name: `${props.definition.name}.container.summary.severity.diff.high`,
             width: 2,
-            display_type: diffHighTotal > 0 ? "severity" : "",
+            display_type: diffHighTotal > 0 ? "severity-high" : "",
             properties: {
               loading: highTotal === 0 && props.grouping.status === "running",
               label: "High",
@@ -248,23 +248,23 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.medium`,
       width: 2,
-      display_type: mediumTotal > 0 ? "severity" : "",
+      display_type: mediumTotal > 0 ? "severity-medium" : "",
       properties: {
         loading: mediumTotal === 0 && props.grouping.status === "running",
         label: "Medium",
         value: mediumTotal,
-        icon: "materialsymbols-solid:warning",
+        icon: "materialsymbols-solid:campaign",
       },
       diff_panel: diff_severity_summary
         ? {
             name: `${props.definition.name}.container.summary.severity.diff.medium`,
             width: 2,
-            display_type: mediumDiffTotal > 0 ? "severity" : "",
+            display_type: mediumDiffTotal > 0 ? "severity-medium" : "",
             properties: {
               loading: mediumTotal === 0 && props.grouping.status === "running",
               label: "Medium",
               value: mediumDiffTotal,
-              icon: "materialsymbols-solid:warning",
+              icon: "materialsymbols-solid:campaign",
             },
           }
         : null,
@@ -276,23 +276,23 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.low`,
       width: 2,
-      display_type: lowTotal > 0 ? "severity" : "",
+      display_type: lowTotal > 0 ? "severity-low" : "",
       properties: {
         loading: lowTotal === 0 && props.grouping.status === "running",
         label: "Low",
         value: lowTotal,
-        icon: "materialsymbols-solid:warning",
+        icon: "materialsymbols-solid:info",
       },
       diff_panel: diff_severity_summary
         ? {
             name: `${props.definition.name}.container.summary.severity.diff.low`,
             width: 2,
-            display_type: lowDiffTotal > 0 ? "severity" : "",
+            display_type: lowDiffTotal > 0 ? "severity-low" : "",
             properties: {
               loading: lowTotal === 0 && props.grouping.status === "running",
               label: "Low",
               value: lowDiffTotal,
-              icon: "materialsymbols-solid:warning",
+              icon: "materialsymbols-solid:info",
             },
           }
         : null,
