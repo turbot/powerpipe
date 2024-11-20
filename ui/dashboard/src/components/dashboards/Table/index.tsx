@@ -24,22 +24,34 @@ import {
 } from "../common";
 import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
-import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import {
+  flexRender,
+  getCoreRowModel,
+  getSortedRowModel,
+  useReactTable,
+} from "@tanstack/react-table";
+import { formatDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
+import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
-import { RowRenderResult } from "../common/types";
+import { KeyValuePairs, RowRenderResult } from "../common/types";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
-import { useSortBy, useTable } from "react-table";
+import { useVirtualizer } from "@tanstack/react-virtual";
+
+const ExternalLink = getComponent("external_link");
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
 
 type TableColumnInfo = {
-  Header: string;
+  header: string;
   title: string;
-  accessor: string;
+  accessorKey: string;
   name: string;
   data_type: string;
   display?: "all" | "none";
@@ -51,12 +63,19 @@ type TableColumnInfo = {
 const getColumns = (
   cols: LeafNodeDataColumn[],
   properties?: TableProperties,
-): { columns: TableColumnInfo[]; hiddenColumns: string[] } => {
+): {
+  columns: TableColumnInfo[];
+  columnVisibility: {
+    [key: string]: boolean;
+  };
+} => {
   if (!cols || cols.length === 0) {
-    return { columns: [], hiddenColumns: [] };
+    return { columns: [], columnVisibility: {} };
   }
 
-  const hiddenColumns: string[] = [];
+  const columnVisibility: {
+    [key: string]: boolean;
+  } = {};
   const columns: TableColumnInfo[] = cols.map((col) => {
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
@@ -67,7 +86,7 @@ const getColumns = (
     ) {
       const c = properties.columns[col.original_name || col.name];
       if (c.display === "none") {
-        hiddenColumns.push(col.name);
+        columnVisibility[col.name] = false;
       }
       if (c.wrap) {
         colWrap = c.wrap as TableColumnWrap;
@@ -78,9 +97,9 @@ const getColumns = (
     }
 
     const colInfo: TableColumnInfo = {
-      Header: col.original_name || col.name,
+      header: col.original_name || col.name,
       title: col.original_name || col.name,
-      accessor: col.name,
+      accessorKey: col.name,
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
@@ -91,7 +110,7 @@ const getColumns = (
     }
     return colInfo;
   });
-  return { columns, hiddenColumns };
+  return { columns, columnVisibility };
 };
 
 const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
@@ -118,6 +137,7 @@ type CellValueProps = {
     context?: string,
   ) => void;
   filterEnabled?: boolean;
+  isScrolling?: boolean;
   context?: string;
 };
 
@@ -126,22 +146,26 @@ const CellValue = ({
   rowIndex,
   rowTemplateData,
   value,
-  showTitle = false,
   addFilter,
+  showTitle = false,
   filterEnabled = false,
+  isScrolling = false,
   context = "",
 }: CellValueProps) => {
-  const ExternalLink = getComponent("external_link");
   const { searchPathPrefix } = useDashboard();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [referenceElement, setReferenceElement] = useState();
+  const [showCellControls, setShowCellControls] = useState<boolean>(false);
+  // const [popperElement, setPopperElement] = useState();
+  // const { styles, attributes } = usePopper(referenceElement, popperElement);
 
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
 
     if (!renderedTemplateObj) {
-      setHref(null);
-      setError(null);
+      setHref(() => null);
+      setError(() => null);
       return;
     }
     const renderedTemplateForColumn = renderedTemplateObj[column.name];
@@ -162,12 +186,11 @@ const CellValue = ({
       setHref(null);
       setError(renderedTemplateForColumn.error);
     }
-  }, [column, rowIndex, rowTemplateData]);
+  }, [column, rowIndex, rowTemplateData, searchPathPrefix]);
 
   let cellContent;
-  const dataType = column.data_type.toLowerCase();
   if (value === null || value === undefined) {
-    cellContent = href ? (
+    return href ? (
       <ExternalLink
         to={href}
         className="link-highlight"
@@ -183,7 +206,10 @@ const CellValue = ({
         <>null</>
       </span>
     );
-  } else if (dataType === "control_status") {
+  }
+
+  const dataType = column.data_type.toLowerCase();
+  if (dataType === "control_status") {
     switch (value) {
       case "alarm":
         cellContent = (
@@ -239,7 +265,7 @@ const CellValue = ({
         ))}
       </div>
     );
-  } else if (dataType === "bool") {
+  } else if (dataType === "bool" || dataType === "boolean") {
     cellContent = href ? (
       <ExternalLink
         to={href}
@@ -256,22 +282,7 @@ const CellValue = ({
         <>{value.toString()}</>
       </span>
     );
-  } else if (dataType === "jsonb" || isObject(value)) {
-    const asJsonString = JSON.stringify(value, null, 2);
-    cellContent = href ? (
-      <ExternalLink
-        to={href}
-        className="link-highlight"
-        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
-      >
-        <>{asJsonString}</>
-      </ExternalLink>
-    ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
-        {asJsonString}
-      </span>
-    );
-  } else if (dataType === "text") {
+  } else if (dataType === "text" || dataType === "varchar") {
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
         <ExternalLink
@@ -295,7 +306,41 @@ const CellValue = ({
           {mdMatch[1]}
         </ExternalLink>
       );
+    } else {
+      cellContent = href ? (
+        <ExternalLink
+          to={href}
+          className="link-highlight tabular-nums"
+          title={showTitle ? `${column.title}=${value}` : undefined}
+        >
+          {value}
+        </ExternalLink>
+      ) : (
+        <span
+          className="tabular-nums"
+          title={showTitle ? `${column.title}=${value}` : undefined}
+        >
+          {value}
+        </span>
+      );
     }
+  } else if (dataType === "date") {
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {formatDate(value)}
+      </ExternalLink>
+    ) : (
+      <span
+        className="tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {formatDate(value)}
+      </span>
+    );
   } else if (dataType === "timestamp" || dataType === "timestamptz") {
     cellContent = href ? (
       <ExternalLink
@@ -311,6 +356,25 @@ const CellValue = ({
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
+      </span>
+    );
+  } else if (
+    dataType === "jsonb" ||
+    dataType === "varchar[]" ||
+    isObject(value)
+  ) {
+    const asJsonString = JSON.stringify(value, null, 2);
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight"
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
+        <>{asJsonString}</>
+      </ExternalLink>
+    ) : (
+      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
+        {asJsonString}
       </span>
     );
   } else if (isNumericCol(dataType)) {
@@ -354,27 +418,97 @@ const CellValue = ({
     <span className="flex items-center space-x-2" title={error}>
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
+  ) : isScrolling || !filterEnabled || !addFilter ? (
+    cellContent
   ) : (
-    <div className="flex items-center space-x-2 group">
+    <div
+      ref={setReferenceElement}
+      className="w-full"
+      onMouseEnter={() => setShowCellControls(true)}
+      onMouseLeave={() => setShowCellControls(false)}
+    >
       {cellContent}
-      {filterEnabled && addFilter && (
-        <div className="flex items-center space-x-1 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-          <button
-            onClick={() => addFilter("equal", column.name, value, context)}
-            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-            title="Add value to include filter"
-          >
-            <Icon className="h-5 w-5" icon="add_circle" />
-          </button>
-          <button
-            onClick={() => addFilter("not_equal", column.name, value, context)}
-            className="text-black-scale-7 hover:text-black-scale-8 focus:outline-none"
-            title="Add value to exclude filter"
-          >
-            <Icon className="h-5 w-5" icon="do_not_disturb_on" />
-          </button>
-        </div>
+      {showCellControls && (
+        <CellControls
+          referenceElement={referenceElement}
+          column={column}
+          value={value}
+          context={context}
+          addFilter={addFilter}
+        />
       )}
+    </div>
+  );
+};
+
+const CellControls = ({
+  referenceElement,
+  column,
+  value,
+  context,
+  addFilter,
+}) => {
+  const [popperElement, setPopperElement] = useState(null);
+  // Need to define memoized / stable modifiers else the usePopper hook will infinitely re-render
+  // const noFlip = useMemo(() => ({ name: "flip", enabled: false }), []);
+  const offset = useMemo(() => {
+    return {
+      name: "offset",
+      options: {
+        offset: [4, 1],
+      },
+    };
+  }, []);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [offset],
+    placement: "right-end",
+  });
+
+  return (
+    <>
+      {createPortal(
+        <ThemeProvider>
+          <ThemeWrapper>
+            <div
+              // @ts-ignore
+              ref={setPopperElement}
+              style={{ ...styles.popper }}
+              {...attributes.popper}
+            >
+              <div className="flex border border-black-scale-3 rounded-md divide-x divide-divide">
+                <CellControl
+                  icon="add_circle"
+                  title="Filter by this value"
+                  onClick={() =>
+                    addFilter("equal", column.name, value, context)
+                  }
+                />
+                <CellControl
+                  icon="do_not_disturb_on"
+                  title="Exclude value from results"
+                  onClick={() =>
+                    addFilter("not_equal", column.name, value, context)
+                  }
+                />
+              </div>
+            </div>
+          </ThemeWrapper>
+        </ThemeProvider>,
+        // @ts-ignore as this element definitely exists
+        document.getElementById("portals"),
+      )}
+    </>
+  );
+};
+
+const CellControl = ({ icon, title, onClick }) => {
+  return (
+    <div
+      onClick={onClick}
+      className="px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground hover:bg-dashboard"
+      title={title}
+    >
+      <Icon className="h-4 w-4" icon={icon} />
     </div>
   );
 };
@@ -517,10 +651,42 @@ const useTableFilters = () => {
   };
 };
 
-const TableView = ({
-  rowData,
+const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
+  const isScrolling = useRef<boolean>(false);
+  const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
+
+  const handleScroll = () => {
+    if (!isScrolling.current) {
+      isScrolling.current = true;
+    }
+
+    clearTimeout(scrollTimeout.current);
+    scrollTimeout.current = setTimeout(() => {
+      isScrolling.current = false;
+    }, 200); // Wait for 200ms after scrolling stops
+  };
+
+  useEffect(() => {
+    if (!scrollElement) {
+      return;
+    }
+
+    scrollElement.addEventListener("scroll", handleScroll, { passive: true });
+
+    return () => {
+      scrollElement.removeEventListener("scroll", handleScroll);
+      isScrolling.current = false;
+      clearTimeout(scrollTimeout.current);
+    };
+  }, [scrollElement]);
+
+  return isScrolling.current;
+};
+
+const TableViewVirtualizedRows = ({
+  data,
   columns,
-  hiddenColumns,
+  columnVisibility,
   hasTopBorder = false,
   filterEnabled = false,
   context = "",
@@ -528,31 +694,31 @@ const TableView = ({
   const { filters, addFilter, removeFilter } = useTableFilters();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
+  const parentRef = useRef<HTMLDivElement>(null);
+  // const bodyRef = useRef<HTMLTableSectionElement>(null);
+  const isScrolling = useDisableHoverOnScroll(parentRef.current);
 
-  // const filteredData = useMemo(() => {
-  //   let filtered = rowData;
-  //
-  //   if (activeFilters.length > 0 || excludedFilters.length > 0) {
-  //     filtered = filtered.filter((row) => {
-  //       return (
-  //         activeFilters.every(
-  //           (filter) => row[filter.column] === filter.value,
-  //         ) &&
-  //         excludedFilters.every((filter) => row[filter.column] !== filter.value)
-  //       );
-  //     });
-  //   }
-  //
-  //   return filtered;
-  // }, [rowData, activeFilters, excludedFilters]);
+  const table = useReactTable<KeyValuePairs>({
+    data,
+    columns,
+    initialState: { columnVisibility },
+    getCoreRowModel: getCoreRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    //debugTable: true,
+  });
 
-  const { getTableProps, getTableBodyProps, headerGroups, prepareRow, rows } =
-    useTable(
-      { columns, data: rowData, initialState: { hiddenColumns } },
-      useSortBy,
-    );
+  const { rows } = table.getRowModel();
 
-  useDeepCompareEffect(() => {
+  const virtualizer = useVirtualizer({
+    count: rows.length,
+    getScrollElement: () => parentRef.current,
+    estimateSize: () => 46.5,
+    overscan: 10,
+  });
+
+  const virtualizedRows = virtualizer.getVirtualItems();
+
+  useEffect(() => {
     if (!templateRenderReady || columns.length === 0 || rows.length === 0) {
       setRowTemplateData([]);
       return;
@@ -568,13 +734,16 @@ const TableView = ({
         setRowTemplateData([]);
         return;
       }
-      const data = rows.map((row) => row.values);
+      const data = virtualizedRows.map((virtualRow) => {
+        const row = rows[virtualRow.index];
+        return row.original;
+      });
       const renderedResults = await renderTemplates(templates, data);
       setRowTemplateData(renderedResults || []);
     };
 
     doRender();
-  }, [columns, renderTemplates, rows, templateRenderReady]);
+  }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
   return (
     <div>
@@ -609,108 +778,130 @@ const TableView = ({
             })}
           </div>
         )}
-
-      <table
-        {...getTableProps()}
-        className={classNames(
-          "min-w-full divide-y divide-table-divide overflow-hidden",
-          hasTopBorder ? "border-t border-divide" : null,
-        )}
+      <div
+        ref={parentRef}
+        className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
       >
-        <thead className="text-table-head border-b border-divide">
-          {headerGroups.map((headerGroup) => {
-            const { key, ...otherHeaderGroupProps } =
-              headerGroup.getHeaderGroupProps();
-            return (
-              <tr key={key} {...otherHeaderGroupProps}>
-                {headerGroup.headers.map((column) => {
-                  const { key, ...otherHeaderProps } = column.getHeaderProps(
-                    column.getSortByToggleProps(),
-                  );
-                  return (
-                    <th
-                      key={key}
-                      {...otherHeaderProps}
-                      scope="col"
-                      className={classNames(
-                        "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                      )}
-                    >
-                      {column.render("Header")}
-                      {column.isSortedDesc ? (
-                        <SortDescendingIcon className="inline-block h-4 w-4" />
-                      ) : (
-                        <SortAscendingIcon
+        <div className={`h-[${virtualizer.getTotalSize()}px}]`}>
+          <table
+            className={classNames(
+              "w-full divide-y divide-table-divide",
+              hasTopBorder ? "border-t border-divide" : null,
+            )}
+          >
+            <thead className="text-table-head border-b border-divide">
+              {table.getHeaderGroups().map((headerGroup) => (
+                <tr key={headerGroup.id}>
+                  {headerGroup.headers.map((header) => {
+                    return (
+                      <th
+                        key={header.id}
+                        colSpan={header.colSpan}
+                        scope="col"
+                        className={classNames(
+                          "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                        )}
+                        //style={{ width: header.getSize() }}
+                      >
+                        {header.isPlaceholder ? null : (
+                          <div
+                            {...{
+                              className: header.column.getCanSort()
+                                ? "cursor-pointer select-none"
+                                : "",
+                              onClick: header.column.getToggleSortingHandler(),
+                            }}
+                          >
+                            {flexRender(
+                              header.column.columnDef.header,
+                              header.getContext(),
+                            )}
+                            {{
+                              asc: (
+                                <SortAscendingIcon
+                                  className={classNames("inline-block h-4 w-4")}
+                                />
+                              ),
+                              desc: (
+                                <SortDescendingIcon className="inline-block h-4 w-4" />
+                              ),
+                            }[header.column.getIsSorted() as string] ?? null}
+                          </div>
+                        )}
+                      </th>
+                    );
+                  })}
+                </tr>
+              ))}
+            </thead>
+            <tbody className="divide-y divide-table-divide">
+              {rows.length === 0 && (
+                <tr>
+                  <td
+                    className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                    colSpan={columns.length}
+                  >
+                    No results
+                  </td>
+                </tr>
+              )}
+              {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                const row = rows[virtualRow.index];
+                return (
+                  <tr
+                    key={row.id}
+                    style={{
+                      height: `${virtualRow.size}px`,
+                      transform: `translateY(${
+                        virtualRow.start - index * virtualRow.size
+                      }px)`,
+                    }}
+                  >
+                    {row.getVisibleCells().map((cell) => {
+                      return (
+                        <td
+                          key={cell.id}
                           className={classNames(
-                            "inline-block h-4 w-4",
-                            !column.isSorted ? "invisible" : null,
+                            "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
+                            isNumericCol(cell.column.columnDef.data_type)
+                              ? "text-right"
+                              : "",
+                            cell.column.columnDef.wrap === "all"
+                              ? "break-keep"
+                              : "whitespace-nowrap",
                           )}
-                        />
-                      )}
-                    </th>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </thead>
-        <tbody
-          {...getTableBodyProps()}
-          className="divide-y divide-table-divide"
-        >
-          {rows.length === 0 && (
-            <tr>
-              <td
-                className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
-                colSpan={columns.length}
-              >
-                No results
-              </td>
-            </tr>
-          )}
-          {rows.map((row, index) => {
-            prepareRow(row);
-            const { key, ...otherRowProps } = row.getRowProps();
-            return (
-              <tr key={key} {...otherRowProps}>
-                {row.cells.map((cell) => {
-                  const { key, ...otherCellProps } = cell.getCellProps();
-                  return (
-                    <td
-                      key={key}
-                      {...otherCellProps}
-                      className={classNames(
-                        "px-4 py-4 align-top content-center text-sm",
-                        isNumericCol(cell.column.data_type) ? "text-right" : "",
-                        cell.column.wrap === "all"
-                          ? "break-keep"
-                          : "whitespace-nowrap",
-                      )}
-                    >
-                      <MemoCellValue
-                        column={cell.column}
-                        rowIndex={index}
-                        rowTemplateData={rowTemplateData}
-                        value={cell.value}
-                        addFilter={addFilter}
-                        filterEnabled={filterEnabled}
-                        context={context}
-                      />
-                    </td>
-                  );
-                })}
-              </tr>
-            );
-          })}
-        </tbody>
-      </table>
+                        >
+                          {/*{flexRender(*/}
+                          {/*  cell.column.columnDef.cell,*/}
+                          {/*  cell.getContext(),*/}
+                          {/*)}*/}
+                          <CellValue
+                            column={cell.column.columnDef}
+                            rowIndex={index}
+                            rowTemplateData={rowTemplateData}
+                            value={cell.getValue()}
+                            filterEnabled={filterEnabled}
+                            isScrolling={isScrolling}
+                            addFilter={addFilter}
+                            context={context}
+                          />
+                        </td>
+                      );
+                    })}
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
   );
 };
 
 // TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
-  const { columns, hiddenColumns } = useMemo(
+  const { columns, columnVisibility } = useMemo(
     () => getColumns(props.data ? props.data.columns : [], props.properties),
     [props.data, props.properties],
   );
@@ -765,18 +956,14 @@ const TableViewWrapper = (props: TableProps) => {
   // );
 
   return props.data ? (
-    <div>
-      {/* Render column selector UI */}
-      {/* {renderColumnSelector()}  */}
-      <TableView
-        rowData={rowData}
-        columns={columns} // Use filtered columns for the table
-        hiddenColumns={hiddenColumns}
-        hasTopBorder={!!props.title}
-        filterEnabled={props.filterEnabled}
-        context={props.context}
-      />
-    </div>
+    <TableViewVirtualizedRows
+      data={rowData}
+      columns={columns} // Use filtered columns for the table
+      columnVisibility={columnVisibility}
+      hasTopBorder={!!props.title}
+      filterEnabled={props.filterEnabled}
+      context={props.context}
+    />
   ) : null;
 };
 
@@ -799,9 +986,9 @@ const LineView = (props: TableProps) => {
         props.properties.columns[col.original_name || col.name];
       const newColDef: TableColumnInfo = {
         ...col,
-        Header: col.original_name || col.name,
+        header: col.original_name || col.name,
         title: col.original_name || col.name,
-        accessor: col.name,
+        accessorKey: col.name,
         display: columnOverrides?.display ? columnOverrides.display : "all",
         wrap: columnOverrides?.wrap ? columnOverrides.wrap : "none",
         href_template: columnOverrides?.href,
@@ -889,4 +1076,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableView, TableViewWrapper };
+export { TableViewWrapper };

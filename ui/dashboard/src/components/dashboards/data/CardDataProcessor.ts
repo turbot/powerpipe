@@ -40,8 +40,6 @@ export type CardDataFormat = "simple" | "formal";
 export type CardType = "alert" | "info" | "ok" | "severity" | "table" | null;
 
 export class CardDataProcessor {
-  constructor() {}
-
   getDefaultState = (
     status: DashboardRunState,
     properties: CardProperties,

@@ -19,11 +19,6 @@ type DetectionSummaryChartProps = {
   firstChildSummaries: DetectionSummary[];
 };
 
-type ProgressBarGroupTotalProps = {
-  className?: string;
-  total: number;
-};
-
 const getWidth = (x, y) => {
   const percent = (x / (x + y)) * 100;
   return percent >= 0.5 ? Math.round(percent) : 1;
@@ -107,10 +102,12 @@ const DetectionSummaryChart = ({
             <ProgressBar
               className={classNames(
                 "border border-alert",
-                isRunning ? "summary-chart-alarm-animate" : "bg-alert"
+                isRunning ? "summary-chart-alarm-animate" : "bg-alert",
               )}
-              
-              percent={getDetectionSummaryChartPercent(summary.total, maxAlerts)}
+              percent={getDetectionSummaryChartPercent(
+                summary.total,
+                maxAlerts,
+              )}
             />
           </ProgressBarGroup>
         </div>
