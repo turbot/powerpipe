@@ -1,16 +1,26 @@
+// import DatePickerProvider, {
+//   Title,
+//   Header,
+//   WeekDays,
+//   DaySlots,
+// } from "headless-react-datepicker";
 import dayjs from "dayjs";
-import { Transition, Tab } from "@headlessui/react";
+import NeutralButton from "@powerpipe/components/forms/NeutralButton";
+import SubmitButton from "@powerpipe/components/forms/SubmitButton";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import utc from "dayjs/plugin/utc";
+import { classNames } from "@powerpipe/utils/styles";
 import { DashboardActions } from "@powerpipe/types";
-import { DayPicker } from "react-day-picker";
+import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import {
   IInput,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
+import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useState, useRef, useEffect } from "react";
+import { useEffect, useState } from "react";
+// import "headless-react-datepicker/dist/styles.css";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
 dayjs.extend(utc);
@@ -30,6 +40,292 @@ const timeOptions = {
   hours: [1, 2, 3, 6, 8, 12],
   days: [1, 2, 3, 4, 5, 6],
   weeks: [1, 2, 3, 4],
+};
+
+const CustomDatePicker = ({
+  duration,
+  tempState,
+  unitOfTime,
+  setDuration,
+  setTempState,
+  setUnitOfTime,
+  onApply,
+  onCancel,
+  onTimeOptionClick,
+}) => {
+  const defaultDayPickerClassNames = getDefaultClassNames();
+  const [tab, setTab] = useState("relative");
+  const tabClasses = (selected) =>
+    classNames(
+      "flex-1 py-2 cursor-pointer bg-dashboard-panel border text-center rounded-md focus:outline-none",
+      selected
+        ? "font-bold border border-divide"
+        : "text-foreground-light font-light border-dashboard-panel",
+    );
+  const presetClasses = (selected) =>
+    classNames(
+      "py-1.5 px-2.5 rounded-md cursor-pointer border bg-dashboard-panel",
+      selected
+        ? "font-bold border-divide"
+        : "text-foreground-light font-light border-dashboard-panel",
+    );
+
+  return (
+    <div className="border border-dashboard-panel rounded-md bg-dashboard p-3 space-y-3">
+      <Tab.Group
+        selectedIndex={tab === "relative" ? 0 : 1}
+        onChange={(index) => setTab(index === 0 ? "relative" : "absolute")}
+      >
+        <Tab.List className="flex gap-[10px] mb-[10px]">
+          <Tab className={({ selected }) => tabClasses(selected)}>Relative</Tab>
+          <Tab className={({ selected }) => tabClasses(selected)}>Absolute</Tab>
+        </Tab.List>
+        <Tab.Panels>
+          <Tab.Panel>
+            {/* Content for Relative Tab */}
+            <div className="space-y-3">
+              <div className="space-y-1">
+                <label>Minutes</label>
+                <div className="flex space-x-2">
+                  {timeOptions.minutes.map((min) => (
+                    <div
+                      key={min}
+                      onClick={() => onTimeOptionClick(min, "minute")}
+                      className={presetClasses(
+                        duration === min && unitOfTime === "minute",
+                      )}
+                    >
+                      {min}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label>Hours</label>
+                <div className="flex space-x-2">
+                  {timeOptions.hours.map((hour) => (
+                    <div
+                      key={hour}
+                      onClick={() => onTimeOptionClick(hour, "hour")}
+                      className={presetClasses(
+                        duration === hour && unitOfTime === "hour",
+                      )}
+                    >
+                      {hour}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label>Days</label>
+                <div className="flex space-x-2">
+                  {timeOptions.days.map((day) => (
+                    <div
+                      key={day}
+                      onClick={() => onTimeOptionClick(day, "day")}
+                      className={presetClasses(
+                        duration === day && unitOfTime === "day",
+                      )}
+                    >
+                      {day}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="space-y-1">
+                <label>Weeks</label>
+                <div className="flex space-x-2">
+                  {timeOptions.weeks.map((week) => (
+                    <div
+                      key={week}
+                      onClick={() => onTimeOptionClick(week, "week")}
+                      className={presetClasses(
+                        duration === week && unitOfTime === "week",
+                      )}
+                    >
+                      {week}
+                    </div>
+                  ))}
+                </div>
+              </div>
+              <div className="flex items-center space-x-3">
+                <label>Duration</label>
+                <input
+                  type="number"
+                  min={1}
+                  max={999999999999}
+                  value={duration}
+                  onChange={(e) => setDuration(Number(e.target.value))}
+                  className="flex-grow border border-divide rounded-md p-2 bg-dashboard-panel"
+                />
+                <select
+                  value={unitOfTime}
+                  onChange={(e) => setUnitOfTime(e.target.value)}
+                  className="block p-2 border border-divide rounded-md bg-dashboard"
+                >
+                  <option value="minute">Minutes</option>
+                  <option value="hour">Hours</option>
+                  <option value="day">Days</option>
+                  <option value="week">Weeks</option>
+                </select>
+              </div>
+            </div>
+          </Tab.Panel>
+          <Tab.Panel>
+            {/* Content for Absolute Tab */}
+            <div className="space-y-3">
+              <div className="">
+                {/*<DatePickerProvider isRange>*/}
+                {/*  <Title />*/}
+                {/*  <Header />*/}
+                {/*  <WeekDays />*/}
+                {/*  <DaySlots />*/}
+                {/*</DatePickerProvider>*/}
+                <DayPicker
+                  mode="range"
+                  selected={{
+                    from: tempState.from.utc().toDate(),
+                    to: tempState.to?.utc().toDate(),
+                  }}
+                  onSelect={({ from, to }) => {
+                    const newFrom = new Date(
+                      from.getFullYear(),
+                      from.getMonth(),
+                      from.getDate(),
+                      tempState.from.hour(),
+                      tempState.from.minute(),
+                      tempState.from.second(),
+                    );
+                    const newTo = new Date(
+                      to.getFullYear(),
+                      to.getMonth(),
+                      to.getDate(),
+                      tempState.to?.hour() || 0,
+                      tempState.to?.minute() || 0,
+                      tempState.to?.second() || 0,
+                    );
+                    const parsedFrom = dayjs(newFrom).utc();
+                    const parsedTo = dayjs(newTo).utc();
+                    setTempState((previous) => ({
+                      ...previous,
+                      from: parsedFrom,
+                      to: parsedTo,
+                    }));
+                  }}
+                  className="mx-auto bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light rounded-md p-2"
+                  classNames={{
+                    months_dropdown: classNames(
+                      defaultDayPickerClassNames.months_dropdown,
+                      "text-sm",
+                    ),
+                    months_caption: classNames(
+                      defaultDayPickerClassNames.months_caption,
+                      "text-sm",
+                    ),
+                    years_dropdown: classNames(
+                      defaultDayPickerClassNames.years_dropdown,
+                      "text-sm",
+                    ),
+                    range_start: classNames(
+                      defaultDayPickerClassNames.range_start,
+                      "bg-dashboard",
+                    ),
+                    range_middle: classNames(
+                      defaultDayPickerClassNames.range_middle,
+                      "bg-dashboard",
+                    ),
+                    range_end: classNames(
+                      defaultDayPickerClassNames.range_end,
+                      "bg-dashboard",
+                    ),
+                  }}
+                  captionLayout="dropdown"
+                  pagedNavigation
+                />
+              </div>
+              <div className="flex space-x-2">
+                <div className="flex-grow space-y-3">
+                  <div className="">
+                    <label>Start date</label>
+                    <input
+                      type="date"
+                      value={tempState.from.format("YYYY-MM-DD")}
+                      onChange={(e) =>
+                        setTempState((previous) => ({
+                          ...previous,
+                          from: dayjs(e.target.value).utc(),
+                        }))
+                      }
+                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                    />
+                  </div>
+                  <div>
+                    <label>Start time</label>
+                    <input
+                      type="time"
+                      value={`${tempState.from.hour()}:${tempState.from.minute()}:${tempState.from.second()}`}
+                      step="1"
+                      onChange={(e) => {
+                        setTempState((previous) => ({
+                          ...previous,
+                          from: dayjs(
+                            `${tempState.from.format("YYYY")}-${tempState.from.format("MM")}-${tempState.from.format("DD")} ${e.target.value}`,
+                          ),
+                        }));
+                      }}
+                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                    />
+                  </div>
+                </div>
+                <div className="flex-grow space-y-3">
+                  <div>
+                    <label>End date</label>
+                    <input
+                      type="date"
+                      value={tempState.to?.format("YYYY-MM-DD") || undefined}
+                      onChange={(e) =>
+                        setTempState((previous) => ({
+                          ...previous,
+                          to: dayjs(e.target.value).utc(),
+                        }))
+                      }
+                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                    />
+                  </div>
+                  <div className="w-full">
+                    <label>End time</label>
+                    <input
+                      type="time"
+                      value={
+                        tempState.to
+                          ? `${tempState.to.hour()}:${tempState.to.minute()}:${tempState.to.second()}`
+                          : `00:00:00`
+                      }
+                      step="1"
+                      onChange={(e) => {
+                        const toTime = tempState.to || dayjs();
+                        setTempState((previous) => ({
+                          ...previous,
+                          from: dayjs(
+                            `${toTime.format("YYYY")}-${toTime.format("MM")}-${toTime.format("DD")} ${e.target.value}`,
+                          ),
+                        }));
+                      }}
+                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+          </Tab.Panel>
+        </Tab.Panels>
+      </Tab.Group>
+      <div className="flex space-x-2 justify-end">
+        <NeutralButton onClick={onCancel}>Cancel</NeutralButton>
+        <SubmitButton onClick={onApply}>Apply</SubmitButton>
+      </div>
+    </div>
+  );
 };
 
 const DateRangePicker = (props: InputProps) => {
@@ -117,34 +413,8 @@ const DateRangePicker = (props: InputProps) => {
     setTempState(() => state);
   }, [state]);
 
-  const [tab, setTab] = useState("relative");
   const [duration, setDuration] = useState(1);
   const [unitOfTime, setUnitOfTime] = useState("hours");
-  const customButtonRef = useRef(null);
-  const customPanelRef = useRef(null);
-
-  // Handle click outside
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (
-        customPanelRef.current &&
-        !customPanelRef.current.contains(event.target)
-      ) {
-        // Close the popup if the click is outside of the custom panel
-        setState((previous) => ({
-          ...previous,
-          showCustom: false,
-        }));
-      }
-    }
-
-    // Attach the event listener
-    document.addEventListener("mousedown", handleClickOutside);
-    return () => {
-      // Cleanup the event listener on component unmount
-      document.removeEventListener("mousedown", handleClickOutside);
-    };
-  }, []);
 
   const handlePresetChange = (preset) => {
     switch (preset) {
@@ -244,308 +514,57 @@ const DateRangePicker = (props: InputProps) => {
 
   return (
     <div className="flex flex-col">
-      <div className="inline-flex space-x-2 mb-[10px]">
-        {presets.map((preset) => (
-          <div
-            key={preset.value}
-            onClick={() => handlePresetChange(preset.value)}
-            className={`py-1.5 px-2.5  rounded-md cursor-pointer 
-            ${
-              state.relative === preset.value ||
+      <div className="inline-flex space-x-2">
+        {presets.map((preset) => {
+          const presetClassName = classNames(
+            "py-1.5 px-2.5 rounded-md cursor-pointer border bg-dashboard-panel",
+            state.relative === preset.value ||
               (!presets.find((p) => p.value === state.relative) &&
                 preset.value === "custom")
-                ? "bg-dashboard-panel text-foreground border-dashboard"
-                : "bg-dashboard text-foreground-light hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-            }
-          `}
-            ref={preset.value === "custom" ? customButtonRef : null}
-          >
-            {preset.label}
-          </div>
-        ))}
-      </div>
-
-      {state.showCustom && (
-        <Transition
-          show={state.showCustom}
-          enter="transition ease-out duration-200"
-          enterFrom="opacity-0 transform scale-95"
-          enterTo="opacity-100 transform scale-100"
-          leave="transition ease-in duration-150"
-          leaveFrom="opacity-100 transform scale-100"
-          leaveTo="opacity-0 transform scale-95"
-        >
-          <div
-            ref={customPanelRef}
-            className="fixed border border-table-border rounded-[5px] bg-dashboard-panel p-[20px] shadow-lg z-[1000]"
-            style={{
-              top:
-                customButtonRef.current?.getBoundingClientRect().bottom +
-                window.scrollY,
-              left:
-                customButtonRef.current?.getBoundingClientRect().left +
-                window.scrollX,
-            }}
-          >
-            <Tab.Group
-              selectedIndex={tab === "relative" ? 0 : 1}
-              onChange={(index) =>
-                setTab(index === 0 ? "relative" : "absolute")
-              }
+              ? "font-bold border-divide"
+              : "text-foreground-light font-light border-dashboard-panel",
+          );
+          if (preset.value === "custom") {
+            return (
+              <Popover key={preset.value} className="relative">
+                <Popover.Button as="div" className={presetClassName}>
+                  {preset.label}
+                </Popover.Button>
+                <Popover.Panel className="absolute z-10 pt-px">
+                  {({ close }) => (
+                    <CustomDatePicker
+                      duration={duration}
+                      tempState={tempState}
+                      unitOfTime={unitOfTime}
+                      setDuration={setDuration}
+                      setTempState={setTempState}
+                      setUnitOfTime={setUnitOfTime}
+                      onApply={() => {
+                        handleApply();
+                        close();
+                      }}
+                      onCancel={() => {
+                        handleCancel();
+                        close();
+                      }}
+                      onTimeOptionClick={handleTimeOptionClick}
+                    />
+                  )}
+                </Popover.Panel>
+              </Popover>
+            );
+          }
+          return (
+            <div
+              key={preset.value}
+              onClick={() => handlePresetChange(preset.value)}
+              className={presetClassName}
             >
-              <Tab.List className="flex gap-[10px] mb-[10px]">
-                <Tab
-                  className={({ selected }) =>
-                    `flex-1 py-[8px] cursor-pointer bg-dashboard border border-table-border text-center font-bold ${
-                      selected ? "" : "bg-dashboard-panel text-foreground"
-                    }`
-                  }
-                >
-                  Relative
-                </Tab>
-                <Tab
-                  className={({ selected }) =>
-                    `flex-1 py-[8px] cursor-pointer bg-dashboard border border-table-border text-center font-bold ${
-                      selected ? "" : "bg-dashboard-panel text-foreground"
-                    }`
-                  }
-                >
-                  Absolute
-                </Tab>
-              </Tab.List>
-              <Tab.Panels>
-                <Tab.Panel>
-                  {/* Content for Relative Tab */}
-                  <div className="p-[10px]">
-                    <div className="space-y-4">
-                      <label className="block text-[14px] mt-[15px] mb-[5px]">
-                        Minutes
-                      </label>
-                      <div className="flex gap-[8px] mb-[10px]">
-                        {timeOptions.minutes.map((min) => (
-                          <button
-                            key={min}
-                            onClick={() => handleTimeOptionClick(min, "minute")}
-                            className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard ${
-                              duration === min && unitOfTime === "minute"
-                                ? "bg-dashboard-panel text-foreground border-dashboard"
-                                : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                            }`}
-                          >
-                            {min}
-                          </button>
-                        ))}
-                      </div>
-
-                      <label className="block text-[14px] mt-[15px] mb-[5px]">
-                        Hours
-                      </label>
-                      <div className="flex gap-[8px] mb-[10px]">
-                        {timeOptions.hours.map((hour) => (
-                          <button
-                            key={hour}
-                            onClick={() => handleTimeOptionClick(hour, "hour")}
-                            className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                              duration === hour && unitOfTime === "hour"
-                                ? "bg-dashboard-panel text-foreground border-dashboard"
-                                : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                            }`}
-                          >
-                            {hour}
-                          </button>
-                        ))}
-                      </div>
-
-                      <label className="block text-[14px] mt-[15px] mb-[5px]">
-                        Days
-                      </label>
-                      <div className="flex gap-[8px] mb-[10px]">
-                        {timeOptions.days.map((day) => (
-                          <button
-                            key={day}
-                            onClick={() => handleTimeOptionClick(day, "day")}
-                            className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                              duration === day && unitOfTime === "day"
-                                ? "bg-dashboard-panel text-foreground border-dashboard"
-                                : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                            }`}
-                          >
-                            {day}
-                          </button>
-                        ))}
-                      </div>
-
-                      <label className="block text-[14px] mt-[15px] mb-[5px]">
-                        Weeks
-                      </label>
-                      <div className="flex gap-[8px] mb-[10px]">
-                        {timeOptions.weeks.map((week) => (
-                          <button
-                            key={week}
-                            onClick={() => handleTimeOptionClick(week, "week")}
-                            className={`py-[5px] px-[10px] border border-table-border rounded-[4px] cursor-pointer bg-dashboard  ${
-                              duration === week && unitOfTime === "week"
-                                ? "bg-dashboard-panel text-foreground border-dashboard"
-                                : "hover:bg-dashboard-panel hover:text-foreground hover:border-dashboard"
-                            }`}
-                          >
-                            {week}
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-[10px] mt-[15px]">
-                      <label className="text-[14px]">Duration</label>
-                      <input
-                        type="number"
-                        min={1}
-                        max={999999999999}
-                        value={duration}
-                        onChange={(e) => setDuration(Number(e.target.value))}
-                        className="w-[60px] text-[14px] border border-table-border rounded-[4px] p-[5px] bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light"
-                      />
-                      <select
-                        value={unitOfTime}
-                        onChange={(e) => setUnitOfTime(e.target.value)}
-                        className="p-[5px] text-[14px] border border-table-border rounded-[4px] bg-dashboard"
-                      >
-                        <option value="minute">Minutes</option>
-                        <option value="hour">Hours</option>
-                        <option value="day">Days</option>
-                        <option value="week">Weeks</option>
-                      </select>
-                    </div>
-                  </div>
-                </Tab.Panel>
-                <Tab.Panel>
-                  {/* Content for Absolute Tab */}
-                  <div className="absolute-panel">
-                    <div className="flex justify-center mb-[20px]">
-                      <DayPicker
-                        mode="range"
-                        selected={{
-                          from: tempState.from.utc().toDate(),
-                          to: tempState.to?.utc().toDate(),
-                        }}
-                        onSelect={({ from, to }) => {
-                          const newFrom = new Date(
-                            from.getFullYear(),
-                            from.getMonth(),
-                            from.getDate(),
-                            tempState.from.hour(),
-                            tempState.from.minute(),
-                            tempState.from.second(),
-                          );
-                          const newTo = new Date(
-                            to.getFullYear(),
-                            to.getMonth(),
-                            to.getDate(),
-                            tempState.to?.hour() || 0,
-                            tempState.to?.minute() || 0,
-                            tempState.to?.second() || 0,
-                          );
-                          const parsedFrom = dayjs(newFrom).utc();
-                          const parsedTo = dayjs(newTo).utc();
-                          setTempState((previous) => ({
-                            ...previous,
-                            from: parsedFrom,
-                            to: parsedTo,
-                          }));
-                        }}
-                        className="mx-auto react-day-picker bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light"
-                        captionLayout="dropdown"
-                        pagedNavigation
-                      />
-                    </div>
-                    <div className="flex gap-[20px] justify-between">
-                      <div className="flex flex-col items-start w-[48%]">
-                        <label>Start date</label>
-                        <input
-                          type="date"
-                          value={state.from.format("YYYY-MM-DD")}
-                          onChange={(e) =>
-                            setTempState((previous) => ({
-                              ...previous,
-                              from: dayjs(e.target.value).utc(),
-                            }))
-                          }
-                          className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
-                        />
-                        <label>Start time</label>
-                        <input
-                          type="time"
-                          value={`${tempState.from.hour()}:${tempState.from.minute()}:${tempState.from.second()}`}
-                          step="1"
-                          onChange={(e) => {
-                            setTempState((previous) => ({
-                              ...previous,
-                              from: dayjs(
-                                `${tempState.from.format("YYYY")}-${tempState.from.format("MM")}-${tempState.from.format("DD")} ${e.target.value}`,
-                              ),
-                            }));
-                          }}
-                          className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
-                        />
-                      </div>
-                      <div className="flex flex-col items-start w-[48%]">
-                        <label>End date</label>
-                        <input
-                          type="date"
-                          value={
-                            tempState.to?.format("YYYY-MM-DD") || undefined
-                          }
-                          onChange={(e) =>
-                            setTempState((previous) => ({
-                              ...previous,
-                              to: dayjs(e.target.value).utc(),
-                            }))
-                          }
-                          className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
-                        />
-                        <label>End time</label>
-                        <input
-                          type="time"
-                          value={
-                            tempState.to
-                              ? `${tempState.to.hour()}:${tempState.to.minute()}:${tempState.to.second()}`
-                              : `00:00:00`
-                          }
-                          step="1"
-                          onChange={(e) => {
-                            const toTime = tempState.to || dayjs();
-                            setTempState((previous) => ({
-                              ...previous,
-                              from: dayjs(
-                                `${toTime.format("YYYY")}-${toTime.format("MM")}-${toTime.format("DD")} ${e.target.value}`,
-                              ),
-                            }));
-                          }}
-                          className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2"
-                        />
-                      </div>
-                    </div>
-                  </div>
-                </Tab.Panel>
-              </Tab.Panels>
-            </Tab.Group>
-            <div className="flex gap-[10px] justify-end mt-[15px]">
-              <button
-                className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] font-bold bg-blue-600 text-white hover:bg-blue-700"
-                onClick={handleApply}
-              >
-                Apply
-              </button>
-              <button
-                className="py-[8px] px-[16px] cursor-pointer border-none rounded-[3px] font-bold bg-gray-300 hover:bg-gray-400"
-                onClick={handleCancel}
-              >
-                Cancel
-              </button>
+              {preset.label}
             </div>
-          </div>
-        </Transition>
-      )}
+          );
+        })}
+      </div>
     </div>
   );
 };
