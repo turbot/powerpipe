@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/schema"
+	"github.com/turbot/pipe-fittings/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -215,15 +216,15 @@ from the current mod or its direct dependents or from a Powerpipe server instanc
 }
 
 func listCommandShortDescription(typeName string) string {
-	return fmt.Sprintf("List %ss from the current mod and its direct dependents", typeName)
+	return fmt.Sprintf("List %s from the current mod and its direct dependents", utils.Pluralize(typeName, 0))
 }
 func listCommandLongDescription(typeName string) string {
-	return fmt.Sprintf("List %ss from the current mod and its direct dependents", typeName)
+	return fmt.Sprintf("List %s from the current mod and its direct dependents", utils.Pluralize(typeName, 0))
 }
 
 func showCommandShortDescription(typeName string) string {
-	return fmt.Sprintf("Show %ss from the current mod and its direct dependents", typeName)
+	return fmt.Sprintf("Show %s from the current mod and its direct dependents", utils.Pluralize(typeName, 0))
 }
 func showCommandLongDescription(typeName string) string {
-	return fmt.Sprintf("Show %ss from the current mod and its direct dependents", typeName)
+	return fmt.Sprintf("Show %s from the current mod and its direct dependents", utils.Pluralize(typeName, 0))
 }
