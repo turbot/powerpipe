@@ -39,7 +39,7 @@ func Ensure(ctx context.Context) error {
 	// let's just make sure that the assets exist at all (error out if not)
 	if localcmdconfig.IsLocal() {
 		if err := verifyAssetsExist(ctx); err != nil {
-			return sperr.New("during development, dashboard assets must be present when running powerpipe dashboard")
+			return sperr.New("during development, dashboard assets must be present when running powerpipe dashboard. Run 'make dashboard_assets' to build the dashboard assets")
 		}
 		return nil
 	}
