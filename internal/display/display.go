@@ -80,7 +80,7 @@ func ShowWrappedTable(headers []string, rows [][]string, opts *ShowWrappedTableO
 
 func GetMaxCols() int {
 	colsAvailable, _, _ := gows.GetWinSize()
-	// check if STEAMPIPE_DISPLAY_WIDTH env variable is set
+	// check if POWERPIPE_DISPLAY_WIDTH env variable is set
 	if viper.IsSet(constants.ArgDisplayWidth) {
 		colsAvailable = viper.GetInt(constants.ArgDisplayWidth)
 	}
