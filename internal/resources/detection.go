@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -48,11 +47,6 @@ func (t *Detection) Equals(other *Detection) bool {
 // OnDecoded implements HclResource
 func (t *Detection) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
-	t.Columns = map[string]*DashboardTableColumn{
-		"reason": {
-			Name: "reason",
-		},
-	}
 	return t.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }
 
@@ -73,27 +67,9 @@ func (t *Detection) Diff(other *Detection) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (t *Detection) GetWidth() int {
-	if t.Width == nil {
-		return 0
-	}
-	return *t.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (t *Detection) GetDisplay() string {
-	return typehelpers.SafeString(t.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (*Detection) GetDocumentation() string {
 	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (t *Detection) GetType() string {
-	return typehelpers.SafeString(t.Type)
 }
 
 // CtyValue implements CtyValueProvider

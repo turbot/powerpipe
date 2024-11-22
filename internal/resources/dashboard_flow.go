@@ -14,18 +14,32 @@ import (
 type DashboardFlow struct {
 	modconfig.ResourceWithMetadataImpl
 	DashboardLeafNodeImpl
+
+	// TODO KAI VERIFY WE CAN REMOVE
 	// NOTE: we must have cty tag on at least one property otherwise gohcl.DecodeExpression panics
-	NodeAndEdgeProviderImpl `cty:"node_and_edge_provider"`
+	//NodeAndEdgeProviderImpl `cty:"node_and_edge_provider"`
+	QueryProviderImpl
+	WithProviderImpl
+
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
+
+	Nodes     DashboardNodeList `cty:"node_list"  json:"-"`
+	Edges     DashboardEdgeList `cty:"edge_list" json:"-"`
+	NodeNames []string          `json:"nodes" snapshot:"nodes"`
+	EdgeNames []string          `json:"edges" snapshot:"edges"`
+
+	Categories map[string]*DashboardCategory `cty:"categories" json:"categories" snapshot:"categories"`
 
 	Base *DashboardFlow `hcl:"base" json:"-"`
 }
 
 func NewDashboardFlow(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
 	f := &DashboardFlow{
-		NodeAndEdgeProviderImpl: NewNodeAndEdgeProviderImpl(block, mod, shortName),
+		QueryProviderImpl: NewQueryProviderImpl(block, mod, shortName),
+		// TODO KAI CHECK THIS
+		//		NodeAndEdgeProviderImpl: NewNodeAndEdgeProviderImpl(block, mod, shortName),
 	}
 	f.SetAnonymous(block)
 	return f

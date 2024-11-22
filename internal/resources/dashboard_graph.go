@@ -13,6 +13,7 @@ import (
 // DashboardGraph is a struct representing a leaf dashboard node
 type DashboardGraph struct {
 	modconfig.ResourceWithMetadataImpl
+	WithProviderImpl
 	DashboardLeafNodeImpl
 	// NOTE: we must have cty tag on at least one property otherwise gohcl.DecodeExpression panics
 	NodeAndEdgeProviderImpl `cty:"node_and_edge_provider"`
