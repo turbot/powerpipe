@@ -27,7 +27,7 @@ type Detection struct {
 	Author         *string  `cty:"author" hcl:"author" json:"author,omitempty"`
 	References     []string `cty:"references" hcl:"references,optional" json:"references,omitempty"`
 	Tables         []string `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
-	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty"`
+	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty" snapshot:"display_columns"`
 
 	Base *Detection `hcl:"base" json:"-"`
 }
