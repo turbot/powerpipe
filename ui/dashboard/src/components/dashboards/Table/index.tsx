@@ -983,6 +983,17 @@ const LineView = (props: TableProps) => {
         wrap: columnOverrides?.wrap ? columnOverrides.wrap : "none",
         href_template: columnOverrides?.href,
       };
+
+      // If we've got display columns set up, it doesn't have a column override,
+      // and it's not listed as a column to show, hide it by default
+      if (
+        !!props.properties?.display_columns?.length &&
+        !props.properties?.display_columns.includes(col.name) &&
+        !columnOverrides?.display
+      ) {
+        newColDef.display = "none";
+      }
+
       newColumns.push(newColDef);
     });
 
