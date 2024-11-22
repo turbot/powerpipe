@@ -32,7 +32,7 @@ import {
   getSortedRowModel,
   useReactTable,
 } from "@tanstack/react-table";
-import { formatDate } from "@powerpipe/utils/date";
+import { formatDate, parseDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { KeyValuePairs, RowRenderResult } from "../common/types";
@@ -347,6 +347,23 @@ const CellValue = ({
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {formatDate(value)}
+      </span>
+    );
+  } else if (column.name === "timestamp" && dataType === "bigint") {
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {parseDate(value)?.format()}
+      </ExternalLink>
+    ) : (
+      <span
+        className="tabular-nums"
+        title={showTitle ? `${column.title}=${value}` : undefined}
+      >
+        {parseDate(value)?.format()}
       </span>
     );
   } else if (dataType === "timestamp" || dataType === "timestamptz") {
