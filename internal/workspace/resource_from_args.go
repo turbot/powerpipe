@@ -67,6 +67,12 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 	if parsedResourceName == nil {
 		return nil, nil, nil
 	}
+
+	// TODO HACK
+	if parsedResourceName.ItemType == "control_benchmark" {
+		parsedResourceName.ItemType = "benchmark"
+	}
+
 	// ok we managed to extract a resource name - does this resource exist?
 	resource, ok := w.GetResource(parsedResourceName)
 	if !ok {

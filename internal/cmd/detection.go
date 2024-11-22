@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"os"
 	"strings"
@@ -150,6 +151,11 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
+
+	tree, err := controlexecute.SnapshotToExecutionTree(ctx, snap, initData.Workspace, initData.DefaultClient, workspace.ResourceFilter{}, target)
+	error_helpers.FailOnError(err)
+	fmt.Println(tree)
+
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)
 
