@@ -25,13 +25,6 @@ type DashboardFlow struct {
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Nodes     DashboardNodeList `cty:"node_list"  json:"-"`
-	Edges     DashboardEdgeList `cty:"edge_list" json:"-"`
-	NodeNames []string          `json:"nodes" snapshot:"nodes"`
-	EdgeNames []string          `json:"edges" snapshot:"edges"`
-
-	Categories map[string]*DashboardCategory `cty:"categories" json:"categories" snapshot:"categories"`
-
 	Base *DashboardFlow `hcl:"base" json:"-"`
 }
 
