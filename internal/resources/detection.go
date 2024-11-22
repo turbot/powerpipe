@@ -22,11 +22,12 @@ type Detection struct {
 
 	Columns map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns"`
 
-	Type       *string  `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display    *string  `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
-	Author     *string  `cty:"author" hcl:"author" json:"author,omitempty"`
-	References []string `cty:"references" hcl:"references,optional" json:"references,omitempty"`
-	Tables     []string `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
+	Type           *string  `cty:"type" hcl:"type"  json:"type,omitempty"`
+	Display        *string  `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
+	Author         *string  `cty:"author" hcl:"author" json:"author,omitempty"`
+	References     []string `cty:"references" hcl:"references,optional" json:"references,omitempty"`
+	Tables         []string `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
+	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty"`
 
 	Base *Detection `hcl:"base" json:"-"`
 }
