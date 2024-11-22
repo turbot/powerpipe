@@ -79,12 +79,10 @@ const getColumns = (
   const columns: TableColumnInfo[] = cols.map((col) => {
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
-    if (
-      properties &&
-      properties.columns &&
-      properties.columns[col.original_name || col.name]
-    ) {
+    if (properties?.columns?.[col.original_name || col.name]) {
       const c = properties.columns[col.original_name || col.name];
+
+      // Column display always wins here, then we check if there are display_columns and whether the column is in that list
       if (c.display === "none") {
         columnVisibility[col.name] = false;
       }
@@ -94,6 +92,16 @@ const getColumns = (
       if (c.href) {
         colHref = c.href;
       }
+    }
+
+    // If we've got display columns set up and this column hasn't already had its default visibility set,
+    // and it's not listed as a column to show, hide it by default
+    if (
+      !!properties?.display_columns?.length &&
+      !properties?.display_columns.includes(col.name) &&
+      !(col.name in columnVisibility)
+    ) {
+      columnVisibility[col.name] = false;
     }
 
     const colInfo: TableColumnInfo = {
@@ -110,6 +118,7 @@ const getColumns = (
     }
     return colInfo;
   });
+
   return { columns, columnVisibility };
 };
 
@@ -528,6 +537,7 @@ type TableColumns = {
 type TableType = "table" | "line" | null;
 
 export type TableProperties = {
+  display_columns?: string[];
   columns?: TableColumns;
 };
 
