@@ -113,7 +113,7 @@ const Child = ({
     case "flow": {
       const Flow = getComponent("flow");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties
+        panelDefinition.properties as NodeAndEdgeProperties,
       );
       return (
         <Panel
@@ -135,7 +135,7 @@ const Child = ({
     case "graph": {
       const Graph = getComponent("graph");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties
+        panelDefinition.properties as NodeAndEdgeProperties,
       );
       return (
         <Panel
@@ -157,7 +157,7 @@ const Child = ({
     case "hierarchy": {
       const Hierarchy = getComponent("hierarchy");
       const format = getNodeAndEdgeDataFormat(
-        panelDefinition.properties as NodeAndEdgeProperties
+        panelDefinition.properties as NodeAndEdgeProperties,
       );
       return (
         <Panel
