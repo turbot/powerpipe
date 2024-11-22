@@ -753,11 +753,18 @@ const TableViewVirtualizedRows = ({
     doRender();
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
+  const tableFilters = filters.filter((f) => f.context === context);
+
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {filterEnabled && (
-        <div className="flex justify-between w-full p-4">
-          {filters.filter((f) => f.context === context).length > 0 && (
+        <div
+          className={classNames(
+            "flex w-full p-4",
+            tableFilters.length ? "justify-between" : "justify-end",
+          )}
+        >
+          {tableFilters.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {filters.map((filter) => {
                 return (
