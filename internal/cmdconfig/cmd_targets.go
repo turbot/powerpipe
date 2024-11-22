@@ -105,7 +105,7 @@ func resolveBenchmarkTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pwork
 	// so there are multiple targets  - this must be the benchmark command, so we do not expect any args
 	// verify T is Benchmark (should be enforced by Cobra)
 	var empty T
-	if _, isBenchmark := (any(empty)).(*resources.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*resources.ControlBenchmark); !isBenchmark {
 		return nil, sperr.New("multiple targets are only supported for benchmarks")
 	}
 
@@ -141,7 +141,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 		return nil, nil
 	}
 	var empty T
-	if _, isBenchmark := (any(empty)).(*resources.Benchmark); !isBenchmark {
+	if _, isBenchmark := (any(empty)).(*resources.ControlBenchmark); !isBenchmark {
 		return nil, nil
 	}
 

@@ -197,11 +197,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.ControlBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *resources.Benchmark:
+		case *resources.ControlBenchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -222,11 +222,13 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addDetectionBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.DetectionBenchmark:
+		case *resources.ControlBenchmark:
+			// TODO WHICH
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -275,7 +277,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range topLevelResources.Benchmarks {
+		for _, benchmark := range topLevelResources.ControlBenchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}
@@ -317,7 +319,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 		}
 
 		detectionBenchmarkTrunks := make(map[string][][]string)
-		for _, detectionBenchmark := range topLevelResources.DetectionBenchmarks {
+		for _, detectionBenchmark := range topLevelResources.Benchmarks {
 			if detectionBenchmark.IsAnonymous() {
 				continue
 			}

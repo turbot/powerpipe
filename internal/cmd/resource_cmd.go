@@ -128,7 +128,7 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*resources.DashboardImage](withCmdName("image")),
 		resourceCmd[*resources.DashboardTable](withCmdName("table")),
 		resourceCmd[*resources.Detection](withCmdName("detection")),
-		resourceCmd[*resources.DetectionBenchmark](withCmdName("detectionbenchmark")),
+		resourceCmd[*resources.Benchmark](withCmdName("benchmark")),
 		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
@@ -147,10 +147,10 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 		return queryRunCmd()
 	case *resources.Dashboard:
 		return dashboardRunCmd()
+	case *resources.ControlBenchmark:
+		return checkCmd[*resources.ControlBenchmark]()
 	case *resources.Benchmark:
-		return checkCmd[*resources.Benchmark]()
-	case *resources.DetectionBenchmark:
-		return detectionRunCmd[*resources.DetectionBenchmark]()
+		return detectionRunCmd[*resources.Benchmark]()
 	case *resources.Detection:
 		return detectionRunCmd[*resources.Detection]()
 	case *resources.Control:
@@ -174,9 +174,6 @@ func resourceCommandShortDescription(typeName string) string {
 		return "List, view, and run Powerpipe controls"
 
 	case schema.BlockTypeBenchmark:
-		return "List, view, and run Powerpipe benchmarks"
-
-	case schema.BlockTypeDetectionBenchmark:
 		return "List, view, and run Powerpipe benchmarks"
 
 	case schema.BlockTypeDashboard:
@@ -205,12 +202,6 @@ Run a control from the current mod or its direct dependents or from a Powerpipe 
 view details of a control from the current mod or its direct dependents or from a Powerpipe server instance.`
 
 	case schema.BlockTypeBenchmark:
-		return `List, view, and run Powerpipe benchmarks and its direct dependents.
-		
-Run a benchmark from the current mod or its direct dependents or from a Powerpipe server instance or
-view details of a benchmark from the current mod or its direct dependents or from a Powerpipe server instance.`
-
-	case schema.BlockTypeDetectionBenchmark:
 		return `List, view, and run Powerpipe benchmarks and its direct dependents.
 		
 Run a benchmark from the current mod or its direct dependents or from a Powerpipe server instance or

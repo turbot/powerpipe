@@ -117,7 +117,7 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 
 	// populate additional properties (this avoids adding GetDocumentation, GetDisplay and GetType to all ModTreeItems)
 	switch t := treeItem.(type) {
-	case *resources.Benchmark:
+	case *resources.ControlBenchmark:
 		group.Documentation = t.GetDocumentation()
 		group.Display = t.GetDisplay()
 		group.Type = t.GetType()
@@ -128,7 +128,7 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 	}
 	// add child groups for children which are benchmarks
 	for _, c := range treeItem.GetChildren() {
-		if benchmark, ok := c.(*resources.Benchmark); ok {
+		if benchmark, ok := c.(*resources.ControlBenchmark); ok {
 			// create a result group for this item
 			benchmarkGroup, err := NewResultGroup(ctx, executionTree, benchmark, group)
 			if err != nil {

@@ -99,14 +99,14 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 	switch r := rootResource.(type) {
 	case *resources.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *resources.Benchmark:
+	case *resources.ControlBenchmark:
 		return NewCheckRun(r, e, e)
 	case *resources.Detection:
 		// create a wrapper for the detection
 		benchmark := resources.NewWrapperDetectionBenchmark(r)
 		return NewDetectionBenchmarkRun(benchmark, e, e)
 
-	case *resources.DetectionBenchmark:
+	case *resources.Benchmark:
 		return NewDetectionBenchmarkRun(r, e, e)
 	case *resources.Query:
 		// wrap this in a chart and a dashboard

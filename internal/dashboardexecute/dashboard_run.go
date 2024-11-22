@@ -136,13 +136,13 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 			if err != nil {
 				return err
 			}
-		case *resources.DetectionBenchmark:
+		case *resources.Benchmark:
 			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
 
-		case *resources.Benchmark, *resources.Control:
+		case *resources.ControlBenchmark, *resources.Control:
 			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
 			if err != nil {
 				return err

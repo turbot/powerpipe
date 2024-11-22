@@ -28,12 +28,12 @@ type DashboardChanged struct {
 	NewDashboards          []*resources.Dashboard
 	NewContainers          []*resources.DashboardContainer
 	NewControls            []*resources.Control
-	NewBenchmarks          []*resources.Benchmark
+	NewBenchmarks          []*resources.ControlBenchmark
 	NewCards               []*resources.DashboardCard
 	NewCategories          []*resources.DashboardCategory
 	NewCharts              []*resources.DashboardChart
 	NewDetections          []*resources.Detection
-	NewDetectionBenchmarks []*resources.DetectionBenchmark
+	NewDetectionBenchmarks []*resources.Benchmark
 	NewFlows               []*resources.DashboardFlow
 	NewGraphs              []*resources.DashboardGraph
 	NewHierarchies         []*resources.DashboardHierarchy
@@ -47,12 +47,12 @@ type DashboardChanged struct {
 	DeletedDashboards          []*resources.Dashboard
 	DeletedContainers          []*resources.DashboardContainer
 	DeletedControls            []*resources.Control
-	DeletedBenchmarks          []*resources.Benchmark
+	DeletedBenchmarks          []*resources.ControlBenchmark
 	DeletedCards               []*resources.DashboardCard
 	DeletedCategories          []*resources.DashboardCategory
 	DeletedCharts              []*resources.DashboardChart
 	DeletedDetections          []*resources.Detection
-	DeletedDetectionBenchmarks []*resources.DetectionBenchmark
+	DeletedDetectionBenchmarks []*resources.Benchmark
 	DeletedFlows               []*resources.DashboardFlow
 	DeletedGraphs              []*resources.DashboardGraph
 	DeletedHierarchies         []*resources.DashboardHierarchy
@@ -372,7 +372,7 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedControls, item) {
 			c.ChangedControls = append(c.ChangedControls, diff)
 		}
-	case *resources.Benchmark:
+	case *resources.ControlBenchmark:
 		if !c.diffsContain(c.ChangedBenchmarks, item) {
 			c.ChangedBenchmarks = append(c.ChangedBenchmarks, diff)
 		}
@@ -411,7 +411,7 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedDetections, item) {
 			c.ChangedDetections = append(c.ChangedDetections, diff)
 		}
-	case *resources.DetectionBenchmark:
+	case *resources.Benchmark:
 		if !c.diffsContain(c.ChangedDetectionBenchmarks, item) {
 			c.ChangedDetectionBenchmarks = append(c.ChangedDetectionBenchmarks, diff)
 		}

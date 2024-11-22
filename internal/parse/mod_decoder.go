@@ -427,10 +427,10 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 
 func (d *PowerpipeModDecoder) decodeDetectionBenchmark(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, *parse.DecodeResult) {
 	res := parse.NewDecodeResult()
-	benchmark, ok := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.DetectionBenchmark)
+	benchmark, ok := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
 	if !ok {
 		// coding error
-		panic(fmt.Sprintf("block type %s not convertible to a DetectionBenchmark", block.Type))
+		panic(fmt.Sprintf("block type %s not convertible to a Benchmark", block.Type))
 	}
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)

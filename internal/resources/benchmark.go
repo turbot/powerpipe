@@ -15,7 +15,7 @@ import (
 )
 
 // Benchmark is a struct representing the Benchmark resource
-type Benchmark struct {
+type ControlBenchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
 	DashboardLeafNodeImpl
@@ -30,12 +30,12 @@ type Benchmark struct {
 	// dashboard specific properties
 	Inputs []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 
-	Base *Benchmark `hcl:"base" json:"-"`
+	Base *ControlBenchmark `hcl:"base" json:"-"`
 }
 
 func NewRootBenchmarkWithChildren(mod *modconfig.Mod, children []modconfig.ModTreeItem) modconfig.HclResource {
 	fullName := fmt.Sprintf("%s.%s.%s", mod.ShortName, "benchmark", "root")
-	benchmark := &Benchmark{
+	benchmark := &ControlBenchmark{
 		ModTreeItemImpl: modconfig.ModTreeItemImpl{
 			HclResourceImpl: modconfig.HclResourceImpl{
 				ShortName:       "root",
@@ -52,14 +52,14 @@ func NewRootBenchmarkWithChildren(mod *modconfig.Mod, children []modconfig.ModTr
 }
 
 func NewBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
-	benchmark := &Benchmark{
+	benchmark := &ControlBenchmark{
 		ModTreeItemImpl: modconfig.NewModTreeItemImpl(block, mod, shortName),
 	}
 	benchmark.SetAnonymous(block)
 	return benchmark
 }
 
-func (b *Benchmark) Equals(other *Benchmark) bool {
+func (b *ControlBenchmark) Equals(other *ControlBenchmark) bool {
 	if other == nil {
 		return false
 	}
@@ -68,13 +68,13 @@ func (b *Benchmark) Equals(other *Benchmark) bool {
 }
 
 // OnDecoded implements HclResource
-func (b *Benchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
+func (b *ControlBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	b.SetBaseProperties()
 
 	return nil
 }
 
-func (b *Benchmark) String() string {
+func (b *ControlBenchmark) String() string {
 	// build list of children's names
 	var children []string
 	for _, child := range b.GetChildren() {
@@ -103,19 +103,19 @@ func (b *Benchmark) String() string {
 }
 
 // GetChildControls return a flat list of controls underneath the benchmark in the tree
-func (b *Benchmark) GetChildControls() []*Control {
+func (b *ControlBenchmark) GetChildControls() []*Control {
 	var res []*Control
 	for _, child := range b.GetChildren() {
 		if control, ok := child.(*Control); ok {
 			res = append(res, control)
-		} else if benchmark, ok := child.(*Benchmark); ok {
+		} else if benchmark, ok := child.(*ControlBenchmark); ok {
 			res = append(res, benchmark.GetChildControls()...)
 		}
 	}
 	return res
 }
 
-func (b *Benchmark) Diff(other *Benchmark) *modconfig.ModTreeItemDiffs {
+func (b *ControlBenchmark) Diff(other *ControlBenchmark) *modconfig.ModTreeItemDiffs {
 	res := &modconfig.ModTreeItemDiffs{
 		Item: b,
 		Name: b.Name(),
@@ -160,7 +160,7 @@ func (b *Benchmark) Diff(other *Benchmark) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-func (b *Benchmark) WalkResources(resourceFunc func(resource modconfig.ModTreeItem) (bool, error)) error {
+func (b *ControlBenchmark) WalkResources(resourceFunc func(resource modconfig.ModTreeItem) (bool, error)) error {
 	for _, child := range b.GetChildren() {
 		continueWalking, err := resourceFunc(child)
 		if err != nil {
@@ -170,7 +170,7 @@ func (b *Benchmark) WalkResources(resourceFunc func(resource modconfig.ModTreeIt
 			break
 		}
 
-		if childContainer, ok := child.(*Benchmark); ok {
+		if childContainer, ok := child.(*ControlBenchmark); ok {
 			if err := childContainer.WalkResources(resourceFunc); err != nil {
 				return err
 			}
@@ -180,11 +180,11 @@ func (b *Benchmark) WalkResources(resourceFunc func(resource modconfig.ModTreeIt
 }
 
 // CtyValue implements CtyValueProvider
-func (b *Benchmark) CtyValue() (cty.Value, error) {
+func (b *ControlBenchmark) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(b)
 }
 
-func (b *Benchmark) SetBaseProperties() {
+func (b *ControlBenchmark) SetBaseProperties() {
 	if b.Base == nil {
 		return
 	}
@@ -209,7 +209,7 @@ func (b *Benchmark) SetBaseProperties() {
 }
 
 // GetShowData implements printers.Showable
-func (b *Benchmark) GetShowData() *printers.RowData {
+func (b *ControlBenchmark) GetShowData() *printers.RowData {
 	res := printers.NewRowData(
 		printers.FieldValue{Name: "Children", Value: b.ChildNameStrings},
 	)

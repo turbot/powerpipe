@@ -28,7 +28,7 @@ import (
 
 type DetectionTarget interface {
 	modconfig.ModTreeItem
-	*resources.DetectionBenchmark | *resources.Detection
+	*resources.Benchmark | *resources.Detection
 }
 
 // variable used to assign the output mode flag

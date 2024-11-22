@@ -11,7 +11,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-type DetectionBenchmark struct {
+type Benchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
 	DashboardLeafNodeImpl
@@ -24,12 +24,12 @@ type DetectionBenchmark struct {
 	ChildNameStrings []string                `cty:"child_name_strings" json:"children,omitempty"`
 
 	// dashboard specific properties
-	Inputs []*DashboardInput   `cty:"inputs" json:"inputs,omitempty"`
-	Base   *DetectionBenchmark `hcl:"base" json:"-"`
+	Inputs []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
+	Base   *Benchmark        `hcl:"base" json:"-"`
 }
 
-// NewWrapperDetectionBenchmark creates a new DetectionBenchmark to wrap a detection which we wish to execute
-func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
+// NewWrapperDetectionBenchmark creates a new Benchmark to wrap a detection which we wish to execute
+func NewWrapperDetectionBenchmark(detection *Detection) *Benchmark {
 	// create a fake block for the wrapper benchmark
 	block := &hcl.Block{
 		Type:   schema.BlockTypeDetectionBenchmark,
@@ -38,7 +38,7 @@ func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
 		Labels: []string{detection.ShortName + "_benchmark"},
 		Body:   &hclsyntax.Body{SrcRange: detection.DeclRange},
 	}
-	b := NewDetectionBenchmark(block, detection.Mod, detection.ShortName).(*DetectionBenchmark)
+	b := NewDetectionBenchmark(block, detection.Mod, detection.ShortName).(*Benchmark)
 	b.AddChild(detection)
 	b.ChildNames = append(b.ChildNames, modconfig.NamedItem{Name: detection.UnqualifiedName})
 	b.ChildNameStrings = append(b.ChildNameStrings, detection.UnqualifiedName)
@@ -46,7 +46,7 @@ func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
 }
 
 func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
-	c := &DetectionBenchmark{
+	c := &Benchmark{
 		ModTreeItemImpl: modconfig.NewModTreeItemImpl(block, mod, shortName),
 	}
 	c.SetAnonymous(block)
@@ -54,7 +54,7 @@ func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName strin
 	return c
 }
 
-func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
+func (d *Benchmark) Equals(other *Benchmark) bool {
 	if other == nil {
 		return false
 	}
@@ -64,12 +64,12 @@ func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
 }
 
 // OnDecoded implements HclResource
-func (d *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
+func (d *Benchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	d.SetBaseProperties()
 	return nil
 }
 
-func (d *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {
+func (d *Benchmark) Diff(other *Benchmark) *modconfig.ModTreeItemDiffs {
 	res := &modconfig.ModTreeItemDiffs{
 		Item: d,
 		Name: d.Name(),
@@ -95,7 +95,7 @@ func (d *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeI
 	return res
 }
 
-func (d *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
+func (d *Benchmark) WalkResources(resourceFunc func(resource modconfig.HclResource) (bool, error)) error {
 	for _, child := range d.Children {
 		continueWalking, err := resourceFunc(child.(modconfig.HclResource))
 		if err != nil {
@@ -105,7 +105,7 @@ func (d *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.
 			break
 		}
 
-		if childContainer, ok := child.(*DetectionBenchmark); ok {
+		if childContainer, ok := child.(*Benchmark); ok {
 			if err := childContainer.WalkResources(resourceFunc); err != nil {
 				return err
 			}
@@ -115,11 +115,11 @@ func (d *DetectionBenchmark) WalkResources(resourceFunc func(resource modconfig.
 }
 
 // CtyValue implements CtyValueProvider
-func (d *DetectionBenchmark) CtyValue() (cty.Value, error) {
+func (d *Benchmark) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(d)
 }
 
-func (d *DetectionBenchmark) SetBaseProperties() {
+func (d *Benchmark) SetBaseProperties() {
 	if d.Base == nil {
 		return
 	}
@@ -144,7 +144,7 @@ func (d *DetectionBenchmark) SetBaseProperties() {
 }
 
 // GetShowData implements printers.Showable
-func (d *DetectionBenchmark) GetShowData() *printers.RowData {
+func (d *Benchmark) GetShowData() *printers.RowData {
 	res := printers.NewRowData(
 		printers.NewFieldValue("Width", d.Width),
 		printers.NewFieldValue("Display", d.Display),

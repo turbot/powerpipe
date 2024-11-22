@@ -37,9 +37,9 @@ var checkOutputMode = localconstants.CheckOutputModeText
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := resources.GenericTypeToBlockType[T]()
 	argsSupported := cobra.ExactArgs(1)
-	if typeName == "benchmark" {
-		argsSupported = cobra.MinimumNArgs(1)
-	}
+	//if typeName == "benchmark" {
+	//	argsSupported = cobra.MinimumNArgs(1)
+	//}
 
 	cmd := &cobra.Command{
 		Use:              checkCmdUse(typeName),

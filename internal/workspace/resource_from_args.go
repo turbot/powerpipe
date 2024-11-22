@@ -78,8 +78,14 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 	target, ok = resource.(T)
 	if !ok {
 		typeName := utils.GetGenericTypeName[T]()
+		// TODO WHICH
 		// // TODO HACK special case handling for detection benchmarks
 		target, ok = resource.(*resources.DetectionBenchmark)
+		if !ok {
+			return nil, nil, sperr.New("target '%s' is not of the expected type '%s'", resource.GetUnqualifiedName(), typeName)
+		}
+		// // TODO HACK special case handling for detection benchmarks
+		target, ok = resource.(*resources.Benchmark)
 		if !ok {
 			return nil, nil, sperr.New("target '%s' is not of the expected type '%s'", resource.GetUnqualifiedName(), typeName)
 		}

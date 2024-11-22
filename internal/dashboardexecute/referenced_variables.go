@@ -51,7 +51,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.P
 		}
 	case *CheckRun:
 		switch n := r.resource.(type) {
-		case *resources.Benchmark:
+		case *resources.ControlBenchmark:
 			err := n.WalkResources(
 				func(resource modconfig.ModTreeItem) (bool, error) {
 					if resourceWithMetadata, ok := resource.(modconfig.ResourceWithMetadata); ok {
