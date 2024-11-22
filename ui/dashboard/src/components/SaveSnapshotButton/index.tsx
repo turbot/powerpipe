@@ -9,7 +9,6 @@ import {
 import { EXECUTION_SCHEMA_VERSION_20240607 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
-  groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
 } from "@powerpipe/utils/snapshot";
 import { saveAs } from "file-saver";

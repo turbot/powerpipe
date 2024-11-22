@@ -17,7 +17,6 @@ const PopoverButton = forwardRef((props, ref) => {
     dashboardsMetadata,
     searchPathPrefix,
     selectedDashboard,
-    snapshot,
   } = useDashboard();
   const {
     enabled,
@@ -41,7 +40,7 @@ const PopoverButton = forwardRef((props, ref) => {
       hasServerMetadataSearchPath,
       hasDashboardMetadataSearchPath,
     };
-  }, [selectedDashboard, metadata, dashboardsMetadata, snapshot]);
+  }, [selectedDashboard, metadata, dashboardsMetadata]);
 
   if (
     dataMode === DashboardDataModeCLISnapshot ||
