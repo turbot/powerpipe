@@ -2,6 +2,7 @@ import ControlDimension from "../grouping/Benchmark/ControlDimension";
 import Icon from "@powerpipe/components/Icon";
 import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
+import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
@@ -34,9 +35,9 @@ import {
 import { formatDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
-import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { usePopper } from "react-popper";
@@ -166,8 +167,6 @@ const CellValue = ({
   const [error, setError] = useState<string | null>(null);
   const [referenceElement, setReferenceElement] = useState();
   const [showCellControls, setShowCellControls] = useState<boolean>(false);
-  // const [popperElement, setPopperElement] = useState();
-  // const { styles, attributes } = usePopper(referenceElement, popperElement);
 
   useEffect(() => {
     const renderedTemplateObj = rowTemplateData[rowIndex];
@@ -705,7 +704,6 @@ const TableViewVirtualizedRows = ({
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
-  // const bodyRef = useRef<HTMLTableSectionElement>(null);
   const isScrolling = useDisableHoverOnScroll(parentRef.current);
 
   const table = useReactTable<KeyValuePairs>({
@@ -756,38 +754,42 @@ const TableViewVirtualizedRows = ({
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
   return (
-    <div>
-      {filterEnabled &&
-        filters.filter((f) => f.context === context).length > 0 && (
-          <div className="p-4 pb-4 rounded shadow-sm flex flex-wrap gap-2">
-            {filters.map((filter) => {
-              return (
-                <div
-                  key={`${filter.operator}:${filter.key}:${filter.value}`}
-                  className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
-                >
-                  <Icon
-                    className="w-4 h-4"
-                    icon={
-                      filter.operator === "equal"
-                        ? "add_circle"
-                        : "do_not_disturb_on"
-                    }
-                  />
-                  <span>{`${filter.key}: ${filter.value}`}</span>
-                  <span
-                    onClick={() =>
-                      removeFilter(filter.key, filter.value, filter.context)
-                    }
-                    className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+    <div className="flex flex-col w-full overflow-hidden">
+      {filterEnabled && (
+        <div className="flex justify-between w-full p-4">
+          {filters.filter((f) => f.context === context).length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {filters.map((filter) => {
+                return (
+                  <div
+                    key={`${filter.operator}:${filter.key}:${filter.value}`}
+                    className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
                   >
-                    <Icon className="w-4 h-4" icon="close" />
-                  </span>
-                </div>
-              );
-            })}
-          </div>
-        )}
+                    <Icon
+                      className="w-4 h-4"
+                      icon={
+                        filter.operator === "equal"
+                          ? "add_circle"
+                          : "do_not_disturb_on"
+                      }
+                    />
+                    <span>{`${filter.key}: ${filter.value}`}</span>
+                    <span
+                      onClick={() =>
+                        removeFilter(filter.key, filter.value, filter.context)
+                      }
+                      className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                    >
+                      <Icon className="w-4 h-4" icon="close" />
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+          <TableSettings table={table} />
+        </div>
+      )}
       <div
         ref={parentRef}
         className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
@@ -919,51 +921,6 @@ const TableViewWrapper = (props: TableProps) => {
     () => getData(columns, props.data ? props.data.rows : []),
     [columns, props.data],
   );
-
-  // State for managing column visibility
-  // const [visibleColumns, setVisibleColumns] = useState(
-  //   columns.map((col) => ({
-  //     ...col,
-  //     visible: !hiddenColumns.includes(col.name),
-  //   })),
-  // );
-
-  // Handler to toggle column visibility
-  // const toggleColumnVisibility = (columnName) => {
-  //   setVisibleColumns((prevColumns) =>
-  //     prevColumns.map((col) =>
-  //       col.name === columnName ? { ...col, visible: !col.visible } : col,
-  //     ),
-  //   );
-  // };
-
-  // Filter columns based on visibility state
-  // const filteredColumns = useMemo(
-  //   () => visibleColumns.filter((col) => col.visible),
-  //   [visibleColumns],
-  // );
-
-  // Render column selection UI
-  // const renderColumnSelector = () => (
-  //   <div className="p-2 border-b mb-4">
-  //     <label className="block font-bold mb-2">Select Columns to Display:</label>
-  //     <div className="flex flex-wrap gap-2">
-  //       {visibleColumns.map((col) => (
-  //         <div key={col.name} className="flex items-center">
-  //           <input
-  //             type="checkbox"
-  //             checked={col.visible}
-  //             onChange={() => toggleColumnVisibility(col.name)}
-  //             id={`toggle-${col.name}`}
-  //           />
-  //           <label htmlFor={`toggle-${col.name}`} className="ml-2">
-  //             {col.title}
-  //           </label>
-  //         </div>
-  //       ))}
-  //     </div>
-  //   </div>
-  // );
 
   return props.data ? (
     <TableViewVirtualizedRows

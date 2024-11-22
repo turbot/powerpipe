@@ -120,15 +120,13 @@ const getDetectionResultRowIconTitle = (total: number) => {
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
-      <div className="flex flex-col md:flex-row flex-grow">
-        <Table
-          name={`${result.detection.name}.table`}
-          panel_type="table"
-          data={{ rows: result.rows, columns: result.columns }}
-          filterEnabled
-          context={result.detection.name}
-        />
-      </div>
+      <Table
+        name={`${result.detection.name}.table`}
+        panel_type="table"
+        data={{ rows: result.rows, columns: result.columns }}
+        filterEnabled
+        context={result.detection.name}
+      />
     </div>
   );
 };
