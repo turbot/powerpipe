@@ -13,6 +13,13 @@ const SearchInput = forwardRef(
       readOnly = false,
       setValue,
       value,
+    }: {
+      className?: string;
+      disabled?: boolean;
+      placeholder?: string;
+      readOnly?: boolean;
+      setValue: (value: string) => void;
+      value: string;
     },
     ref,
   ) => {
@@ -25,6 +32,7 @@ const SearchInput = forwardRef(
           <SearchIcon className="h-4 w-4" />
         </div>
         <input
+          ref={ref}
           className={classNames(
             className,
             "flex-1 block w-full bg-dashboard-panel rounded-md border px-8 overflow-x-auto text-sm md:text-base disabled:bg-black-scale-1 focus:ring-0",
@@ -36,7 +44,6 @@ const SearchInput = forwardRef(
           onChange={(e) => setValue(e.target.value)}
           placeholder={placeholder}
           readOnly={readOnly}
-          ref={ref}
           type="text"
           value={value}
         />
