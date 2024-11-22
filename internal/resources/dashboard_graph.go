@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/turbot/pipe-fittings/modconfig"
 
 	"github.com/hashicorp/hcl/v2"
@@ -14,28 +13,21 @@ import (
 // DashboardGraph is a struct representing a leaf dashboard node
 type DashboardGraph struct {
 	modconfig.ResourceWithMetadataImpl
-	QueryProviderImpl
-	WithProviderImpl
 	DashboardLeafNodeImpl
+	// NOTE: we must have cty tag on at least one property otherwise gohcl.DecodeExpression panics
+	NodeAndEdgeProviderImpl `cty:"node_and_edge_provider"`
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Nodes     DashboardNodeList `cty:"node_list" json:"nodes,omitempty"`
-	Edges     DashboardEdgeList `cty:"edge_list" json:"edges,omitempty"`
-	NodeNames []string          `snapshot:"nodes"`
-	EdgeNames []string          `snapshot:"edges"`
-
-	Categories map[string]*DashboardCategory `cty:"categories" json:"categories,omitempty" snapshot:"categories"`
-	Direction  *string                       `cty:"direction" hcl:"direction" json:"direction,omitempty" snapshot:"direction"`
+	Direction *string `cty:"direction" hcl:"direction" json:"direction,omitempty" snapshot:"direction"`
 
 	Base *DashboardGraph `hcl:"base" json:"-"`
 }
 
 func NewDashboardGraph(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
 	g := &DashboardGraph{
-		Categories:        make(map[string]*DashboardCategory),
-		QueryProviderImpl: NewQueryProviderImpl(block, mod, shortName),
+		NodeAndEdgeProviderImpl: NewNodeAndEdgeProviderImpl(block, mod, shortName),
 	}
 	g.SetAnonymous(block)
 	return g
@@ -103,69 +95,6 @@ func (g *DashboardGraph) Diff(other *DashboardGraph) *modconfig.ModTreeItemDiffs
 	res.Merge(dashboardLeafNodeDiff(g, other))
 
 	return res
-}
-
-// GetEdges implements NodeAndEdgeProvider
-func (g *DashboardGraph) GetEdges() DashboardEdgeList {
-	return g.Edges
-}
-
-// GetNodes implements NodeAndEdgeProvider
-func (g *DashboardGraph) GetNodes() DashboardNodeList {
-	return g.Nodes
-}
-
-// SetEdges implements NodeAndEdgeProvider
-func (g *DashboardGraph) SetEdges(edges DashboardEdgeList) {
-	g.Edges = edges
-}
-
-// SetNodes implements NodeAndEdgeProvider
-func (g *DashboardGraph) SetNodes(nodes DashboardNodeList) {
-	g.Nodes = nodes
-}
-
-// AddCategory implements NodeAndEdgeProvider
-func (g *DashboardGraph) AddCategory(category *DashboardCategory) hcl.Diagnostics {
-	categoryName := category.ShortName
-	if _, ok := g.Categories[categoryName]; ok {
-		return hcl.Diagnostics{&hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  fmt.Sprintf("%s has duplicate category %s", g.Name(), categoryName),
-			Subject:  category.GetDeclRange(),
-		}}
-	}
-	g.Categories[categoryName] = category
-	return nil
-}
-
-// AddChild implements NodeAndEdgeProvider
-func (g *DashboardGraph) AddChild(child modconfig.HclResource) hcl.Diagnostics {
-	var diags hcl.Diagnostics
-	switch c := child.(type) {
-	case *DashboardNode:
-		g.Nodes = append(g.Nodes, c)
-	case *DashboardEdge:
-		g.Edges = append(g.Edges, c)
-	default:
-		diags = append(diags, &hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  fmt.Sprintf("DashboardGraph does not support children of type %s", child.GetBlockType()),
-			Subject:  g.GetDeclRange(),
-		})
-		return diags
-	}
-	// set ourselves as parent
-	err := child.(modconfig.ModTreeItem).AddParent(g)
-	if err != nil {
-		diags = append(diags, &hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  "failed to add parent to ModTreeItem",
-			Detail:   err.Error(),
-			Subject:  child.GetDeclRange(),
-		})
-	}
-	return diags
 }
 
 // CtyValue implements CtyValueProvider

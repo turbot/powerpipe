@@ -1,7 +1,6 @@
 package resources
 
 import (
-	"fmt"
 	"github.com/turbot/pipe-fittings/modconfig"
 
 	"github.com/hashicorp/hcl/v2"
@@ -14,26 +13,19 @@ import (
 // DashboardHierarchy is a struct representing a leaf dashboard node
 type DashboardHierarchy struct {
 	modconfig.ResourceWithMetadataImpl
-	QueryProviderImpl
-	WithProviderImpl
 	DashboardLeafNodeImpl
+	// NOTE: we must have cty tag on at least one property otherwise gohcl.DecodeExpression panics
+	NodeAndEdgeProviderImpl `cty:"node_and_edge_provider"`
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
-
-	Nodes      DashboardNodeList             `cty:"node_list" json:"nodes,omitempty"`
-	Edges      DashboardEdgeList             `cty:"edge_list" json:"edges,omitempty"`
-	NodeNames  []string                      `snapshot:"nodes"`
-	EdgeNames  []string                      `snapshot:"edges"`
-	Categories map[string]*DashboardCategory `cty:"categories" json:"categories,omitempty" snapshot:"categories"`
 
 	Base *DashboardHierarchy `hcl:"base" json:"-"`
 }
 
 func NewDashboardHierarchy(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
 	h := &DashboardHierarchy{
-		Categories:        make(map[string]*DashboardCategory),
-		QueryProviderImpl: NewQueryProviderImpl(block, mod, shortName),
+		NodeAndEdgeProviderImpl: NewNodeAndEdgeProviderImpl(block, mod, shortName),
 	}
 	h.SetAnonymous(block)
 	return h
@@ -100,70 +92,6 @@ func (h *DashboardHierarchy) Diff(other *DashboardHierarchy) *modconfig.ModTreeI
 // GetDocumentation implements ModTreeItem
 func (h *DashboardHierarchy) GetDocumentation() string {
 	return ""
-}
-
-// GetEdges implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) GetEdges() DashboardEdgeList {
-	return h.Edges
-}
-
-// GetNodes implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) GetNodes() DashboardNodeList {
-	return h.Nodes
-}
-
-// SetEdges implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) SetEdges(edges DashboardEdgeList) {
-	h.Edges = edges
-}
-
-// SetNodes implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) SetNodes(nodes DashboardNodeList) {
-	h.Nodes = nodes
-}
-
-// AddCategory implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) AddCategory(category *DashboardCategory) hcl.Diagnostics {
-	categoryName := category.ShortName
-	if _, ok := h.Categories[categoryName]; ok {
-		return hcl.Diagnostics{&hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  fmt.Sprintf("%s has duplicate category %s", h.Name(), categoryName),
-			Subject:  category.GetDeclRange(),
-		}}
-	}
-	h.Categories[categoryName] = category
-	return nil
-}
-
-// AddChild implements NodeAndEdgeProvider
-func (h *DashboardHierarchy) AddChild(child modconfig.HclResource) hcl.Diagnostics {
-	var diags hcl.Diagnostics
-	switch c := child.(type) {
-	case *DashboardNode:
-		h.Nodes = append(h.Nodes, c)
-	case *DashboardEdge:
-		h.Edges = append(h.Edges, c)
-	default:
-		diags = append(diags, &hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  fmt.Sprintf("DashboardHierarchy does not support children of type %s", child.GetBlockType()),
-			Subject:  h.GetDeclRange(),
-		})
-		return diags
-	}
-	// set ourselves as parent
-	err := child.(modconfig.ModTreeItem).AddParent(h)
-	if err != nil {
-		diags = append(diags, &hcl.Diagnostic{
-			Severity: hcl.DiagError,
-			Summary:  "failed to add parent to ModTreeItem",
-			Detail:   err.Error(),
-			Subject:  child.GetDeclRange(),
-		})
-	}
-
-	return diags
 }
 
 // CtyValue implements CtyValueProvider
