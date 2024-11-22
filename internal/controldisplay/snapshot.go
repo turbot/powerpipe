@@ -90,10 +90,10 @@ func populateSummaries(treeNode controlexecute.ExecutionTreeNode, snapshotNode *
 		return
 	}
 
-	// Copy the summary (ensure treeNode has a Summary method)
-	if summaryProvider, ok := treeNode.(interface{ SetSummary(summary string) }); ok {
-		summaryProvider.SetSummary(snapshotNode.Summary)
-	}
+	//// Copy the summary (ensure treeNode has a Summary method)
+	//if summaryProvider, ok := treeNode.(interface{ SetSummary(summary string) }); ok {
+	//	summaryProvider.SetSummary(snapshotNode.Summary)
+	//}
 
 	// Recursively populate summaries for children
 	treeChildren := treeNode.GetChildren()
