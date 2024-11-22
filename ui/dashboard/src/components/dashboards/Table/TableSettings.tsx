@@ -1,34 +1,31 @@
 import Icon from "@powerpipe/components/Icon";
 import SearchInput from "@powerpipe/components/SearchInput";
 import { classNames } from "@powerpipe/utils/styles";
-import { Column, Table } from "@tanstack/react-table";
 import { createPortal } from "react-dom";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { Popover } from "@headlessui/react";
+import { Table } from "@tanstack/react-table";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useEffect, useState } from "react";
 import { usePopper } from "react-popper";
+import { useState } from "react";
 
 type TableSettingsColumnsViewType = "all" | "visible" | "hidden";
 
 const TableSettingsColumns = ({ table }: { table: Table<KeyValuePairs> }) => {
   const [search, setSearch] = useState("");
   const [view, setView] = useState<TableSettingsColumnsViewType>("all");
-  const [filteredColumns, setFilteredColumns] = useState<
-    Column<KeyValuePairs>[]
-  >(() =>
-    table
-      .getAllLeafColumns()
-      .filter((column) => !search || `${column.id}`.match(search.trim())),
-  );
-
-  useEffect(() => {
-    setFilteredColumns(() =>
-      table
-        .getAllLeafColumns()
-        .filter((column) => !search || `${column.id}`.match(search.trim())),
-    );
-  }, [search]);
+  const filteredColumns = table
+    .getAllLeafColumns()
+    .filter((column) => !search || `${column.id}`.match(search.trim()))
+    .filter((column) => {
+      if (view === "hidden") {
+        return !column.getIsVisible();
+      } else if (view === "visible") {
+        return column.getIsVisible();
+      } else {
+        return true;
+      }
+    });
 
   const ColumnRender = ({ column }) => (
     <label
@@ -85,19 +82,10 @@ const TableSettingsColumns = ({ table }: { table: Table<KeyValuePairs> }) => {
         <ViewSelector label="hidden" view={view} setView={setView} />
       </div>
       <div className="max-h-64 overflow-x-auto pl-px">
-        {filteredColumns
-          .filter((column) => {
-            if (view === "hidden") {
-              return !column.getIsVisible();
-            } else if (view === "visible") {
-              return column.getIsVisible();
-            } else {
-              return true;
-            }
-          })
-          .map((column) => (
-            <ColumnRender key={column.id} column={column} />
-          ))}
+        {filteredColumns.map((column) => (
+          <ColumnRender key={column.id} column={column} />
+        ))}
+        {!filteredColumns.length && <span>No columns</span>}
       </div>
     </div>
   );
@@ -112,7 +100,8 @@ const TableSettings = ({ table }: { table: Table<KeyValuePairs> }) => {
 
   return (
     <Popover className="relative">
-      <Popover.Button ref={setReferenceElement} as="div" className="">
+      {/*@ts-ignore*/}
+      <Popover.Button ref={setReferenceElement} as="div">
         <Icon icon="settings" className="h-4 w-4 cursor-pointer" />
       </Popover.Button>
       <Popover.Panel className="absolute z-10 pt-px">
@@ -134,11 +123,6 @@ const TableSettings = ({ table }: { table: Table<KeyValuePairs> }) => {
           // @ts-ignore as this element definitely exists
           document.getElementById("portals"),
         )}
-        {/*{({ close }) => (*/}
-        {/*  <div className="border border-dashboard-panel rounded-md bg-dashboard p-3 space-y-3 min-w-60 max-w-96">*/}
-        {/*    <TableSettingsColumns table={table} />*/}
-        {/*  </div>*/}
-        {/*)}*/}
       </Popover.Panel>
     </Popover>
   );

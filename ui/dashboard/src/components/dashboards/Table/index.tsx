@@ -712,7 +712,6 @@ const TableViewVirtualizedRows = ({
     initialState: { columnVisibility },
     getCoreRowModel: getCoreRowModel(),
     getSortedRowModel: getSortedRowModel(),
-    //debugTable: true,
   });
 
   const { rows } = table.getRowModel();
