@@ -15,6 +15,7 @@ import {
 } from "@powerpipe/constants/icons";
 import { classNames } from "@powerpipe/utils/styles";
 import {
+  CheckSeverity,
   DetectionResult,
   DetectionSeveritySummary,
 } from "@powerpipe/components/dashboards/grouping/common";
@@ -45,9 +46,8 @@ type DetectionPanelSeverityProps = {
 };
 
 type DetectionPanelSeverityBadgeProps = {
-  label: string;
+  severity: CheckSeverity;
   count: number;
-  title: string;
 };
 
 type DetectionEmptyResultRowProps = {
@@ -195,20 +195,49 @@ const DetectionResults = ({
 };
 
 const DetectionPanelSeverityBadge = ({
+  severity,
   count,
-  label,
-  title,
 }: DetectionPanelSeverityBadgeProps) => {
+  const hasSeverity = count > 0;
+  let label: string;
+  switch (severity) {
+    case "low":
+      label = "Low";
+      break;
+    case "medium":
+      label = "Medium";
+      break;
+    case "high":
+      label = "High";
+      break;
+    case "critical":
+      label = "Critical";
+      break;
+    default:
+      label = "Unknown";
+      break;
+  }
   return (
     <div
       className={classNames(
         "border rounded-md text-sm divide-x",
-        count > 0 ? "border-severity" : "border-skip",
-        count > 0
-          ? "bg-severity text-white divide-white"
-          : "text-skip divide-skip",
+        hasSeverity && severity === "low"
+          ? "border-info bg-info text-white divide-white"
+          : null,
+        hasSeverity && severity === "medium"
+          ? "border-severity bg-severity text-white divide-white"
+          : null,
+        hasSeverity && severity === "high"
+          ? "border-orange bg-orange text-white divide-white"
+          : null,
+        hasSeverity && severity === "critical"
+          ? "border-alert bg-alert text-white divide-white"
+          : null,
+        !hasSeverity ? "border-skip text-skip divide-skip" : null,
       )}
-      title={title}
+      title={`${count.toLocaleString()} ${severity} severity ${
+        count === 1 ? "result" : "results"
+      }`}
     >
       <span className={classNames("px-2 py-px")}>{label}</span>
       {count > 0 && <span className={classNames("px-2 py-px")}>{count}</span>}
@@ -236,40 +265,16 @@ const DetectionPanelSeverity = ({
   return (
     <>
       {critical !== undefined && critical !== null && (
-        <DetectionPanelSeverityBadge
-          label="Critical"
-          count={critical}
-          title={`${critical.toLocaleString()} critical severity ${
-            critical === 1 ? "result" : "results"
-          }`}
-        />
+        <DetectionPanelSeverityBadge severity="critical" count={critical} />
       )}
       {high !== undefined && high !== null && (
-        <DetectionPanelSeverityBadge
-          label="High"
-          count={high}
-          title={`${high.toLocaleString()} high severity ${
-            high === 1 ? "result" : "results"
-          }`}
-        />
+        <DetectionPanelSeverityBadge severity="high" count={high} />
       )}{" "}
       {medium !== undefined && medium !== null && (
-        <DetectionPanelSeverityBadge
-          label="Medium"
-          count={medium}
-          title={`${medium.toLocaleString()} medium severity ${
-            medium === 1 ? "result" : "results"
-          }`}
-        />
+        <DetectionPanelSeverityBadge severity="medium" count={medium} />
       )}{" "}
       {low !== undefined && low !== null && (
-        <DetectionPanelSeverityBadge
-          label="Low"
-          count={low}
-          title={`${low.toLocaleString()} low severity ${
-            low === 1 ? "result" : "results"
-          }`}
-        />
+        <DetectionPanelSeverityBadge severity="low" count={low} />
       )}
     </>
   );

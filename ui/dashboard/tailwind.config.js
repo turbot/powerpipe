@@ -27,6 +27,7 @@ module.exports = {
         "table-head": "var(--color-table-head)",
         "slack-aubergine": "#4A154B",
         "steampipe-black": "#181717",
+        "steampipe-blue-dark": "#035EDD",
         "steampipe-red": "#c7252d",
         "black-scale-1": "var(--color-black-scale-1)",
         "black-scale-2": "var(--color-black-scale-2)",

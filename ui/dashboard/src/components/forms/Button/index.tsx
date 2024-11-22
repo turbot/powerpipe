@@ -1,8 +1,8 @@
 import { classNames } from "@powerpipe/utils/styles";
-import { forwardRef } from "react";
+import { forwardRef, ReactNode } from "react";
 
 export type ButtonProps = {
-  children: JSX.Element | JSX.Element[];
+  children: ReactNode;
   className?: string;
   disabled?: boolean;
   onClick(): void | Promise<void>;

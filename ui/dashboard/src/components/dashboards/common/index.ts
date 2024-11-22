@@ -150,7 +150,9 @@ const isNumericCol = (data_type: string | null | undefined) => {
   return (
     data_type.toLowerCase().indexOf("int") >= 0 ||
     data_type.toLowerCase().indexOf("float") >= 0 ||
-    data_type.toLowerCase().indexOf("numeric") >= 0
+    data_type.toLowerCase().indexOf("numeric") >= 0 ||
+    data_type.toLowerCase().indexOf("double") >= 0 ||
+    data_type.toLowerCase().indexOf("bigint") >= 0
   );
 };
 

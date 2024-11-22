@@ -16,6 +16,24 @@ module.exports = {
       "@powerpipe": path.resolve(__dirname, "src"),
     },
     configure: (webpackConfig) => {
+      // Enable WebAssembly support
+      webpackConfig.experiments = {
+        asyncWebAssembly: true,
+        ...webpackConfig.experiments,
+      };
+
+      // Exclude .wasm files from the file-loader
+      const fileLoader = webpackConfig.module.rules.find((rule) =>
+        rule.oneOf?.some((r) => r.loader?.includes("file-loader")),
+      );
+      if (fileLoader) {
+        fileLoader.oneOf.forEach((r) => {
+          if (r.loader && r.loader.includes("file-loader")) {
+            r.exclude.push(/\.wasm$/);
+          }
+        });
+      }
+
       const scopePluginIndex = webpackConfig.resolve.plugins.findIndex(
         ({ constructor }) =>
           constructor && constructor.name === "ModuleScopePlugin",
