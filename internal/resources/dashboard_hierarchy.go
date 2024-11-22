@@ -5,7 +5,6 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/printers"
 	"github.com/turbot/pipe-fittings/utils"
@@ -17,19 +16,16 @@ type DashboardHierarchy struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
 	WithProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Nodes     DashboardNodeList `cty:"node_list" json:"nodes,omitempty"`
-	Edges     DashboardEdgeList `cty:"edge_list" json:"edges,omitempty"`
-	NodeNames []string          `snapshot:"nodes"`
-	EdgeNames []string          `snapshot:"edges"`
-
+	Nodes      DashboardNodeList             `cty:"node_list" json:"nodes,omitempty"`
+	Edges      DashboardEdgeList             `cty:"edge_list" json:"edges,omitempty"`
+	NodeNames  []string                      `snapshot:"nodes"`
+	EdgeNames  []string                      `snapshot:"edges"`
 	Categories map[string]*DashboardCategory `cty:"categories" json:"categories,omitempty" snapshot:"categories"`
-	Width      *int                          `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type       *string                       `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display    *string                       `cty:"display" hcl:"display" json:"display,omitempty"`
 
 	Base *DashboardHierarchy `hcl:"base" json:"-"`
 }
@@ -59,8 +55,6 @@ func (h *DashboardHierarchy) OnDecoded(block *hcl.Block, resourceMapProvider mod
 	}
 	return h.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }
-
-// TODO [node_reuse] Add DashboardLeafNodeImpl and move this there https://github.com/turbot/steampipe/issues/2926
 
 // GetChildren implements ModTreeItem
 func (h *DashboardHierarchy) GetChildren() []modconfig.ModTreeItem {
@@ -103,27 +97,9 @@ func (h *DashboardHierarchy) Diff(other *DashboardHierarchy) *modconfig.ModTreeI
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (h *DashboardHierarchy) GetWidth() int {
-	if h.Width == nil {
-		return 0
-	}
-	return *h.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (h *DashboardHierarchy) GetDisplay() string {
-	return typehelpers.SafeString(h.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (h *DashboardHierarchy) GetDocumentation() string {
 	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (h *DashboardHierarchy) GetType() string {
-	return typehelpers.SafeString(h.Type)
 }
 
 // GetEdges implements NodeAndEdgeProvider

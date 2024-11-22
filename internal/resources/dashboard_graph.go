@@ -5,7 +5,6 @@ import (
 	"github.com/turbot/pipe-fittings/modconfig"
 
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/printers"
 	"github.com/turbot/pipe-fittings/utils"
@@ -17,6 +16,7 @@ type DashboardGraph struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
 	WithProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -28,11 +28,6 @@ type DashboardGraph struct {
 
 	Categories map[string]*DashboardCategory `cty:"categories" json:"categories,omitempty" snapshot:"categories"`
 	Direction  *string                       `cty:"direction" hcl:"direction" json:"direction,omitempty" snapshot:"direction"`
-
-	// these properties are JSON serialised by the parent LeafRun
-	Width   *int    `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string `cty:"display" hcl:"display" json:"display,omitempty"`
 
 	Base *DashboardGraph `hcl:"base" json:"-"`
 }
@@ -108,24 +103,6 @@ func (g *DashboardGraph) Diff(other *DashboardGraph) *modconfig.ModTreeItemDiffs
 	res.Merge(dashboardLeafNodeDiff(g, other))
 
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (g *DashboardGraph) GetWidth() int {
-	if g.Width == nil {
-		return 0
-	}
-	return *g.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (g *DashboardGraph) GetDisplay() string {
-	return typehelpers.SafeString(g.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (g *DashboardGraph) GetType() string {
-	return typehelpers.SafeString(g.Type)
 }
 
 // GetEdges implements NodeAndEdgeProvider

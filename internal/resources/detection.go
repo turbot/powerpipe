@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -14,18 +13,12 @@ import (
 type Detection struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
-	Remain hcl.Body `hcl:",remain" json:"-"`
-
-	Width          *int                             `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Severity       *string                          `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
-	Columns        map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns" json:"columns,omitempty"`
-	Type           *string                          `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display        *string                          `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
-	Author         *string                          `cty:"author" hcl:"author" json:"author,omitempty"`
-	Tables         []string                         `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
-	DisplayColumns []string                         `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty" snapshot:"display_columns"`
+	Remain   hcl.Body `hcl:",remain" json:"-"`
+	Severity *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
+	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty"`
 
 	Base *Detection `hcl:"base" json:"-"`
 }
@@ -46,11 +39,6 @@ func (t *Detection) Equals(other *Detection) bool {
 // OnDecoded implements HclResource
 func (t *Detection) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
-	t.Columns = map[string]*DashboardTableColumn{
-		"reason": {
-			Name: "reason",
-		},
-	}
 	return t.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
 }
 
@@ -69,24 +57,6 @@ func (t *Detection) Diff(other *Detection) *modconfig.ModTreeItemDiffs {
 	res.Merge(dashboardLeafNodeDiff(t, other))
 
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (t *Detection) GetWidth() int {
-	if t.Width == nil {
-		return 0
-	}
-	return *t.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (t *Detection) GetDisplay() string {
-	return typehelpers.SafeString(t.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (t *Detection) GetType() string {
-	return typehelpers.SafeString(t.Type)
 }
 
 // CtyValue implements CtyValueProvider

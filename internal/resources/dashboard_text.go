@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -14,14 +13,12 @@ import (
 type DashboardText struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Value   *string `cty:"value" hcl:"value" snapshot:"value"  json:"value,omitempty"`
-	Width   *int    `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string `cty:"display" hcl:"display" json:"display,omitempty"`
+	Value *string `cty:"value" hcl:"value" snapshot:"value"  json:"value,omitempty"`
 
 	Base *DashboardText `hcl:"base" json:"-"`
 	Mod  *modconfig.Mod `cty:"mod" json:"-"`
@@ -65,27 +62,9 @@ func (t *DashboardText) Diff(other *DashboardText) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (t *DashboardText) GetWidth() int {
-	if t.Width == nil {
-		return 0
-	}
-	return *t.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (t *DashboardText) GetDisplay() string {
-	return typehelpers.SafeString(t.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (*DashboardText) GetDocumentation() string {
 	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (t *DashboardText) GetType() string {
-	return typehelpers.SafeString(t.Type)
 }
 
 // CtyValue implements CtyValueProvider
