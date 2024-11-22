@@ -20,7 +20,6 @@ import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
-// import "headless-react-datepicker/dist/styles.css";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
 dayjs.extend(utc);
