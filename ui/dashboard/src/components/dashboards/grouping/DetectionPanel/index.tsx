@@ -23,6 +23,7 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo } from "react";
 
 type DetectionChildrenProps = {
@@ -118,12 +119,17 @@ const getDetectionResultRowIconTitle = (total: number) => {
 };
 
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
+  const { panelsMap } = useDashboard();
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
         name={`${result.detection.name}.table`}
         panel_type="table"
         data={{ rows: result.rows, columns: result.columns }}
+        properties={{
+          display_columns:
+            panelsMap[result.detection.name]?.properties?.display_columns || [],
+        }}
         filterEnabled
         context={result.detection.name}
       />
