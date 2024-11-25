@@ -2,6 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -10,8 +11,8 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
-type ControlRenderer struct {
-	run               *controlexecute.ControlRun
+type DetectionRenderer struct {
+	run               *dashboardexecute.DetectionRun
 	parent            *GroupRenderer
 	maxFailedControls int
 	maxTotalControls  int
@@ -21,8 +22,8 @@ type ControlRenderer struct {
 	lastChild      bool
 }
 
-func NewControlRenderer(run *controlexecute.ControlRun, parent *GroupRenderer) *ControlRenderer {
-	r := &ControlRenderer{
+func NewDetectionRenderer(run *dashboardexecute.DetectionRun, parent *GroupRenderer) *DetectionRenderer {
+	r := &DetectionRenderer{
 		run:               run,
 		parent:            parent,
 		maxFailedControls: parent.maxFailedControls,
@@ -36,17 +37,17 @@ func NewControlRenderer(run *controlexecute.ControlRun, parent *GroupRenderer) *
 
 // are we the last child of our parent?
 // this affects the tree rendering
-func (r ControlRenderer) isLastChild() bool {
+func (r DetectionRenderer) isLastChild() bool {
 	if r.parent.group == nil || r.parent.group.GroupItem == nil {
 		return true
 	}
 	siblings := r.parent.group.GroupItem.GetChildren()
-	return r.run.Control.Name() == siblings[len(siblings)-1].Name()
+	return r.run.Resource.Name() == siblings[len(siblings)-1].Name()
 }
 
 // get the indent inherited from our parent
 // - this will depend on whether we are our parents last child
-func (r ControlRenderer) parentIndent() string {
+func (r DetectionRenderer) parentIndent() string {
 	if r.lastChild {
 		return r.parent.lastChildIndent()
 	}
@@ -54,37 +55,39 @@ func (r ControlRenderer) parentIndent() string {
 }
 
 // indent before first result
-func (r ControlRenderer) preResultIndent() string {
+func (r DetectionRenderer) preResultIndent() string {
 	// when we do not have any rows, do not add a '|' to indent
-	if viper.GetBool(constants.ArgDryRun) || len(r.run.Rows) == 0 {
+	if viper.GetBool(constants.ArgDryRun) || len(r.run.Data.Rows) == 0 {
 		return r.parentIndent()
 	}
 	return r.parentIndent() + "| "
 }
 
 // indent before first result
-func (r ControlRenderer) resultIndent() string {
+func (r DetectionRenderer) resultIndent() string {
 	return r.parentIndent()
 }
 
 // indent after last result
-func (r ControlRenderer) postResultIndent() string {
+func (r DetectionRenderer) postResultIndent() string {
 	return r.parentIndent()
 }
 
-func (r ControlRenderer) Render() string {
+func (r DetectionRenderer) Render() string {
 	var controlStrings []string
+	failedCount := len(r.run.Data.Rows)
 	// use group heading renderer to render the control title and counts
-	controlHeadingRenderer := NewGroupHeadingRenderer(typehelpers.SafeString(r.run.Control.Title),
-		r.run.Summary.FailedCount(),
-		r.run.Summary.TotalCount(),
+	// TODO group heading renderer suitable for detection or need a special one?
+	controlHeadingRenderer := NewGroupHeadingRenderer(typehelpers.SafeString(r.run.Resource.GetTitle()),
+		failedCount,
+		failedCount,
 		r.maxFailedControls,
 		r.maxTotalControls,
 		r.width,
 		r.parent.childGroupIndent())
 
 	// set the severity on the heading renderer
-	controlHeadingRenderer.severity = typehelpers.SafeString(r.run.Control.Severity)
+	controlHeadingRenderer.severity = typehelpers.SafeString(r.run.Resource.Severity)
 
 	// get formatted indents
 	formattedPostResultIndent := fmt.Sprintf("%s", ControlColors.Indent(r.postResultIndent()))
@@ -106,11 +109,18 @@ func (r ControlRenderer) Render() string {
 
 	// now render the results (if any)
 	var resultStrings []string
-	for _, row := range r.run.Rows {
-		resultRenderer := NewControlResultRenderer(
-			row.Status,
-			row.Reason,
-			row.Dimensions,
+	for _, row := range r.run.Data.Rows {
+		// build dimension
+		var dimensions = make([]controlexecute.Dimension, len(r.run.Data.Columns))
+		for i, c := range r.run.Data.Columns {
+			dimensions[i] = controlexecute.Dimension{
+				Key:     c.Name,
+				SqlType: c.DataType,
+				Value:   typehelpers.ToString(row[c.Name]),
+			}
+		}
+		resultRenderer := NewDetectionResultRenderer(
+			dimensions,
 			r.colorGenerator,
 			r.width,
 			r.resultIndent())
@@ -123,7 +133,7 @@ func (r ControlRenderer) Render() string {
 	// newline after results
 	if len(resultStrings) > 0 {
 		controlStrings = append(controlStrings, resultStrings...)
-		if len(r.run.Rows) > 0 || r.run.GetError() != nil {
+		if len(r.run.Data.Rows) > 0 || r.run.GetError() != nil {
 			controlStrings = append(controlStrings, formattedPostResultIndent)
 		}
 	}

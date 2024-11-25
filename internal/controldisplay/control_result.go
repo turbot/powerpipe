@@ -11,7 +11,7 @@ import (
 
 const minReasonWidth = 10
 
-type ResultRenderer struct {
+type ControlResultRenderer struct {
 	status         string
 	reason         string
 	dimensions     []controlexecute.Dimension
@@ -24,8 +24,8 @@ type ResultRenderer struct {
 	indent     string
 }
 
-func NewResultRenderer(status, reason string, dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *ResultRenderer {
-	return &ResultRenderer{
+func NewControlResultRenderer(status, reason string, dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *ControlResultRenderer {
+	return &ControlResultRenderer{
 		status:         status,
 		reason:         reason,
 		dimensions:     dimensions,
@@ -36,7 +36,7 @@ func NewResultRenderer(status, reason string, dimensions []controlexecute.Dimens
 	}
 }
 
-func (r ResultRenderer) Render() string {
+func (r ControlResultRenderer) Render() string {
 	// in quiet mode, only render failures
 	if r.errorsOnly && !helpers.StringSliceContains([]string{string(constants.ControlAlarm), string(constants.ControlError)}, r.status) {
 		return ""

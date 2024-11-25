@@ -61,7 +61,7 @@ func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardty
 				return nil, err
 			}
 		case *resources.Detection:
-			childRun, err = NewLeafRun(i, r, executionTree)
+			childRun, err = NewDetectionRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}

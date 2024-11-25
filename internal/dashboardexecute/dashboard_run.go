@@ -154,9 +154,8 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 
 			// TACTICAL: as this is a runtime dependency,  set the run name to the 'scoped name'
 			// this is to match the name in the panel dependendencies
-			// TODO [node_reuse] consider naming https://github.com/turbot/steampipe/issues/2921
 			inputRunName := fmt.Sprintf("%s.%s", r.DashboardName, i.UnqualifiedName)
-			childRun, err = NewLeafRun(i.Clone(), r, executionTree, setName(inputRunName))
+			childRun, err = NewLeafRun(i.Clone(), r, executionTree, withName(inputRunName))
 			if err != nil {
 				return err
 			}
