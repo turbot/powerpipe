@@ -1,7 +1,4 @@
 ## v1.0.1 [2024-11-21]
-_Whats new_
-- Update uploaded Pipes snapshot URL to include `/powerpipe`. ([#577](https://github.com/turbot/powerpipe/issues/577))
-
 _Bug fixes_
 - Fix minor spelling issue in query help output. ([#542](https://github.com/turbot/powerpipe/issues/542))
 - Update error message to inform users to run `make dashboard_assets` when dashboard assets are not present. ([#524](https://github.com/turbot/powerpipe/issues/524))
