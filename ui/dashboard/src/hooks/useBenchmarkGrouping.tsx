@@ -7,7 +7,6 @@ import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
 import useFilterConfig from "./useFilterConfig";
-import useCheckGroupingConfig from "./useCheckGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   CheckDisplayGroup,
@@ -37,6 +36,7 @@ import {
 } from "@powerpipe/types";
 import { useDashboard } from "./useDashboard";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
+import useGroupingConfig from "./useGroupingConfig";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -890,7 +890,7 @@ const GroupingProvider = ({
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const groupingsConfig = useCheckGroupingConfig();
+  const { grouping: groupingsConfig } = useGroupingConfig(definition.name);
 
   const [
     benchmark,

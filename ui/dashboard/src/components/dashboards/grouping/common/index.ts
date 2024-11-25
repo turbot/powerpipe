@@ -226,6 +226,8 @@ export type DetectionDisplayGroup = {
   value?: string | undefined;
 };
 
+export type DisplayGroup = CheckDisplayGroup | DetectionDisplayGroup;
+
 type BaseOperator = "and" | "equal" | "not_equal";
 export type FilterOperator = BaseOperator;
 

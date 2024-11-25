@@ -1,76 +1,90 @@
-import {
-  CheckDisplayGroup,
-  CheckDisplayGroupType,
-} from "@powerpipe/components/dashboards/grouping/common";
+import { DisplayGroup } from "@powerpipe/components/dashboards/grouping/common";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
-const groupingKeys = [
-  "benchmark",
-  "control",
-  "control_tag",
-  "detection",
-  "detection_benchmark",
-  "detection_tag",
-  "dimension",
-  "reason",
-  "resource",
-  "result",
-  "severity",
-  "status",
-];
-
-const useGroupingConfig = () => {
+const useGroupingConfig = (panelName?: string) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { dashboard, panelsMap, snapshot } = useDashboard();
+  const { panelsMap } = useDashboard();
+  const panel = panelName ? panelsMap[panelName] : undefined;
 
-  console.log({dashboard, panelsMap, snapshot})
-
-  return useMemo(() => {
-    const rawGrouping = searchParams.get("grouping");
-    if (rawGrouping) {
-      const groupings: CheckDisplayGroup[] = [];
-      const groupingParts = rawGrouping.split(",").filter((g) => !!g);
-      for (const groupingPart of groupingParts) {
-        const typeValueParts = groupingPart.split("|");
-        const groupingKey = typeValueParts[0];
-
-        // Is this a valid grouping key?
-        const isValid = groupingKeys.includes(groupingKey);
-        if (!isValid) {
-          throw new Error(`Unsupported grouping key ${groupingKey}`);
-        }
-
-        if (typeValueParts.length > 1) {
-          groupings.push({
-            type: typeValueParts[0] as CheckDisplayGroupType,
-            value: typeValueParts[1],
-          });
-        } else {
-          groupings.push({
-            type: typeValueParts[0] as CheckDisplayGroupType,
-          });
-        }
-      }
-      return groupings;
+  const allGroupings = useMemo(() => {
+    const rawGroupings = searchParams.get("grouping");
+    if (rawGroupings) {
+      let parsedGroups: KeyValuePairs<DisplayGroup[]>;
+      parsedGroups = JSON.parse(rawGroupings);
+      return parsedGroups;
     } else {
+      return {};
+    }
+  }, [searchParams]);
+
+  const grouping = useMemo(() => {
+    if (!panel) {
+      return [] as DisplayGroup[];
+    }
+
+    if (
+      panel.panel_type !== "benchmark" &&
+      panel.panel_type !== "detection_benchmark" &&
+      panel.panel_type !== "control" &&
+      panel.panel_type !== "detection"
+    ) {
+      return [] as DisplayGroup[];
+    }
+
+    const found = allGroupings[panel.name];
+    if (found) {
+      return found;
+    } else if (
+      panel.panel_type === "benchmark" ||
+      panel.panel_type === "control"
+    ) {
       return [
-        // { type: "status" },
-        // { type: "reason" },
-        // { type: "resource" },
-        // { type: "severity" },
-        // { type: "dimension", value: "account_id" },
-        // { type: "dimension", value: "region" },
-        // { type: "control_tag", value: "service" },
-        // { type: "control_tag", value: "cis_type" },
-        // { type: "control_tag", value: "cis_level" },
         { type: "benchmark" },
         { type: "control" },
         { type: "result" },
-      ] as CheckDisplayGroup[];
+      ] as DisplayGroup[];
+    } else if (
+      panel.panel_type === "detection_benchmark" ||
+      panel.panel_type === "detection"
+    ) {
+      return [
+        { type: "detection_benchmark" },
+        { type: "detection" },
+        { type: "result" },
+      ] as DisplayGroup[];
+    } else {
+      return [] as DisplayGroup[];
     }
-  }, [searchParams]);
+  }, [allGroupings, panel]);
+
+  const update = (toSave: DisplayGroup[]) => {
+    setSearchParams((previous) => {
+      const newParams = new URLSearchParams(previous);
+
+      if (!panelName) {
+        return newParams;
+      }
+
+      if (!toSave || !toSave.length) {
+        delete allGroupings[panelName];
+      } else {
+        allGroupings[panelName] = toSave;
+      }
+
+      if (!!Object.keys(allGroupings).length) {
+        newParams.set("grouping", JSON.stringify(allGroupings));
+        return newParams;
+      } else {
+        newParams.delete("grouping");
+        return newParams;
+      }
+    });
+  };
+
+  return { allGroupings, grouping, update };
 };
 
 export default useGroupingConfig;

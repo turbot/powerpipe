@@ -1,7 +1,7 @@
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
-import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
+import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import {
   DashboardDataModeCLISnapshot,
   DashboardSnapshotMetadata,
@@ -9,6 +9,7 @@ import {
 import { EXECUTION_SCHEMA_VERSION_20240607 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
+  groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
 } from "@powerpipe/utils/snapshot";
 import { saveAs } from "file-saver";
@@ -19,7 +20,7 @@ import { validateFilter } from "@powerpipe/components/dashboards/grouping/Filter
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
   const { allFilters } = useFilterConfig();
-  const groupingConfig = useCheckGroupingConfig();
+  const { allGroupings } = useGroupingConfig();
 
   const saveSnapshot = () => {
     if (!dashboard || !snapshot) {
@@ -30,7 +31,10 @@ const SaveSnapshotButton = () => {
       ...streamlinedSnapshot,
     };
 
-    if (!!Object.keys(allFilters).length || !!groupingConfig) {
+    if (
+      !!Object.keys(allFilters).length ||
+      !!Object.keys(allGroupings).length
+    ) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
       };
@@ -41,15 +45,18 @@ const SaveSnapshotButton = () => {
             continue;
           }
           // @ts-ignore
-          metadata.view[panel] = {
-            filter_by: filterToSnapshotMetadata(filter),
-          };
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].filter_by = filterToSnapshotMetadata(filter);
         }
       }
-      if (!!groupingConfig) {
-        // @ts-ignore
-        // TODO @mike re-include this
-        // metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
+      if (!!Object.keys(allGroupings).length) {
+        for (const [panel, grouping] of Object.entries(allGroupings)) {
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].group_by = groupingToSnapshotMetadata(grouping);
+        }
       }
       withMetadata.metadata = metadata;
       withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240607;

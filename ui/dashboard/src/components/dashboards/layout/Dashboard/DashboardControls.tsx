@@ -26,7 +26,7 @@ const DashboardControls = ({ panelName }: { panelName: string }) => {
       </div>
       <div className="p-4 space-y-3">
         <span className="font-semibold">Group</span>
-        <GroupingConfig panelName={panelName} onClose={hideControls} />
+        <GroupingConfig panelName={panelName} />
       </div>
     </div>
   );

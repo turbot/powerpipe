@@ -18,7 +18,6 @@ import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
 type CheckGroupingEditorProps = {
   config: CheckDisplayGroup[];
-  onCancel: () => void;
   onApply: (newValue: CheckDisplayGroup[]) => void;
 };
 

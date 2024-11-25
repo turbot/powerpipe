@@ -1,7 +1,7 @@
 import { Filter } from "@powerpipe/components/dashboards/grouping/common";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const defaultFilter = {

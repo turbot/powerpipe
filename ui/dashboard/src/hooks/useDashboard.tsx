@@ -1,5 +1,6 @@
 import get from "lodash/get";
 import isEqual from "lodash/isEqual";
+import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 import useDashboardState from "./useDashboardState";
 import useDashboardWebSocket, { SocketActions } from "./useDashboardWebSocket";
 import useDashboardWebSocketEventHandler from "./useDashboardWebSocketEventHandler";
@@ -27,7 +28,12 @@ import {
   useEffect,
   useState,
 } from "react";
+import {
+  DisplayGroup,
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
 import { GlobalHotKeys } from "react-hotkeys";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { noop } from "@powerpipe/utils/func";
 import {
   useLocation,
@@ -36,12 +42,6 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import {
-  DisplayGroupType,
-  Filter,
-} from "@powerpipe/components/dashboards/grouping/common";
 
 const DashboardContext = createContext<IDashboardContext | null>(null);
 
@@ -170,7 +170,7 @@ const DashboardProvider = ({
     }
 
     const panelFilters: KeyValuePairs<Filter> = {};
-    const panelGroups: KeyValuePairs<DisplayGroupType[]> = {};
+    const panelGroups: KeyValuePairs<DisplayGroup[]> = {};
 
     for (const [panel, metadata] of Object.entries(
       state.snapshot.metadata.view,
@@ -186,7 +186,7 @@ const DashboardProvider = ({
       if (!!Object.keys(filterBy).length) {
         panelFilters[panel] = filterBy;
       }
-      if (!!groupBy.length) {
+      if (!!Object.keys(groupBy).length!!) {
         panelGroups[panel] = groupBy;
       }
     }
@@ -196,18 +196,7 @@ const DashboardProvider = ({
     }
 
     if (!!Object.keys(panelGroups).length) {
-      searchParams.set(
-        "grouping",
-        state.snapshot.metadata.view.group_by
-          .map((c) =>
-            c.type === "dimension" ||
-            c.type === "control_tag" ||
-            c.type === "detection_tag"
-              ? `${c.type}|${c.value}`
-              : c.type,
-          )
-          .join(","),
-      );
+      searchParams.set("grouping", JSON.stringify(panelGroups));
     }
 
     setSearchParams(searchParams, { replace: true });
