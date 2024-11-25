@@ -108,7 +108,7 @@ func (e *DashboardExecutor) validateInputs(executionTree *DashboardExecutionTree
 }
 
 func (e *DashboardExecutor) LoadSnapshot(ctx context.Context, sessionId, snapshotName string, w *workspace.PowerpipeWorkspace) (map[string]any, error) {
-	// find snapshot path in workspace
+	// find snapshot path in Workspace
 	snapshotPath, ok := w.GetPowerpipeModResources().Snapshots[snapshotName]
 	if !ok {
 		return nil, fmt.Errorf("snapshot %s not found in %s (%s)", snapshotName, w.Mod.Name(), w.Path)

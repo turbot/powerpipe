@@ -4,8 +4,7 @@ import (
 	"context"
 	"fmt"
 	"github.com/turbot/pipe-fittings/modconfig"
-	pworkspace "github.com/turbot/pipe-fittings/workspace"
-	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/workspace"
 
 	"github.com/turbot/pipe-fittings/pipes"
@@ -64,9 +63,9 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	}
 	return res, nil
 }
-func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, client *db_client.DbClient, controlFilter pworkspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*controlexecute.ExecutionTree, error) {
+func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DisplayExecutionTree_SNAP, error) {
 	// Step 1: Create the execution tree
-	tree, err := controlexecute.NewExecutionTree(ctx, w, client, controlFilter, targets...)
+	tree, err := newDisplayExecutionTree(snapshot, w, targets...)
 	if err != nil {
 		return nil, err
 	}
@@ -78,11 +77,61 @@ func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.Stea
 	populateResults(tree.Root, snapshot.Panels)
 
 	// Step 4: Add any additional metadata from the snapshot
-	tree.SearchPath = snapshot.SearchPath
 	tree.StartTime = snapshot.StartTime
 	tree.EndTime = snapshot.EndTime
 
 	return tree, nil
+}
+
+func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DisplayExecutionTree_SNAP, error) {
+	// now populate the ExecutionTree
+	executionTree := &dashboardexecute.DisplayExecutionTree_SNAP{
+		LeafRuns: make(map[string]controlexecute.LeafRun),
+	}
+
+	var resolvedItem modconfig.ModTreeItem
+	// if only one argument is provided, add this as execution root
+	if len(targets) == 1 {
+		resolvedItem = targets[0]
+	} else {
+		// create a root benchmark with `items` as it's children
+		resolvedItem = resources.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
+	}
+
+	// build tree of result groups, starting with a synthetic 'root' node
+
+	root, err := dashboardexecute.NewRootResultGroup_(resolvedItem)
+	if err != nil {
+		return nil, err
+	}
+
+	// now traverse the layout snapshot layout, find the corresponding items in the snapshot panesl and build the tree
+	rootLayout := snapshot.Layout
+
+	// build node for this item
+	rootRun := snapshot.Panels[rootLayout.Name]
+	if rootRun == nil {
+		return nil, fmt.Errorf("rootRun %s not found in panels", rootLayout.Name)
+	}
+
+	switch resource := rootRun.(type) {
+	case *dashboardexecute.DetectionRun:
+		root.AddDetection(resource)
+	case *dashboardexecute.BenchmarkRun:
+		// create a result group for this item
+		benchmarkGroup, err := dashboardexecute.NewResultGroup_(resource, root)
+		if err != nil {
+			return nil, err
+		}
+		root.AddResultGroup(benchmarkGroup)
+	}
+
+	executionTree.Root = root
+
+	// after tree has built, ControlCount will be set - create progress rendered
+	executionTree.Progress = controlstatus.NewControlProgress(len(executionTree.LeafRuns))
+
+	return executionTree, nil
 }
 
 func populateSummaries(treeNode controlexecute.ExecutionTreeNode, snapshotNode *steampipeconfig.SnapshotTreeNode) {

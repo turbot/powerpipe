@@ -18,7 +18,7 @@ import (
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*resources.ControlBenchmark | *resources.Benchmark | *resources.Control
+	*resources.ControlBenchmark | *resources.Benchmark | *resources.Control | *resources.Detection
 }
 
 type InitData[T CheckTarget] struct {

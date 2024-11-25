@@ -10,8 +10,7 @@ import (
 	"github.com/turbot/powerpipe/internal/resources"
 )
 
-// DetectionBenchmarkRun is a struct representing a container run
-type DetectionBenchmarkRun struct {
+type BenchmarkRun struct {
 	DashboardParentImpl
 	BenchmarkType string `json:"benchmark_type"`
 
@@ -20,7 +19,7 @@ type DetectionBenchmarkRun struct {
 	dashboardNode *resources.Benchmark
 }
 
-func (r *DetectionBenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+func (r *BenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.Name,
 		NodeType: r.NodeType,
@@ -32,13 +31,15 @@ func (r *DetectionBenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DetectionBenchmarkRun, error) {
+func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*BenchmarkRun, error) {
 	children := container.GetChildren()
 
+	// TODO KAI WHICH
 	r := &DetectionBenchmarkRun{
 		dashboardNode: container,
 		BenchmarkType: "detection",
 	}
+	r := &BenchmarkRun{dashboardNode: container}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(container, parent, r, executionTree)
@@ -86,7 +87,7 @@ func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardty
 }
 
 // Initialise implements DashboardTreeRun
-func (r *DetectionBenchmarkRun) Initialise(ctx context.Context) {
+func (r *BenchmarkRun) Initialise(ctx context.Context) {
 	// initialise our children
 	if err := r.initialiseChildren(ctx); err != nil {
 		r.SetError(ctx, err)
@@ -95,7 +96,7 @@ func (r *DetectionBenchmarkRun) Initialise(ctx context.Context) {
 
 // Execute implements DashboardTreeRun
 // execute all children and wait for them to complete
-func (r *DetectionBenchmarkRun) Execute(ctx context.Context) {
+func (r *BenchmarkRun) Execute(ctx context.Context) {
 	// execute all children asynchronously
 	r.executeChildrenAsync(ctx)
 
@@ -115,4 +116,4 @@ func (r *DetectionBenchmarkRun) Execute(ctx context.Context) {
 }
 
 // IsSnapshotPanel implements SnapshotPanel
-func (*DetectionBenchmarkRun) IsSnapshotPanel() {}
+func (*BenchmarkRun) IsSnapshotPanel() {}

@@ -2,19 +2,19 @@ package controldisplay
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
 type SummarySeverityRowRenderer struct {
-	resultTree *controlexecute.ExecutionTree
+	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
 	width      int
 	severity   string
 }
 
-func NewSummarySeverityRowRenderer(resultTree *controlexecute.ExecutionTree, width int, severity string) *SummarySeverityRowRenderer {
+func NewSummarySeverityRowRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int, severity string) *SummarySeverityRowRenderer {
 	return &SummarySeverityRowRenderer{
 		resultTree: resultTree,
 		width:      width,

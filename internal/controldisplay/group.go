@@ -2,6 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"log/slog"
 	"strings"
 
@@ -10,17 +11,17 @@ import (
 )
 
 type GroupRenderer struct {
-	group *controlexecute.ResultGroup
+	group *dashboardexecute.ResultGroup_SNAP
 	// screen width
 	width             int
 	maxFailedControls int
 	maxTotalControls  int
-	resultTree        *controlexecute.ExecutionTree
+	resultTree        *dashboardexecute.DisplayExecutionTree_SNAP
 	lastChild         bool
 	parent            *GroupRenderer
 }
 
-func NewGroupRenderer(group *controlexecute.ResultGroup, parent *GroupRenderer, maxFailedControls, maxTotalControls int, resultTree *controlexecute.ExecutionTree, width int) *GroupRenderer {
+func NewGroupRenderer(group *dashboardexecute.ResultGroup_SNAP, parent *GroupRenderer, maxFailedControls, maxTotalControls int, resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int) *GroupRenderer {
 	r := &GroupRenderer{
 		group:             group,
 		parent:            parent,
@@ -35,7 +36,7 @@ func NewGroupRenderer(group *controlexecute.ResultGroup, parent *GroupRenderer, 
 
 // are we the last child of our parent?
 // this affects the tree rendering
-func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
+func (r GroupRenderer) isLastChild(group *dashboardexecute.ResultGroup_SNAP) bool {
 	if group.Parent == nil || group.Parent.GroupItem == nil {
 		return true
 	}

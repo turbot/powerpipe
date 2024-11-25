@@ -3,7 +3,7 @@ package controldisplay
 import (
 	"context"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"strings"
 )
@@ -14,7 +14,7 @@ type NullFormatter struct {
 	FormatterBase
 }
 
-func (j *NullFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
+func (j *NullFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
 	return strings.NewReader(""), nil
 }
 

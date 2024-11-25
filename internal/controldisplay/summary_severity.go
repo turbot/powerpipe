@@ -2,15 +2,15 @@ package controldisplay
 
 import (
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 type SummarySeverityRenderer struct {
-	resultTree *controlexecute.ExecutionTree
+	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
 	width      int
 }
 
-func NewSummarySeverityRenderer(resultTree *controlexecute.ExecutionTree, width int) *SummarySeverityRenderer {
+func NewSummarySeverityRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int) *SummarySeverityRenderer {
 	return &SummarySeverityRenderer{
 		resultTree: resultTree,
 		width:      width,

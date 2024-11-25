@@ -2,17 +2,17 @@ package controldisplay
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
 type SummaryTotalRowRenderer struct {
-	resultTree *controlexecute.ExecutionTree
+	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
 	width      int
 }
 
-func NewSummaryTotalRowRenderer(resultTree *controlexecute.ExecutionTree, width int) *SummaryTotalRowRenderer {
+func NewSummaryTotalRowRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int) *SummaryTotalRowRenderer {
 	return &SummaryTotalRowRenderer{
 		resultTree: resultTree,
 		width:      width,

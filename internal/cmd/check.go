@@ -3,6 +3,7 @@ package cmd
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"os"
 	"strings"
@@ -386,6 +387,16 @@ func shouldPrintCheckTiming() bool {
 }
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
+	//reader, err := formatter.Format(ctx, executionTree)
+	//if err != nil {
+	//	return err
+	//}
+	//_, err = io.Copy(os.Stdout, reader)
+	//return err
+	return nil
+}
+
+func displayControlResults_SNAP(ctx context.Context, executionTree *dashboardexecute.DisplayExecutionTree_SNAP, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)
 	if err != nil {
 		return err

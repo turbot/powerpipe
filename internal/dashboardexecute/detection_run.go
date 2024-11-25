@@ -3,6 +3,7 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
@@ -33,6 +34,13 @@ type DetectionRun struct {
 	onComplete       func()
 	database         connection.ConnectionStringProvider
 	searchPathConfig backend.SearchPathConfig
+}
+
+func (r *DetectionRun) IsExecutionTreeNode() {
+}
+
+func (r *DetectionRun) GetChildren() []controlexecute.ExecutionTreeNode {
+	return nil
 }
 
 func (r *DetectionRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {

@@ -3,12 +3,12 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"strings"
 
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
 const MaxColumns = 200
@@ -17,8 +17,8 @@ type TextFormatter struct {
 	FormatterBase
 }
 
-func (tf TextFormatter) Format(_ context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
-	renderer := NewTableRenderer(tree)
+func (tf TextFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
+	renderer := NewTableSnapRenderer(tree)
 	widthConstraint := utils.NewRangeConstraint(renderer.MinimumWidth(), MaxColumns)
 	renderedText := renderer.Render(widthConstraint.Constrain(GetMaxCols()))
 	res := strings.NewReader(fmt.Sprintf("\n%s\n", renderedText))

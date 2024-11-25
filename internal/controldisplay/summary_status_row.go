@@ -2,22 +2,22 @@ package controldisplay
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
 )
 
 type SummaryStatusRowRenderer struct {
-	resultTree *controlexecute.ExecutionTree
+	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
 	width      int
 	status     string
 }
 
-func NewSummaryStatusRowRenderer(resultTree *controlexecute.ExecutionTree, width int, status string) *SummaryStatusRowRenderer {
+func NewSummaryStatusRowRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int, status string) *SummaryStatusRowRenderer {
 	return &SummaryStatusRowRenderer{
 		resultTree: resultTree,
 		width:      width,
