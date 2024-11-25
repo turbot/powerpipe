@@ -3577,12 +3577,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@heroicons/react@npm:2.1.5":
-  version: 2.1.5
-  resolution: "@heroicons/react@npm:2.1.5"
+"@heroicons/react@npm:2.2.0":
+  version: 2.2.0
+  resolution: "@heroicons/react@npm:2.2.0"
   peerDependencies:
-    react: ">= 16"
-  checksum: 10c0/d0ca2d017545da103ed8e90e9e6679d46329c1b09bb4c06ff509b0fe7cfbba7034409ea24b0469fabd2a0a9b144e8e717f58de924615e0b0a1bed7b51fcc5940
+    react: ">= 16 || ^19.0.0-rc"
+  checksum: 10c0/f8d3cf689b56716339c91df3542f3948115042d1e70e6bc940a3f3e347c0bc78b56aa563917fbd7ce097fe2f38ebb21bffb0db39be914cbc545a754bddae9ab4
   languageName: node
   linkType: hard
 
@@ -16512,7 +16512,7 @@ __metadata:
     "@chromatic-com/storybook": "npm:2.0.1"
     "@craco/craco": "npm:7.1.0"
     "@headlessui/react": "npm:1.7.19"
-    "@heroicons/react": "npm:2.1.5"
+    "@heroicons/react": "npm:2.2.0"
     "@material-symbols/svg-300": "npm:0.27.1"
     "@popperjs/core": "npm:2.11.8"
     "@storybook/addon-actions": "npm:8.3.0"
