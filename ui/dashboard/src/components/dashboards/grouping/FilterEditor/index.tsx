@@ -6,6 +6,7 @@ import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { CheckDisplayGroupType, Filter, FilterType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
+import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
@@ -15,14 +16,13 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
-import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
-type CheckFilterEditorProps = {
+type FilterEditorProps = {
   filter: Filter;
-  onApply: (newValue: Filter) => void;
+  onApply: (toSave: Filter) => void;
 };
 
-type CheckFilterEditorItemProps = {
+type FilterEditorItemProps = {
   filter: Filter;
   item: Filter;
   index: number;
@@ -30,7 +30,7 @@ type CheckFilterEditorItemProps = {
   update: (index: number, item: Filter) => void;
 };
 
-type CheckFilterTypeSelectProps = {
+type FilterTypeSelectProps = {
   className?: string;
   filter: Filter;
   index: number;
@@ -39,7 +39,7 @@ type CheckFilterTypeSelectProps = {
   update: (index: number, updatedItem: Filter) => void;
 };
 
-// type CheckFilterKeySelectProps = {
+// type FilterKeySelectProps = {
 //   index: number;
 //   item: Filter;
 //   type: FilterType;
@@ -47,7 +47,7 @@ type CheckFilterTypeSelectProps = {
 //   filterKey: string | undefined;
 // };
 
-type CheckFilterValueSelectProps = {
+type FilterValueSelectProps = {
   className?: string;
   index: number;
   item: Filter;
@@ -84,14 +84,14 @@ const validateFilter = (filter: Filter): boolean => {
   return false;
 };
 
-const CheckFilterTypeSelect = ({
+const FilterTypeSelect = ({
   className,
   filter,
   index,
   item,
   type,
   update,
-}: CheckFilterTypeSelectProps) => {
+}: FilterTypeSelectProps) => {
   const [currentType, setCurrentType] = useState<FilterType>(type);
   const { context: filterValues } = useDashboardControls();
 
@@ -211,13 +211,13 @@ const CheckFilterTypeSelect = ({
   );
 };
 
-// const CheckFilterKeySelect = ({
+// const FilterKeySelect = ({
 //   index,
 //   item,
 //   type,
 //   filterKey,
 //   update,
-// }: CheckFilterKeySelectProps) => {
+// }: FilterKeySelectProps) => {
 //   const [currentKey, setCurrentKey] = useState(filterKey);
 //   const { context: filterValues } = useDashboardControls();
 //
@@ -254,7 +254,7 @@ const CheckFilterTypeSelect = ({
 //       // @ts-ignore as this element definitely exists
 //       menuPortalTarget={document.getElementById("portals")}
 //       onChange={(t) =>
-//         setCurrentKey((t as SelectOption).value as CheckDisplayGroupType)
+//         setCurrentKey((t as SelectOption).value as DisplayGroupType)
 //       }
 //       options={keys}
 //       inputId={`${type}.input`}
@@ -266,14 +266,14 @@ const CheckFilterTypeSelect = ({
 //   );
 // };
 
-const CheckFilterValueSelect = ({
+const FilterValueSelect = ({
   className,
   index,
   item,
   type,
   value,
   update,
-}: CheckFilterValueSelectProps) => {
+}: FilterValueSelectProps) => {
   const [currentValue, setCurrentValue] = useState<{
     value: any;
     title?: string;
@@ -382,7 +382,7 @@ const CheckFilterEditorItem = ({
   item,
   remove,
   update,
-}: CheckFilterEditorItemProps) => {
+}: FilterEditorItemProps) => {
   const dragControls = useDragControls();
 
   return (
@@ -399,7 +399,7 @@ const CheckFilterEditorItem = ({
         <Icon className="h-5 w-5" icon="drag_indicator" />
       </div>
       <div className="grow min-w-44 max-w-72">
-        <CheckFilterTypeSelect
+        <FilterTypeSelect
           filter={filter}
           index={index}
           item={item}
@@ -425,7 +425,7 @@ const CheckFilterEditorItem = ({
       {item.operator === "equal" && <span>=</span>}
       {item.operator === "not_equal" && <span>!=</span>}
       <div className="grow min-w-52 max-w-72">
-        <CheckFilterValueSelect
+        <FilterValueSelect
           index={index}
           item={item}
           // @ts-ignore
@@ -453,7 +453,7 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const FilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
+const FilterEditor = ({ filter, onApply }: FilterEditorProps) => {
   const [innerFilter, setInnerFilter] = useState<Filter>(filter);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });

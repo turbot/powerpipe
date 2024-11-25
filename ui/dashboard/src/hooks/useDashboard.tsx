@@ -13,6 +13,7 @@ import {
   DashboardDataOptions,
   DashboardRenderOptions,
   DashboardSearch,
+  DashboardSnapshotViewMetadata,
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
@@ -36,6 +37,11 @@ import {
   useSearchParams,
 } from "react-router-dom";
 import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
+import {
+  DisplayGroupType,
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
 
 const DashboardContext = createContext<IDashboardContext | null>(null);
 
@@ -158,30 +164,52 @@ const DashboardProvider = ({
       state.snapshot_metadata_loaded ||
       !state.snapshot ||
       !state.snapshot.metadata ||
-      !state.snapshot.metadata.view ||
-      (!state.snapshot.metadata.view.group_by &&
-        !state.snapshot.metadata.view.filter_by)
+      !Object.keys(state.snapshot.metadata.view).length
     ) {
       return;
     }
-    if (state.snapshot.metadata.view.group_by) {
+
+    const panelFilters: KeyValuePairs<Filter> = {};
+    const panelGroups: KeyValuePairs<DisplayGroupType[]> = {};
+
+    for (const [panel, metadata] of Object.entries(
+      state.snapshot.metadata.view,
+    )) {
+      if (!panel || !metadata) {
+        continue;
+      }
+      const viewMetadata = metadata as DashboardSnapshotViewMetadata;
+      const filterBy = viewMetadata.filter_by || {};
+      const groupBy =
+        (metadata as DashboardSnapshotViewMetadata).group_by || [];
+
+      if (!!Object.keys(filterBy).length) {
+        panelFilters[panel] = filterBy;
+      }
+      if (!!groupBy.length) {
+        panelGroups[panel] = groupBy;
+      }
+    }
+
+    if (!!Object.keys(panelFilters).length) {
+      searchParams.set("where", JSON.stringify(panelFilters));
+    }
+
+    if (!!Object.keys(panelGroups).length) {
       searchParams.set(
         "grouping",
         state.snapshot.metadata.view.group_by
           .map((c) =>
-            c.type === "dimension" || c.type === "control_tag"
+            c.type === "dimension" ||
+            c.type === "control_tag" ||
+            c.type === "detection_tag"
               ? `${c.type}|${c.value}`
               : c.type,
           )
           .join(","),
       );
     }
-    if (state.snapshot.metadata.view.filter_by) {
-      searchParams.set(
-        "where",
-        JSON.stringify(state.snapshot.metadata.view.filter_by),
-      );
-    }
+
     setSearchParams(searchParams, { replace: true });
     dispatch({
       type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,

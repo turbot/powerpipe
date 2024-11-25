@@ -791,7 +791,7 @@ const useGroupingInternal = (
   groupingsConfig: CheckDisplayGroup[],
   skip = false,
 ) => {
-  const checkFilterConfig = useFilterConfig();
+  const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
 
   return useMemo(() => {
     const filterValues = {

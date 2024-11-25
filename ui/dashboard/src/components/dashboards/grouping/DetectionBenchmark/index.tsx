@@ -53,8 +53,10 @@ type InnerCheckProps = {
 };
 
 const DetectionBenchmark = (props: InnerCheckProps) => {
-  const { expressions } = useFilterConfig();
-  const { cliMode, dispatch, selectedPanel } = useDashboard();
+  const {
+    filter: { expressions },
+  } = useFilterConfig(props.definition?.name);
+  const { dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -80,12 +82,15 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     setCustomControls([
       {
         action: async () =>
-          dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
-        component: <CustomizeViewSummary />,
+          dispatch({
+            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
+            panel_name: props.definition.name,
+          }),
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
         title: "Filter & Group",
       },
     ]);
-  }, [cliMode, dispatch, setCustomControls]);
+  }, [dispatch, props.definition.name, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {

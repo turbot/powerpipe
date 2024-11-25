@@ -1,8 +1,8 @@
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
-const CustomizeViewSummary = () => {
-  const filterConfig = useFilterConfig();
+const CustomizeViewSummary = ({ panelName }) => {
+  const { filter: filterConfig } = useFilterConfig(panelName);
 
   const filterCount = filterConfig?.expressions?.length
     ? filterConfig.expressions.filter(validateFilter).length

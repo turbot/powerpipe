@@ -5,6 +5,7 @@ import {
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 export type IDashboardContext = {
   cliMode: DashboardCliMode;
@@ -65,7 +66,7 @@ export type IDashboardContext = {
     snapshotFileName: string;
   };
 
-  showCustomizeBenchmarkPanel: boolean;
+  filterAndGroupControlPanel?: string;
 };
 
 export type IBreakpointContext = {
@@ -348,7 +349,7 @@ export type DashboardSnapshotViewMetadata = {
 };
 
 export type DashboardSnapshotMetadata = {
-  view?: DashboardSnapshotViewMetadata;
+  view?: KeyValuePairs<DashboardSnapshotViewMetadata>;
 };
 
 export type DashboardSnapshot = {

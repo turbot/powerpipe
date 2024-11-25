@@ -566,8 +566,8 @@ export type TableProps = PanelDefinition &
     context?: string;
   };
 
-const useTableFilters = () => {
-  const urlFilters = useFilterConfig();
+const useTableFilters = (panelName: string) => {
+  const { filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
   const filters: Filter[] = [];
@@ -710,6 +710,7 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
 };
 
 const TableViewVirtualizedRows = ({
+  panelName,
   data,
   columns,
   columnVisibility,
@@ -717,7 +718,7 @@ const TableViewVirtualizedRows = ({
   filterEnabled = false,
   context = "",
 }) => {
-  const { filters, addFilter, removeFilter } = useTableFilters();
+  const { filters, addFilter, removeFilter } = useTableFilters(panelName);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
@@ -947,6 +948,7 @@ const TableViewWrapper = (props: TableProps) => {
 
   return props.data ? (
     <TableViewVirtualizedRows
+      panelName={props.name}
       data={rowData}
       columns={columns} // Use filtered columns for the table
       columnVisibility={columnVisibility}

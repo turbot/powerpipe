@@ -18,7 +18,7 @@ import { validateFilter } from "@powerpipe/components/dashboards/grouping/Filter
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
-  const filterConfig = useFilterConfig();
+  const { allFilters } = useFilterConfig();
   const groupingConfig = useCheckGroupingConfig();
 
   const saveSnapshot = () => {
@@ -30,18 +30,21 @@ const SaveSnapshotButton = () => {
       ...streamlinedSnapshot,
     };
 
-    if (!!filterConfig || !!groupingConfig) {
+    if (!!Object.keys(allFilters).length || !!groupingConfig) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
       };
-      // If a benchmark
-      if (
-        dashboard.artificial &&
-        !!filterConfig &&
-        validateFilter(filterConfig)
-      ) {
-        // @ts-ignore
-        metadata.view.filter_by = filterToSnapshotMetadata(filterConfig);
+      if (!!Object.keys(allFilters).length) {
+        for (const [panel, filter] of Object.entries(allFilters)) {
+          if (!validateFilter(filter)) {
+            console.warn("Ignoring invalid filter", { panel, filter });
+            continue;
+          }
+          // @ts-ignore
+          metadata.view[panel] = {
+            filter_by: filterToSnapshotMetadata(filter),
+          };
+        }
       }
       if (!!groupingConfig) {
         // @ts-ignore

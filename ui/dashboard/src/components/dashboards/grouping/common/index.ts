@@ -212,8 +212,12 @@ export type DetectionDisplayGroupType =
   | "dimension"
   | string;
 
+export type DisplayGroupType =
+  | CheckDisplayGroupType
+  | DetectionDisplayGroupType;
+
 export type CheckDisplayGroup = {
-  type: CheckDisplayGroupType;
+  type: DisplayGroupType;
   value?: string | undefined;
 };
 
@@ -236,7 +240,6 @@ export type Filter = {
 };
 
 export type FilterType = CheckDisplayGroupType | DetectionDisplayGroupType;
-
 
 export type BenchmarkTreeProps = BasePrimitiveProps &
   ExecutablePrimitiveProps & {
