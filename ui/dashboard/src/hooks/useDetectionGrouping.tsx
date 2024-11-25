@@ -6,18 +6,18 @@ import DetectionErrorNode from "@powerpipe/components/dashboards/grouping/common
 import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionKeyValuePairNode";
 import DetectionRootNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRootNode";
 import DetectionRunningNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRunningNode";
-import useGroupingFilterConfig from "./useGroupingFilterConfig";
+import useFilterConfig from "./useFilterConfig";
 import useDetectionGroupingConfig from "./useDetectionGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   DetectionDisplayGroup,
-  DetectionFilter,
   DetectionNode as DetectionNodeType,
   DetectionResult,
   DetectionResultDimension,
   DetectionSeverity,
   DetectionSummary,
   DetectionTags,
+  Filter,
   findDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
@@ -585,7 +585,7 @@ const wildcardToRegex = (wildcard: string) => {
 
 const includeResult = (
   checkResult: DetectionResult,
-  checkFilterConfig: DetectionFilter,
+  checkFilterConfig: Filter,
 ): boolean => {
   if (
     !checkFilterConfig ||
@@ -686,7 +686,7 @@ const useGroupingInternal = (
   groupingsConfig: DetectionDisplayGroup[],
   skip = false,
 ) => {
-  const checkFilterConfig = useGroupingFilterConfig();
+  const checkFilterConfig = useFilterConfig();
 
   return useMemo(() => {
     const filterValues = {

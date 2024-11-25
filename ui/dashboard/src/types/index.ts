@@ -1,6 +1,6 @@
 import {
   CheckDisplayGroup,
-  CheckFilter,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
@@ -339,7 +339,7 @@ export type DashboardPanelType =
   | "text"
   | "with";
 
-export type DashboardSnapshotViewFilterByMetadata = CheckFilter;
+export type DashboardSnapshotViewFilterByMetadata = Filter;
 export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
 
 export type DashboardSnapshotViewMetadata = {

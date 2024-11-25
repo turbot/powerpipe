@@ -1,4 +1,4 @@
-import CheckGroupingEditor from "../CheckGroupingEditor";
+import GroupingEditor from "../GroupingEditor";
 import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
 // import { CheckDisplayGroup } from "../common";
 import { Noop } from "@powerpipe/types/func";
@@ -32,7 +32,7 @@ type CheckGroupingConfigProps = {
 //   }
 // };
 
-const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
+const GroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
   const [, setSearchParams] = useSearchParams();
   const groupingConfig = useCheckGroupingConfig();
 
@@ -58,7 +58,7 @@ const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
   };
 
   return (
-    <CheckGroupingEditor
+    <GroupingEditor
       config={groupingConfig}
       onCancel={onClose}
       onApply={saveGroupingConfig}
@@ -66,4 +66,4 @@ const CheckGroupingConfig = ({ onClose }: CheckGroupingConfigProps) => {
   );
 };
 
-export default CheckGroupingConfig;
+export default GroupingConfig;

@@ -4,7 +4,7 @@ import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
-import { CheckDisplayGroupType, CheckFilter, CheckFilterType } from "../common";
+import { CheckDisplayGroupType, Filter, FilterType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
 import {
   MultiValueLabelWithTags,
@@ -18,45 +18,45 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
 type CheckFilterEditorProps = {
-  filter: CheckFilter;
-  onApply: (newValue: CheckFilter) => void;
+  filter: Filter;
+  onApply: (newValue: Filter) => void;
 };
 
 type CheckFilterEditorItemProps = {
-  filter: CheckFilter;
-  item: CheckFilter;
+  filter: Filter;
+  item: Filter;
   index: number;
   remove: (index: number) => void;
-  update: (index: number, item: CheckFilter) => void;
+  update: (index: number, item: Filter) => void;
 };
 
 type CheckFilterTypeSelectProps = {
   className?: string;
-  filter: CheckFilter;
+  filter: Filter;
   index: number;
-  item: CheckFilter;
-  type: CheckFilterType;
-  update: (index: number, updatedItem: CheckFilter) => void;
+  item: Filter;
+  type: FilterType;
+  update: (index: number, updatedItem: Filter) => void;
 };
 
 // type CheckFilterKeySelectProps = {
 //   index: number;
-//   item: CheckFilter;
-//   type: CheckFilterType;
-//   update: (index: number, updatedItem: CheckFilter) => void;
+//   item: Filter;
+//   type: FilterType;
+//   update: (index: number, updatedItem: Filter) => void;
 //   filterKey: string | undefined;
 // };
 
 type CheckFilterValueSelectProps = {
   className?: string;
   index: number;
-  item: CheckFilter;
-  type: CheckFilterType;
-  update: (index: number, updatedItem: CheckFilter) => void;
+  item: Filter;
+  type: FilterType;
+  update: (index: number, updatedItem: Filter) => void;
   value: string | undefined;
 };
 
-const validateFilter = (filter: CheckFilter): boolean => {
+const validateFilter = (filter: Filter): boolean => {
   // Each and must have at least one expression
   if (
     filter.operator === "and" &&
@@ -92,7 +92,7 @@ const CheckFilterTypeSelect = ({
   type,
   update,
 }: CheckFilterTypeSelectProps) => {
-  const [currentType, setCurrentType] = useState<CheckFilterType>(type);
+  const [currentType, setCurrentType] = useState<FilterType>(type);
   const { context: filterValues } = useDashboardControls();
 
   const allFilters = useMemo(
@@ -124,7 +124,7 @@ const CheckFilterTypeSelect = ({
         ...item,
         value: "",
         type: currentType?.includes("|")
-          ? (currentType?.split("|")[0] as CheckFilterType)
+          ? (currentType?.split("|")[0] as FilterType)
           : currentType,
         key: currentType?.includes("|")
           ? currentType?.split("|")[1]
@@ -453,8 +453,8 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
-  const [innerFilter, setInnerFilter] = useState<CheckFilter>(filter);
+const FilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
+  const [innerFilter, setInnerFilter] = useState<Filter>(filter);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
@@ -487,7 +487,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
   );
 
   const update = useCallback(
-    (index: number, updatedItem: CheckFilter) => {
+    (index: number, updatedItem: Filter) => {
       setInnerFilter((existing) => ({
         ...existing,
         expressions: [
@@ -516,7 +516,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         as="div"
         className="flex flex-col space-y-4"
       >
-        {innerFilter.expressions?.map((c: CheckFilter, idx: number) => (
+        {innerFilter.expressions?.map((c: Filter, idx: number) => (
           <CheckFilterEditorItem
             key={`${c.type}-${c.value}`}
             filter={innerFilter}
@@ -540,7 +540,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
           }))
         }
         onClear={() => {
-          const toSave: CheckFilter = {
+          const toSave: Filter = {
             expressions: [{ operator: "equal" }],
             operator: "and",
           };
@@ -554,6 +554,6 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
   );
 };
 
-export default CheckFilterEditor;
+export default FilterEditor;
 
 export { validateFilter };

@@ -9,7 +9,7 @@ import { PanelDefinition } from "@powerpipe/types";
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-  CheckFilter,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 
 const stripObjectProperties = (obj) => {
@@ -90,7 +90,7 @@ const groupingToSnapshotMetadata = (
     });
 };
 
-const filterToSnapshotMetadata = (filter: CheckFilter): CheckFilter => {
+const filterToSnapshotMetadata = (filter: Filter): Filter => {
   return filter;
 };
 

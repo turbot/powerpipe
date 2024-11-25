@@ -1,15 +1,15 @@
 import {
   CheckDisplayGroup,
-  CheckFilter,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { Noop } from "@powerpipe/types/func";
 import { ReactNode } from "react";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 type DashboardControlsSummaryProps = {
   searchPathPrefix: string[];
-  filterConfig: CheckFilter;
+  filterConfig: Filter;
   groupingConfig: CheckDisplayGroup[];
   onClose: Noop;
 };

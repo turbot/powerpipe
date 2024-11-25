@@ -1,4 +1,4 @@
-import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
+import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
@@ -6,16 +6,16 @@ const defaultFilter = {
   operator: "and",
   // @ts-ignore
   expressions: [{ operator: "equal" }],
-} as CheckFilter;
+} as Filter;
 
-const useGroupingFilterConfig = (): CheckFilter => {
+const useFilterConfig = (): Filter => {
   const [searchParams] = useSearchParams();
 
   return useMemo(() => {
     const rawFilters = searchParams.get("where");
     if (rawFilters) {
       try {
-        let parsedFilters: CheckFilter;
+        let parsedFilters: Filter;
         parsedFilters = JSON.parse(rawFilters);
         return parsedFilters;
       } catch (error) {
@@ -28,4 +28,4 @@ const useGroupingFilterConfig = (): CheckFilter => {
   }, [searchParams]);
 };
 
-export default useGroupingFilterConfig;
+export default useFilterConfig;

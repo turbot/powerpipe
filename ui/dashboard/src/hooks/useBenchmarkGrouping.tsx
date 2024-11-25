@@ -6,12 +6,12 @@ import ControlResultNode from "@powerpipe/components/dashboards/grouping/common/
 import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common/node/ControlRunningNode";
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
-import useGroupingFilterConfig from "./useGroupingFilterConfig";
+import useFilterConfig from "./useFilterConfig";
 import useCheckGroupingConfig from "./useCheckGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   CheckDisplayGroup,
-  CheckFilter,
+  Filter,
   CheckNode,
   CheckResult,
   CheckResultDimension,
@@ -696,7 +696,7 @@ const wildcardToRegex = (wildcard: string) => {
 
 const includeResult = (
   checkResult: CheckResult,
-  checkFilterConfig: CheckFilter,
+  checkFilterConfig: Filter,
 ): boolean => {
   if (
     !checkFilterConfig ||
@@ -791,7 +791,7 @@ const useGroupingInternal = (
   groupingsConfig: CheckDisplayGroup[],
   skip = false,
 ) => {
-  const checkFilterConfig = useGroupingFilterConfig();
+  const checkFilterConfig = useFilterConfig();
 
   return useMemo(() => {
     const filterValues = {

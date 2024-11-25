@@ -1,10 +1,9 @@
-import CheckFilterEditor, { validateFilter } from "../CheckFilterEditor";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
-import { CheckFilter } from "../common";
-// import { Fragment, ReactNode } from "react";
+import FilterEditor, { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import { Filter } from "../common";
 import { useSearchParams } from "react-router-dom";
 
-// const filtersToText = (filter: CheckFilter) => {
+// const filtersToText = (filter: Filter) => {
 //   if (filter.operator === "and") {
 //     // And filter group
 //     return filter.expressions?.map((item, index) => (
@@ -40,11 +39,11 @@ import { useSearchParams } from "react-router-dom";
 //   return "<unsupported>";
 // };
 
-const CheckFilterConfig = () => {
+const FilterConfig = () => {
   const [, setSearchParams] = useSearchParams();
-  const filterConfig = useGroupingFilterConfig();
+  const filterConfig = useFilterConfig();
 
-  const saveFilterConfig = (toSave: CheckFilter) => {
+  const saveFilterConfig = (toSave: Filter) => {
     setSearchParams((previous) => {
       const newParams = new URLSearchParams(previous);
       if (!validateFilter(toSave)) {
@@ -58,7 +57,7 @@ const CheckFilterConfig = () => {
     });
   };
 
-  return <CheckFilterEditor filter={filterConfig} onApply={saveFilterConfig} />;
+  return <FilterEditor filter={filterConfig} onApply={saveFilterConfig} />;
 };
 
-export default CheckFilterConfig;
+export default FilterConfig;

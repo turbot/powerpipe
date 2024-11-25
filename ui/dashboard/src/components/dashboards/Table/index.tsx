@@ -4,7 +4,7 @@ import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -23,7 +23,7 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
-import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
+import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
 import {
@@ -567,10 +567,10 @@ export type TableProps = PanelDefinition &
   };
 
 const useTableFilters = () => {
-  const urlFilters = useGroupingFilterConfig();
+  const urlFilters = useFilterConfig();
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
-  const filters: CheckFilter[] = [];
+  const filters: Filter[] = [];
 
   for (const expression of expressions || []) {
     if (

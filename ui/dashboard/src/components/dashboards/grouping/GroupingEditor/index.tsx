@@ -261,7 +261,7 @@ const CheckGroupingEditorItem = ({
   );
 };
 
-const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
+const GroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
   const [innerConfig, setInnerConfig] = useState<CheckDisplayGroup[]>(config);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
@@ -366,4 +366,4 @@ const CheckGroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
   );
 };
 
-export default CheckGroupingEditor;
+export default GroupingEditor;

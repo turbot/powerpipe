@@ -1,5 +1,5 @@
-import CheckFilterConfig from "@powerpipe/components/dashboards/grouping/CheckFilterConfig";
-import CheckGroupingConfig from "@powerpipe/components/dashboards/grouping/CheckGroupingConfig";
+import FilterConfig from "@powerpipe/components/dashboards/grouping/FilterConfig";
+import GroupingConfig from "@powerpipe/components/dashboards/grouping/GroupingConfig";
 import Icon from "@powerpipe/components/Icon";
 import { DashboardActions } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -22,11 +22,11 @@ const DashboardControls = () => {
       </div>
       <div className="p-4 space-y-3">
         <span className="font-semibold">Filter</span>
-        <CheckFilterConfig />
+        <FilterConfig />
       </div>
       <div className="p-4 space-y-3">
         <span className="font-semibold">Group</span>
-        <CheckGroupingConfig onClose={hideControls} />
+        <GroupingConfig onClose={hideControls} />
       </div>
     </div>
   );
