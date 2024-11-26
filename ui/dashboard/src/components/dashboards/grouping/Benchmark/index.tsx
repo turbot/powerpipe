@@ -48,8 +48,6 @@ type InnerCheckProps = {
   grouping: CheckNode;
   groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
-  diffFirstChildSummaries: CheckSummary[] | undefined;
-  diffGrouping: CheckNode | null;
   showControls: boolean;
   withTitle: boolean;
 };
@@ -111,24 +109,6 @@ const Benchmark = (props: InnerCheckProps) => {
       { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
     );
 
-    let diffTotalSummary: CheckSummary | null = null;
-    if (
-      props.diffFirstChildSummaries &&
-      props.diffFirstChildSummaries?.length > 0
-    ) {
-      diffTotalSummary = props.diffFirstChildSummaries.reduce(
-        (cumulative, current) => {
-          cumulative.error += current.error;
-          cumulative.alarm += current.alarm;
-          cumulative.ok += current.ok;
-          cumulative.info += current.info;
-          cumulative.skip += current.skip;
-          return cumulative;
-        },
-        { error: 0, alarm: 0, ok: 0, info: 0, skip: 0 },
-      );
-    }
-
     const summary_cards = [
       {
         name: `${props.definition.name}.container.summary.ok`,
@@ -141,20 +121,6 @@ const Benchmark = (props: InnerCheckProps) => {
           icon: "materialsymbols-solid:check_circle",
           // icon: "materialsymbols-outline:check_circle",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.ok.diff`,
-              width: 2,
-              display_type: diffTotalSummary.ok > 0 ? "ok" : "skip",
-              properties: {
-                label: "OK",
-                value: diffTotalSummary.ok,
-                // icon: "materialsymbols-solid:check",
-                icon: "materialsymbols-solid:check_circle",
-                // icon: "materialsymbols-outline:check_circle",
-              },
-            }
-          : null,
       },
       {
         name: `${props.definition.name}.container.summary.alarm`,
@@ -167,20 +133,6 @@ const Benchmark = (props: InnerCheckProps) => {
           // icon: "materialsymbols-solid:circle_notifications",
           // icon: "materialsymbols-outline:circle_notifications",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.alarm.diff`,
-              width: 2,
-              display_type: diffTotalSummary.alarm > 0 ? "alert" : "skip",
-              properties: {
-                label: "Alarm",
-                value: diffTotalSummary.alarm,
-                icon: "materialsymbols-solid:circle_notifications",
-                // icon: "materialsymbols-solid:circle_notifications",
-                // icon: "materialsymbols-outline:circle_notifications",
-              },
-            }
-          : null,
       },
       {
         name: `${props.definition.name}.container.summary.error`,
@@ -193,20 +145,6 @@ const Benchmark = (props: InnerCheckProps) => {
           icon: "materialsymbols-solid:error",
           // icon: "materialsymbols-outline:error",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.error.diff`,
-              width: 2,
-              display_type: diffTotalSummary.error > 0 ? "alert" : "skip",
-              properties: {
-                label: "Error",
-                value: diffTotalSummary.error,
-                // icon: "materialsymbols-solid:priority_high",
-                icon: "materialsymbols-solid:error",
-                // icon: "materialsymbols-outline:error",
-              },
-            }
-          : null,
       },
       {
         name: `${props.definition.name}.container.summary.info`,
@@ -219,20 +157,6 @@ const Benchmark = (props: InnerCheckProps) => {
           icon: "materialsymbols-solid:info",
           // icon: "materialsymbols-outline:info",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.info.diff`,
-              width: 2,
-              display_type: diffTotalSummary.info > 0 ? "info" : "skip",
-              properties: {
-                label: "Info",
-                value: diffTotalSummary.info,
-                // icon: "materialsymbols-solid:info_i",
-                icon: "materialsymbols-solid:info",
-                // icon: "materialsymbols-outline:info",
-              },
-            }
-          : null,
       },
       {
         name: `${props.definition.name}.container.summary.skip`,
@@ -245,21 +169,6 @@ const Benchmark = (props: InnerCheckProps) => {
           icon: "materialsymbols-solid:arrow_circle_right",
           // icon: "materialsymbols-outline:arrow_circle_right",
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.skip.diff`,
-              width: 2,
-              display_type: "skip",
-              properties: {
-                label: "Skipped",
-                value: diffTotalSummary.skip,
-                // icon: "materialsymbols-solid:arrow_right_alt",
-                icon: "materialsymbols-solid:arrow_circle_right",
-                // icon: "materialsymbols-solid:arrow_circle_right",
-                // icon: "materialsymbols-outline:arrow_circle_right",
-              },
-            }
-          : null,
       },
     ];
 
@@ -269,20 +178,9 @@ const Benchmark = (props: InnerCheckProps) => {
     const critical = criticalRaw || 0;
     const high = highRaw || 0;
 
-    // Calc diff vs previous
-    const diff_severity_summary = props.diffGrouping?.severity_summary;
-    let diffCriticalRaw, diffHighRaw, diffCritical, diffHigh;
-    if (diff_severity_summary) {
-      diffCriticalRaw = diff_severity_summary["critical"];
-      diffHighRaw = diff_severity_summary["high"];
-      diffCritical = diffCriticalRaw || 0;
-      diffHigh = diffHighRaw || 0;
-    }
-
     // If we have at least 1 critical or undefined control defined in this run
     if (criticalRaw !== undefined || highRaw !== undefined) {
       const total = critical + high;
-      const diffTotal = diffCritical + diffHigh;
       summary_cards.push({
         name: `${props.definition.name}.container.summary.severity`,
         width: 2,
@@ -292,28 +190,10 @@ const Benchmark = (props: InnerCheckProps) => {
           value: total,
           icon: "materialsymbols-solid:warning",
         },
-        diff_panel: diff_severity_summary
-          ? {
-              name: `${props.definition.name}.container.summary.severity.diff`,
-              width: 2,
-              display_type: diffTotal > 0 ? "severity" : "",
-              properties: {
-                label: "Critical / High",
-                value: diffTotal,
-                icon: "materialsymbols-solid:warning",
-              },
-            }
-          : null,
       });
     }
     return summary_cards;
-  }, [
-    props.firstChildSummaries,
-    props.diffFirstChildSummaries,
-    props.grouping,
-    props.diffGrouping,
-    props.definition.name,
-  ]);
+  }, [props.firstChildSummaries, props.grouping, props.definition.name]);
 
   const [, setSearchParams] = useSearchParams();
 
@@ -429,7 +309,7 @@ const Benchmark = (props: InnerCheckProps) => {
                   onClick={toggleFilter(summaryCard.name)}
                 >
                   {/*@ts-ignore*/}
-                  <Card {...cardProps} diff_panel={summaryCard.diff_panel} />
+                  <Card {...cardProps} />
                 </span>
               </Panel>
             );
@@ -497,8 +377,6 @@ const Inner = ({ showControls, withTitle }) => {
     grouping,
     groupingConfig,
     firstChildSummaries,
-    diffFirstChildSummaries,
-    diffGrouping,
   } = useBenchmarkGrouping();
 
   if (!definition || !benchmark || !grouping) {
@@ -515,8 +393,6 @@ const Inner = ({ showControls, withTitle }) => {
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
-        diffFirstChildSummaries={diffFirstChildSummaries}
-        diffGrouping={diffGrouping}
       />
     );
     // @ts-ignore
