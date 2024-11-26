@@ -1,10 +1,11 @@
 import {
   CheckDisplayGroup,
-  CheckFilter,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 export type IDashboardContext = {
   cliMode: DashboardCliMode;
@@ -61,11 +62,10 @@ export type IDashboardContext = {
   snapshot_metadata_loaded: boolean;
 
   diff?: {
-    panelsMap: PanelsMap;
     snapshotFileName: string;
   };
 
-  showCustomizeBenchmarkPanel: boolean;
+  filterAndGroupControlPanel?: string;
 };
 
 export type IBreakpointContext = {
@@ -173,27 +173,31 @@ type DashboardExecutionEventSchemaVersion =
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionStartedEventSchemaVersion =
   | "20220614"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionCompleteEventSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardSnapshotSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 export type DashboardExecutionStartedEvent = {
   action: "execution_started";
@@ -339,7 +343,7 @@ export type DashboardPanelType =
   | "text"
   | "with";
 
-export type DashboardSnapshotViewFilterByMetadata = CheckFilter;
+export type DashboardSnapshotViewFilterByMetadata = Filter;
 export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
 
 export type DashboardSnapshotViewMetadata = {
@@ -348,7 +352,7 @@ export type DashboardSnapshotViewMetadata = {
 };
 
 export type DashboardSnapshotMetadata = {
-  view?: DashboardSnapshotViewMetadata;
+  view?: KeyValuePairs<DashboardSnapshotViewMetadata>;
 };
 
 export type DashboardSnapshot = {

@@ -4,7 +4,7 @@ import isEmpty from "lodash/isEmpty";
 import isObject from "lodash/isObject";
 import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -23,7 +23,7 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
-import { CheckFilter } from "@powerpipe/components/dashboards/grouping/common";
+import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
 import {
@@ -290,6 +290,25 @@ const CellValue = ({
         <>{value.toString()}</>
       </span>
     );
+  } else if (
+    dataType === "jsonb" ||
+    dataType === "varchar[]" ||
+    isObject(value)
+  ) {
+    const asJsonString = JSON.stringify(value, null, 2);
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight"
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
+        <>{asJsonString}</>
+      </ExternalLink>
+    ) : (
+      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
+        {asJsonString}
+      </span>
+    );
   } else if (dataType === "text" || dataType === "varchar") {
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
@@ -381,25 +400,6 @@ const CellValue = ({
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
-      </span>
-    );
-  } else if (
-    dataType === "jsonb" ||
-    dataType === "varchar[]" ||
-    isObject(value)
-  ) {
-    const asJsonString = JSON.stringify(value, null, 2);
-    cellContent = href ? (
-      <ExternalLink
-        to={href}
-        className="link-highlight"
-        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
-      >
-        <>{asJsonString}</>
-      </ExternalLink>
-    ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
-        {asJsonString}
       </span>
     );
   } else if (isNumericCol(dataType)) {
@@ -566,11 +566,11 @@ export type TableProps = PanelDefinition &
     context?: string;
   };
 
-const useTableFilters = () => {
-  const urlFilters = useGroupingFilterConfig();
+const useTableFilters = (panelName: string) => {
+  const { filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
-  const filters: CheckFilter[] = [];
+  const filters: Filter[] = [];
 
   for (const expression of expressions || []) {
     if (
@@ -710,6 +710,7 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
 };
 
 const TableViewVirtualizedRows = ({
+  panelName,
   data,
   columns,
   columnVisibility,
@@ -717,7 +718,7 @@ const TableViewVirtualizedRows = ({
   filterEnabled = false,
   context = "",
 }) => {
-  const { filters, addFilter, removeFilter } = useTableFilters();
+  const { filters, addFilter, removeFilter } = useTableFilters(panelName);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
@@ -947,6 +948,7 @@ const TableViewWrapper = (props: TableProps) => {
 
   return props.data ? (
     <TableViewVirtualizedRows
+      panelName={props.name}
       data={rowData}
       columns={columns} // Use filtered columns for the table
       columnVisibility={columnVisibility}

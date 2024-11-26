@@ -1,4 +1,4 @@
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor"; // Replace with the actual module path
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor"; // Replace with the actual module path
 
 interface TestCase {
   name: string;

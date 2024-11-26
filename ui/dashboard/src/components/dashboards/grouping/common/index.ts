@@ -210,11 +210,14 @@ export type DetectionDisplayGroupType =
   | "detection_tag"
   | "result"
   | "dimension"
-  | "status"
   | string;
 
+export type DisplayGroupType =
+  | CheckDisplayGroupType
+  | DetectionDisplayGroupType;
+
 export type CheckDisplayGroup = {
-  type: CheckDisplayGroupType;
+  type: DisplayGroupType;
   value?: string | undefined;
 };
 
@@ -223,33 +226,22 @@ export type DetectionDisplayGroup = {
   value?: string | undefined;
 };
 
+export type DisplayGroup = CheckDisplayGroup | DetectionDisplayGroup;
+
 type BaseOperator = "and" | "equal" | "not_equal";
-export type CheckFilterOperator = BaseOperator;
-export type DetectionFilterOperator = BaseOperator;
+export type FilterOperator = BaseOperator;
 
-export type CheckFilter = {
-  operator: CheckFilterOperator;
-  type?: CheckFilterType;
+export type Filter = {
+  operator: FilterOperator;
+  type?: FilterType;
   key?: string;
   value?: string;
   title?: string;
   context?: string;
-  expressions?: CheckFilter[];
+  expressions?: Filter[];
 };
 
-export type DetectionFilter = {
-  operator: DetectionFilterOperator;
-  type?: DetectionFilterType;
-  key?: string;
-  value?: string;
-  title?: string;
-  context?: string;
-  expressions?: DetectionFilter[];
-};
-
-export type CheckFilterType = CheckDisplayGroupType;
-
-export type DetectionFilterType = DetectionDisplayGroupType;
+export type FilterType = CheckDisplayGroupType | DetectionDisplayGroupType;
 
 export type BenchmarkTreeProps = BasePrimitiveProps &
   ExecutablePrimitiveProps & {

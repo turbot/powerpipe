@@ -8,12 +8,12 @@ import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
-  CheckFilter,
+  Filter,
   CheckNode,
   CheckSummary,
 } from "../common";
@@ -27,12 +27,12 @@ import {
   GroupingProvider,
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { noop } from "@powerpipe/utils/func";
-import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { validateFilter } from "../CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -45,7 +45,6 @@ type BenchmarkTableViewProps = {
 type InnerCheckProps = {
   benchmark: BenchmarkType;
   definition: PanelDefinition;
-  diff_panels?: PanelsMap;
   grouping: CheckNode;
   groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
@@ -56,8 +55,10 @@ type InnerCheckProps = {
 };
 
 const Benchmark = (props: InnerCheckProps) => {
-  const { expressions } = useGroupingFilterConfig();
-  const { cliMode, dispatch, selectedPanel } = useDashboard();
+  const {
+    filter: { expressions },
+  } = useFilterConfig(props.definition?.name);
+  const { dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -80,19 +81,18 @@ const Benchmark = (props: InnerCheckProps) => {
     usePanelControls(definitionWithData, props.showControls);
 
   useEffect(() => {
-    // TODO remove once all workspaces are running Powerpipe
-    if (cliMode === "steampipe") {
-      return;
-    }
     setCustomControls([
       {
         action: async () =>
-          dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
-        component: <CustomizeViewSummary />,
+          dispatch({
+            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
+            panel_name: props.definition.name,
+          }),
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
         title: "Filter & Group",
       },
     ]);
-  }, [cliMode, dispatch, setCustomControls]);
+  }, [dispatch, props.definition.name, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
@@ -327,12 +327,12 @@ const Benchmark = (props: InnerCheckProps) => {
     const expressionHasFilter = !!expressions?.find(
       (expr) => expr.type === "status",
     );
-    let newFilter: CheckFilter;
+    let newFilter: Filter;
     if (expressionHasFilter) {
       newFilter = {
         operator: "and",
         expressions: expressions?.filter((expr) => expr.type !== "status"),
-      } as CheckFilter;
+      } as Filter;
       if (validateFilter(newFilter)) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -358,7 +358,7 @@ const Benchmark = (props: InnerCheckProps) => {
             operator: "equal",
             title: filterName,
           }),
-      } as CheckFilter;
+      } as Filter;
       if (validateFilter(newFilter)) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -495,7 +495,7 @@ const Inner = ({ showControls, withTitle }) => {
     benchmark,
     definition,
     grouping,
-    groupingsConfig,
+    groupingConfig,
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
@@ -511,7 +511,7 @@ const Inner = ({ showControls, withTitle }) => {
         benchmark={benchmark}
         definition={definition}
         grouping={grouping}
-        groupingConfig={groupingsConfig}
+        groupingConfig={groupingConfig}
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
@@ -543,14 +543,13 @@ const Inner = ({ showControls, withTitle }) => {
 };
 
 type BenchmarkProps = PanelDefinition & {
-  diff_panels?: PanelsMap;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const BenchmarkWrapper = (props: BenchmarkProps) => {
   return (
-    <GroupingProvider definition={props} diff_panels={props.diff_panels}>
+    <GroupingProvider definition={props}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
     </GroupingProvider>
   );

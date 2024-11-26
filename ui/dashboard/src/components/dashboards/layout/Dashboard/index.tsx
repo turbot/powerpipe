@@ -33,7 +33,7 @@ const Dashboard = ({
   const {
     components: { SnapshotHeader },
     dataMode,
-    showCustomizeBenchmarkPanel,
+    filterAndGroupControlPanel,
   } = useDashboard();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
@@ -63,7 +63,9 @@ const Dashboard = ({
         ) : (
           <div className="w-full">{grid}</div>
         )}
-        {showCustomizeBenchmarkPanel && <DashboardControls />}
+        {!!filterAndGroupControlPanel && (
+          <DashboardControls panelName={filterAndGroupControlPanel} />
+        )}
       </div>
     </DashboardControlsProvider>
   );

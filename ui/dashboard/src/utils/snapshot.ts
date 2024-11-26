@@ -4,12 +4,13 @@ import {
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
   EXECUTION_SCHEMA_VERSION_20240607,
+  EXECUTION_SCHEMA_VERSION_20241125,
 } from "@powerpipe/constants/versions";
 import { PanelDefinition } from "@powerpipe/types";
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-  CheckFilter,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 
 const stripObjectProperties = (obj) => {
@@ -39,6 +40,7 @@ const stripSnapshotDataForExport = (snapshot) => {
     case EXECUTION_SCHEMA_VERSION_20221222:
     case EXECUTION_SCHEMA_VERSION_20240130:
     case EXECUTION_SCHEMA_VERSION_20240607:
+    case EXECUTION_SCHEMA_VERSION_20241125:
       const { panels, ...restSnapshot } = stripObjectProperties(snapshot);
       const newPanels = {};
       for (const [name, panel] of Object.entries(panels)) {
@@ -90,7 +92,7 @@ const groupingToSnapshotMetadata = (
     });
 };
 
-const filterToSnapshotMetadata = (filter: CheckFilter): CheckFilter => {
+const filterToSnapshotMetadata = (filter: Filter): Filter => {
   return filter;
 };
 

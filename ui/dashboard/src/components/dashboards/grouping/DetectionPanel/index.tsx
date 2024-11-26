@@ -285,7 +285,7 @@ const DetectionPanelSeverity = ({
 };
 
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
-  const { firstChildSummaries, dispatch, groupingsConfig, nodeStates } =
+  const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
     useDetectionGrouping();
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
@@ -314,12 +314,12 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
         sortBy(empty, "sort"),
         results,
         children.length > 0 ||
-          (groupingsConfig &&
-            groupingsConfig.length > 0 &&
-            groupingsConfig[groupingsConfig.length - 1].type === "result" &&
+          (groupingConfig &&
+            groupingConfig.length > 0 &&
+            groupingConfig[groupingConfig.length - 1].type === "result" &&
             (errors.length > 0 || empty.length > 0 || results.length > 0)),
       ];
-    }, [groupingsConfig, node]);
+    }, [groupingConfig, node]);
 
   return (
     <>
@@ -398,8 +398,8 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
         </section>
         {can_be_expanded &&
           expanded &&
-          groupingsConfig &&
-          groupingsConfig[groupingsConfig.length - 1].type === "result" && (
+          groupingConfig &&
+          groupingConfig[groupingConfig.length - 1].type === "result" && (
             <DetectionResults
               empties={empty_nodes}
               errors={error_nodes}

@@ -1,4 +1,4 @@
-import CheckEditorAddItem from "@powerpipe/components/dashboards/grouping/common/CheckEditorAddItem";
+import EditorAddItem from "@powerpipe/components/dashboards/grouping/common/EditorAddItem";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
@@ -201,7 +201,7 @@ const SearchPathEditor = ({
           />
         )}
       </Reorder.Group>
-      <CheckEditorAddItem
+      <EditorAddItem
         isDirty={isDirty}
         isValid={isValid}
         helpUrl="https://www.powerpipe.io/docs/run/dashboard/search-path"

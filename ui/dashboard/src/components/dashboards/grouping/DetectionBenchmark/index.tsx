@@ -8,18 +8,18 @@ import Error from "@powerpipe/components/dashboards/Error";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
-import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePicker";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
+import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
   DetectionBenchmarkTreeProps,
   DetectionDisplayGroup,
-  DetectionFilter,
   DetectionNode,
   DetectionSummary,
+  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   GroupingProvider,
@@ -31,7 +31,7 @@ import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Tabl
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
-import { validateFilter } from "../CheckFilterEditor";
+import { validateFilter } from "../FilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 type BenchmarkTableViewProps = {
@@ -42,7 +42,6 @@ type BenchmarkTableViewProps = {
 type InnerCheckProps = {
   benchmark: DetectionBenchmarkType;
   definition: PanelDefinition;
-  diff_panels?: PanelsMap;
   grouping: DetectionNode;
   groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
@@ -53,8 +52,10 @@ type InnerCheckProps = {
 };
 
 const DetectionBenchmark = (props: InnerCheckProps) => {
-  const { expressions } = useGroupingFilterConfig();
-  const { cliMode, dispatch, selectedPanel } = useDashboard();
+  const {
+    filter: { expressions },
+  } = useFilterConfig(props.definition?.name);
+  const { dispatch, selectedPanel } = useDashboard();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -80,12 +81,15 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     setCustomControls([
       {
         action: async () =>
-          dispatch({ type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL }),
-        component: <CustomizeViewSummary />,
+          dispatch({
+            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
+            panel_name: props.definition.name,
+          }),
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
         title: "Filter & Group",
       },
     ]);
-  }, [cliMode, dispatch, setCustomControls]);
+  }, [dispatch, props.definition.name, setCustomControls]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
@@ -319,12 +323,12 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     const expressionHasFilter = !!expressions?.find(
       (expr) => expr.type === "status",
     );
-    let newFilter: DetectionFilter;
+    let newFilter: Filter;
     if (expressionHasFilter) {
       newFilter = {
         operator: "and",
         expressions: expressions?.filter((expr) => expr.type !== "status"),
-      } as DetectionFilter;
+      } as Filter;
       if (validateFilter(newFilter)) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -350,7 +354,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
             operator: "equal",
             title: filterName,
           }),
-      } as DetectionFilter;
+      } as Filter;
       if (validateFilter(newFilter)) {
         setSearchParams((prev) => {
           const newParams = new URLSearchParams(prev);
@@ -397,7 +401,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
             unqualified_name: "input.detection_range",
             type: "text",
           }}
-          type="text"
         />
       </Grid>
       <Grid name={`${props.definition.name}.container.summary`}>
@@ -501,7 +504,7 @@ const Inner = ({ showControls, withTitle }) => {
     benchmark,
     definition,
     grouping,
-    groupingsConfig,
+    groupingConfig,
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
@@ -517,7 +520,7 @@ const Inner = ({ showControls, withTitle }) => {
         benchmark={benchmark}
         definition={definition}
         grouping={grouping}
-        groupingConfig={groupingsConfig}
+        groupingConfig={groupingConfig}
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
@@ -549,14 +552,13 @@ const Inner = ({ showControls, withTitle }) => {
 };
 
 type DetectionBenchmarkWrapperProps = PanelDefinition & {
-  diff_panels?: PanelsMap;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
-    <GroupingProvider definition={props} diff_panels={props.diff_panels}>
+    <GroupingProvider definition={props}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
     </GroupingProvider>
   );
