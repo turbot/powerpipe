@@ -1,11 +1,13 @@
-import CheckEditorAddItem from "../common/CheckEditorAddItem";
+import EditorAddItem from "../common/EditorAddItem";
 import CreatableSelect from "react-select/creatable";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
-import { CheckDisplayGroupType, CheckFilter, CheckFilterType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
+import { DashboardPanelType } from "@powerpipe/types";
+import { DisplayGroupType, Filter, FilterType } from "../common";
+import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
@@ -15,48 +17,50 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "../../inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsProvider";
-import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
-type CheckFilterEditorProps = {
-  filter: CheckFilter;
-  onApply: (newValue: CheckFilter) => void;
+type FilterEditorProps = {
+  filter: Filter;
+  panelType: DashboardPanelType;
+  onApply: (toSave: Filter) => void;
 };
 
-type CheckFilterEditorItemProps = {
-  filter: CheckFilter;
-  item: CheckFilter;
+type FilterEditorItemProps = {
+  filter: Filter;
+  item: Filter;
+  panelType: DashboardPanelType;
   index: number;
   remove: (index: number) => void;
-  update: (index: number, item: CheckFilter) => void;
+  update: (index: number, item: Filter) => void;
 };
 
-type CheckFilterTypeSelectProps = {
+type FilterTypeSelectProps = {
   className?: string;
-  filter: CheckFilter;
+  filter: Filter;
   index: number;
-  item: CheckFilter;
-  type: CheckFilterType;
-  update: (index: number, updatedItem: CheckFilter) => void;
+  item: Filter;
+  panelType: DashboardPanelType;
+  type: FilterType;
+  update: (index: number, updatedItem: Filter) => void;
 };
 
-// type CheckFilterKeySelectProps = {
+// type FilterKeySelectProps = {
 //   index: number;
-//   item: CheckFilter;
-//   type: CheckFilterType;
-//   update: (index: number, updatedItem: CheckFilter) => void;
+//   item: Filter;
+//   type: FilterType;
+//   update: (index: number, updatedItem: Filter) => void;
 //   filterKey: string | undefined;
 // };
 
-type CheckFilterValueSelectProps = {
+type FilterValueSelectProps = {
   className?: string;
   index: number;
-  item: CheckFilter;
-  type: CheckFilterType;
-  update: (index: number, updatedItem: CheckFilter) => void;
+  item: Filter;
+  type: FilterType;
+  update: (index: number, updatedItem: Filter) => void;
   value: string | undefined;
 };
 
-const validateFilter = (filter: CheckFilter): boolean => {
+const validateFilter = (filter: Filter): boolean => {
   // Each and must have at least one expression
   if (
     filter.operator === "and" &&
@@ -84,15 +88,26 @@ const validateFilter = (filter: CheckFilter): boolean => {
   return false;
 };
 
-const CheckFilterTypeSelect = ({
+const isValidFilterTypeForPanel = (
+  type: string,
+  panelType: DashboardPanelType,
+) => {
+  return !(
+    type === "status" &&
+    (panelType === "detection_benchmark" || panelType === "detection")
+  );
+};
+
+const FilterTypeSelect = ({
   className,
   filter,
   index,
   item,
+  panelType,
   type,
   update,
-}: CheckFilterTypeSelectProps) => {
-  const [currentType, setCurrentType] = useState<CheckFilterType>(type);
+}: FilterTypeSelectProps) => {
+  const [currentType, setCurrentType] = useState<FilterType>(type);
   const { context: filterValues } = useDashboardControls();
 
   const allFilters = useMemo(
@@ -124,7 +139,7 @@ const CheckFilterTypeSelect = ({
         ...item,
         value: "",
         type: currentType?.includes("|")
-          ? (currentType?.split("|")[0] as CheckFilterType)
+          ? (currentType?.split("|")[0] as FilterType)
           : currentType,
         key: currentType?.includes("|")
           ? currentType?.split("|")[1]
@@ -138,33 +153,19 @@ const CheckFilterTypeSelect = ({
     const existingTypes = filter.expressions
       ?.map((c) => c.type?.toString())
       .filter((t) => !!t);
-    // const allTypes: SelectOption[] = [
-    //   { value: "benchmark", label: "Benchmark" },
-    //   { value: "control", label: "Control" },
-    //   // { value: "control_tag", label: "Control Tag" },
-    //   {
-    //     value: "control_tag:plugin",
-    //     label: (
-    //       <>
-    //         <span className="text-gray-400">Control Tag:</span> Plugin
-    //       </>
-    //     ),
-    //   },
-    //   { value: "dimension", label: "Dimension" },
-    //   { value: "reason", label: "Reason" },
-    //   { value: "resource", label: "Resource" },
-    //   { value: "severity", label: "Severity" },
-    //   { value: "status", label: "Status" },
-    // ];
-    return allFilters.filter(
-      (t) =>
-        t.value === type ||
-        t.value === "dimension" ||
-        t.value === "control_tag" ||
-        // @ts-ignore
-        !existingTypes.includes(t?.value),
-    );
-  }, [allFilters, filter, type]);
+
+    return allFilters.filter((t) => {
+      return (
+        (t.value === type ||
+          t.value === "dimension" ||
+          t.value === "control_tag" ||
+          t.value === "detection_tag" ||
+          // @ts-ignore
+          !existingTypes.includes(t?.value)) &&
+        isValidFilterTypeForPanel(t.value, panelType)
+      );
+    });
+  }, [allFilters, filter, panelType, type]);
 
   const styles = useSelectInputStyles();
 
@@ -185,7 +186,7 @@ const CheckFilterTypeSelect = ({
       onChange={(t) => {
         setCurrentType(() => {
           const v = (t as SelectOption).value;
-          return v as CheckDisplayGroupType;
+          return v as DisplayGroupType;
         });
       }}
       options={types}
@@ -211,69 +212,14 @@ const CheckFilterTypeSelect = ({
   );
 };
 
-// const CheckFilterKeySelect = ({
-//   index,
-//   item,
-//   type,
-//   filterKey,
-//   update,
-// }: CheckFilterKeySelectProps) => {
-//   const [currentKey, setCurrentKey] = useState(filterKey);
-//   const { context: filterValues } = useDashboardControls();
-//
-//   useDeepCompareEffect(() => {
-//     update(index, {
-//       ...item,
-//       key: currentKey,
-//     });
-//   }, [currentKey, index, item]);
-//
-//   const keys = useMemo(() => {
-//     return Object.keys(filterValues ? filterValues[type]?.key || {} : {}).map(
-//       (k) => ({
-//         value: k,
-//         label: k,
-//       }),
-//     );
-//   }, [filterValues, type]);
-//
-//   const styles = useSelectInputStyles();
-//
-//   return (
-//     <Select
-//       className="basic-single"
-//       classNamePrefix="select"
-//       components={{
-//         // @ts-ignore
-//         MultiValueLabel: MultiValueLabelWithTags,
-//         // @ts-ignore
-//         Option: OptionWithTags,
-//         // @ts-ignore
-//         SingleValue: SingleValueWithTags,
-//       }}
-//       // @ts-ignore as this element definitely exists
-//       menuPortalTarget={document.getElementById("portals")}
-//       onChange={(t) =>
-//         setCurrentKey((t as SelectOption).value as CheckDisplayGroupType)
-//       }
-//       options={keys}
-//       inputId={`${type}.input`}
-//       placeholder={`Choose a ${type}…`}
-//       // @ts-ignore
-//       styles={styles}
-//       value={keys.find((t) => t.value === filterKey)}
-//     />
-//   );
-// };
-
-const CheckFilterValueSelect = ({
+const FilterValueSelect = ({
   className,
   index,
   item,
   type,
   value,
   update,
-}: CheckFilterValueSelectProps) => {
+}: FilterValueSelectProps) => {
   const [currentValue, setCurrentValue] = useState<{
     value: any;
     title?: string;
@@ -294,7 +240,7 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
-    } else if (["control_tag", "dimension"].includes(type)) {
+    } else if (["control_tag", "detection_tag", "dimension"].includes(type)) {
       const keys = Object.entries(
         filterValues ? filterValues[type]?.key || {} : {},
       );
@@ -309,7 +255,12 @@ const CheckFilterValueSelect = ({
             tags: { occurrences: v[key] },
           }));
         });
-    } else if (type === "benchmark" || type === "control") {
+    } else if (
+      type === "benchmark" ||
+      type === "control" ||
+      type === "detection_benchmark" ||
+      type === "detection"
+    ) {
       return Object.entries(
         filterValues ? filterValues[type]?.value || {} : {},
       ).map(([k, v]) => {
@@ -376,13 +327,14 @@ const CheckFilterValueSelect = ({
   );
 };
 
-const CheckFilterEditorItem = ({
+const FilterEditorItem = ({
   filter,
   index,
   item,
+  panelType,
   remove,
   update,
-}: CheckFilterEditorItemProps) => {
+}: FilterEditorItemProps) => {
   const dragControls = useDragControls();
 
   return (
@@ -399,33 +351,20 @@ const CheckFilterEditorItem = ({
         <Icon className="h-5 w-5" icon="drag_indicator" />
       </div>
       <div className="grow min-w-44 max-w-72">
-        <CheckFilterTypeSelect
+        <FilterTypeSelect
           filter={filter}
           index={index}
           item={item}
+          panelType={panelType}
           // @ts-ignore
           type={item.type}
           update={update}
         />
       </div>
-      {/* {(item.type === "dimension" || item.type === "control_tag") && (
-        <>
-          <span>=</span>
-          <div className="grow min-w-40 max-w-72">
-            <CheckFilterKeySelect
-              index={index}
-              item={item}
-              filterKey={item.key}
-              type={item.type}
-              update={update}
-            />
-          </div>
-        </>
-      )} */}
       {item.operator === "equal" && <span>=</span>}
       {item.operator === "not_equal" && <span>!=</span>}
       <div className="grow min-w-52 max-w-72">
-        <CheckFilterValueSelect
+        <FilterValueSelect
           index={index}
           item={item}
           // @ts-ignore
@@ -453,8 +392,8 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
-  const [innerFilter, setInnerFilter] = useState<CheckFilter>(filter);
+const FilterEditor = ({ filter, panelType, onApply }: FilterEditorProps) => {
+  const [innerFilter, setInnerFilter] = useState<Filter>(filter);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
@@ -487,7 +426,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
   );
 
   const update = useCallback(
-    (index: number, updatedItem: CheckFilter) => {
+    (index: number, updatedItem: Filter) => {
       setInnerFilter((existing) => ({
         ...existing,
         expressions: [
@@ -516,18 +455,19 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
         as="div"
         className="flex flex-col space-y-4"
       >
-        {innerFilter.expressions?.map((c: CheckFilter, idx: number) => (
-          <CheckFilterEditorItem
+        {innerFilter.expressions?.map((c: Filter, idx: number) => (
+          <FilterEditorItem
             key={`${c.type}-${c.value}`}
             filter={innerFilter}
             item={c}
+            panelType={panelType}
             index={idx}
             remove={remove}
             update={update}
           />
         ))}
       </Reorder.Group>
-      <CheckEditorAddItem
+      <EditorAddItem
         isDirty={isDirty}
         isValid={isValid}
         onAdd={() =>
@@ -540,7 +480,7 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
           }))
         }
         onClear={() => {
-          const toSave: CheckFilter = {
+          const toSave: Filter = {
             expressions: [{ operator: "equal" }],
             operator: "and",
           };
@@ -554,6 +494,6 @@ const CheckFilterEditor = ({ filter, onApply }: CheckFilterEditorProps) => {
   );
 };
 
-export default CheckFilterEditor;
+export default FilterEditor;
 
 export { validateFilter };

@@ -1,5 +1,6 @@
 import get from "lodash/get";
 import isEqual from "lodash/isEqual";
+import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 import useDashboardState from "./useDashboardState";
 import useDashboardWebSocket, { SocketActions } from "./useDashboardWebSocket";
 import useDashboardWebSocketEventHandler from "./useDashboardWebSocketEventHandler";
@@ -13,6 +14,7 @@ import {
   DashboardDataOptions,
   DashboardRenderOptions,
   DashboardSearch,
+  DashboardSnapshotViewMetadata,
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
@@ -26,7 +28,12 @@ import {
   useEffect,
   useState,
 } from "react";
+import {
+  DisplayGroup,
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
 import { GlobalHotKeys } from "react-hotkeys";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { noop } from "@powerpipe/utils/func";
 import {
   useLocation,
@@ -35,7 +42,6 @@ import {
   useParams,
   useSearchParams,
 } from "react-router-dom";
-import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 
 const DashboardContext = createContext<IDashboardContext | null>(null);
 
@@ -158,30 +164,41 @@ const DashboardProvider = ({
       state.snapshot_metadata_loaded ||
       !state.snapshot ||
       !state.snapshot.metadata ||
-      !state.snapshot.metadata.view ||
-      (!state.snapshot.metadata.view.group_by &&
-        !state.snapshot.metadata.view.filter_by)
+      !Object.keys(state.snapshot.metadata.view).length
     ) {
       return;
     }
-    if (state.snapshot.metadata.view.group_by) {
-      searchParams.set(
-        "grouping",
-        state.snapshot.metadata.view.group_by
-          .map((c) =>
-            c.type === "dimension" || c.type === "control_tag"
-              ? `${c.type}|${c.value}`
-              : c.type,
-          )
-          .join(","),
-      );
+
+    const panelFilters: KeyValuePairs<Filter> = {};
+    const panelGroups: KeyValuePairs<DisplayGroup[]> = {};
+
+    for (const [panel, metadata] of Object.entries(
+      state.snapshot.metadata.view,
+    )) {
+      if (!panel || !metadata) {
+        continue;
+      }
+      const viewMetadata = metadata as DashboardSnapshotViewMetadata;
+      const filterBy = viewMetadata.filter_by || {};
+      const groupBy =
+        (metadata as DashboardSnapshotViewMetadata).group_by || [];
+
+      if (!!Object.keys(filterBy).length) {
+        panelFilters[panel] = filterBy;
+      }
+      if (!!Object.keys(groupBy).length!!) {
+        panelGroups[panel] = groupBy;
+      }
     }
-    if (state.snapshot.metadata.view.filter_by) {
-      searchParams.set(
-        "where",
-        JSON.stringify(state.snapshot.metadata.view.filter_by),
-      );
+
+    if (!!Object.keys(panelFilters).length) {
+      searchParams.set("where", JSON.stringify(panelFilters));
     }
+
+    if (!!Object.keys(panelGroups).length) {
+      searchParams.set("grouping", JSON.stringify(panelGroups));
+    }
+
     setSearchParams(searchParams, { replace: true });
     dispatch({
       type: DashboardActions.SET_SNAPSHOT_METADATA_LOADED,
@@ -450,7 +467,7 @@ const DashboardProvider = ({
           detectionFrom = parsed.from;
           detectionTo = parsed.to;
         } catch (err) {
-          console.log("Parse error", err);
+          console.error("Parse error", err);
         }
       }
 
@@ -519,7 +536,7 @@ const DashboardProvider = ({
           detectionFrom = parsed.from;
           detectionTo = parsed.to;
         } catch (err) {
-          console.log("Parse error", err);
+          console.error("Parse error", err);
         }
       }
       const message = {

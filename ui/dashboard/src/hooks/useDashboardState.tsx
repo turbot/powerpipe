@@ -385,13 +385,14 @@ const reducer = (state: IDashboardContext, action) => {
     case DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL:
       return {
         ...state,
-        showCustomizeBenchmarkPanel: true,
+        filterAndGroupControlPanel: action.panel_name,
       };
-    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL:
+    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL: {
+      const { filterAndGroupControlPanel, ...rest } = state;
       return {
-        ...state,
-        showCustomizeBenchmarkPanel: false,
+        ...rest,
       };
+    }
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
@@ -439,8 +440,6 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     execution_id: null,
 
     progress: 0,
-
-    showCustomizeBenchmarkPanel: false,
   };
 };
 

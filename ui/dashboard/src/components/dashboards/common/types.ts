@@ -20,8 +20,8 @@ export type CategoryProperty = {
   wrap?: TableColumnWrap;
 };
 
-export type KeyValuePairs = {
-  [key: string]: any;
+export type KeyValuePairs<T = any> = {
+  [key: string]: T;
 };
 
 export type KeyValueStringPairs = {

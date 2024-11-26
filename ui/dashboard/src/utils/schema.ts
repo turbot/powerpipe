@@ -3,7 +3,7 @@ import {
   DashboardExecutionCompleteEvent,
   DashboardExecutionEventWithSchema,
   DashboardExecutionStartedEvent,
-  DashboardSnapshot,
+  DashboardSnapshot, DashboardSnapshotViewMetadata,
 } from "@powerpipe/types";
 import {
   EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST,
@@ -12,9 +12,11 @@ import {
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
   EXECUTION_SCHEMA_VERSION_20240607,
+  EXECUTION_SCHEMA_VERSION_20241125,
   EXECUTION_STARTED_SCHEMA_VERSION_LATEST,
 } from "@powerpipe/constants/versions";
 import { migratePanelStatuses } from "./dashboardEventHandlers";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 const executedStartedMigrations = [
   {
@@ -72,7 +74,19 @@ const executedStartedMigrations = [
       // Nothing to do here as this event is already in the latest supported schema
       return {
         ...(current as DashboardExecutionStartedEvent),
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20241125,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionStartedEvent {
+      // Nothing to do here as this event is already in the latest supported schema
+      return {
+        ...(current as DashboardExecutionStartedEvent),
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
       };
     },
   },
@@ -192,6 +206,57 @@ const executedCompletedMigrations = [
   },
   {
     version: EXECUTION_SCHEMA_VERSION_20240607,
+    up: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      const {
+        action,
+        execution_id,
+        snapshot: { schema_version, layout, panels = {}, metadata, ...snapshotRest },
+      } = current;
+
+      // We need to migrate the view metadata to the new format
+      if (metadata) {
+        let hasViewMetadata = false
+        const rootPanel = layout.name
+        const panelKeyedViewMetadata: KeyValuePairs<DashboardSnapshotViewMetadata> = { [rootPanel]: {}}
+        if (metadata.view?.filter_by) {
+          hasViewMetadata = true
+          panelKeyedViewMetadata[rootPanel].filter_by = metadata.view.filter_by;
+        }
+        if (metadata.view?.group_by) {
+          hasViewMetadata = true
+          panelKeyedViewMetadata[rootPanel].group_by = metadata.view.group_by;
+        }
+        if (hasViewMetadata) {
+          metadata.view = panelKeyedViewMetadata;
+        }
+      }
+
+      const newPayload = {
+        action,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
+        execution_id,
+        snapshot: {
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
+          layout,
+          panels: migratePanelStatuses(
+            panels,
+            EXECUTION_SCHEMA_VERSION_20240607,
+          ),
+          ...snapshotRest,
+        },
+      };
+
+      if (metadata) {
+        newPayload.snapshot.metadata = metadata;
+      }
+
+      return newPayload;
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20241125,
     up: function (
       current: DashboardExecutionEventWithSchema,
     ): DashboardExecutionCompleteEvent {
@@ -347,6 +412,39 @@ const snapshotDataToExecutionCompleteMigrations = [
         schema_version: EXECUTION_SCHEMA_VERSION_20240607,
         snapshot: {
           schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          layout,
+          panels,
+          inputs,
+          variables,
+          search_path,
+          start_time,
+          end_time,
+          metadata,
+        },
+      };
+    },
+  },
+  {
+    version: EXECUTION_SCHEMA_VERSION_20241125,
+    toExecutionComplete: function (
+      current: DashboardExecutionEventWithSchema,
+    ): DashboardExecutionCompleteEvent {
+      const {
+        layout,
+        panels,
+        inputs,
+        variables,
+        search_path,
+        start_time,
+        end_time,
+        metadata,
+      } = current;
+      return {
+        action: DashboardActions.EXECUTION_COMPLETE,
+        execution_id: "",
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
+        snapshot: {
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout,
           panels,
           inputs,

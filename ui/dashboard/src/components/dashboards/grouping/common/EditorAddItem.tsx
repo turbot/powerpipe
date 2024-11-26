@@ -1,7 +1,7 @@
 import Icon from "@powerpipe/components/Icon";
 import { getComponent } from "@powerpipe/components/dashboards";
 
-interface CheckEditorAddItemProps {
+interface EditorAddItemProps {
   addLabel?: string;
   applyLabel?: string;
   helpUrl?: string;
@@ -12,7 +12,7 @@ interface CheckEditorAddItemProps {
   onApply: () => void;
 }
 
-const CheckEditorAddItem = ({
+const EditorAddItem = ({
   addLabel = "Add",
   applyLabel = "Apply",
   helpUrl,
@@ -21,7 +21,7 @@ const CheckEditorAddItem = ({
   onAdd,
   onClear,
   onApply,
-}: CheckEditorAddItemProps) => {
+}: EditorAddItemProps) => {
   const ExternalLink = getComponent("external_link");
   return (
     <div className="flex items-center justify-between space-x-3">
@@ -70,4 +70,4 @@ const CheckEditorAddItem = ({
   );
 };
 
-export default CheckEditorAddItem;
+export default EditorAddItem;

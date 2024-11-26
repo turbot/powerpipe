@@ -1,25 +1,26 @@
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
-import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import {
   DashboardDataModeCLISnapshot,
   DashboardSnapshotMetadata,
 } from "@powerpipe/types";
-import { EXECUTION_SCHEMA_VERSION_20240607 } from "@powerpipe/constants/versions";
+import { EXECUTION_SCHEMA_VERSION_20241125 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
+  groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
 } from "@powerpipe/utils/snapshot";
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const SaveSnapshotButton = () => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
-  const filterConfig = useGroupingFilterConfig();
-  const groupingConfig = useCheckGroupingConfig();
+  const { allFilters } = useFilterConfig();
+  const { allGroupings } = useGroupingConfig();
 
   const saveSnapshot = () => {
     if (!dashboard || !snapshot) {
@@ -30,26 +31,35 @@ const SaveSnapshotButton = () => {
       ...streamlinedSnapshot,
     };
 
-    if (!!filterConfig || !!groupingConfig) {
+    if (
+      !!Object.keys(allFilters).length ||
+      !!Object.keys(allGroupings).length
+    ) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
       };
-      // If a benchmark
-      if (
-        dashboard.artificial &&
-        !!filterConfig &&
-        validateFilter(filterConfig)
-      ) {
-        // @ts-ignore
-        metadata.view.filter_by = filterToSnapshotMetadata(filterConfig);
+      if (!!Object.keys(allFilters).length) {
+        for (const [panel, filter] of Object.entries(allFilters)) {
+          if (!validateFilter(filter)) {
+            console.warn("Ignoring invalid filter", { panel, filter });
+            continue;
+          }
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].filter_by = filterToSnapshotMetadata(filter);
+        }
       }
-      if (!!groupingConfig) {
-        // @ts-ignore
-        // TODO @mike re-include this
-        // metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
+      if (!!Object.keys(allGroupings).length) {
+        for (const [panel, grouping] of Object.entries(allGroupings)) {
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].group_by = groupingToSnapshotMetadata(grouping);
+        }
       }
       withMetadata.metadata = metadata;
-      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240607;
+      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
     }
 
     const blob = new Blob([JSON.stringify(withMetadata)], {
