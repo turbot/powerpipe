@@ -45,8 +45,6 @@ type InnerCheckProps = {
   grouping: DetectionNode;
   groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
-  diffFirstChildSummaries: DetectionSummary[] | undefined;
-  diffGrouping: DetectionNode | null;
   showControls: boolean;
   withTitle: boolean;
 };
@@ -104,20 +102,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       { total: 0 },
     );
 
-    let diffTotalSummary: DetectionSummary | null = null;
-    if (
-      props.diffFirstChildSummaries &&
-      props.diffFirstChildSummaries?.length > 0
-    ) {
-      diffTotalSummary = props.diffFirstChildSummaries.reduce(
-        (cumulative, current) => {
-          cumulative.total += current.total;
-          return cumulative;
-        },
-        { total: 0 },
-      );
-    }
-
     const summary_cards = [
       {
         name: `${props.definition.name}.container.summary.total`,
@@ -140,21 +124,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
                 ? "materialsymbols-solid:check_circle"
                 : null,
         },
-        diff_panel: !!diffTotalSummary
-          ? {
-              name: `${props.definition.name}.container.summary.total.diff`,
-              width: 2,
-              display_type: diffTotalSummary.total > 0 ? "ok" : "skip",
-              properties: {
-                label: "Total Detections",
-                value: totalSummary.total,
-                icon:
-                  totalSummary.total > 0
-                    ? "materialsymbols-solid:circle_notifications"
-                    : "materialsymbols-solid:check_circle",
-              },
-            }
-          : null,
       },
     ];
 
@@ -168,30 +137,8 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     const medium = mediumRaw || 0;
     const low = lowRaw || 0;
 
-    // Calc diff vs previous
-    const diff_severity_summary = props.diffGrouping?.severity_summary;
-    let diffCriticalRaw,
-      diffHighRaw,
-      diffMediumRaw,
-      diffLowRaw,
-      diffCritical,
-      diffHigh,
-      diffMedium,
-      diffLow;
-    if (diff_severity_summary) {
-      diffCriticalRaw = diff_severity_summary["critical"];
-      diffHighRaw = diff_severity_summary["high"];
-      diffMediumRaw = diff_severity_summary["medium"];
-      diffLowRaw = diff_severity_summary["low"];
-      diffCritical = diffCriticalRaw || 0;
-      diffHigh = diffHighRaw || 0;
-      diffMedium = diffMediumRaw || 0;
-      diffLow = diffLowRaw || 0;
-    }
-
     // If we have at least 1 critical result
     const criticalTotal = critical;
-    const criticalDiffTotal = diffCritical;
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.critical`,
       width: 2,
@@ -202,25 +149,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         value: criticalTotal,
         icon: "materialsymbols-solid:pulse_alert",
       },
-      diff_panel: diff_severity_summary
-        ? {
-            name: `${props.definition.name}.container.summary.severity.diff.critical`,
-            width: 2,
-            display_type: criticalDiffTotal > 0 ? "severity-critical" : "",
-            properties: {
-              loading:
-                criticalDiffTotal === 0 && props.grouping.status === "running",
-              label: "Critical",
-              value: criticalDiffTotal,
-              icon: "materialsymbols-solid:pulse_alert",
-            },
-          }
-        : null,
     });
 
     // If we have at least 1 high result
     const highTotal = high;
-    const diffHighTotal = diffHigh;
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.high`,
       width: 2,
@@ -231,24 +163,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         value: highTotal,
         icon: "materialsymbols-solid:warning",
       },
-      diff_panel: diff_severity_summary
-        ? {
-            name: `${props.definition.name}.container.summary.severity.diff.high`,
-            width: 2,
-            display_type: diffHighTotal > 0 ? "severity-high" : "",
-            properties: {
-              loading: highTotal === 0 && props.grouping.status === "running",
-              label: "High",
-              value: diffHighTotal,
-              icon: "materialsymbols-solid:warning",
-            },
-          }
-        : null,
     });
 
     // If we have at least 1 medium result
     const mediumTotal = medium;
-    const mediumDiffTotal = diffMedium;
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.medium`,
       width: 2,
@@ -259,24 +177,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         value: mediumTotal,
         icon: "materialsymbols-solid:campaign",
       },
-      diff_panel: diff_severity_summary
-        ? {
-            name: `${props.definition.name}.container.summary.severity.diff.medium`,
-            width: 2,
-            display_type: mediumDiffTotal > 0 ? "severity-medium" : "",
-            properties: {
-              loading: mediumTotal === 0 && props.grouping.status === "running",
-              label: "Medium",
-              value: mediumDiffTotal,
-              icon: "materialsymbols-solid:campaign",
-            },
-          }
-        : null,
     });
 
     // If we have at least 1 low result
     const lowTotal = low;
-    const lowDiffTotal = diffLow;
     summary_cards.push({
       name: `${props.definition.name}.container.summary.severity.low`,
       width: 2,
@@ -287,29 +191,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         value: lowTotal,
         icon: "materialsymbols-solid:info",
       },
-      diff_panel: diff_severity_summary
-        ? {
-            name: `${props.definition.name}.container.summary.severity.diff.low`,
-            width: 2,
-            display_type: lowDiffTotal > 0 ? "severity-low" : "",
-            properties: {
-              loading: lowTotal === 0 && props.grouping.status === "running",
-              label: "Low",
-              value: lowDiffTotal,
-              icon: "materialsymbols-solid:info",
-            },
-          }
-        : null,
     });
 
     return summary_cards;
-  }, [
-    props.firstChildSummaries,
-    props.diffFirstChildSummaries,
-    props.grouping,
-    props.diffGrouping,
-    props.definition.name,
-  ]);
+  }, [props.firstChildSummaries, props.grouping, props.definition.name]);
 
   const [, setSearchParams] = useSearchParams();
 
@@ -436,7 +321,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
                   onClick={toggleFilter(summaryCard.name)}
                 >
                   {/*@ts-ignore*/}
-                  <Card {...cardProps} diff_panel={summaryCard.diff_panel} />
+                  <Card {...cardProps} />
                 </span>
               </Panel>
             );
@@ -506,8 +391,6 @@ const Inner = ({ showControls, withTitle }) => {
     grouping,
     groupingConfig,
     firstChildSummaries,
-    diffFirstChildSummaries,
-    diffGrouping,
   } = useDetectionGrouping();
 
   if (!definition || !benchmark || !grouping) {
@@ -524,8 +407,6 @@ const Inner = ({ showControls, withTitle }) => {
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
-        diffFirstChildSummaries={diffFirstChildSummaries}
-        diffGrouping={diffGrouping}
       />
     );
     // @ts-ignore

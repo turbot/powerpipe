@@ -69,8 +69,6 @@ type ICheckGroupingContext = {
   grouping: CheckNode | null;
   groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
-  diffFirstChildSummaries?: CheckSummary[];
-  diffGrouping: CheckNode | null;
   nodeStates: CheckGroupNodeStates;
   filterValues: CheckGroupFilterValues;
   dispatch(action: CheckGroupingAction): void;

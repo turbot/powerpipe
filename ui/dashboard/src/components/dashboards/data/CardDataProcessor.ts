@@ -1,11 +1,7 @@
 import get from "lodash/get";
 import isNumber from "lodash/isNumber";
 import { CardProperties } from "@powerpipe/components/dashboards/Card";
-import {
-  DashboardPanelType,
-  DashboardRunState,
-  PanelDefinition,
-} from "@powerpipe/types";
+import { DashboardPanelType, DashboardRunState } from "@powerpipe/types";
 import { getColumn, hasData } from "@powerpipe/utils/data";
 import { getIconForType } from "@powerpipe/utils/card";
 import {
@@ -60,35 +56,15 @@ export class CardDataProcessor {
 
   buildCardState(
     data: LeafNodeData | undefined,
-    diff_panel: PanelDefinition | undefined,
     display_type: CardType | undefined,
     properties: CardProperties,
     status: DashboardRunState,
   ): CardState {
     if (!data || !hasData(data)) {
-      const state = this.getDefaultState(status, properties, display_type);
-      if (!!diff_panel && !!diff_panel.properties) {
-        const diffState = this.getDefaultState(
-          status,
-          diff_panel.properties,
-          display_type,
-        );
-        state.diff = this.diff(properties, state, diffState) as CardDiffState;
-      }
-      return state;
+      return this.getDefaultState(status, properties, display_type);
     }
 
-    const state = this.parseData(data, display_type, properties);
-
-    if (!!diff_panel && !!diff_panel.data) {
-      const diffState = this.parseData(
-        diff_panel.data,
-        display_type,
-        properties,
-      );
-      state.diff = this.diff(properties, state, diffState) as CardDiffState;
-    }
-    return state;
+    return this.parseData(data, display_type, properties);
   }
 
   parseData(

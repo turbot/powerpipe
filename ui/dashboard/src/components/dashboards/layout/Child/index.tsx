@@ -51,7 +51,7 @@ const Child = ({
           showControls={showPanelControls}
           showPanelStatus={false}
         >
-          <Card {...panelDefinition} diff_panel={diff_panel} />
+          <Card {...panelDefinition} />
         </Panel>
       );
     case "chart":

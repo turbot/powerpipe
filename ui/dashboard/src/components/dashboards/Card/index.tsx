@@ -16,7 +16,6 @@ import {
 } from "../data/CardDataProcessor";
 import { classNames } from "@powerpipe/utils/styles";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { PanelDefinition, PanelProperties } from "@powerpipe/types";
 import { getComponent, registerComponent } from "../index";
 import {
   getIconClasses,
@@ -24,6 +23,7 @@ import {
   getWrapperClasses,
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
+import { PanelProperties } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
 
@@ -42,8 +42,6 @@ export type CardProps = PanelProperties &
   ExecutablePrimitiveProps & {
     display_type?: CardType;
     properties: CardProperties;
-  } & {
-    diff_panel?: PanelDefinition;
   };
 
 type CardState = {
@@ -72,41 +70,27 @@ interface CardDiffDisplayProps {
 
 const useCardState = ({
   data,
-  diff_panel,
   display_type,
   properties,
   status,
 }: CardProps) => {
   const [calculatedProperties, setCalculatedProperties] = useState<CardState>(
-    new CardDataProcessor().getDefaultState(
-      status,
-      diff_panel,
-      properties,
-      display_type,
-    ),
+    new CardDataProcessor().getDefaultState(status, properties, display_type),
   );
 
   useDeepCompareEffect(() => {
     const diff = new CardDataProcessor();
     const newState = diff.buildCardState(
       data,
-      diff_panel,
       display_type,
       properties,
       status,
     );
     setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, diff_panel, display_type, properties, status),
+      diff.buildCardState(data, display_type, properties, status),
     );
-  }, [
-    data,
-    diff_panel,
-    display_type,
-    properties,
-    setCalculatedProperties,
-    status,
-  ]);
+  }, [data, display_type, properties, setCalculatedProperties, status]);
 
   return calculatedProperties;
 };

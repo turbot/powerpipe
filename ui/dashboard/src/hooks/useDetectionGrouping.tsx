@@ -64,8 +64,6 @@ type ICheckGroupingContext = {
   grouping: DetectionNodeType | null;
   groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
-  diffFirstChildSummaries?: DetectionSummary[];
-  diffGrouping: DetectionNodeType | null;
   nodeStates: CheckGroupNodeStates;
   filterValues: CheckGroupFilterValues;
   dispatch(action: CheckGroupingAction): void;
