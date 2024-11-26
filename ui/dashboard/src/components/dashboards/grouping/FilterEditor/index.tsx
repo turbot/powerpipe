@@ -4,8 +4,9 @@ import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
-import { CheckDisplayGroupType, Filter, FilterType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
+import { DashboardPanelType } from "@powerpipe/types";
+import { DisplayGroupType, Filter, FilterType } from "../common";
 import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 import {
   MultiValueLabelWithTags,
@@ -19,12 +20,14 @@ import { useDashboardControls } from "../../layout/Dashboard/DashboardControlsPr
 
 type FilterEditorProps = {
   filter: Filter;
+  panelType: DashboardPanelType;
   onApply: (toSave: Filter) => void;
 };
 
 type FilterEditorItemProps = {
   filter: Filter;
   item: Filter;
+  panelType: DashboardPanelType;
   index: number;
   remove: (index: number) => void;
   update: (index: number, item: Filter) => void;
@@ -35,6 +38,7 @@ type FilterTypeSelectProps = {
   filter: Filter;
   index: number;
   item: Filter;
+  panelType: DashboardPanelType;
   type: FilterType;
   update: (index: number, updatedItem: Filter) => void;
 };
@@ -84,11 +88,22 @@ const validateFilter = (filter: Filter): boolean => {
   return false;
 };
 
+const isValidFilterTypeForPanel = (
+  type: string,
+  panelType: DashboardPanelType,
+) => {
+  return !(
+    type === "status" &&
+    (panelType === "detection_benchmark" || panelType === "detection")
+  );
+};
+
 const FilterTypeSelect = ({
   className,
   filter,
   index,
   item,
+  panelType,
   type,
   update,
 }: FilterTypeSelectProps) => {
@@ -138,33 +153,19 @@ const FilterTypeSelect = ({
     const existingTypes = filter.expressions
       ?.map((c) => c.type?.toString())
       .filter((t) => !!t);
-    // const allTypes: SelectOption[] = [
-    //   { value: "benchmark", label: "Benchmark" },
-    //   { value: "control", label: "Control" },
-    //   // { value: "control_tag", label: "Control Tag" },
-    //   {
-    //     value: "control_tag:plugin",
-    //     label: (
-    //       <>
-    //         <span className="text-gray-400">Control Tag:</span> Plugin
-    //       </>
-    //     ),
-    //   },
-    //   { value: "dimension", label: "Dimension" },
-    //   { value: "reason", label: "Reason" },
-    //   { value: "resource", label: "Resource" },
-    //   { value: "severity", label: "Severity" },
-    //   { value: "status", label: "Status" },
-    // ];
-    return allFilters.filter(
-      (t) =>
-        t.value === type ||
-        t.value === "dimension" ||
-        t.value === "control_tag" ||
-        // @ts-ignore
-        !existingTypes.includes(t?.value),
-    );
-  }, [allFilters, filter, type]);
+
+    return allFilters.filter((t) => {
+      return (
+        (t.value === type ||
+          t.value === "dimension" ||
+          t.value === "control_tag" ||
+          t.value === "detection_tag" ||
+          // @ts-ignore
+          !existingTypes.includes(t?.value)) &&
+        isValidFilterTypeForPanel(t.value, panelType)
+      );
+    });
+  }, [allFilters, filter, panelType, type]);
 
   const styles = useSelectInputStyles();
 
@@ -185,7 +186,7 @@ const FilterTypeSelect = ({
       onChange={(t) => {
         setCurrentType(() => {
           const v = (t as SelectOption).value;
-          return v as CheckDisplayGroupType;
+          return v as DisplayGroupType;
         });
       }}
       options={types}
@@ -210,61 +211,6 @@ const FilterTypeSelect = ({
     />
   );
 };
-
-// const FilterKeySelect = ({
-//   index,
-//   item,
-//   type,
-//   filterKey,
-//   update,
-// }: FilterKeySelectProps) => {
-//   const [currentKey, setCurrentKey] = useState(filterKey);
-//   const { context: filterValues } = useDashboardControls();
-//
-//   useDeepCompareEffect(() => {
-//     update(index, {
-//       ...item,
-//       key: currentKey,
-//     });
-//   }, [currentKey, index, item]);
-//
-//   const keys = useMemo(() => {
-//     return Object.keys(filterValues ? filterValues[type]?.key || {} : {}).map(
-//       (k) => ({
-//         value: k,
-//         label: k,
-//       }),
-//     );
-//   }, [filterValues, type]);
-//
-//   const styles = useSelectInputStyles();
-//
-//   return (
-//     <Select
-//       className="basic-single"
-//       classNamePrefix="select"
-//       components={{
-//         // @ts-ignore
-//         MultiValueLabel: MultiValueLabelWithTags,
-//         // @ts-ignore
-//         Option: OptionWithTags,
-//         // @ts-ignore
-//         SingleValue: SingleValueWithTags,
-//       }}
-//       // @ts-ignore as this element definitely exists
-//       menuPortalTarget={document.getElementById("portals")}
-//       onChange={(t) =>
-//         setCurrentKey((t as SelectOption).value as DisplayGroupType)
-//       }
-//       options={keys}
-//       inputId={`${type}.input`}
-//       placeholder={`Choose a ${type}…`}
-//       // @ts-ignore
-//       styles={styles}
-//       value={keys.find((t) => t.value === filterKey)}
-//     />
-//   );
-// };
 
 const FilterValueSelect = ({
   className,
@@ -294,7 +240,7 @@ const FilterValueSelect = ({
             tags: { occurrences: v },
           }))
       );
-    } else if (["control_tag", "dimension"].includes(type)) {
+    } else if (["control_tag", "detection_tag", "dimension"].includes(type)) {
       const keys = Object.entries(
         filterValues ? filterValues[type]?.key || {} : {},
       );
@@ -309,7 +255,12 @@ const FilterValueSelect = ({
             tags: { occurrences: v[key] },
           }));
         });
-    } else if (type === "benchmark" || type === "control") {
+    } else if (
+      type === "benchmark" ||
+      type === "control" ||
+      type === "detection_benchmark" ||
+      type === "detection"
+    ) {
       return Object.entries(
         filterValues ? filterValues[type]?.value || {} : {},
       ).map(([k, v]) => {
@@ -376,10 +327,11 @@ const FilterValueSelect = ({
   );
 };
 
-const CheckFilterEditorItem = ({
+const FilterEditorItem = ({
   filter,
   index,
   item,
+  panelType,
   remove,
   update,
 }: FilterEditorItemProps) => {
@@ -403,25 +355,12 @@ const CheckFilterEditorItem = ({
           filter={filter}
           index={index}
           item={item}
+          panelType={panelType}
           // @ts-ignore
           type={item.type}
           update={update}
         />
       </div>
-      {/* {(item.type === "dimension" || item.type === "control_tag") && (
-        <>
-          <span>=</span>
-          <div className="grow min-w-40 max-w-72">
-            <CheckFilterKeySelect
-              index={index}
-              item={item}
-              filterKey={item.key}
-              type={item.type}
-              update={update}
-            />
-          </div>
-        </>
-      )} */}
       {item.operator === "equal" && <span>=</span>}
       {item.operator === "not_equal" && <span>!=</span>}
       <div className="grow min-w-52 max-w-72">
@@ -453,7 +392,7 @@ const CheckFilterEditorItem = ({
   );
 };
 
-const FilterEditor = ({ filter, onApply }: FilterEditorProps) => {
+const FilterEditor = ({ filter, panelType, onApply }: FilterEditorProps) => {
   const [innerFilter, setInnerFilter] = useState<Filter>(filter);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
@@ -517,10 +456,11 @@ const FilterEditor = ({ filter, onApply }: FilterEditorProps) => {
         className="flex flex-col space-y-4"
       >
         {innerFilter.expressions?.map((c: Filter, idx: number) => (
-          <CheckFilterEditorItem
+          <FilterEditorItem
             key={`${c.type}-${c.value}`}
             filter={innerFilter}
             item={c}
+            panelType={panelType}
             index={idx}
             remove={remove}
             update={update}

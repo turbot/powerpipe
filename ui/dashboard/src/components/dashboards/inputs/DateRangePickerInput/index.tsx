@@ -351,7 +351,7 @@ const DateRangePicker = (props: InputProps) => {
           relative: parsed.relative || "1d",
         };
       } catch (err) {
-        console.log("Parse error", err);
+        console.error("Parse error", err);
         const now = dayjs();
         return {
           from: now.subtract(1, "day").utc(),

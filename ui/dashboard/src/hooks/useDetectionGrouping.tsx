@@ -482,9 +482,6 @@ function recordFilterValues(
     detection_tag: { key: {}; value: {} };
     dimension: { key: {}; value: {} };
     severity: { value: {} };
-    status: {
-      total: number;
-    };
   },
   detectionResult: DetectionResult,
 ) {
@@ -499,7 +496,8 @@ function recordFilterValues(
         title: benchmark.title,
         count: 0,
       };
-      filterValues.detection_benchmark.value[benchmark.name].count += 1;
+      filterValues.detection_benchmark.value[benchmark.name].count +=
+        detectionResult.rows?.length || 0;
     }
   }
 
@@ -509,20 +507,16 @@ function recordFilterValues(
     title: detectionResult.detection.title,
     count: 0,
   };
-  filterValues.detection.value[detectionResult.detection.name].count += 1;
+  filterValues.detection.value[detectionResult.detection.name].count +=
+    detectionResult.rows?.length || 0;
 
   // Record the severity of this check result to allow assisted filtering later
-  if (detectionResult.severity) {
-    console.log(detectionResult);
+  if (detectionResult.severity && detectionResult.rows?.length) {
     filterValues.severity.value[detectionResult.severity.toString()] =
       filterValues.severity.value[detectionResult.severity.toString()] || 0;
-    filterValues.severity.value[detectionResult.severity.toString()] += 1;
+    filterValues.severity.value[detectionResult.severity.toString()] +=
+      detectionResult.rows.length;
   }
-
-  // Record the status of this check result to allow assisted filtering later
-  filterValues.status[detectionResult.status] =
-    filterValues.status[detectionResult.status] || 0;
-  filterValues.status[detectionResult.status] += 1;
 
   // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
   for (const dimension of detectionResult.dimensions) {
@@ -534,7 +528,8 @@ function recordFilterValues(
     if (!(dimension.value in filterValues.dimension.key[dimension.key])) {
       filterValues.dimension.key[dimension.key][dimension.value] = 0;
     }
-    filterValues.dimension.key[dimension.key][dimension.value] += 1;
+    filterValues.dimension.key[dimension.key][dimension.value] +=
+      detectionResult.rows?.length || 0;
 
     if (!(dimension.value in filterValues.dimension.value)) {
       filterValues.dimension.value[dimension.value] = {
@@ -544,10 +539,11 @@ function recordFilterValues(
     if (!(dimension.key in filterValues.dimension.value[dimension.value])) {
       filterValues.dimension.value[dimension.value][dimension.key] = 0;
     }
-    filterValues.dimension.value[dimension.value][dimension.key] += 1;
+    filterValues.dimension.value[dimension.value][dimension.key] +=
+      detectionResult.rows?.length || 0;
   }
 
-  // Record the dimension keys/values + value/key counts of this check result to allow assisted filtering later
+  // Record the dimension keys/values + value/key counts of this detection result to allow assisted filtering later
   for (const [tagKey, tagValue] of Object.entries(detectionResult.tags || {})) {
     if (!(tagKey in filterValues.detection_tag.key)) {
       filterValues.detection_tag.key[tagKey] = {
@@ -557,7 +553,8 @@ function recordFilterValues(
     if (!(tagValue in filterValues.detection_tag.key[tagKey])) {
       filterValues.detection_tag.key[tagKey][tagValue] = 0;
     }
-    filterValues.detection_tag.key[tagKey][tagValue] += 1;
+    filterValues.detection_tag.key[tagKey][tagValue] +=
+      detectionResult.rows?.length || 0;
 
     if (!(tagValue in filterValues.detection_tag.value)) {
       filterValues.detection_tag.value[tagValue] = {
@@ -567,7 +564,8 @@ function recordFilterValues(
     if (!(tagKey in filterValues.detection_tag.value[tagValue])) {
       filterValues.detection_tag.value[tagValue][tagKey] = 0;
     }
-    filterValues.detection_tag.value[tagValue][tagKey] += 1;
+    filterValues.detection_tag.value[tagValue][tagKey] +=
+      detectionResult.rows?.length || 0;
   }
 }
 

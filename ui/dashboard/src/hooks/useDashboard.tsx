@@ -467,7 +467,7 @@ const DashboardProvider = ({
           detectionFrom = parsed.from;
           detectionTo = parsed.to;
         } catch (err) {
-          console.log("Parse error", err);
+          console.error("Parse error", err);
         }
       }
 
@@ -536,7 +536,7 @@ const DashboardProvider = ({
           detectionFrom = parsed.from;
           detectionTo = parsed.to;
         } catch (err) {
-          console.log("Parse error", err);
+          console.error("Parse error", err);
         }
       }
       const message = {
