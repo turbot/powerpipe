@@ -16,6 +16,7 @@ import {
   IInput,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
+import { parseDate } from "@powerpipe/utils/date";
 import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -51,6 +52,26 @@ const CustomDatePicker = ({
   onApply,
   onCancel,
   onTimeOptionClick,
+}: {
+  duration: number;
+  tempState: {
+    from: dayjs.Dayjs;
+    to?: dayjs.Dayjs | null;
+    relative?: string | null;
+    showCustom?: boolean;
+  };
+  unitOfTime: string;
+  setDuration: (duration: number) => void;
+  setTempState: (state: {
+    from: dayjs.Dayjs;
+    to?: dayjs.Dayjs | null;
+    relative?: string | null;
+    showCustom?: boolean;
+  }) => void;
+  setUnitOfTime: (unit: string) => void;
+  onApply: () => void;
+  onCancel: () => void;
+  onTimeOptionClick: (value: number, unit: string) => void;
 }) => {
   const defaultDayPickerClassNames = getDefaultClassNames();
   const [tab, setTab] = useState("relative");
@@ -183,33 +204,33 @@ const CustomDatePicker = ({
                 <DayPicker
                   mode="range"
                   selected={{
-                    from: tempState.from.utc().toDate(),
-                    to: tempState.to?.utc().toDate(),
+                    from: tempState.from.toDate(),
+                    to: tempState.to?.toDate(),
                   }}
                   onSelect={({ from, to }) => {
-                    const newFrom = new Date(
-                      from.getFullYear(),
-                      from.getMonth(),
-                      from.getDate(),
-                      tempState.from.hour(),
-                      tempState.from.minute(),
-                      tempState.from.second(),
+                    const newFrom = parseDate(
+                      new Date(
+                        from.getFullYear(),
+                        from.getMonth(),
+                        from.getDate(),
+                      ),
                     );
-                    const newTo = new Date(
-                      to.getFullYear(),
-                      to.getMonth(),
-                      to.getDate(),
-                      tempState.to?.hour() || 0,
-                      tempState.to?.minute() || 0,
-                      tempState.to?.second() || 0,
+                    const newTo = parseDate(
+                      new Date(
+                        to.getFullYear(),
+                        to.getMonth(),
+                        to.getDate(),
+                        23,
+                        59,
+                        59,
+                      ),
                     );
-                    const parsedFrom = dayjs(newFrom).utc();
-                    const parsedTo = dayjs(newTo).utc();
-                    setTempState((previous) => ({
-                      ...previous,
-                      from: parsedFrom,
-                      to: parsedTo,
-                    }));
+                    setTempState({
+                      ...tempState,
+                      relative: "custom",
+                      from: newFrom,
+                      to: newTo,
+                    });
                   }}
                   className="mx-auto bg-dashboard-panel dark:bg-dashboard text-foreground dark:text-foreground-light rounded-md p-2"
                   classNames={{
@@ -250,10 +271,11 @@ const CustomDatePicker = ({
                       type="date"
                       value={tempState.from.format("YYYY-MM-DD")}
                       onChange={(e) =>
-                        setTempState((previous) => ({
-                          ...previous,
+                        setTempState({
+                          ...tempState,
+                          relative: "custom",
                           from: dayjs(e.target.value).utc(),
-                        }))
+                        })
                       }
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
@@ -262,15 +284,16 @@ const CustomDatePicker = ({
                     <label>Start time</label>
                     <input
                       type="time"
-                      value={`${tempState.from.hour()}:${tempState.from.minute()}:${tempState.from.second()}`}
+                      value={tempState.from.format("HH:mm:ss")}
                       step="1"
                       onChange={(e) => {
-                        setTempState((previous) => ({
-                          ...previous,
+                        setTempState({
+                          ...tempState,
+                          relative: "custom",
                           from: dayjs(
                             `${tempState.from.format("YYYY")}-${tempState.from.format("MM")}-${tempState.from.format("DD")} ${e.target.value}`,
                           ),
-                        }));
+                        });
                       }}
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
@@ -283,10 +306,11 @@ const CustomDatePicker = ({
                       type="date"
                       value={tempState.to?.format("YYYY-MM-DD") || undefined}
                       onChange={(e) =>
-                        setTempState((previous) => ({
-                          ...previous,
+                        setTempState({
+                          ...tempState,
+                          relative: "custom",
                           to: dayjs(e.target.value).utc(),
-                        }))
+                        })
                       }
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
@@ -297,18 +321,19 @@ const CustomDatePicker = ({
                       type="time"
                       value={
                         tempState.to
-                          ? `${tempState.to.hour()}:${tempState.to.minute()}:${tempState.to.second()}`
+                          ? tempState.to.format("HH:mm:ss")
                           : `00:00:00`
                       }
                       step="1"
                       onChange={(e) => {
                         const toTime = tempState.to || dayjs();
-                        setTempState((previous) => ({
-                          ...previous,
+                        setTempState({
+                          ...tempState,
+                          relative: "custom",
                           from: dayjs(
                             `${toTime.format("YYYY")}-${toTime.format("MM")}-${toTime.format("DD")} ${e.target.value}`,
                           ),
-                        }));
+                        });
                       }}
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
