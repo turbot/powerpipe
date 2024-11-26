@@ -11,7 +11,7 @@ import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelCo
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePicker";
 import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
@@ -42,7 +42,6 @@ type BenchmarkTableViewProps = {
 type InnerCheckProps = {
   benchmark: DetectionBenchmarkType;
   definition: PanelDefinition;
-  diff_panels?: PanelsMap;
   grouping: DetectionNode;
   groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
@@ -506,7 +505,7 @@ const Inner = ({ showControls, withTitle }) => {
     benchmark,
     definition,
     grouping,
-    groupingsConfig,
+    groupingConfig,
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
@@ -522,7 +521,7 @@ const Inner = ({ showControls, withTitle }) => {
         benchmark={benchmark}
         definition={definition}
         grouping={grouping}
-        groupingConfig={groupingsConfig}
+        groupingConfig={groupingConfig}
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
@@ -554,14 +553,13 @@ const Inner = ({ showControls, withTitle }) => {
 };
 
 type DetectionBenchmarkWrapperProps = PanelDefinition & {
-  diff_panels?: PanelsMap;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
-    <GroupingProvider definition={props} diff_panels={props.diff_panels}>
+    <GroupingProvider definition={props}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
     </GroupingProvider>
   );

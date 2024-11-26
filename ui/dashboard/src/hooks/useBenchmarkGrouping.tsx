@@ -7,6 +7,7 @@ import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
 import useFilterConfig from "./useFilterConfig";
+import useGroupingConfig from "./useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   CheckDisplayGroup,
@@ -36,7 +37,6 @@ import {
 } from "@powerpipe/types";
 import { useDashboard } from "./useDashboard";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
-import useGroupingConfig from "./useGroupingConfig";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -67,7 +67,7 @@ type ICheckGroupingContext = {
   benchmark: BenchmarkType | null;
   definition: PanelDefinition;
   grouping: CheckNode | null;
-  groupingsConfig: CheckDisplayGroup[];
+  groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
   diffFirstChildSummaries?: CheckSummary[];
   diffGrouping: CheckNode | null;
@@ -401,12 +401,12 @@ function getBenchmarkChildrenLookupKey(
 const groupCheckItems = (
   temp: { _: CheckNode[] },
   checkResult: CheckResult,
-  groupingsConfig: CheckDisplayGroup[],
+  groupingConfig: CheckDisplayGroup[],
   checkNodeStates: CheckGroupNodeStates,
   benchmarkChildrenLookup: { [name: string]: CheckNode[] },
   groupingHierarchyKeys: string[],
 ) => {
-  return groupingsConfig
+  return groupingConfig
     .filter((groupConfig) => groupConfig.type !== "result")
     .reduce(
       (
@@ -569,7 +569,6 @@ const reducer = (state: CheckGroupNodeStates, action) => {
 type CheckGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
-  diff_panels: PanelsMap | undefined;
 };
 
 function recordFilterValues(
@@ -788,7 +787,7 @@ const includeResult = (
 const useGroupingInternal = (
   definition: PanelDefinition | null,
   panelsMap: PanelsMap | undefined,
-  groupingsConfig: CheckDisplayGroup[],
+  groupingConfig: CheckDisplayGroup[],
   skip = false,
 ) => {
   const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
@@ -853,7 +852,7 @@ const useGroupingInternal = (
       const grouping = groupCheckItems(
         temp,
         checkResult,
-        groupingsConfig,
+        groupingConfig,
         checkNodeStates,
         benchmarkChildrenLookup,
         [],
@@ -879,18 +878,17 @@ const useGroupingInternal = (
       checkNodeStates,
       filterValues,
     ] as const;
-  }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
+  }, [checkFilterConfig, definition, groupingConfig, panelsMap, skip]);
 };
 
 const GroupingProvider = ({
   children,
   definition,
-  diff_panels,
 }: CheckGroupingProviderProps) => {
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const { grouping: groupingsConfig } = useGroupingConfig(definition.name);
+  const { grouping: groupingConfig } = useGroupingConfig(definition.name);
 
   const [
     benchmark,
@@ -899,23 +897,16 @@ const GroupingProvider = ({
     firstChildSummaries,
     tempNodeStates,
     filterValues,
-  ] = useGroupingInternal(definition, panelsMap, groupingsConfig);
+  ] = useGroupingInternal(definition, panelsMap, groupingConfig);
 
-  const [, , diffGrouping, diffFirstChildSummaries] = useGroupingInternal(
-    definition,
-    diff_panels,
-    groupingsConfig,
-    !diff_panels,
-  );
-
-  const previousGroupings = usePrevious({ groupingsConfig });
+  const previousGroupings = usePrevious({ groupingConfig });
 
   useEffect(() => {
     if (
       previousGroupings &&
       // @ts-ignore
-      JSON.stringify(previousGroupings.groupingsConfig) ===
-        JSON.stringify(groupingsConfig)
+      JSON.stringify(previousGroupings.groupingConfig) ===
+        JSON.stringify(groupingConfig)
     ) {
       return;
     }
@@ -923,7 +914,7 @@ const GroupingProvider = ({
       type: GroupingActions.UPDATE_NODES,
       nodes: tempNodeStates,
     });
-  }, [previousGroupings, groupingsConfig, tempNodeStates]);
+  }, [previousGroupings, groupingConfig, tempNodeStates]);
 
   useEffect(() => {
     setDashboardControlsContext(filterValues);
@@ -937,10 +928,8 @@ const GroupingProvider = ({
         definition: panelDefinition,
         dispatch,
         firstChildSummaries,
-        diffFirstChildSummaries,
-        diffGrouping,
         grouping,
-        groupingsConfig,
+        groupingConfig,
         nodeStates,
         filterValues,
       }}

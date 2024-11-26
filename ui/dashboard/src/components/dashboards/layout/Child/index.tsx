@@ -8,7 +8,6 @@ import {
 import { getComponent } from "@powerpipe/components/dashboards";
 import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ChildProps = {
   layoutDefinition: DashboardLayoutNode;
@@ -23,8 +22,6 @@ const Child = ({
   parentType,
   showPanelControls = true,
 }: ChildProps) => {
-  const { diff } = useDashboard();
-  const diff_panel = diff ? diff.panelsMap[panelDefinition.name] : null;
   const Panel = getComponent("panel");
   switch (layoutDefinition.panel_type) {
     case "benchmark":
@@ -33,7 +30,6 @@ const Child = ({
       return (
         <Benchmark
           {...(layoutDefinition as PanelDefinition)}
-          diff_panels={diff ? diff.panelsMap : null}
           showControls={showPanelControls}
         />
       );
@@ -43,7 +39,6 @@ const Child = ({
       return (
         <DetectionBenchmark
           {...(layoutDefinition as PanelDefinition)}
-          diff_panels={diff ? diff.panelsMap : null}
           showControls={showPanelControls}
         />
       );

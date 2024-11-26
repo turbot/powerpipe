@@ -28,7 +28,7 @@ import {
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
 import { noop } from "@powerpipe/utils/func";
-import { DashboardActions, PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
@@ -45,7 +45,6 @@ type BenchmarkTableViewProps = {
 type InnerCheckProps = {
   benchmark: BenchmarkType;
   definition: PanelDefinition;
-  diff_panels?: PanelsMap;
   grouping: CheckNode;
   groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
@@ -496,7 +495,7 @@ const Inner = ({ showControls, withTitle }) => {
     benchmark,
     definition,
     grouping,
-    groupingsConfig,
+    groupingConfig,
     firstChildSummaries,
     diffFirstChildSummaries,
     diffGrouping,
@@ -512,7 +511,7 @@ const Inner = ({ showControls, withTitle }) => {
         benchmark={benchmark}
         definition={definition}
         grouping={grouping}
-        groupingConfig={groupingsConfig}
+        groupingConfig={groupingConfig}
         firstChildSummaries={firstChildSummaries}
         showControls={showControls}
         withTitle={withTitle}
@@ -544,14 +543,13 @@ const Inner = ({ showControls, withTitle }) => {
 };
 
 type BenchmarkProps = PanelDefinition & {
-  diff_panels?: PanelsMap;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const BenchmarkWrapper = (props: BenchmarkProps) => {
   return (
-    <GroupingProvider definition={props} diff_panels={props.diff_panels}>
+    <GroupingProvider definition={props}>
       <Inner showControls={props.showControls} withTitle={props.withTitle} />
     </GroupingProvider>
   );

@@ -3,8 +3,9 @@ import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
-import { CheckDisplayGroup, CheckDisplayGroupType } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
+import { DisplayGroup, DisplayGroupType } from "../common";
+import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 import {
   MultiValueLabelWithTags,
   OptionWithTags,
@@ -14,34 +15,33 @@ import { Reorder, useDragControls } from "framer-motion";
 import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
-import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 
 type CheckGroupingEditorProps = {
-  config: CheckDisplayGroup[];
-  onApply: (newValue: CheckDisplayGroup[]) => void;
+  config: DisplayGroup[];
+  onApply: (newValue: DisplayGroup[]) => void;
 };
 
 type CheckGroupingEditorItemProps = {
-  config: CheckDisplayGroup[];
-  item: CheckDisplayGroup;
+  config: DisplayGroup[];
+  item: DisplayGroup;
   index: number;
   remove: (index: number) => void;
-  update: (index: number, item: CheckDisplayGroup) => void;
+  update: (index: number, item: DisplayGroup) => void;
 };
 
-type CheckGroupingTypeSelectProps = {
-  config: CheckDisplayGroup[];
+type GroupingTypeSelectProps = {
+  config: DisplayGroup[];
   index: number;
-  item: CheckDisplayGroup;
-  type: CheckDisplayGroupType;
-  update: (index: number, updatedItem: CheckDisplayGroup) => void;
+  item: DisplayGroup;
+  type: DisplayGroupType;
+  update: (index: number, updatedItem: DisplayGroup) => void;
 };
 
 // type CheckGroupingValueSelectProps = {
 //   index: number;
-//   item: CheckDisplayGroup;
-//   type: CheckDisplayGroupType;
-//   update: (index: number, updatedItem: CheckDisplayGroup) => void;
+//   item: DisplayGroup;
+//   type: DisplayGroupType;
+//   update: (index: number, updatedItem: DisplayGroup) => void;
 //   value: string | undefined;
 // };
 
@@ -51,8 +51,10 @@ const CheckGroupingTypeSelect = ({
   item,
   type,
   update,
-}: CheckGroupingTypeSelectProps) => {
-  const [currentType, setCurrentType] = useState<CheckDisplayGroupType>(type);
+}: GroupingTypeSelectProps) => {
+  const [currentType, setCurrentType] = useState<DisplayGroupType>(type);
+
+  console.log({ config, index, item, type, currentType });
 
   useDeepCompareEffect(() => {
     update(index, {
@@ -105,6 +107,7 @@ const CheckGroupingTypeSelect = ({
         t.value === type ||
         t.value === "dimension" ||
         t.value === "control_tag" ||
+        t.value === "detection_tag" ||
         // @ts-ignore
         !existingTypes.includes(t.value),
     );
@@ -127,7 +130,7 @@ const CheckGroupingTypeSelect = ({
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
       onChange={(t) =>
-        setCurrentType((t as SelectOption).value as CheckDisplayGroupType)
+        setCurrentType((t as SelectOption).value as DisplayGroupType)
       }
       options={types}
       inputId={`${type}.input`}
@@ -261,7 +264,7 @@ const CheckGroupingEditorItem = ({
 };
 
 const GroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
-  const [innerConfig, setInnerConfig] = useState<CheckDisplayGroup[]>(config);
+  const [innerConfig, setInnerConfig] = useState<DisplayGroup[]>(config);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
@@ -279,7 +282,9 @@ const GroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
     const isValid = innerConfig.every((c, i) => {
       switch (c?.type) {
         case "benchmark":
+        case "detection_benchmark":
         case "control":
+        case "detection":
         case "reason":
         case "resource":
         case "severity":
@@ -323,7 +328,7 @@ const GroupingEditor = ({ config, onApply }: CheckGroupingEditorProps) => {
   );
 
   const update = useCallback(
-    (index: number, updatedItem: CheckDisplayGroup) =>
+    (index: number, updatedItem: DisplayGroup) =>
       setInnerConfig((existing) => [
         ...existing.slice(0, index),
         updatedItem,

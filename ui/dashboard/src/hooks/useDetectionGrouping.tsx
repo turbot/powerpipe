@@ -7,7 +7,7 @@ import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping
 import DetectionRootNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRootNode";
 import DetectionRunningNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRunningNode";
 import useFilterConfig from "./useFilterConfig";
-import useDetectionGroupingConfig from "./useDetectionGroupingConfig";
+import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   DetectionDisplayGroup,
@@ -62,7 +62,7 @@ type ICheckGroupingContext = {
   benchmark: DetectionBenchmarkType | null;
   definition: PanelDefinition;
   grouping: DetectionNodeType | null;
-  groupingsConfig: DetectionDisplayGroup[];
+  groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
   diffFirstChildSummaries?: DetectionSummary[];
   diffGrouping: DetectionNodeType | null;
@@ -310,15 +310,15 @@ function getBenchmarkChildrenLookupKey(
   return { groupingKeysBeforeBenchmark, benchmarkChildrenLookupKey };
 }
 
-const groupCheckItems = (
+const groupDetectionItems = (
   temp: { _: DetectionNodeType[] },
   checkResult: DetectionResult,
-  groupingsConfig: DetectionDisplayGroup[],
+  groupingConfig: DetectionDisplayGroup[],
   detectionNodeStates: CheckGroupNodeStates,
   benchmarkChildrenLookup: { [name: string]: DetectionNodeType[] },
   groupingHierarchyKeys: string[],
 ) => {
-  return groupingsConfig
+  return groupingConfig
     .filter((groupConfig) => groupConfig.type !== "result")
     .reduce(
       (
@@ -473,7 +473,6 @@ const reducer = (state: CheckGroupNodeStates, action) => {
 type DetectionGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
-  diff_panels: PanelsMap | undefined;
 };
 
 function recordFilterValues(
@@ -683,7 +682,7 @@ const includeResult = (
 const useGroupingInternal = (
   definition: PanelDefinition | null,
   panelsMap: PanelsMap | undefined,
-  groupingsConfig: DetectionDisplayGroup[],
+  groupingConfig: DetectionDisplayGroup[],
   skip = false,
 ) => {
   const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
@@ -733,28 +732,28 @@ const useGroupingInternal = (
     const benchmarkChildrenLookup = {};
 
     // We'll loop over each control result and build up the grouped nodes from there
-    b.all_detection_results.forEach((checkResult) => {
+    b.all_detection_results.forEach((detectionResult) => {
       // Record values pre-filter so we can expand out from filtered states with all values later on
-      recordFilterValues(filterValues, checkResult);
+      recordFilterValues(filterValues, detectionResult);
 
       // See if the result needs to be filtered
-      if (!includeResult(checkResult, checkFilterConfig)) {
+      if (!includeResult(detectionResult, checkFilterConfig)) {
         return;
       }
 
       // Build a grouping node - this will be the leaf node down from the root group
       // e.g. benchmark -> control (where control is the leaf)
-      const grouping = groupCheckItems(
+      const grouping = groupDetectionItems(
         temp,
-        checkResult,
-        groupingsConfig,
+        detectionResult,
+        groupingConfig,
         detectionNodeStates,
         benchmarkChildrenLookup,
         [],
       );
       // Build and add a check result node to the children of the trailing group.
       // This will be used to calculate totals and severity, amongst other things.
-      const node = getDetectionResultNode(checkResult);
+      const node = getDetectionResultNode(detectionResult);
       grouping._.push(node);
     });
 
@@ -773,18 +772,17 @@ const useGroupingInternal = (
       detectionNodeStates,
       filterValues,
     ] as const;
-  }, [checkFilterConfig, definition, groupingsConfig, panelsMap, skip]);
+  }, [checkFilterConfig, definition, groupingConfig, panelsMap, skip]);
 };
 
 const GroupingProvider = ({
   children,
   definition,
-  diff_panels,
 }: DetectionGroupingProviderProps) => {
   const { panelsMap } = useDashboard();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const groupingsConfig = useDetectionGroupingConfig();
+  const { grouping: groupingConfig } = useGroupingConfig(definition.name);
 
   const [
     benchmark,
@@ -793,22 +791,15 @@ const GroupingProvider = ({
     firstChildSummaries,
     tempNodeStates,
     filterValues,
-  ] = useGroupingInternal(definition, panelsMap, groupingsConfig);
+  ] = useGroupingInternal(definition, panelsMap, groupingConfig);
 
-  const [, , diffGrouping, diffFirstChildSummaries] = useGroupingInternal(
-    definition,
-    diff_panels,
-    groupingsConfig,
-    !diff_panels,
-  );
-
-  const previousGroupings = usePrevious({ groupingsConfig });
+  const previousGroupings = usePrevious({ groupingConfig });
 
   useEffect(() => {
     if (
       previousGroupings &&
-      JSON.stringify(previousGroupings.groupingsConfig) ===
-        JSON.stringify(groupingsConfig)
+      JSON.stringify(previousGroupings.groupingConfig) ===
+        JSON.stringify(groupingConfig)
     ) {
       return;
     }
@@ -816,7 +807,7 @@ const GroupingProvider = ({
       type: GroupingActions.UPDATE_NODES,
       nodes: tempNodeStates,
     });
-  }, [previousGroupings, groupingsConfig, tempNodeStates]);
+  }, [previousGroupings, groupingConfig, tempNodeStates]);
 
   useEffect(() => {
     setDashboardControlsContext(filterValues);
@@ -830,10 +821,8 @@ const GroupingProvider = ({
         definition: panelDefinition,
         dispatch,
         firstChildSummaries,
-        diffFirstChildSummaries,
-        diffGrouping,
         grouping,
-        groupingsConfig,
+        groupingConfig,
         nodeStates,
         filterValues,
       }}

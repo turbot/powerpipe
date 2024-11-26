@@ -62,7 +62,6 @@ export type IDashboardContext = {
   snapshot_metadata_loaded: boolean;
 
   diff?: {
-    panelsMap: PanelsMap;
     snapshotFileName: string;
   };
 
