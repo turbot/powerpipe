@@ -8,37 +8,33 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 )
 
-type TableRenderer_SNAP struct {
-	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
+type DetectionTableRenderer struct {
+	resultTree *dashboardexecute.DetectionBenchmarkDisplayTree
 
 	// screen width
-	width             int
-	maxFailedControls int
-	maxTotalControls  int
+	width int
 }
 
-func NewTableSnapRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP) *TableRenderer_SNAP {
-	return &TableRenderer_SNAP{
-		resultTree:        resultTree,
-		maxFailedControls: resultTree.Root.Summary.Status.FailedCount(),
-		maxTotalControls:  resultTree.Root.Summary.Status.TotalCount(),
+func NewDetectionTableRenderer(resultTree *dashboardexecute.DetectionBenchmarkDisplayTree) *DetectionTableRenderer {
+	return &DetectionTableRenderer{
+		resultTree: resultTree,
 	}
 }
 
 // MinimumWidth is the width we require
 // It is determined by the left indent, title, severity, counter and counter graph
-func (r TableRenderer_SNAP) MinimumWidth() int {
+func (r DetectionTableRenderer) MinimumWidth() int {
 	minimumWidthRequired := r.maxIndent() + minimumGroupTitleWidth + severityMaxLen + minimumCounterWidth + counterGraphSegments
 	return minimumWidthRequired
 }
 
-func (r TableRenderer_SNAP) maxIndent() int {
+func (r DetectionTableRenderer) maxIndent() int {
 	depth := r.groupDepth(r.resultTree.Root, 0)
 	// each indent level is "| " or "+ " (2 characters)
 	return depth * 2
 }
 
-func (r TableRenderer_SNAP) groupDepth(g *dashboardexecute.ResultGroup_SNAP, myDepth int) int {
+func (r DetectionTableRenderer) groupDepth(g *dashboardexecute.DetectionBenchmarkDisplay, myDepth int) int {
 	if len(g.Groups) == 0 {
 		return 0
 	}
@@ -52,7 +48,7 @@ func (r TableRenderer_SNAP) groupDepth(g *dashboardexecute.ResultGroup_SNAP, myD
 	return myDepth + maxDepth
 }
 
-func (r TableRenderer_SNAP) Render(width int) string {
+func (r DetectionTableRenderer) Render(width int) string {
 	r.width = width
 
 	// the buffer to put the output data in
@@ -65,14 +61,14 @@ func (r TableRenderer_SNAP) Render(width int) string {
 	return builder.String()
 }
 
-func (r TableRenderer_SNAP) renderSummary() string {
+func (r DetectionTableRenderer) renderSummary() string {
 	// no need to render the summary when the dry-run flag is set
 	if viper.GetBool(constants.ArgDryRun) {
 		return ""
 	}
-	return NewSummaryRenderer(r.resultTree, r.width).Render()
+	return NewDetectionSummaryRenderer(r.resultTree, r.width).Render()
 }
 
-func (r TableRenderer_SNAP) renderResult() string {
-	return NewGroupRenderer(r.resultTree.Root, nil, r.maxFailedControls, r.maxTotalControls, r.resultTree, r.width).Render()
+func (r DetectionTableRenderer) renderResult() string {
+	return NewDetectionGroupRenderer(r.resultTree.Root, nil, r.resultTree, r.width).Render()
 }

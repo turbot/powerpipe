@@ -63,7 +63,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	}
 	return res, nil
 }
-func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DisplayExecutionTree_SNAP, error) {
+func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DetectionBenchmarkDisplayTree, error) {
 	// Step 1: Create the execution tree
 	tree, err := newDisplayExecutionTree(snapshot, w, targets...)
 	if err != nil {
@@ -83,9 +83,9 @@ func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.Stea
 	return tree, nil
 }
 
-func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DisplayExecutionTree_SNAP, error) {
+func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DetectionBenchmarkDisplayTree, error) {
 	// now populate the ExecutionTree
-	executionTree := &dashboardexecute.DisplayExecutionTree_SNAP{
+	executionTree := &dashboardexecute.DetectionBenchmarkDisplayTree{
 		LeafRuns: make(map[string]controlexecute.LeafRun),
 	}
 
@@ -100,7 +100,7 @@ func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *wor
 
 	// build tree of result groups, starting with a synthetic 'root' node
 
-	root, err := dashboardexecute.NewRootResultGroup_(resolvedItem)
+	root, err := dashboardexecute.NewRootBenchmarkDisplay(resolvedItem)
 	if err != nil {
 		return nil, err
 	}
@@ -119,7 +119,7 @@ func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *wor
 		root.AddDetection(resource)
 	case *dashboardexecute.BenchmarkRun:
 		// create a result group for this item
-		benchmarkGroup, err := dashboardexecute.NewResultGroup_(resource, root)
+		benchmarkGroup, err := dashboardexecute.NewDetectionBenchmarkDisplay(resource, root)
 		if err != nil {
 			return nil, err
 		}

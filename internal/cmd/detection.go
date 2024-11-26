@@ -158,7 +158,7 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 	tree, err := controldisplay.SnapshotToExecutionTree(ctx, snap, initData.Workspace, target)
 	error_helpers.FailOnError(err)
 
-	displayControlResults_SNAP(ctx, tree, initData.OutputFormatter)
+	displayDetectionResults(ctx, tree, initData.OutputFormatter)
 
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)

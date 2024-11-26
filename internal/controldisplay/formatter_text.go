@@ -17,8 +17,9 @@ type TextFormatter struct {
 	FormatterBase
 }
 
-func (tf TextFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
-	renderer := NewTableSnapRenderer(tree)
+func (tf TextFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	// TODO K switch between control and detection
+	renderer := NewDetectionTableRenderer(tree)
 	widthConstraint := utils.NewRangeConstraint(renderer.MinimumWidth(), MaxColumns)
 	renderedText := renderer.Render(widthConstraint.Constrain(GetMaxCols()))
 	res := strings.NewReader(fmt.Sprintf("\n%s\n", renderedText))

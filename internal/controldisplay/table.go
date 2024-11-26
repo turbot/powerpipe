@@ -1,15 +1,15 @@
 package controldisplay
 
 import (
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
 type TableRenderer struct {
-	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
+	resultTree *controlexecute.ExecutionTree
 
 	// screen width
 	width             int
@@ -17,7 +17,7 @@ type TableRenderer struct {
 	maxTotalControls  int
 }
 
-func NewTableRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP) *TableRenderer {
+func NewTableRenderer(resultTree *controlexecute.ExecutionTree) *TableRenderer {
 	return &TableRenderer{
 		resultTree:        resultTree,
 		maxFailedControls: resultTree.Root.Summary.Status.FailedCount(),
@@ -38,7 +38,7 @@ func (r TableRenderer) maxIndent() int {
 	return depth * 2
 }
 
-func (r TableRenderer) groupDepth(g *dashboardexecute.ResultGroup_SNAP, myDepth int) int {
+func (r TableRenderer) groupDepth(g *controlexecute.ResultGroup, myDepth int) int {
 	if len(g.Groups) == 0 {
 		return 0
 	}

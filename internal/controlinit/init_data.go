@@ -63,13 +63,9 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		return i
 	}
 	modResources := resources.GetModResources(w.Mod)
-	if len(modResources.Controls)+len(modResources.ControlBenchmarks) == 0 {
-		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
-
-// TODO KAI WHICH
-	//if len(modResources.Controls)+len(modResources.Benchmarks)+len(modResources.Detections)+len(modResources.DetectionBenchmarks) == 0 {
-	//	i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
-	//}
+	if len(modResources.Controls)+len(modResources.ControlBenchmarks)+len(modResources.Benchmarks) == 0+len(modResources.Detections) {
+		i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
+	}
 
 	if err := controldisplay.EnsureTemplates(); err != nil {
 		i.Result.Error = err

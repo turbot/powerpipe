@@ -13,7 +13,7 @@ import (
 
 type DetectionRenderer struct {
 	run               *dashboardexecute.DetectionRun
-	parent            *GroupRenderer
+	parent            *DetectionGroupRenderer
 	maxFailedControls int
 	maxTotalControls  int
 	// screen width
@@ -22,14 +22,12 @@ type DetectionRenderer struct {
 	lastChild      bool
 }
 
-func NewDetectionRenderer(run *dashboardexecute.DetectionRun, parent *GroupRenderer) *DetectionRenderer {
+func NewDetectionRenderer(run *dashboardexecute.DetectionRun, parent *DetectionGroupRenderer) *DetectionRenderer {
 	r := &DetectionRenderer{
-		run:               run,
-		parent:            parent,
-		maxFailedControls: parent.maxFailedControls,
-		maxTotalControls:  parent.maxTotalControls,
-		colorGenerator:    parent.resultTree.DimensionColorGenerator,
-		width:             parent.width,
+		run:            run,
+		parent:         parent,
+		colorGenerator: parent.resultTree.DimensionColorGenerator,
+		width:          parent.width,
 	}
 	r.lastChild = r.isLastChild()
 	return r
@@ -74,34 +72,31 @@ func (r DetectionRenderer) postResultIndent() string {
 }
 
 func (r DetectionRenderer) Render() string {
-	var controlStrings []string
+	var detectionStrings []string
 	failedCount := len(r.run.Data.Rows)
 	// use group heading renderer to render the control title and counts
-	// TODO group heading renderer suitable for detection or need a special one?
-	controlHeadingRenderer := NewGroupHeadingRenderer(typehelpers.SafeString(r.run.Resource.GetTitle()),
+
+	headingRenderer := NewDetectionGroupHeadingRenderer(typehelpers.SafeString(r.run.Resource.GetTitle()),
 		failedCount,
-		failedCount,
-		r.maxFailedControls,
-		r.maxTotalControls,
 		r.width,
 		r.parent.childGroupIndent())
 
 	// set the severity on the heading renderer
-	controlHeadingRenderer.severity = typehelpers.SafeString(r.run.Resource.Severity)
+	headingRenderer.severity = typehelpers.SafeString(r.run.Resource.Severity)
 
 	// get formatted indents
 	formattedPostResultIndent := fmt.Sprintf("%s", ControlColors.Indent(r.postResultIndent()))
 	formattedPreResultIndent := fmt.Sprintf("%s", ControlColors.Indent(r.preResultIndent()))
 
-	controlStrings = append(controlStrings,
-		controlHeadingRenderer.Render(),
+	detectionStrings = append(detectionStrings,
+		headingRenderer.Render(),
 		// newline after control heading
 		formattedPreResultIndent)
 
 	// if the control is in error, render an error
 	if r.run.GetError() != nil {
 		errorRenderer := NewErrorRenderer(r.run.GetError(), r.width, r.parentIndent())
-		controlStrings = append(controlStrings,
+		detectionStrings = append(detectionStrings,
 			errorRenderer.Render(),
 			// newline after error
 			formattedPostResultIndent)
@@ -132,11 +127,11 @@ func (r DetectionRenderer) Render() string {
 
 	// newline after results
 	if len(resultStrings) > 0 {
-		controlStrings = append(controlStrings, resultStrings...)
+		detectionStrings = append(detectionStrings, resultStrings...)
 		if len(r.run.Data.Rows) > 0 || r.run.GetError() != nil {
-			controlStrings = append(controlStrings, formattedPostResultIndent)
+			detectionStrings = append(detectionStrings, formattedPostResultIndent)
 		}
 	}
 
-	return strings.Join(controlStrings, "\n")
+	return strings.Join(detectionStrings, "\n")
 }

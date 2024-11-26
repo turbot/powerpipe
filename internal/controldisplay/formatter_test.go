@@ -23,7 +23,7 @@ type testFormatter struct {
 func (b *testFormatter) FileExtension() string { return b.extension }
 func (b *testFormatter) Name() string          { return b.name }
 func (b *testFormatter) Alias() string         { return b.alias }
-func (b *testFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
+func (b *testFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
 	return nil, nil
 }
 

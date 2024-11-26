@@ -16,10 +16,11 @@ import (
 
 const RootResultGroup_Name = "root_result_group"
 
-// ResultGroup_SNAP is a struct representing a grouping of control results
+// DetectionBenchmarkDisplay is a struct representing a grouping of control results
 // It may correspond to a Benchmark, or some other arbitrary grouping
 // TODO ultimately just use benchmark
-type ResultGroup_SNAP struct {
+
+type DetectionBenchmarkDisplay struct {
 	GroupId       string            `json:"name" csv:"group_id"`
 	Title         string            `json:"title,omitempty" csv:"title"`
 	Description   string            `json:"description,omitempty" csv:"description"`
@@ -29,22 +30,19 @@ type ResultGroup_SNAP struct {
 	Type          string            `json:"type,omitempty"`
 
 	// the overall summary of the group
-	Summary *GroupSummary_ `json:"summary"`
+	Summary *DetectionBenchmarkSummary `json:"summary"`
 	// child result groups
-	Groups []*ResultGroup_SNAP `json:"-"`
-	// child control runs
-	// TODO K combine and use interface?? make tree and groups??
-	ControlRuns   []*controlexecute.ControlRun `json:"-"`
-	DetectionRuns []*DetectionRun              `json:"-"`
-	// list of children stored as controlexecute.ExecutionTreeNode
-	Children []controlexecute.ExecutionTreeNode     `json:"-"`
-	Severity map[string]controlstatus.StatusSummary `json:"-"`
+	Groups []*DetectionBenchmarkDisplay `json:"-"`
+	// child runs
+	DetectionRuns []*DetectionRun                        `json:"-"` // list of children stored as controlexecute.ExecutionTreeNode
+	Children      []controlexecute.ExecutionTreeNode     `json:"-"`
+	Severity      map[string]controlstatus.StatusSummary `json:"-"`
 	// "benchmark"
 	NodeType string `json:"panel_type"`
 	// the control tree item associated with this group(i.e. a mod/benchmark)
-	GroupItem modconfig.ModTreeItem `json:"-"`
-	Parent    *ResultGroup_SNAP     `json:"-"`
-	Duration  time.Duration         `json:"-"`
+	GroupItem modconfig.ModTreeItem      `json:"-"`
+	Parent    *DetectionBenchmarkDisplay `json:"-"`
+	Duration  time.Duration              `json:"-"`
 
 	// a list of distinct dimension keys from descendant controls
 	DimensionKeys []string `json:"-"`
@@ -55,22 +53,21 @@ type ResultGroup_SNAP struct {
 	updateLock *sync.Mutex
 }
 
-type GroupSummary_ struct {
-	Status   controlstatus.StatusSummary            `json:"status"`
-	Severity map[string]controlstatus.StatusSummary `json:"-"`
+type DetectionBenchmarkSummary struct {
+	Count int `json:"count"`
 }
 
-func NewGroupSummary_() *GroupSummary_ {
-	return &GroupSummary_{Severity: make(map[string]controlstatus.StatusSummary)}
+func NewDetectionBenchmarkSummary() *DetectionBenchmarkSummary {
+	return &DetectionBenchmarkSummary{}
 }
 
-// NewRootResultGroup_ creates a ResultGroup_SNAP to act as the root node of a control execution tree
-func NewRootResultGroup_(rootItem modconfig.ModTreeItem) (*ResultGroup_SNAP, error) {
-	root := &ResultGroup_SNAP{
+// NewRootBenchmarkDisplay creates a DetectionBenchmarkDisplay to act as the root node of a control execution tree
+func NewRootBenchmarkDisplay(rootItem modconfig.ModTreeItem) (*DetectionBenchmarkDisplay, error) {
+	root := &DetectionBenchmarkDisplay{
 		GroupId:    RootResultGroup_Name,
-		Groups:     []*ResultGroup_SNAP{},
+		Groups:     []*DetectionBenchmarkDisplay{},
 		Tags:       make(map[string]string),
-		Summary:    NewGroupSummary_(),
+		Summary:    NewDetectionBenchmarkSummary(),
 		Severity:   make(map[string]controlstatus.StatusSummary),
 		updateLock: new(sync.Mutex),
 		NodeType:   schema.BlockTypeBenchmark,
@@ -80,17 +77,17 @@ func NewRootResultGroup_(rootItem modconfig.ModTreeItem) (*ResultGroup_SNAP, err
 	return root, nil
 }
 
-// NewResultGroup_ creates a result group from a ModTreeItem
-func NewResultGroup_(benchmarkRun *BenchmarkRun, parent *ResultGroup_SNAP) (*ResultGroup_SNAP, error) {
-	group := &ResultGroup_SNAP{
+// NewDetectionBenchmarkDisplay creates a result group from a ModTreeItem
+func NewDetectionBenchmarkDisplay(benchmarkRun *BenchmarkRun, parent *DetectionBenchmarkDisplay) (*DetectionBenchmarkDisplay, error) {
+	group := &DetectionBenchmarkDisplay{
 		GroupId:     benchmarkRun.Name,
 		Title:       benchmarkRun.GetTitle(),
 		Description: benchmarkRun.resource.GetDescription(),
 		Tags:        benchmarkRun.resource.GetTags(),
 		GroupItem:   benchmarkRun.resource,
 		Parent:      parent,
-		Groups:      []*ResultGroup_SNAP{},
-		Summary:     NewGroupSummary_(),
+		Groups:      []*DetectionBenchmarkDisplay{},
+		Summary:     NewDetectionBenchmarkSummary(),
 		Severity:    make(map[string]controlstatus.StatusSummary),
 		updateLock:  new(sync.Mutex),
 		NodeType:    schema.BlockTypeBenchmark,
@@ -101,7 +98,7 @@ func NewResultGroup_(benchmarkRun *BenchmarkRun, parent *ResultGroup_SNAP) (*Res
 		switch child := c.(type) {
 		case *BenchmarkRun:
 			// create a result group for this item
-			benchmarkGroup, err := NewResultGroup_(child, group)
+			benchmarkGroup, err := NewDetectionBenchmarkDisplay(child, group)
 			if err != nil {
 				return nil, err
 			}
@@ -117,7 +114,7 @@ func NewResultGroup_(benchmarkRun *BenchmarkRun, parent *ResultGroup_SNAP) (*Res
 	return group, nil
 }
 
-func (r *ResultGroup_SNAP) AllTagKeys() []string {
+func (r *DetectionBenchmarkDisplay) AllTagKeys() []string {
 	var tags []string
 	for k := range r.Tags {
 		tags = append(tags, k)
@@ -125,8 +122,8 @@ func (r *ResultGroup_SNAP) AllTagKeys() []string {
 	for _, child := range r.Groups {
 		tags = append(tags, child.AllTagKeys()...)
 	}
-	for _, run := range r.ControlRuns {
-		for k := range run.Control.Tags {
+	for _, run := range r.DetectionRuns {
+		for k := range run.resource.GetTags() {
 			tags = append(tags, k)
 		}
 	}
@@ -135,8 +132,8 @@ func (r *ResultGroup_SNAP) AllTagKeys() []string {
 	return tags
 }
 
-// GetGroupByName finds an immediate child ResultGroup_SNAP with a specific name
-func (r *ResultGroup_SNAP) GetGroupByName(name string) *ResultGroup_SNAP {
+// GetGroupByName finds an immediate child DetectionBenchmarkDisplay with a specific name
+func (r *DetectionBenchmarkDisplay) GetGroupByName(name string) *DetectionBenchmarkDisplay {
 	for _, group := range r.Groups {
 		if group.GroupId == name {
 			return group
@@ -145,8 +142,8 @@ func (r *ResultGroup_SNAP) GetGroupByName(name string) *ResultGroup_SNAP {
 	return nil
 }
 
-// GetChildGroupByName finds a nested child ResultGroup_SNAP with a specific name
-func (r *ResultGroup_SNAP) GetChildGroupByName(name string) *ResultGroup_SNAP {
+// GetChildGroupByName finds a nested child DetectionBenchmarkDisplay with a specific name
+func (r *DetectionBenchmarkDisplay) GetChildGroupByName(name string) *DetectionBenchmarkDisplay {
 	for _, group := range r.Groups {
 		if group.GroupId == name {
 			return group
@@ -158,38 +155,40 @@ func (r *ResultGroup_SNAP) GetChildGroupByName(name string) *ResultGroup_SNAP {
 	return nil
 }
 
-// GetControlRunByName finds a child ControlRun with a specific control name
-func (r *ResultGroup_SNAP) GetControlRunByName(name string) *controlexecute.ControlRun {
-	for _, run := range r.ControlRuns {
-		if run.Control.Name() == name {
+// GetRunByName finds a child ControlRun with a specific control name
+func (r *DetectionBenchmarkDisplay) GetRunByName(name string) *DetectionRun {
+	for _, run := range r.DetectionRuns {
+		if run.resource.Name() == name {
 			return run
 		}
 	}
 	return nil
 }
 
-func (r *ResultGroup_SNAP) ControlRunCount() int {
-	count := len(r.ControlRuns)
+func (r *DetectionBenchmarkDisplay) RunCount() int {
+	count := len(r.DetectionRuns)
 	for _, g := range r.Groups {
-		count += g.ControlRunCount()
+		count += g.RunCount()
 	}
 	return count
 }
 
 // IsSnapshotPanel implements SnapshotPanel
-func (*ResultGroup_SNAP) IsSnapshotPanel() {}
+func (*DetectionBenchmarkDisplay) IsSnapshotPanel() {}
 
 // IsExecutionTreeNode implements ExecutionTreeNode
-func (*ResultGroup_SNAP) IsExecutionTreeNode() {}
+func (*DetectionBenchmarkDisplay) IsExecutionTreeNode() {}
 
 // GetChildren implements ExecutionTreeNode
-func (r *ResultGroup_SNAP) GetChildren() []controlexecute.ExecutionTreeNode { return r.Children }
+func (r *DetectionBenchmarkDisplay) GetChildren() []controlexecute.ExecutionTreeNode {
+	return r.Children
+}
 
 // GetName implements ExecutionTreeNode
-func (r *ResultGroup_SNAP) GetName() string { return r.GroupId }
+func (r *DetectionBenchmarkDisplay) GetName() string { return r.GroupId }
 
 // AsTreeNode implements ExecutionTreeNode
-func (r *ResultGroup_SNAP) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
+func (r *DetectionBenchmarkDisplay) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	res := &steampipeconfig.SnapshotTreeNode{
 		Name:     r.GroupId,
 		Children: make([]*steampipeconfig.SnapshotTreeNode, len(r.Children)),
@@ -201,23 +200,19 @@ func (r *ResultGroup_SNAP) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-// add result group into our list, and also add a tree node into our child list
-func (r *ResultGroup_SNAP) AddResultGroup(group *ResultGroup_SNAP) {
+// AddResultGroup adds result group into our list, and also add a tree node into our child list
+func (r *DetectionBenchmarkDisplay) AddResultGroup(group *DetectionBenchmarkDisplay) {
 	r.Groups = append(r.Groups, group)
 	r.Children = append(r.Children, group)
 }
 
-// add control into our list, and also add a tree node into our child list
-func (r *ResultGroup_SNAP) AddControl(controlRun *controlexecute.ControlRun) {
-	r.ControlRuns = append(r.ControlRuns, controlRun)
-	r.Children = append(r.Children, controlRun)
-}
-func (r *ResultGroup_SNAP) AddDetection(detectionRun *DetectionRun) {
+// AddDetection add run into our list, and also add a tree node into our child list
+func (r *DetectionBenchmarkDisplay) AddDetection(detectionRun *DetectionRun) {
 	r.DetectionRuns = append(r.DetectionRuns, detectionRun)
 	r.Children = append(r.Children, detectionRun)
 }
 
-func (r *ResultGroup_SNAP) addDimensionKeys(keys ...string) {
+func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
 	r.updateLock.Lock()
 	defer r.updateLock.Unlock()
 	r.DimensionKeys = append(r.DimensionKeys, keys...)
@@ -229,9 +224,9 @@ func (r *ResultGroup_SNAP) addDimensionKeys(keys ...string) {
 }
 
 // onChildDone is a callback that gets called from the children of this result group when they are done
-func (r *ResultGroup_SNAP) onChildDone() {
+func (r *DetectionBenchmarkDisplay) onChildDone() {
 	newCount := atomic.AddUint32(&r.childrenComplete, 1)
-	totalCount := uint32(len(r.ControlRuns) + len(r.Groups)) //nolint:gosec // will not overflow
+	totalCount := uint32(len(r.DetectionRuns) + len(r.Groups)) //nolint:gosec // will not overflow
 	if newCount < totalCount {
 		// all children haven't finished execution yet
 		return
@@ -244,37 +239,12 @@ func (r *ResultGroup_SNAP) onChildDone() {
 	}
 }
 
-func (r *ResultGroup_SNAP) updateSummary(summary *controlstatus.StatusSummary) {
+func (r *DetectionBenchmarkDisplay) updateSummary(count int) {
 	r.updateLock.Lock()
 	defer r.updateLock.Unlock()
 
-	r.Summary.Status.Skip += summary.Skip
-	r.Summary.Status.Alarm += summary.Alarm
-	r.Summary.Status.Info += summary.Info
-	r.Summary.Status.Ok += summary.Ok
-	r.Summary.Status.Error += summary.Error
-
+	r.Summary.Count += count
 	if r.Parent != nil {
-		r.Parent.updateSummary(summary)
-	}
-}
-
-func (r *ResultGroup_SNAP) updateSeverityCounts(severity string, summary *controlstatus.StatusSummary) {
-	r.updateLock.Lock()
-	defer r.updateLock.Unlock()
-
-	val, exists := r.Severity[severity]
-	if !exists {
-		val = controlstatus.StatusSummary{}
-	}
-	val.Alarm += summary.Alarm
-	val.Error += summary.Error
-	val.Info += summary.Info
-	val.Ok += summary.Ok
-	val.Skip += summary.Skip
-
-	r.Summary.Severity[severity] = val
-	if r.Parent != nil {
-		r.Parent.updateSeverityCounts(severity, summary)
+		r.Parent.updateSummary(count)
 	}
 }

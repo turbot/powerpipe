@@ -14,7 +14,7 @@ type NullFormatter struct {
 	FormatterBase
 }
 
-func (j *NullFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
+func (j *NullFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
 	return strings.NewReader(""), nil
 }
 

@@ -2,18 +2,18 @@ package controldisplay
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
 type SummaryRenderer struct {
-	resultTree *dashboardexecute.DisplayExecutionTree_SNAP
+	resultTree *controlexecute.ExecutionTree
 	width      int
 }
 
-func NewSummaryRenderer(resultTree *dashboardexecute.DisplayExecutionTree_SNAP, width int) *SummaryRenderer {
+func NewSummaryRenderer(resultTree *controlexecute.ExecutionTree, width int) *SummaryRenderer {
 	return &SummaryRenderer{
 		resultTree: resultTree,
 		width:      width,

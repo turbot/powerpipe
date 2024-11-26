@@ -396,7 +396,7 @@ func displayControlResults(ctx context.Context, executionTree *controlexecute.Ex
 	return nil
 }
 
-func displayControlResults_SNAP(ctx context.Context, executionTree *dashboardexecute.DisplayExecutionTree_SNAP, formatter controldisplay.Formatter) error {
+func displayDetectionResults(ctx context.Context, executionTree *dashboardexecute.DetectionBenchmarkDisplayTree, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)
 	if err != nil {
 		return err

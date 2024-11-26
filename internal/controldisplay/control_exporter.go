@@ -28,7 +28,7 @@ func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceD
 	exportCtx := context.WithValue(ctx, contextKeyFormatterPurpose, formatterPurposeExport)
 
 	// input must be control execution tree
-	tree, ok := input.(*dashboardexecute.DisplayExecutionTree_SNAP)
+	tree, ok := input.(*dashboardexecute.DetectionBenchmarkDisplayTree)
 	if !ok {
 		return fmt.Errorf("ControlExporter input must be *controlexecute.ExecutionTree")
 	}

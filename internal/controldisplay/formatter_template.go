@@ -38,7 +38,7 @@ func NewTemplateFormatter(input *OutputTemplate) (*TemplateFormatter, error) {
 	return &TemplateFormatter{exportFormat: input, template: t}, nil
 }
 
-func (tf TemplateFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
+func (tf TemplateFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
 	// TODO K FIX ME
 	/*	reader, writer := io.Pipe()
 		go func() {

@@ -12,7 +12,7 @@ type SnapshotFormatter struct {
 	FormatterBase
 }
 
-func (f *SnapshotFormatter) Format(ctx context.Context, tree *dashboardexecute.DisplayExecutionTree_SNAP) (io.Reader, error) {
+func (f *SnapshotFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
 	// TODO K  FIX ME
 	//snapshot, err := executionTreeToSnapshot(tree)
 	//if err != nil {
