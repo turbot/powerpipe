@@ -290,6 +290,25 @@ const CellValue = ({
         <>{value.toString()}</>
       </span>
     );
+  } else if (
+    dataType === "jsonb" ||
+    dataType === "varchar[]" ||
+    isObject(value)
+  ) {
+    const asJsonString = JSON.stringify(value, null, 2);
+    cellContent = href ? (
+      <ExternalLink
+        to={href}
+        className="link-highlight"
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
+        <>{asJsonString}</>
+      </ExternalLink>
+    ) : (
+      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
+        {asJsonString}
+      </span>
+    );
   } else if (dataType === "text" || dataType === "varchar") {
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
@@ -381,25 +400,6 @@ const CellValue = ({
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
-      </span>
-    );
-  } else if (
-    dataType === "jsonb" ||
-    dataType === "varchar[]" ||
-    isObject(value)
-  ) {
-    const asJsonString = JSON.stringify(value, null, 2);
-    cellContent = href ? (
-      <ExternalLink
-        to={href}
-        className="link-highlight"
-        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
-      >
-        <>{asJsonString}</>
-      </ExternalLink>
-    ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
-        {asJsonString}
       </span>
     );
   } else if (isNumericCol(dataType)) {

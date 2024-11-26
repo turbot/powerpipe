@@ -1,4 +1,4 @@
-import CheckEditorAddItem from "../common/CheckEditorAddItem";
+import EditorAddItem from "../common/EditorAddItem";
 import CreatableSelect from "react-select/creatable";
 import Icon from "@powerpipe/components/Icon";
 import Select from "react-select";
@@ -527,7 +527,7 @@ const FilterEditor = ({ filter, onApply }: FilterEditorProps) => {
           />
         ))}
       </Reorder.Group>
-      <CheckEditorAddItem
+      <EditorAddItem
         isDirty={isDirty}
         isValid={isValid}
         onAdd={() =>

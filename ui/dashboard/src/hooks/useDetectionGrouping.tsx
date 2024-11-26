@@ -513,6 +513,7 @@ function recordFilterValues(
 
   // Record the severity of this check result to allow assisted filtering later
   if (detectionResult.severity) {
+    console.log(detectionResult);
     filterValues.severity.value[detectionResult.severity.toString()] =
       filterValues.severity.value[detectionResult.severity.toString()] || 0;
     filterValues.severity.value[detectionResult.severity.toString()] += 1;
@@ -726,7 +727,6 @@ const useGroupingInternal = (
     );
 
     const detectionNodeStates: CheckGroupNodeStates = {};
-    // console.log(detectionNodeStates);
     const result: DetectionNodeType[] = [];
     const temp = { _: result };
     const benchmarkChildrenLookup = {};
