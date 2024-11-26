@@ -174,27 +174,31 @@ type DashboardExecutionEventSchemaVersion =
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionStartedEventSchemaVersion =
   | "20220614"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionCompleteEventSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardSnapshotSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 export type DashboardExecutionStartedEvent = {
   action: "execution_started";
