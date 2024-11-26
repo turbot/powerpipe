@@ -27,8 +27,8 @@ import {
   GroupingProvider,
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
-import { noop } from "@powerpipe/utils/func";
 import { DashboardActions, PanelDefinition } from "@powerpipe/types";
+import { noop } from "@powerpipe/utils/func";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 import { useSearchParams } from "react-router-dom";
