@@ -5,6 +5,7 @@ import CheckGrouping from "../CheckGrouping";
 import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
+import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -13,11 +14,11 @@ import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
-  Filter,
   CheckNode,
   CheckSummary,
 } from "../common";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { default as BenchmarkType } from "../common/Benchmark";
 import {
   getComponent,
@@ -27,12 +28,9 @@ import {
   GroupingProvider,
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
-import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { noop } from "@powerpipe/utils/func";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -111,63 +109,53 @@ const Benchmark = (props: InnerCheckProps) => {
 
     const summary_cards = [
       {
-        name: `${props.definition.name}.container.summary.ok`,
+        name: `${props.definition.name}.container.summary.status.ok`,
         width: 2,
         display_type: totalSummary.ok > 0 ? "ok" : "skip",
         properties: {
           label: "OK",
           value: totalSummary.ok,
-          // icon: "materialsymbols-solid:check",
           icon: "materialsymbols-solid:check_circle",
-          // icon: "materialsymbols-outline:check_circle",
         },
       },
       {
-        name: `${props.definition.name}.container.summary.alarm`,
+        name: `${props.definition.name}.container.summary.status.alarm`,
         width: 2,
         display_type: totalSummary.alarm > 0 ? "alert" : "skip",
         properties: {
           label: "Alarm",
           value: totalSummary.alarm,
           icon: "materialsymbols-solid:circle_notifications",
-          // icon: "materialsymbols-solid:circle_notifications",
-          // icon: "materialsymbols-outline:circle_notifications",
         },
       },
       {
-        name: `${props.definition.name}.container.summary.error`,
+        name: `${props.definition.name}.container.summary.status.error`,
         width: 2,
         display_type: totalSummary.error > 0 ? "alert" : "skip",
         properties: {
           label: "Error",
           value: totalSummary.error,
-          // icon: "materialsymbols-solid:priority_high",
           icon: "materialsymbols-solid:error",
-          // icon: "materialsymbols-outline:error",
         },
       },
       {
-        name: `${props.definition.name}.container.summary.info`,
+        name: `${props.definition.name}.container.summary.status.info`,
         width: 2,
         display_type: totalSummary.info > 0 ? "info" : "skip",
         properties: {
           label: "Info",
           value: totalSummary.info,
-          // icon: "materialsymbols-solid:info_i",
           icon: "materialsymbols-solid:info",
-          // icon: "materialsymbols-outline:info",
         },
       },
       {
-        name: `${props.definition.name}.container.summary.skip`,
+        name: `${props.definition.name}.container.summary.status.skip`,
         width: 2,
         display_type: "skip",
         properties: {
           label: "Skipped",
           value: totalSummary.skip,
-          // icon: "materialsymbols-solid:arrow_right_alt",
           icon: "materialsymbols-solid:arrow_circle_right",
-          // icon: "materialsymbols-outline:arrow_circle_right",
         },
       },
     ];
@@ -195,60 +183,9 @@ const Benchmark = (props: InnerCheckProps) => {
     return summary_cards;
   }, [props.firstChildSummaries, props.grouping, props.definition.name]);
 
-  const [, setSearchParams] = useSearchParams();
-
   if (!props.grouping) {
     return null;
   }
-
-  const toggleFilter = (filterName: string) => () => {
-    const split = filterName.split(".");
-    filterName = split[split.length - 1];
-    const expressionHasFilter = !!expressions?.find(
-      (expr) => expr.type === "status",
-    );
-    let newFilter: Filter;
-    if (expressionHasFilter) {
-      newFilter = {
-        operator: "and",
-        expressions: expressions?.filter((expr) => expr.type !== "status"),
-      } as Filter;
-      if (validateFilter(newFilter)) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          const asJson = JSON.stringify(newFilter);
-          newParams.set("where", asJson);
-          return newParams;
-        });
-      } else {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete("where");
-          return newParams;
-        });
-      }
-    } else {
-      newFilter = {
-        operator: "and",
-        expressions: expressions
-          ?.filter((expr) => !!expr.type)
-          .concat({
-            type: "status",
-            value: filterName,
-            operator: "equal",
-            title: filterName,
-          }),
-      } as Filter;
-      if (validateFilter(newFilter)) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          const asJson = JSON.stringify(newFilter);
-          newParams.set("where", asJson);
-          return newParams;
-        });
-      }
-    }
-  };
 
   return (
     <Grid
@@ -304,13 +241,14 @@ const Benchmark = (props: InnerCheckProps) => {
                 parentType="benchmark"
                 showControls={false}
               >
-                <span
-                  className="cursor-pointer"
-                  onClick={toggleFilter(summaryCard.name)}
+                <FilterCard
+                  cardName={summaryCard.name}
+                  panelName={props.definition.name}
+                  dimension="status"
+                  expressions={expressions}
                 >
-                  {/*@ts-ignore*/}
                   <Card {...cardProps} />
-                </span>
+                </FilterCard>
               </Panel>
             );
           })}
