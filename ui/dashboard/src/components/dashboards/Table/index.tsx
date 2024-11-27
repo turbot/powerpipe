@@ -567,7 +567,7 @@ export type TableProps = PanelDefinition &
   };
 
 const useTableFilters = (panelName: string, context?: string) => {
-  const { filter: urlFilters } = useFilterConfig(panelName);
+  const { allFilters, filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
   const filters: Filter[] = [];
@@ -655,7 +655,11 @@ const useTableFilters = (panelName: string, context?: string) => {
         });
       }
       urlFilters.expressions = newFilters;
-      searchParams.set("where", JSON.stringify(urlFilters));
+      const newPanelFilters = {
+        ...allFilters,
+        [panelName]: urlFilters,
+      };
+      searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
     },
     [urlFilters, searchParams, setSearchParams],
@@ -682,7 +686,11 @@ const useTableFilters = (panelName: string, context?: string) => {
       } else {
         urlFilters.expressions = newFilters;
       }
-      searchParams.set("where", JSON.stringify(urlFilters));
+      const newPanelFilters = {
+        ...allFilters,
+        [panelName]: urlFilters,
+      };
+      searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
     },
     [urlFilters, searchParams, setSearchParams],
