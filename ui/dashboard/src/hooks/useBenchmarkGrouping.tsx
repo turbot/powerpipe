@@ -20,6 +20,7 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
+  applyFilter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   createContext,
@@ -679,43 +680,25 @@ function recordFilterValues(
   }
 }
 
-const escapeRegex = (string) => {
-  if (!string) {
-    return string;
-  }
-  return string.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-};
-
-const wildcardToRegex = (wildcard: string) => {
-  const escaped = escapeRegex(wildcard);
-  return escaped.replaceAll("\\*", ".*");
-};
-
-const includeResult = (
-  checkResult: CheckResult,
-  checkFilterConfig: Filter,
-): boolean => {
+const includeResult = (result: CheckResult, filterConfig: Filter): boolean => {
   if (
-    !checkFilterConfig ||
-    !checkFilterConfig.expressions ||
-    checkFilterConfig.expressions.length === 0
+    !filterConfig ||
+    !filterConfig.expressions ||
+    filterConfig.expressions.length === 0
   ) {
     return true;
   }
   let matches: boolean[] = [];
-  for (const filter of checkFilterConfig.expressions) {
+  for (const filter of filterConfig.expressions) {
     if (!filter.type) {
       continue;
     }
 
-    // @ts-ignore
-    const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
-
     switch (filter.type) {
       case "benchmark": {
         let matchesTrunk = false;
-        for (const benchmark of checkResult.benchmark_trunk || []) {
-          const match = valueRegex.test(benchmark.name);
+        for (const benchmark of result.benchmark_trunk || []) {
+          const match = applyFilter(filter, benchmark.name);
           if (match) {
             matchesTrunk = true;
             break;
@@ -725,33 +708,31 @@ const includeResult = (
         break;
       }
       case "control": {
-        matches.push(valueRegex.test(checkResult.control.name));
+        matches.push(applyFilter(filter, result.control.name));
         break;
       }
       case "reason": {
-        matches.push(valueRegex.test(checkResult.reason));
+        matches.push(applyFilter(filter, result.reason));
         break;
       }
       case "resource": {
-        matches.push(valueRegex.test(checkResult.resource));
+        matches.push(applyFilter(filter, result.resource));
         break;
       }
       case "severity": {
-        matches.push(valueRegex.test(checkResult.severity || ""));
+        matches.push(applyFilter(filter, result.severity || ""));
         break;
       }
       case "status": {
-        matches.push(valueRegex.test(checkResult.status.toString()));
+        matches.push(applyFilter(filter, result.status.toString()));
         break;
       }
       case "dimension": {
-        // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesDimensions = false;
-        for (const dimension of checkResult.dimensions || []) {
+        for (const dimension of result.dimensions || []) {
           if (
-            keyRegex.test(dimension.key) &&
-            valueRegex.test(dimension.value)
+            filter.key === dimension.key &&
+            applyFilter(filter, dimension.value)
           ) {
             matchesDimensions = true;
             break;
@@ -761,13 +742,9 @@ const includeResult = (
         break;
       }
       case "control_tag": {
-        // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
-        for (const [tagKey, tagValue] of Object.entries(
-          checkResult.tags || {},
-        )) {
-          if (keyRegex.test(tagKey) && valueRegex.test(tagValue)) {
+        for (const [tagKey, tagValue] of Object.entries(result.tags || {})) {
+          if (filter.key === tagKey && applyFilter(filter, tagValue)) {
             matchesTags = true;
             break;
           }

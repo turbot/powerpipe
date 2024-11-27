@@ -10,6 +10,7 @@ import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
+  applyFilter,
   DetectionDisplayGroup,
   DetectionNode as DetectionNodeType,
   DetectionResult,
@@ -34,9 +35,9 @@ import {
   PanelDefinition,
   PanelsMap,
 } from "@powerpipe/types";
+import { LeafNodeDataRow } from "@powerpipe/components/dashboards/common";
 import { useDashboard } from "./useDashboard";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
-import { LeafNodeDataRow } from "@powerpipe/components/dashboards/common";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -567,47 +568,32 @@ function recordFilterValues(
   }
 }
 
-const escapeRegex = (string) => {
-  if (!string) {
-    return string;
-  }
-  return string.replace(/[-/\\^$*+?.()|[\]{}]/g, "\\$&");
-};
-
-const wildcardToRegex = (wildcard: string) => {
-  const escaped = escapeRegex(wildcard);
-  return escaped.replaceAll("\\*", ".*");
-};
-
 const includeResult = (
-  checkResult: DetectionResult,
-  checkFilterConfig: Filter,
+  result: DetectionResult,
+  filterConfig: Filter,
 ): boolean => {
   if (
-    !checkFilterConfig ||
-    !checkFilterConfig.expressions ||
-    checkFilterConfig.expressions.length === 0
+    !filterConfig ||
+    !filterConfig.expressions ||
+    filterConfig.expressions.length === 0
   ) {
     return true;
   }
   let matches: boolean[] = [];
-  for (const filter of checkFilterConfig.expressions) {
+  for (const filter of filterConfig.expressions) {
     if (!filter.type) {
       continue;
     }
 
-    // @ts-ignore
-    const valueRegex = new RegExp(`^${wildcardToRegex(filter.value)}$`);
-
     switch (filter.type) {
       case "detection": {
-        matches.push(valueRegex.test(checkResult.detection.name));
+        matches.push(applyFilter(filter, result.detection.name));
         break;
       }
       case "detection_benchmark": {
         let matchesTrunk = false;
-        for (const benchmark of checkResult.detection_benchmark_trunk || []) {
-          const match = valueRegex.test(benchmark.name);
+        for (const benchmark of result.detection_benchmark_trunk || []) {
+          const match = applyFilter(filter, benchmark.name);
           if (match) {
             matchesTrunk = true;
             break;
@@ -617,47 +603,28 @@ const includeResult = (
         break;
       }
       case "dimension": {
-        // @ts-ignore
-        // const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let newRows: LeafNodeDataRow[] = [];
-        if (filter.context && checkResult.detection.name !== filter.context) {
-          newRows = checkResult.rows || [];
+        if (filter.context && result.detection.name !== filter.context) {
+          newRows = result.rows || [];
         } else {
           let includeRow = false;
-          for (const row of checkResult.rows || []) {
-            includeRow = false;
-            if (filter.operator === "not_equal") {
-              includeRow =
-                !(filter.key in row) || row[filter.key] !== filter.value;
-            } else if (filter.operator === "equal") {
-              includeRow =
-                filter.key in row && row[filter.key] === filter.value;
-            }
+          for (const row of result.rows || []) {
+            includeRow =
+              filter.key in row && applyFilter(filter, row[filter.key]);
             if (includeRow) {
               newRows.push(row);
             } else {
             }
-            // if (
-            //   keyRegex.test(dimension.key) &&
-            //   valueRegex.test(dimension.value)
-            // ) {
-            //   matchesDimensions = true;
-            //   break;
-            // }
           }
         }
-        checkResult.rows = newRows;
+        result.rows = newRows;
         matches.push(true);
         break;
       }
       case "detection_tag": {
-        // @ts-ignore
-        const keyRegex = new RegExp(`^${wildcardToRegex(filter.key)}$`);
         let matchesTags = false;
-        for (const [tagKey, tagValue] of Object.entries(
-          checkResult.tags || {},
-        )) {
-          if (keyRegex.test(tagKey) && valueRegex.test(tagValue)) {
+        for (const [tagKey, tagValue] of Object.entries(result.tags || {})) {
+          if (filter.key === tagKey && applyFilter(filter, tagValue)) {
             matchesTags = true;
             break;
           }
@@ -666,7 +633,7 @@ const includeResult = (
         break;
       }
       case "severity": {
-        matches.push(valueRegex.test(checkResult.severity || ""));
+        matches.push(applyFilter(filter, result.severity || ""));
         break;
       }
       default:

@@ -566,8 +566,8 @@ export type TableProps = PanelDefinition &
     context?: string;
   };
 
-const useTableFilters = (panelName: string) => {
-  const { filter: urlFilters } = useFilterConfig(panelName);
+const useTableFilters = (panelName: string, context?: string) => {
+  const { allFilters, filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
   const filters: Filter[] = [];
@@ -576,6 +576,7 @@ const useTableFilters = (panelName: string) => {
     if (
       expression.operator === "equal" &&
       expression.type === "dimension" &&
+      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -583,6 +584,23 @@ const useTableFilters = (panelName: string) => {
     } else if (
       expression.operator === "not_equal" &&
       expression.type === "dimension" &&
+      expression.context === context &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    } else if (
+      expression.operator === "in" &&
+      expression.type === "dimension" &&
+      expression.context === context &&
+      !!expression.key &&
+      !!expression.value
+    ) {
+      filters.push(expression);
+    } else if (
+      expression.operator === "not_in" &&
+      expression.type === "dimension" &&
+      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -637,7 +655,11 @@ const useTableFilters = (panelName: string) => {
         });
       }
       urlFilters.expressions = newFilters;
-      searchParams.set("where", JSON.stringify(urlFilters));
+      const newPanelFilters = {
+        ...allFilters,
+        [panelName]: urlFilters,
+      };
+      searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
     },
     [urlFilters, searchParams, setSearchParams],
@@ -664,7 +686,11 @@ const useTableFilters = (panelName: string) => {
       } else {
         urlFilters.expressions = newFilters;
       }
-      searchParams.set("where", JSON.stringify(urlFilters));
+      const newPanelFilters = {
+        ...allFilters,
+        [panelName]: urlFilters,
+      };
+      searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
     },
     [urlFilters, searchParams, setSearchParams],
@@ -718,7 +744,10 @@ const TableViewVirtualizedRows = ({
   filterEnabled = false,
   context = "",
 }) => {
-  const { filters, addFilter, removeFilter } = useTableFilters(panelName);
+  const { filters, addFilter, removeFilter } = useTableFilters(
+    panelName,
+    context,
+  );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
@@ -770,18 +799,16 @@ const TableViewVirtualizedRows = ({
     doRender();
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
-  const tableFilters = filters.filter((f) => f.context === context);
-
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {filterEnabled && (
         <div
           className={classNames(
             "flex w-full p-4",
-            tableFilters.length ? "justify-between" : "justify-end",
+            filters.length ? "justify-between" : "justify-end",
           )}
         >
-          {tableFilters.length > 0 && (
+          {filters.length > 0 && (
             <div className="flex flex-wrap gap-2">
               {filters.map((filter) => {
                 return (

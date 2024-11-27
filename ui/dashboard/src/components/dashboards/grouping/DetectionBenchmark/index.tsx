@@ -5,7 +5,7 @@ import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
-import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
+import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterCardWrapper";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -238,11 +238,21 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
-            const statusFromExpressions = expressions?.find(
+            const severityFilter = expressions?.find(
               (expr) => expr.type === "severity",
-            )?.value;
-            if (statusFromExpressions) {
-              return name.includes(statusFromExpressions);
+            );
+            const severityType = name.split(".")[name.split(".").length - 1];
+            if (severityFilter && severityFilter.operator === "equal") {
+              return severityType === severityFilter.value;
+            } else if (
+              severityFilter &&
+              severityFilter.operator === "not_equal"
+            ) {
+              return severityType !== severityFilter.value;
+            } else if (severityFilter && severityFilter.operator === "in") {
+              return severityFilter.value?.includes(severityType);
+            } else if (severityFilter && severityFilter.operator === "not_in") {
+              return !severityFilter.value?.includes(severityType);
             }
             return true;
           })
@@ -263,14 +273,14 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
                 parentType="detection_benchmark"
                 showControls={false}
               >
-                <FilterCard
+                <FilterCardWrapper
                   cardName={summaryCard.name}
                   panelName={props.definition.name}
                   dimension="severity"
                   expressions={expressions}
                 >
                   <Card {...cardProps} />
-                </FilterCard>
+                </FilterCardWrapper>
               </Panel>
             );
           })}

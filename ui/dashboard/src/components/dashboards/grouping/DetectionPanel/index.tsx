@@ -123,7 +123,7 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
-        name={`${result.detection.name}.table`}
+        name={result.detection_benchmark_trunk[0].name}
         panel_type="table"
         data={{ rows: result.rows, columns: result.columns }}
         properties={{
