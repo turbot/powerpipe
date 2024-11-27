@@ -146,22 +146,6 @@ const FilterTypeSelect = ({
     [filterValues],
   );
 
-  // useDeepCompareEffect(() => {
-  //   if (currentType) {
-  //     console.log("Type calling update");
-  //     update(index, {
-  //       ...item,
-  //       value: item.value,
-  //       type: currentType?.includes("|")
-  //         ? (currentType?.split("|")[0] as FilterType)
-  //         : currentType,
-  //       key: currentType?.includes("|")
-  //         ? currentType?.split("|")[1]
-  //         : undefined,
-  //     });
-  //   }
-  // }, [currentType, index, item]);
-
   const types = useMemo(() => {
     // @ts-ignore
     const existingTypes = filter.expressions
@@ -235,40 +219,6 @@ const FilterOperatorSelect = ({
   onChange: (operator: FilterOperator) => void;
 }) => {
   const styles = useSelectInputStyles();
-
-  // useDeepCompareEffect(() => {
-  //   if (operator) {
-  //     const currentOperator = item.operator;
-  //     let newValue: string | string[] | undefined = item.value;
-  //
-  //     if (
-  //       (currentOperator === "equal" || currentOperator === "not_equal") &&
-  //       (operator === "in" || operator === "not_in") &&
-  //       newValue !== undefined
-  //     ) {
-  //       newValue = [newValue];
-  //     } else if (
-  //       (currentOperator === "in" || currentOperator === "not_in") &&
-  //       (operator === "equal" || operator === "not_equal") &&
-  //       newValue !== undefined
-  //     ) {
-  //       newValue = newValue[0];
-  //     }
-  //
-  //     console.log("Operator calling update", {
-  //       currentOperator,
-  //       operator,
-  //       currentValue: item.value,
-  //       value: newValue,
-  //     });
-  //
-  //     update(index, {
-  //       ...item,
-  //       operator: operator,
-  //       value: newValue,
-  //     });
-  //   }
-  // }, [operator, index, item]);
 
   const operators = useMemo<{ value: FilterOperator; label: string }[]>(
     () => [
@@ -391,42 +341,12 @@ const FilterValueSelect = ({
     });
   }, [filterValues, item.key, type]);
 
-  // useDeepCompareEffect(() => {
-  //   console.log("Value calling update", {
-  //     currentValue: item.value,
-  //     value: currentValue,
-  //   });
-  //   update(index, {
-  //     ...item,
-  //     value:
-  //       (item.operator === "in" || item.operator === "not_in") &&
-  //       isArray(currentValue)
-  //         ? (
-  //             currentValue as {
-  //               value: any;
-  //               title?: string;
-  //             }[]
-  //           ).map((t) => t.value)
-  //         : (item.operator === "in" || item.operator === "not_in") &&
-  //             !isArray(currentValue)
-  //           ? [currentValue]
-  //           : { value: currentValue.value, title: currentValue.title },
-  //   });
-  // }, [currentValue, index, item]);
-
   const styles = useSelectInputStyles();
 
   const currentValue =
     item.operator === "in" || item.operator === "not_in"
       ? values.filter((v) => value?.includes(v.value))
       : values.find((v) => v.value === value);
-
-  console.log("Current value", {
-    currentValue,
-    value,
-    values,
-    operator: item.operator,
-  });
 
   return (
     <CreatableSelect
@@ -498,35 +418,22 @@ const FilterEditorItem = ({
   const [innerItem, setInnerItem] = useState<Filter>(item);
 
   useEffect(() => {
-    console.log("Item updated, replicating to inner item", { item, innerItem });
     setInnerItem(() => item);
   }, [item]);
 
-  const onItemChange = (updatedItem) => {
-    console.log("Item changed", { item, updatedItem });
-    update(index, updatedItem);
-  };
-
   const onTypeChange = (type: DisplayGroupType) => {
-    console.log("Type changed", { innerItem, type });
-
     const currentOperator = innerItem.operator;
-    const currentType = innerItem.type;
     const newItem = {
       ...innerItem,
       value: currentOperator === "in" || currentOperator === "not_in" ? [] : "",
-      type: currentType?.includes("|")
-        ? (currentType?.split("|")[0] as FilterType)
-        : currentType,
-      key: currentType?.includes("|") ? currentType?.split("|")[1] : undefined,
+      type: type?.includes("|") ? (type?.split("|")[0] as FilterType) : type,
+      key: type?.includes("|") ? type?.split("|")[1] : undefined,
     };
 
-    onItemChange(newItem);
+    update(index, newItem);
   };
 
   const onOperatorChange = (operator: FilterOperator) => {
-    console.log("Operator changed", { innerItem, operator });
-
     if (!operator) {
       return;
     }
@@ -548,13 +455,11 @@ const FilterEditorItem = ({
       newValue = newValue[0];
     }
 
-    const newItem = {
+    update(index, {
       ...innerItem,
       operator: operator,
       value: newValue,
-    };
-
-    onItemChange(newItem);
+    });
   };
 
   const onValueChange = (
@@ -562,14 +467,10 @@ const FilterEditorItem = ({
       | { value: string; title?: string }
       | { value: string; title?: string }[],
   ) => {
-    console.log("Value changed", { innerItem, value });
-
-    const newItem = {
+    update(index, {
       ...innerItem,
       value,
-    };
-
-    onItemChange(newItem);
+    });
   };
 
   return (
@@ -663,7 +564,6 @@ const FilterEditor = ({ filter, panelType, onApply }: FilterEditorProps) => {
   }, []);
 
   const update = useCallback((index: number, updatedItem: Filter) => {
-    console.log("update", { index, updatedItem });
     setInnerFilter((existing) => ({
       ...existing,
       expressions: [
