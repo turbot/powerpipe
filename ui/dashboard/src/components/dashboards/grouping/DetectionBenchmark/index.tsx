@@ -238,11 +238,21 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
-            const statusFromExpressions = expressions?.find(
+            const severityFilter = expressions?.find(
               (expr) => expr.type === "severity",
-            )?.value;
-            if (statusFromExpressions) {
-              return name.includes(statusFromExpressions);
+            );
+            const severityType = name.split(".")[name.split(".").length - 1];
+            if (severityFilter && severityFilter.operator === "equal") {
+              return severityType === severityFilter.value;
+            } else if (
+              severityFilter &&
+              severityFilter.operator === "not_equal"
+            ) {
+              return severityType !== severityFilter.value;
+            } else if (severityFilter && severityFilter.operator === "in") {
+              return severityFilter.value?.includes(severityType);
+            } else if (severityFilter && severityFilter.operator === "not_in") {
+              return !severityFilter.value?.includes(severityType);
             }
             return true;
           })
