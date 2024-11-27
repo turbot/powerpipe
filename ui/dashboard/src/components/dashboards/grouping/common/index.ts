@@ -8,6 +8,8 @@ import {
   LeafNodeDataRow,
 } from "../../common";
 import { DashboardRunState } from "@powerpipe/types";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 export type GroupingNodeType =
   | "benchmark"
@@ -228,7 +230,7 @@ export type DetectionDisplayGroup = {
 
 export type DisplayGroup = CheckDisplayGroup | DetectionDisplayGroup;
 
-type BaseOperator = "and" | "equal" | "not_equal";
+type BaseOperator = "and" | "equal" | "not_equal" | "in" | "not_in";
 export type FilterOperator = BaseOperator;
 
 export type Filter = {
@@ -271,4 +273,72 @@ export const findDimension = (
     return undefined;
   }
   return dimensions.find((d) => d.key === key);
+};
+
+export const summaryCardFilterPath = ({
+  allFilters,
+  expressions,
+  panelName,
+  pathname,
+  search,
+  dimension,
+  metric,
+}: {
+  allFilters: KeyValuePairs<Filter>;
+  expressions: Filter[] | undefined;
+  panelName: string;
+  pathname: string;
+  search: string;
+  dimension: string;
+  metric: string;
+}) => {
+  const expressionHasFilter = !!expressions?.find(
+    (expr) => expr.type === dimension,
+  );
+  let newFilter: Filter;
+  if (expressionHasFilter) {
+    newFilter = {
+      operator: "and",
+      expressions: expressions?.filter((expr) => expr.type !== dimension),
+    } as Filter;
+    if (validateFilter(newFilter)) {
+      const newParams = new URLSearchParams(search);
+      const newFilters = { ...allFilters, [panelName]: newFilter };
+      const asJson = JSON.stringify(newFilters);
+      newParams.set("where", asJson);
+      return `${pathname}?${newParams.toString()}`;
+    } else {
+      const newParams = new URLSearchParams(search);
+      const newFilters = { ...allFilters };
+      delete newFilters[panelName];
+      if (!Object.keys(allFilters).length) {
+        newParams.delete("where");
+      } else {
+        const asJson = JSON.stringify(newFilters);
+        newParams.set("where", asJson);
+      }
+      return `${pathname}${newParams.toString() ? `?${newParams.toString()}` : ""}`;
+    }
+  } else {
+    newFilter = {
+      operator: "and",
+      expressions: expressions
+        ?.filter((expr) => !!expr.type)
+        .concat({
+          type: dimension,
+          value: metric,
+          operator: "equal",
+        }),
+    } as Filter;
+    if (validateFilter(newFilter)) {
+      const newParams = new URLSearchParams(search);
+      const newFilters = { ...allFilters, [panelName]: newFilter };
+      const asJson = JSON.stringify(newFilters);
+      newParams.set("where", asJson);
+      return `${pathname}?${newParams.toString()}`;
+    } else {
+      const newParams = new URLSearchParams(search);
+      return `${pathname}${newParams.toString() ? `?${newParams.toString()}` : ""}`;
+    }
+  }
 };
