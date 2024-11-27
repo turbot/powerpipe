@@ -5,7 +5,7 @@ import CheckGrouping from "../CheckGrouping";
 import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
-import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
+import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterCardWrapper";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -241,14 +241,14 @@ const Benchmark = (props: InnerCheckProps) => {
                 parentType="benchmark"
                 showControls={false}
               >
-                <FilterCard
+                <FilterCardWrapper
                   cardName={summaryCard.name}
                   panelName={props.definition.name}
                   dimension="status"
                   expressions={expressions}
                 >
                   <Card {...cardProps} />
-                </FilterCard>
+                </FilterCardWrapper>
               </Panel>
             );
           })}

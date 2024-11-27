@@ -5,7 +5,7 @@ import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
-import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
+import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterCardWrapper";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -263,14 +263,14 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
                 parentType="detection_benchmark"
                 showControls={false}
               >
-                <FilterCard
+                <FilterCardWrapper
                   cardName={summaryCard.name}
                   panelName={props.definition.name}
                   dimension="severity"
                   expressions={expressions}
                 >
                   <Card {...cardProps} />
-                </FilterCard>
+                </FilterCardWrapper>
               </Panel>
             );
           })}
