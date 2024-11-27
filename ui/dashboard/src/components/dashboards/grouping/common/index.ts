@@ -237,7 +237,7 @@ export type Filter = {
   operator: FilterOperator;
   type?: FilterType;
   key?: string;
-  value?: string;
+  value?: string | string[];
   title?: string;
   context?: string;
   expressions?: Filter[];
