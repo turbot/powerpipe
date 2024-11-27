@@ -360,7 +360,7 @@ export const applyFilter = (filter: Filter, value: string) => {
 
     case "not_in":
       // Ensure filter value is an array and check if value does NOT exist in the array
-      return Array.isArray(filter.value) && !value.includes(value);
+      return Array.isArray(filter.value) && !filter.value.includes(value);
 
     default:
       // If an unknown operator is provided, return false

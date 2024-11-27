@@ -216,11 +216,18 @@ const Benchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
-            const statusFromExpressions = expressions?.find(
+            const statusFilter = expressions?.find(
               (expr) => expr.type === "status",
-            )?.value;
-            if (statusFromExpressions) {
-              return name.includes(statusFromExpressions);
+            );
+            const severityType = name.split(".")[name.split(".").length - 1];
+            if (statusFilter && statusFilter.operator === "equal") {
+              return severityType === statusFilter.value;
+            } else if (statusFilter && statusFilter.operator === "not_equal") {
+              return severityType !== statusFilter.value;
+            } else if (statusFilter && statusFilter.operator === "in") {
+              return statusFilter.value?.includes(severityType);
+            } else if (statusFilter && statusFilter.operator === "not_in") {
+              return !statusFilter.value?.includes(severityType);
             }
             return true;
           })
