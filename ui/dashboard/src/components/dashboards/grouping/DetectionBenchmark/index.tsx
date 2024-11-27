@@ -5,6 +5,7 @@ import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
+import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -19,7 +20,6 @@ import {
   DetectionDisplayGroup,
   DetectionNode,
   DetectionSummary,
-  Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   GroupingProvider,
@@ -30,8 +30,6 @@ import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
-import { useSearchParams } from "react-router-dom";
-import { validateFilter } from "../FilterEditor";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 type BenchmarkTableViewProps = {
@@ -196,60 +194,9 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     return summary_cards;
   }, [props.firstChildSummaries, props.grouping, props.definition.name]);
 
-  const [, setSearchParams] = useSearchParams();
-
   if (!props.grouping) {
     return null;
   }
-
-  const toggleFilter = (filterName: string) => () => {
-    const split = filterName.split(".");
-    filterName = split[split.length - 1];
-    const expressionHasFilter = !!expressions?.find(
-      (expr) => expr.type === "status",
-    );
-    let newFilter: Filter;
-    if (expressionHasFilter) {
-      newFilter = {
-        operator: "and",
-        expressions: expressions?.filter((expr) => expr.type !== "status"),
-      } as Filter;
-      if (validateFilter(newFilter)) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          const asJson = JSON.stringify(newFilter);
-          newParams.set("where", asJson);
-          return newParams;
-        });
-      } else {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          newParams.delete("where");
-          return newParams;
-        });
-      }
-    } else {
-      newFilter = {
-        operator: "and",
-        expressions: expressions
-          ?.filter((expr) => !!expr.type)
-          .concat({
-            type: "status",
-            value: filterName,
-            operator: "equal",
-            title: filterName,
-          }),
-      } as Filter;
-      if (validateFilter(newFilter)) {
-        setSearchParams((prev) => {
-          const newParams = new URLSearchParams(prev);
-          const asJson = JSON.stringify(newFilter);
-          newParams.set("where", asJson);
-          return newParams;
-        });
-      }
-    }
-  };
 
   return (
     <Grid
@@ -292,7 +239,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         {summaryCards
           .filter(({ name }) => {
             const statusFromExpressions = expressions?.find(
-              (expr) => expr.type === "status",
+              (expr) => expr.type === "severity",
             )?.value;
             if (statusFromExpressions) {
               return name.includes(statusFromExpressions);
@@ -316,13 +263,14 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
                 parentType="detection_benchmark"
                 showControls={false}
               >
-                <span
-                  className="cursor-pointer"
-                  onClick={toggleFilter(summaryCard.name)}
+                <FilterCard
+                  cardName={summaryCard.name}
+                  panelName={props.definition.name}
+                  dimension="severity"
+                  expressions={expressions}
                 >
-                  {/*@ts-ignore*/}
                   <Card {...cardProps} />
-                </span>
+                </FilterCard>
               </Panel>
             );
           })}
