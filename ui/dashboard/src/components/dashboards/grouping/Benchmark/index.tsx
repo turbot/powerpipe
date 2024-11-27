@@ -5,7 +5,7 @@ import CheckGrouping from "../CheckGrouping";
 import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Error from "@powerpipe/components/dashboards/Error";
-import FilterCard from "@powerpipe/components/dashboards/grouping/FilterCard";
+import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterCardWrapper";
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
@@ -216,11 +216,18 @@ const Benchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
-            const statusFromExpressions = expressions?.find(
+            const statusFilter = expressions?.find(
               (expr) => expr.type === "status",
-            )?.value;
-            if (statusFromExpressions) {
-              return name.includes(statusFromExpressions);
+            );
+            const severityType = name.split(".")[name.split(".").length - 1];
+            if (statusFilter && statusFilter.operator === "equal") {
+              return severityType === statusFilter.value;
+            } else if (statusFilter && statusFilter.operator === "not_equal") {
+              return severityType !== statusFilter.value;
+            } else if (statusFilter && statusFilter.operator === "in") {
+              return statusFilter.value?.includes(severityType);
+            } else if (statusFilter && statusFilter.operator === "not_in") {
+              return !statusFilter.value?.includes(severityType);
             }
             return true;
           })
@@ -241,14 +248,14 @@ const Benchmark = (props: InnerCheckProps) => {
                 parentType="benchmark"
                 showControls={false}
               >
-                <FilterCard
+                <FilterCardWrapper
                   cardName={summaryCard.name}
                   panelName={props.definition.name}
                   dimension="status"
                   expressions={expressions}
                 >
                   <Card {...cardProps} />
-                </FilterCard>
+                </FilterCardWrapper>
               </Panel>
             );
           })}

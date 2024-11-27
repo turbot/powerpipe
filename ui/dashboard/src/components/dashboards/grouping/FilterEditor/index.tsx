@@ -1,12 +1,17 @@
 import EditorAddItem from "../common/EditorAddItem";
 import CreatableSelect from "react-select/creatable";
 import Icon from "@powerpipe/components/Icon";
-import Select from "react-select";
+import Select, { MultiValue, SingleValue } from "react-select";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useSelectInputStyles from "../../inputs/common/useSelectInputStyles";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardPanelType } from "@powerpipe/types";
-import { DisplayGroupType, Filter, FilterType } from "../common";
+import {
+  DisplayGroupType,
+  Filter,
+  FilterOperator,
+  FilterType,
+} from "../common";
 import { filterKeysSorter, filterTypeMap } from "@powerpipe/utils/filterEditor";
 import {
   MultiValueLabelWithTags,
@@ -40,24 +45,21 @@ type FilterTypeSelectProps = {
   item: Filter;
   panelType: DashboardPanelType;
   type: FilterType;
-  update: (index: number, updatedItem: Filter) => void;
+  onChange: (type: DisplayGroupType) => void;
 };
-
-// type FilterKeySelectProps = {
-//   index: number;
-//   item: Filter;
-//   type: FilterType;
-//   update: (index: number, updatedItem: Filter) => void;
-//   filterKey: string | undefined;
-// };
 
 type FilterValueSelectProps = {
   className?: string;
   index: number;
   item: Filter;
   type: FilterType;
-  update: (index: number, updatedItem: Filter) => void;
-  value: string | undefined;
+  onChange: (
+    // value:
+    //   | { value: string; title?: string }
+    //   | { value: string; title?: string }[],
+    value: string | string[],
+  ) => void;
+  value: string | string[] | undefined;
 };
 
 const validateFilter = (filter: Filter): boolean => {
@@ -85,6 +87,18 @@ const validateFilter = (filter: Filter): boolean => {
     return true;
   }
 
+  if (filter.operator === "in" || filter.operator === "not_in") {
+    const valueExists = !!filter.value?.length;
+    const typeExists = !!filter.type?.trim();
+    const keyExists = !!filter.key?.trim();
+    if (!valueExists) return false;
+    if (!typeExists) return false;
+    if (keyExists) {
+      return typeExists && valueExists;
+    }
+    return true;
+  }
+
   return false;
 };
 
@@ -101,13 +115,12 @@ const isValidFilterTypeForPanel = (
 const FilterTypeSelect = ({
   className,
   filter,
-  index,
   item,
   panelType,
   type,
-  update,
+  onChange,
 }: FilterTypeSelectProps) => {
-  const [currentType, setCurrentType] = useState<FilterType>(type);
+  // const [currentType, setCurrentType] = useState<FilterType>(type);
   const { context: filterValues } = useDashboardControls();
 
   const allFilters = useMemo(
@@ -132,21 +145,6 @@ const FilterTypeSelect = ({
         .sort(filterKeysSorter),
     [filterValues],
   );
-
-  useDeepCompareEffect(() => {
-    if (currentType) {
-      update(index, {
-        ...item,
-        value: "",
-        type: currentType?.includes("|")
-          ? (currentType?.split("|")[0] as FilterType)
-          : currentType,
-        key: currentType?.includes("|")
-          ? currentType?.split("|")[1]
-          : undefined,
-      });
-    }
-  }, [currentType, index, item]);
 
   const types = useMemo(() => {
     // @ts-ignore
@@ -184,10 +182,8 @@ const FilterTypeSelect = ({
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
       onChange={(t) => {
-        setCurrentType(() => {
-          const v = (t as SelectOption).value;
-          return v as DisplayGroupType;
-        });
+        const v = (t as SelectOption).value;
+        onChange(v as DisplayGroupType);
       }}
       options={types}
       inputId={`${type}.input`}
@@ -212,18 +208,78 @@ const FilterTypeSelect = ({
   );
 };
 
+const FilterOperatorSelect = ({
+  className,
+  operator,
+  onChange,
+}: {
+  className?: string;
+  index: number;
+  operator: FilterOperator;
+  onChange: (operator: FilterOperator) => void;
+}) => {
+  const styles = useSelectInputStyles();
+
+  const operators = useMemo<{ value: FilterOperator; label: string }[]>(
+    () => [
+      { value: "equal", label: "=" },
+      { value: "not_equal", label: "!=" },
+      { value: "in", label: "in" },
+      { value: "not_in", label: "!in" },
+    ],
+    [],
+  );
+
+  return (
+    <Select
+      className={classNames("basic-single", className)}
+      classNamePrefix="select"
+      components={{
+        // @ts-ignore
+        SingleValue: SingleValueWithTags,
+      }}
+      // @ts-ignore as this element definitely exists
+      menuPortalTarget={document.getElementById("portals")}
+      onChange={(t) => {
+        const v = (t as SelectOption).value;
+        onChange(v as FilterOperator);
+      }}
+      options={operators}
+      inputId={`${operator}.input`}
+      isClearable={false}
+      // @ts-ignore
+      styles={{
+        ...styles,
+        menu: (provided) => ({
+          ...styles?.menu(provided),
+        }),
+      }}
+      value={operators.find((o) => o.value === operator)}
+    />
+  );
+};
+
 const FilterValueSelect = ({
   className,
-  index,
   item,
   type,
   value,
-  update,
+  onChange,
 }: FilterValueSelectProps) => {
-  const [currentValue, setCurrentValue] = useState<{
-    value: any;
-    title?: string;
-  }>({ value, title: item.title });
+  // const [currentValue, setCurrentValue] = useState<
+  //   | {
+  //       value: any;
+  //       title?: string;
+  //     }
+  //   | {
+  //       value: any;
+  //       title?: string;
+  //     }[]
+  // >(
+  //   item.operator === "in" || item.operator === "not_in"
+  //     ? []
+  //     : { value, title: item.title },
+  // );
   const { context: filterValues } = useDashboardControls();
   const values = useMemo(() => {
     if (!type) {
@@ -285,15 +341,12 @@ const FilterValueSelect = ({
     });
   }, [filterValues, item.key, type]);
 
-  useDeepCompareEffect(() => {
-    update(index, {
-      ...item,
-      value: currentValue.value,
-      title: currentValue.title,
-    });
-  }, [currentValue, index, item]);
-
   const styles = useSelectInputStyles();
+
+  const currentValue =
+    item.operator === "in" || item.operator === "not_in"
+      ? values.filter((v) => value?.includes(v.value))
+      : values.find((v) => v.value === value);
 
   return (
     <CreatableSelect
@@ -311,18 +364,44 @@ const FilterValueSelect = ({
       formatCreateLabel={(inputValue) => `Use "${inputValue}"`}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) =>
-        setCurrentValue({
-          value: (t as SelectOption).value,
-          title: (t as SelectOption).label as string,
-        })
-      }
+      onChange={(t) => {
+        if (item.operator === "in" || item.operator === "not_in") {
+          onChange(
+            (
+              (t as MultiValue<{
+                value: any;
+                title?: string;
+              }>) || []
+            ).map((t) => {
+              // return {
+              //   value: (t as SelectOption).value,
+              //   title: (t as SelectOption).label as string,
+              // };
+              return t.value;
+            }),
+          );
+          return;
+        }
+        // onChange({
+        //   value: (t as SelectOption).value,
+        //   title: (t as SelectOption).label as string,
+        // });
+        onChange(
+          (
+            t as SingleValue<{
+              value: any;
+              title?: string;
+            }>
+          ).value,
+        );
+      }}
       options={values}
       inputId={`${type}.input`}
+      isMulti={item.operator === "in" || item.operator === "not_in"}
       placeholder="Choose a value…"
       // @ts-ignore
       styles={styles}
-      value={values.find((t) => t.value === value)}
+      value={currentValue}
     />
   );
 };
@@ -336,15 +415,72 @@ const FilterEditorItem = ({
   update,
 }: FilterEditorItemProps) => {
   const dragControls = useDragControls();
+  const [innerItem, setInnerItem] = useState<Filter>(item);
+
+  useEffect(() => {
+    setInnerItem(() => item);
+  }, [item]);
+
+  const onTypeChange = (type: DisplayGroupType) => {
+    const currentOperator = innerItem.operator;
+    const newItem = {
+      ...innerItem,
+      value: currentOperator === "in" || currentOperator === "not_in" ? [] : "",
+      type: type?.includes("|") ? (type?.split("|")[0] as FilterType) : type,
+      key: type?.includes("|") ? type?.split("|")[1] : undefined,
+    };
+
+    update(index, newItem);
+  };
+
+  const onOperatorChange = (operator: FilterOperator) => {
+    if (!operator) {
+      return;
+    }
+
+    const currentOperator = innerItem.operator;
+    let newValue: string | string[] | undefined = innerItem.value;
+
+    if (
+      (currentOperator === "equal" || currentOperator === "not_equal") &&
+      (operator === "in" || operator === "not_in") &&
+      newValue !== undefined
+    ) {
+      newValue = [newValue];
+    } else if (
+      (currentOperator === "in" || currentOperator === "not_in") &&
+      (operator === "equal" || operator === "not_equal") &&
+      newValue !== undefined
+    ) {
+      newValue = newValue[0];
+    }
+
+    update(index, {
+      ...innerItem,
+      operator: operator,
+      value: newValue,
+    });
+  };
+
+  const onValueChange = (
+    value:
+      | { value: string; title?: string }
+      | { value: string; title?: string }[],
+  ) => {
+    update(index, {
+      ...innerItem,
+      value,
+    });
+  };
 
   return (
     <Reorder.Item
       as="div"
-      id={`${item.type}-${item.value}`}
+      id={`${innerItem.type}-${innerItem.value}`}
       className="flex space-x-3 items-center"
       dragControls={dragControls}
       dragListener={false}
-      value={item}
+      value={innerItem}
     >
       {/*<div className="flex space-x-3 items-center">*/}
       <div className="cursor-grab" onPointerDown={(e) => dragControls.start(e)}>
@@ -354,23 +490,28 @@ const FilterEditorItem = ({
         <FilterTypeSelect
           filter={filter}
           index={index}
-          item={item}
+          item={innerItem}
           panelType={panelType}
           // @ts-ignore
-          type={item.type}
-          update={update}
+          type={innerItem.type}
+          onChange={onTypeChange}
         />
       </div>
-      {item.operator === "equal" && <span>=</span>}
-      {item.operator === "not_equal" && <span>!=</span>}
+      <div>
+        <FilterOperatorSelect
+          index={index}
+          operator={innerItem.operator}
+          onChange={onOperatorChange}
+        />
+      </div>
       <div className="grow min-w-52 max-w-72">
         <FilterValueSelect
           index={index}
-          item={item}
+          item={innerItem}
           // @ts-ignore
-          type={item.type}
-          update={update}
-          value={item.value}
+          type={innerItem.type}
+          value={innerItem.value}
+          onChange={onValueChange}
         />
       </div>
       <span
@@ -399,45 +540,39 @@ const FilterEditor = ({ filter, panelType, onApply }: FilterEditorProps) => {
 
   useEffect(() => {
     if (!innerFilter) {
-      setIsDirty(false);
-      setIsValid({ value: true, reason: "" });
+      setIsDirty(() => false);
+      setIsValid(() => ({ value: true, reason: "" }));
       return;
     }
 
     setIsValid({ value: validateFilter(innerFilter), reason: "" });
     setIsDirty(JSON.stringify(innerFilter) !== JSON.stringify(filter));
-  }, [filter, innerFilter, setIsDirty, setIsValid]);
+  }, [filter, innerFilter]);
 
   useDeepCompareEffect(() => {
     setInnerFilter(filter);
   }, [filter]);
 
-  const remove = useCallback(
-    (index: number) => {
-      setInnerFilter((existing) => ({
-        ...existing,
-        expressions: [
-          ...(existing.expressions?.slice(0, index) || []),
-          ...(existing.expressions?.slice(index + 1) || []),
-        ],
-      }));
-    },
-    [setInnerFilter],
-  );
+  const remove = useCallback((index: number) => {
+    setInnerFilter((existing) => ({
+      ...existing,
+      expressions: [
+        ...(existing.expressions?.slice(0, index) || []),
+        ...(existing.expressions?.slice(index + 1) || []),
+      ],
+    }));
+  }, []);
 
-  const update = useCallback(
-    (index: number, updatedItem: Filter) => {
-      setInnerFilter((existing) => ({
-        ...existing,
-        expressions: [
-          ...(existing.expressions?.slice(0, index) || []),
-          updatedItem,
-          ...(existing.expressions?.slice(index + 1) || []),
-        ],
-      }));
-    },
-    [setInnerFilter],
-  );
+  const update = useCallback((index: number, updatedItem: Filter) => {
+    setInnerFilter((existing) => ({
+      ...existing,
+      expressions: [
+        ...(existing.expressions?.slice(0, index) || []),
+        updatedItem,
+        ...(existing.expressions?.slice(index + 1) || []),
+      ],
+    }));
+  }, []);
 
   return (
     <div className="flex flex-col space-y-4">

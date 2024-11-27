@@ -8,8 +8,8 @@ import {
   LeafNodeDataRow,
 } from "../../common";
 import { DashboardRunState } from "@powerpipe/types";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 export type GroupingNodeType =
   | "benchmark"
@@ -237,7 +237,7 @@ export type Filter = {
   operator: FilterOperator;
   type?: FilterType;
   key?: string;
-  value?: string;
+  value?: string | string[];
   title?: string;
   context?: string;
   expressions?: Filter[];
@@ -340,5 +340,30 @@ export const summaryCardFilterPath = ({
       const newParams = new URLSearchParams(search);
       return `${pathname}${newParams.toString() ? `?${newParams.toString()}` : ""}`;
     }
+  }
+};
+
+export const applyFilter = (filter: Filter, value: string) => {
+  // Perform operation based on the filter operator
+  switch (filter.operator) {
+    case "equal":
+      // Ensure filter value is a string and compare directly
+      return value === filter.value;
+
+    case "not_equal":
+      // Ensure filter value is a string and compare directly
+      return value !== filter.value;
+
+    case "in":
+      // Ensure filter value is an array and check if value exists in the array
+      return Array.isArray(filter.value) && filter.value.includes(value);
+
+    case "not_in":
+      // Ensure filter value is an array and check if value does NOT exist in the array
+      return Array.isArray(filter.value) && !filter.value.includes(value);
+
+    default:
+      // If an unknown operator is provided, return false
+      return false;
   }
 };
