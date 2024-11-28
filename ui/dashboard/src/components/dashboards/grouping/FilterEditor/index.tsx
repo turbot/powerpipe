@@ -45,7 +45,8 @@ type FilterTypeSelectProps = {
   item: Filter;
   panelType: DashboardPanelType;
   type: FilterType;
-  onChange: (type: DisplayGroupType) => void;
+  dynamicKey?: string;
+  onChange: ({ type, key }: { type: DisplayGroupType; key?: string }) => void;
 };
 
 type FilterValueSelectProps = {
@@ -115,9 +116,9 @@ const isValidFilterTypeForPanel = (
 const FilterTypeSelect = ({
   className,
   filter,
-  item,
   panelType,
   type,
+  dynamicKey,
   onChange,
 }: FilterTypeSelectProps) => {
   // const [currentType, setCurrentType] = useState<FilterType>(type);
@@ -134,7 +135,8 @@ const FilterTypeSelect = ({
             };
             for (let k in filterValues[key]?.key) {
               group.options.push({
-                value: `${key}|${k}`,
+                type: key,
+                value: k,
                 label: k,
               });
             }
@@ -182,8 +184,11 @@ const FilterTypeSelect = ({
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
       onChange={(t) => {
-        const v = (t as SelectOption).value;
-        onChange(v as DisplayGroupType);
+        if (t.type) {
+          onChange({ type: t.type, key: t.value });
+        } else {
+          onChange({ type: t.value });
+        }
       }}
       options={types}
       inputId={`${type}.input`}
@@ -203,7 +208,10 @@ const FilterTypeSelect = ({
           }
           return acc.concat(curr);
         }, [])
-        .find((t) => t.value === type + (item?.key ? `|${item.key}` : ""))}
+        .find(
+          (t) =>
+            t.value === type || (t.type === type && t.value === dynamicKey),
+        )}
     />
   );
 };
@@ -421,13 +429,19 @@ const FilterEditorItem = ({
     setInnerItem(() => item);
   }, [item]);
 
-  const onTypeChange = (type: DisplayGroupType) => {
+  const onTypeChange = ({
+    type,
+    key,
+  }: {
+    type: DisplayGroupType;
+    key?: string;
+  }) => {
     const currentOperator = innerItem.operator;
     const newItem = {
       ...innerItem,
       value: currentOperator === "in" || currentOperator === "not_in" ? [] : "",
-      type: type?.includes("|") ? (type?.split("|")[0] as FilterType) : type,
-      key: type?.includes("|") ? type?.split("|")[1] : undefined,
+      type,
+      key,
     };
 
     update(index, newItem);
@@ -490,10 +504,10 @@ const FilterEditorItem = ({
         <FilterTypeSelect
           filter={filter}
           index={index}
-          item={innerItem}
           panelType={panelType}
           // @ts-ignore
           type={innerItem.type}
+          dynamicKey={innerItem.key}
           onChange={onTypeChange}
         />
       </div>

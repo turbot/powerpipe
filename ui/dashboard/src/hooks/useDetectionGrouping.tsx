@@ -55,7 +55,7 @@ export type CheckGroupingAction = {
 };
 
 export type CheckGroupFilterValues = {
-  control_tag: { key: {}; value: {} };
+  detection_tag: { key: {}; value: {} };
   dimension: { key: {}; value: {} };
 };
 
@@ -218,7 +218,7 @@ const getCheckGroupingKey = (
   }
 };
 
-const getCheckGroupingNode = (
+const getDetectionGroupingNode = (
   detectionResult: DetectionResult,
   group: DetectionDisplayGroup,
   children: DetectionNodeType[],
@@ -250,7 +250,7 @@ const getCheckGroupingNode = (
       const value = getCheckTagGroupingKey(group.value, detectionResult.tags);
       return new DetectionKeyValuePairNode(
         value,
-        "control_tag",
+        "detection_tag",
         group.value || "Tag key not set",
         value,
         children,
@@ -327,12 +327,12 @@ const groupDetectionItems = (
         filteredGroups,
       ) => {
         // We want to capture the parent group type to use later for sorting purposes.
-        // If we're trying to decide how to sort a control node, we need to know if
+        // If we're trying to decide how to sort a detection node, we need to know if
         // we're under a benchmark or some other grouping type. If we're under a benchmark,
         // we'll sort by the order determined by the benchmark, else we'll sort by title
         const parentGroupType =
           currentIndex > 0 ? filteredGroups[currentIndex - 1].type : null;
-        // Get this items grouping key - e.g. control or benchmark name
+        // Get this items grouping key - e.g. detection or benchmark name
         const groupKey = getCheckGroupingKey(
           checkResult,
           currentGroupingConfig,
@@ -364,7 +364,7 @@ const groupDetectionItems = (
         if (!cumulativeGrouping[groupKey]) {
           cumulativeGrouping[groupKey] = { _: [] };
 
-          const groupingNode = getCheckGroupingNode(
+          const groupingNode = getDetectionGroupingNode(
             checkResult,
             currentGroupingConfig,
             cumulativeGrouping[groupKey]._,
@@ -385,12 +385,12 @@ const groupDetectionItems = (
 
         // If the grouping key for this has already been logged by another result,
         // use the existing children from that - this covers cases where we may have
-        // benchmark 1 -> benchmark 2 -> control 1
-        // benchmark 1 -> control 2
-        // ...when we build the benchmark grouping node for control 1, its key will be
+        // benchmark 1 -> benchmark 2 -> detection 1
+        // benchmark 1 -> detection 2
+        // ...when we build the benchmark grouping node for detection 1, its key will be
         // for benchmark 2, but we'll add a hierarchical grouping node for benchmark 1 -> benchmark 2
-        // When we come to get the benchmark grouping node for control 2, we'll need to add
-        // the control to the existing children of benchmark 1
+        // When we come to get the benchmark grouping node for detection 2, we'll need to add
+        // the detection to the existing children of benchmark 1
         if (
           currentGroupingConfig.type === "detection_benchmark" &&
           benchmarkChildrenLookup[benchmarkChildrenLookupKey]
@@ -500,7 +500,7 @@ function recordFilterValues(
     }
   }
 
-  // Record the control of this check result to allow assisted filtering later
+  // Record the detection of this detection result to allow assisted filtering later
   filterValues.detection.value[detectionResult.detection.name] = filterValues
     .detection.value[detectionResult.detection.name] || {
     title: detectionResult.detection.title,
@@ -694,7 +694,7 @@ const useGroupingInternal = (
     const temp = { _: result };
     const benchmarkChildrenLookup = {};
 
-    // We'll loop over each control result and build up the grouped nodes from there
+    // We'll loop over each detection result and build up the grouped nodes from there
     b.all_detection_results.forEach((detectionResult) => {
       // Record values pre-filter so we can expand out from filtered states with all values later on
       recordFilterValues(filterValues, detectionResult);
@@ -705,7 +705,7 @@ const useGroupingInternal = (
       }
 
       // Build a grouping node - this will be the leaf node down from the root group
-      // e.g. benchmark -> control (where control is the leaf)
+      // e.g. benchmark -> detection (where detection is the leaf)
       const grouping = groupDetectionItems(
         temp,
         detectionResult,
@@ -773,8 +773,8 @@ const GroupingProvider = ({
   }, [previousGroupings, groupingConfig, tempNodeStates]);
 
   useEffect(() => {
-    setDashboardControlsContext(filterValues);
-  }, [filterValues, setDashboardControlsContext]);
+    setDashboardControlsContext(() => filterValues);
+  }, [filterValues]);
 
   return (
     <GroupingContext.Provider
