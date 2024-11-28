@@ -24,6 +24,7 @@ class Benchmark implements CheckNode {
   private readonly _name: string;
   private readonly _title: string;
   private readonly _description?: string;
+  private readonly _documentation?: string;
   private readonly _benchmarks: Benchmark[];
   private readonly _controls: Control[];
   private readonly _add_control_results: AddControlResultsAction;
@@ -34,6 +35,7 @@ class Benchmark implements CheckNode {
     name: string,
     title: string | undefined,
     description: string | undefined,
+    documentation: string | undefined,
     benchmarks: DashboardLayoutNode[] | undefined,
     controls: DashboardLayoutNode[] | undefined,
     panelsMap: PanelsMap,
@@ -45,6 +47,7 @@ class Benchmark implements CheckNode {
     this._name = name;
     this._title = title || name;
     this._description = description;
+    this._documentation = documentation;
 
     if (!add_control_results) {
       this._add_control_results = this.add_control_results;
@@ -76,6 +79,7 @@ class Benchmark implements CheckNode {
           nestedDefinition.name,
           nestedDefinition.title,
           nestedDefinition.description,
+          nestedDefinition.documentation,
           benchmarks,
           controls,
           panelsMap,
@@ -136,6 +140,10 @@ class Benchmark implements CheckNode {
 
   get type(): GroupingNodeType {
     return "benchmark";
+  }
+
+  get documentation(): string | undefined {
+    return this._documentation;
   }
 
   get children(): CheckNode[] {

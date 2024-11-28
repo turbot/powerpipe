@@ -139,6 +139,7 @@ const addBenchmarkTrunkNode = (
       : currentNode?.sort || "Other",
     currentNode?.name || "Other",
     currentNode?.title || "Other",
+    currentNode?.documentation,
     newChildren,
   );
 };
@@ -361,6 +362,7 @@ const getCheckGroupingNode = (
           : checkResult.control.title || checkResult.control.name,
         checkResult.control.name,
         checkResult.control.title,
+        checkResult.control.documentation,
         children,
       );
     default:
@@ -801,6 +803,7 @@ const useGroupingInternal = (
       rootBenchmarkPanel.name,
       rootBenchmarkPanel.title,
       rootBenchmarkPanel.description,
+      rootBenchmarkPanel.documentation,
       nestedBenchmarks,
       nestedControls,
       panelsMap,

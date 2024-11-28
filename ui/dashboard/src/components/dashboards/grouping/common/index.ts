@@ -41,6 +41,7 @@ export type CheckNode = {
   children?: CheckNode[];
   data?: LeafNodeData;
   error?: string;
+  documentation?: string;
   merge?: (other: CheckNode) => void;
 };
 
