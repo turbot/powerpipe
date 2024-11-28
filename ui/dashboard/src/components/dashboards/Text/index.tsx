@@ -98,4 +98,6 @@ const Text = (props: TextProps) =>
 
 registerComponent("text", Text);
 
+export { Markdown };
+
 export default Text;

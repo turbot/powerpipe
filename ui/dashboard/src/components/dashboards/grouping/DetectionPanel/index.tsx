@@ -4,6 +4,7 @@ import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping
 import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionNode";
 import DetectionResultNode from "../common/node/DetectionResultNode";
 import DetectionSummaryChart from "@powerpipe/components/dashboards/grouping/DetetctionSummaryChart";
+import DocumentationView from "@powerpipe/components/dashboards/grouping/DocumentationView";
 import sortBy from "lodash/sortBy";
 import Table from "@powerpipe/components/dashboards/Table";
 import {
@@ -372,6 +373,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                   ) : null}
                   {node.title}
                 </h3>
+                <DocumentationView documentation={node.documentation} />
                 <DetectionPanelSeverity
                   severity_summary={node.severity_summary}
                 />

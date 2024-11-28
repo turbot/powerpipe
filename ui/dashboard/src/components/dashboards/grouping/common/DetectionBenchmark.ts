@@ -24,6 +24,7 @@ class DetectionBenchmark implements DetectionNode {
   private readonly _name: string;
   private readonly _title: string;
   private readonly _description?: string;
+  private readonly _documentation?: string;
   private readonly _benchmarks: DetectionBenchmark[];
   private readonly _detections: Detection[];
   private readonly _add_detection_results: AddDetectionResultsAction;
@@ -34,6 +35,7 @@ class DetectionBenchmark implements DetectionNode {
     name: string,
     title: string | undefined,
     description: string | undefined,
+    documentation: string | undefined,
     benchmarks: DashboardLayoutNode[] | undefined,
     detections: DashboardLayoutNode[] | undefined,
     panelsMap: PanelsMap,
@@ -45,6 +47,7 @@ class DetectionBenchmark implements DetectionNode {
     this._name = name;
     this._title = title || name;
     this._description = description;
+    this._documentation = documentation;
 
     if (!add_detection_results) {
       this._add_detection_results = this.add_detection_results;
@@ -76,6 +79,7 @@ class DetectionBenchmark implements DetectionNode {
           nestedDefinition.name,
           nestedDefinition.title,
           nestedDefinition.description,
+          nestedDefinition.documentation,
           benchmarks,
           detections,
           panelsMap,
@@ -137,6 +141,10 @@ class DetectionBenchmark implements DetectionNode {
 
   get type(): GroupingNodeType {
     return "detection_benchmark";
+  }
+
+  get documentation(): string | undefined {
+    return this._documentation;
   }
 
   get children(): DetectionNode[] {

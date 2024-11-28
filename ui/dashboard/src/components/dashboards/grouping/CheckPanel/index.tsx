@@ -3,6 +3,7 @@ import ControlDimension from "../Benchmark/ControlDimension";
 import ControlEmptyResultNode from "../common/node/ControlEmptyResultNode";
 import ControlErrorNode from "../common/node/ControlErrorNode";
 import ControlResultNode from "../common/node/ControlResultNode";
+import DocumentationView from "@powerpipe/components/dashboards/grouping/DocumentationView";
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import sortBy from "lodash/sortBy";
 import {
@@ -371,6 +372,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                   ) : null}
                   {node.title}
                 </h3>
+                <DocumentationView documentation={node.documentation} />
                 <CheckPanelSeverity severity_summary={node.severity_summary} />
               </div>
               <div className="flex-shrink-0 w-40 md:w-72 lg:w-96">
