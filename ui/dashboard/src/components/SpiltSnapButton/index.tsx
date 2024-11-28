@@ -1,12 +1,8 @@
-import React, { useState, useRef } from "react";
-import { Menu } from "@headlessui/react";
-import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
-import { useNavigate } from "react-router-dom";
-import { ChevronDownIcon } from "@heroicons/react/solid";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import Icon from "@powerpipe/components/Icon";
-import useGroupingFilterConfig from "@powerpipe/hooks/useGroupingFilterConfig";
-import useCheckGroupingConfig from "@powerpipe/hooks/useCheckGroupingConfig";
+import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
+import { ChangeEvent, useRef } from "react";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
@@ -14,25 +10,28 @@ import {
   DashboardSnapshotMetadata,
   DashboardDataModeDiff,
 } from "@powerpipe/types";
-import { EXECUTION_SCHEMA_VERSION_20240607 } from "@powerpipe/constants/versions";
+import { EXECUTION_SCHEMA_VERSION_20241125 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
 } from "@powerpipe/utils/snapshot";
+import { Menu } from "@headlessui/react";
 import { saveAs } from "file-saver";
+import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor";
+import { useNavigate } from "react-router-dom";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 interface SplitButtonProps {
   className?: string;
 }
 
-const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
+const SplitButton = ({ className }: SplitButtonProps) => {
   const { dashboard, dataMode, selectedDashboard, snapshot } = useDashboard();
-  const filterConfig = useGroupingFilterConfig();
-  const groupingConfig = useCheckGroupingConfig();
+  const { allFilters } = useFilterConfig();
+  const { allGroupings } = useGroupingConfig();
   const { dispatch } = useDashboard();
   const fileInputRef = useRef<HTMLInputElement | null>(null);
   const fileInputRefForDiff = useRef<HTMLInputElement | null>(null);
@@ -52,26 +51,36 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
     const withMetadata = {
       ...streamlinedSnapshot,
     };
-    if (!!filterConfig || !!groupingConfig) {
+
+    if (
+      !!Object.keys(allFilters).length ||
+      !!Object.keys(allGroupings).length
+    ) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
       };
-      // If a benchmark
-      if (
-        dashboard.artificial &&
-        !!filterConfig &&
-        validateFilter(filterConfig)
-      ) {
-        // @ts-ignore
-        metadata.view.filter_by = filterToSnapshotMetadata(filterConfig);
+      if (!!Object.keys(allFilters).length) {
+        for (const [panel, filter] of Object.entries(allFilters)) {
+          if (!validateFilter(filter)) {
+            console.warn("Ignoring invalid filter", { panel, filter });
+            continue;
+          }
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].filter_by = filterToSnapshotMetadata(filter);
+        }
       }
-      if (!!groupingConfig) {
-        // @ts-ignore
-        // TODO @mike re-include this
-        // metadata.view.group_by = groupingToSnapshotMetadata(groupingConfig);
+      if (!!Object.keys(allGroupings).length) {
+        for (const [panel, grouping] of Object.entries(allGroupings)) {
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].group_by = groupingToSnapshotMetadata(grouping);
+        }
       }
       withMetadata.metadata = metadata;
-      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20240607;
+      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
     }
 
     const blob = new Blob([JSON.stringify(withMetadata)], {
@@ -80,7 +89,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
     saveAs(blob, `${dashboard.name}.${timestampForFilename(Date.now())}.pps`);
   };
 
-  const handleDiffOpen = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleDiffOpen = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) {
       return;
@@ -109,7 +118,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
     fr.readAsText(files[0]);
   };
 
-  const handleFileOpen = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileOpen = (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files || files.length === 0) {
       return;
@@ -121,7 +130,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
         return;
       }
 
-      e.target.value = ""; // Clear the input for repeated use
+      e.target.value = "";
       try {
         const data = JSON.parse(fr.result.toString());
         const eventMigrator =
@@ -154,7 +163,7 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
       } catch (err: any) {
         dispatch({
           type: DashboardActions.WORKSPACE_ERROR,
-          error: "Unable to load snapshot: " + err.message,
+          error: "Unable to load snapshot:" + err.message,
         });
       }
     };
@@ -174,17 +183,13 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           <NeutralButton
             type="button"
             className="inline-flex items-center space-x-2 shadow-none rounded-r-none"
+            onClick={() => fileInputRef.current?.click()}
           >
             <Icon
               className="inline-block text-foreground-lighter w-5 -mt-0.5"
               icon="heroicons-outline:folder-open"
             />
-            <span
-              className="hidden lg:block"
-              onClick={() => fileInputRef.current?.click()}
-            >
-              Open
-            </span>
+            <span className="hidden lg:block">Open</span>
             <input
               ref={fileInputRef}
               accept="application/json, .pps, .sps"
@@ -201,17 +206,13 @@ const SplitButton: React.FC<SplitButtonProps> = ({ className }) => {
           <NeutralButton
             type="button"
             className="inline-flex items-center space-x-2 shadow-none rounded-r-none"
+            onClick={() => fileInputRefForDiff.current?.click()}
           >
             <Icon
               className="inline-block text-foreground-lighter w-5 h-5 -mt-0.5"
               icon="difference"
             />
-            <span
-              className="hidden lg:block"
-              onClick={() => fileInputRefForDiff.current?.click()}
-            >
-              Diff
-            </span>
+            <span className="hidden lg:block">Diff</span>
             <input
               ref={fileInputRefForDiff}
               accept="application/json, .pps, .sps"
