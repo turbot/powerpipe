@@ -27,8 +27,9 @@ type LeafRun struct {
 
 	Resource resources.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties map[string]any           `json:"properties,omitempty"`
-	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
+	Properties    map[string]any           `json:"properties,omitempty"`
+	Data          *dashboardtypes.LeafData `json:"data,omitempty"`
+	Documentation string                   `json:"documentation,omitempty"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete       func()
@@ -90,6 +91,8 @@ func NewLeafRun(resource resources.DashboardLeafNode, parent dashboardtypes.Dash
 
 	// populate the names of any withs we depend on
 	r.setRuntimeDependencies()
+
+	r.Documentation = resource.GetDocumentation()
 
 	if err := r.populateProperties(); err != nil {
 		return nil, err

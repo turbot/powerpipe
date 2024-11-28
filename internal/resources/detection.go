@@ -84,11 +84,6 @@ func (t *Detection) GetDisplay() string {
 	return typehelpers.SafeString(t.Display)
 }
 
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
-func (*Detection) GetDocumentation() string {
-	return ""
-}
-
 // GetType implements DashboardLeafNode
 func (t *Detection) GetType() string {
 	return typehelpers.SafeString(t.Type)
