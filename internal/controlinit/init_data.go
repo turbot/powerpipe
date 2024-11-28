@@ -43,6 +43,10 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 	if i.Result.Error != nil {
 		return i
 	}
+	// TODO TACTICAL
+	if _, ok := i.Targets[0].(*resources.DetectionBenchmark); ok {
+		return i
+	}
 
 	w := i.Workspace
 	if !w.ModfileExists() {
@@ -60,8 +64,8 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		return i
 	}
 	modResources := resources.GetModResources(w.Mod)
-	if len(modResources.Controls)+len(modResources.Benchmarks) == 0 {
-		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
+	if len(modResources.Controls)+len(modResources.Benchmarks)+len(modResources.Detections)+len(modResources.DetectionBenchmarks) == 0 {
+		i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
 	}
 
 	if err := controldisplay.EnsureTemplates(); err != nil {

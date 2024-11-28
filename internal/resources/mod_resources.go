@@ -438,6 +438,10 @@ func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResource
 	switch parsedName.ItemType {
 	case schema.BlockTypeBenchmark:
 		resource, found = m.Benchmarks[longName]
+		if !found {
+			// TODO HACK if not found, try detection benchmark
+			resource, found = m.DetectionBenchmarks[longName]
+		}
 	case schema.BlockTypeControl:
 		resource, found = m.Controls[longName]
 	case schema.BlockTypeDashboard:
@@ -466,8 +470,6 @@ func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResource
 		resource, found = m.DashboardTables[longName]
 	case schema.BlockTypeDetection:
 		resource, found = m.Detections[longName]
-	case schema.BlockTypeDetectionBenchmark:
-		resource, found = m.DetectionBenchmarks[longName]
 	case schema.BlockTypeText:
 		resource, found = m.DashboardTexts[longName]
 	case schema.BlockTypeInput:

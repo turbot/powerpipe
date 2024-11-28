@@ -32,7 +32,7 @@ func NewPowerpipeModDecoder(opts ...parse.DecoderOption) parse.Decoder {
 	d.DecodeFuncs[schema.BlockTypeDashboard] = d.decodeDashboard
 	d.DecodeFuncs[schema.BlockTypeContainer] = d.decodeDashboardContainer
 	d.DecodeFuncs[schema.BlockTypeBenchmark] = d.decodeBenchmark
-	d.DecodeFuncs[schema.BlockTypeDetectionBenchmark] = d.decodeDetectionBenchmark
+
 	// apply options
 	for _, opt := range opts {
 		opt(d)
@@ -238,7 +238,7 @@ func (d *PowerpipeModDecoder) decodeDashboard(block *hcl.Block, parseCtx *parse.
 	if dashboard.Base != nil && len(dashboard.Base.ChildNames) > 0 {
 		supportedChildren := []string{
 			schema.BlockTypeContainer, schema.BlockTypeChart, schema.BlockTypeCard,
-			schema.BlockTypeDetection, schema.BlockTypeDetectionBenchmark, schema.BlockTypeFlow,
+			schema.BlockTypeDetection, schema.BlockTypeBenchmark, schema.BlockTypeFlow,
 			schema.BlockTypeGraph, schema.BlockTypeHierarchy, schema.BlockTypeImage,
 			schema.BlockTypeInput, schema.BlockTypeTable, schema.BlockTypeText}
 
@@ -360,13 +360,26 @@ func (d *PowerpipeModDecoder) decodeDashboardContainerBlocks(content *hclsyntax.
 
 func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, *parse.DecodeResult) {
 	res := parse.NewDecodeResult()
-	benchmark, ok := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
-	if !ok {
-		// coding error
-		panic(fmt.Sprintf("block type %s not convertible to a Benchmark", block.Type))
-	}
+	// first determine the type of benchmark
+	// if the type is not set, we assume it is a standard benchmark
+	// if the type is set to 'detection', we assume it is a detection benchmark
+	// check for a type attribute
+
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)
+	var benchmarkType string
+	diags = parse.DecodeProperty(content, "type", &benchmarkType, parseCtx.EvalCtx)
+	res.HandleDecodeDiags(diags)
+	// if there are any dependency errors, we cannot proceed as we need to know the type
+	if !res.Success() {
+		return nil, res
+	}
+
+	if benchmarkType == "detection" {
+		return d.decodeDetectionBenchmark(block, parseCtx)
+	}
+
+	benchmark := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.Benchmark)
 
 	diags = parse.DecodeProperty(content, "children", &benchmark.ChildNames, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
@@ -381,9 +394,6 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 	res.HandleDecodeDiags(diags)
 
 	diags = parse.DecodeProperty(content, "title", &benchmark.Title, parseCtx.EvalCtx)
-	res.HandleDecodeDiags(diags)
-
-	diags = parse.DecodeProperty(content, "type", &benchmark.Type, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
 
 	diags = parse.DecodeProperty(content, "display", &benchmark.Display, parseCtx.EvalCtx)
@@ -445,7 +455,7 @@ func (d *PowerpipeModDecoder) decodeDetectionBenchmark(block *hcl.Block, parseCt
 	diags = parse.DecodeProperty(content, "display", &benchmark.Display, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
 
-	supportedChildren := []string{schema.BlockTypeDetectionBenchmark, schema.BlockTypeDetection}
+	supportedChildren := []string{schema.BlockTypeBenchmark, schema.BlockTypeDetection}
 
 	// now add children
 	if res.Success() {
@@ -495,27 +505,26 @@ func (d *PowerpipeModDecoder) resourceForBlock(block *hcl.Block, parseCtx *parse
 
 	factoryFuncs := map[string]func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource{
 		// for block type mod, just use the current mod
-		schema.BlockTypeBenchmark:          resources.NewBenchmark,
-		schema.BlockTypeCard:               resources.NewDashboardCard,
-		schema.BlockTypeCategory:           resources.NewDashboardCategory,
-		schema.BlockTypeContainer:          resources.NewDashboardContainer,
-		schema.BlockTypeChart:              resources.NewDashboardChart,
-		schema.BlockTypeControl:            resources.NewControl,
-		schema.BlockTypeDashboard:          resources.NewDashboard,
-		schema.BlockTypeDetection:          resources.NewDetection,
-		schema.BlockTypeDetectionBenchmark: resources.NewDetectionBenchmark,
-		schema.BlockTypeEdge:               resources.NewDashboardEdge,
-		schema.BlockTypeFlow:               resources.NewDashboardFlow,
-		schema.BlockTypeGraph:              resources.NewDashboardGraph,
-		schema.BlockTypeHierarchy:          resources.NewDashboardHierarchy,
-		schema.BlockTypeImage:              resources.NewDashboardImage,
-		schema.BlockTypeInput:              resources.NewDashboardInput,
-		schema.BlockTypeMod:                func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource { return mod },
-		schema.BlockTypeNode:               resources.NewDashboardNode,
-		schema.BlockTypeQuery:              resources.NewQuery,
-		schema.BlockTypeTable:              resources.NewDashboardTable,
-		schema.BlockTypeText:               resources.NewDashboardText,
-		schema.BlockTypeWith:               resources.NewDashboardWith,
+		schema.BlockTypeBenchmark: resources.NewBenchmark,
+		schema.BlockTypeCard:      resources.NewDashboardCard,
+		schema.BlockTypeCategory:  resources.NewDashboardCategory,
+		schema.BlockTypeContainer: resources.NewDashboardContainer,
+		schema.BlockTypeChart:     resources.NewDashboardChart,
+		schema.BlockTypeControl:   resources.NewControl,
+		schema.BlockTypeDashboard: resources.NewDashboard,
+		schema.BlockTypeDetection: resources.NewDetection,
+		schema.BlockTypeEdge:      resources.NewDashboardEdge,
+		schema.BlockTypeFlow:      resources.NewDashboardFlow,
+		schema.BlockTypeGraph:     resources.NewDashboardGraph,
+		schema.BlockTypeHierarchy: resources.NewDashboardHierarchy,
+		schema.BlockTypeImage:     resources.NewDashboardImage,
+		schema.BlockTypeInput:     resources.NewDashboardInput,
+		schema.BlockTypeMod:       func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource { return mod },
+		schema.BlockTypeNode:      resources.NewDashboardNode,
+		schema.BlockTypeQuery:     resources.NewQuery,
+		schema.BlockTypeTable:     resources.NewDashboardTable,
+		schema.BlockTypeText:      resources.NewDashboardText,
+		schema.BlockTypeWith:      resources.NewDashboardWith,
 	}
 
 	factoryFunc, ok := factoryFuncs[block.Type]

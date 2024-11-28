@@ -18,7 +18,7 @@ func GetResourceSchema(resource modconfig.HclResource, res *hcl.BodySchema) *hcl
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeChart},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeContainer},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetection},
-			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetectionBenchmark},
+			hcl.BlockHeaderSchema{Type: schema.BlockTypeBenchmark},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeFlow},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeGraph},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeHierarchy},
@@ -28,10 +28,12 @@ func GetResourceSchema(resource modconfig.HclResource, res *hcl.BodySchema) *hcl
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeText},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeWith},
 		)
-	case schema.BlockTypeDetectionBenchmark:
+		// todo K when is this used?
+	case schema.BlockTypeBenchmark:
 		res.Blocks = append(res.Blocks,
-			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetectionBenchmark},
+			hcl.BlockHeaderSchema{Type: schema.BlockTypeBenchmark},
 			hcl.BlockHeaderSchema{Type: schema.BlockTypeDetection},
+			hcl.BlockHeaderSchema{Type: schema.BlockTypeControl},
 		)
 	case schema.BlockTypeQuery:
 		// remove `Query` from attributes
