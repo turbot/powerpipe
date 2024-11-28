@@ -49,6 +49,7 @@ export type DetectionNode = {
   sort: string;
   name: string;
   title: string;
+  documentation?: string;
   type: GroupingNodeType;
   severity?: DetectionSeverity;
   severity_summary: DetectionSeveritySummary;
@@ -182,13 +183,17 @@ export type CheckControlRun = {
   title?: string;
 };
 
+type DetectionRunProperties = {
+  severity?: DetectionSeverity | undefined;
+};
+
 export type DetectionRun = {
   data: LeafNodeData;
   description?: string;
   error?: string;
   name: string;
   panel_type: "detection";
-  severity?: DetectionSeverity | undefined;
+  properties?: DetectionRunProperties;
   status: DashboardRunState;
   summary: DetectionSummary;
   tags?: CheckTags;

@@ -134,6 +134,7 @@ const addBenchmarkTrunkNode = (
       : currentNode?.sort || "Other",
     currentNode?.name || "Other",
     currentNode?.title || "Other",
+    currentNode?.documentation,
     newChildren,
   );
 };
@@ -234,6 +235,7 @@ const getDetectionGroupingNode = (
           : detectionResult.detection.title || detectionResult.detection.name,
         detectionResult.detection.name,
         detectionResult.detection.title,
+        detectionResult.detection.documentation,
         children,
       );
     case "detection_benchmark":
@@ -683,6 +685,7 @@ const useGroupingInternal = (
       rootBenchmarkPanel.name,
       rootBenchmarkPanel.title,
       rootBenchmarkPanel.description,
+      rootBenchmarkPanel.documentation,
       nestedDetectionBenchmarks,
       nestedDetections,
       panelsMap,
