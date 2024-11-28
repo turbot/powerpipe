@@ -120,6 +120,7 @@ You may specify one or more %ss to run, separated by a space.`, typeName, typeNa
 // exitCode=3+ runtime errors
 
 func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
+
 	utils.LogTime("runCheckCmd start")
 
 	startTime := time.Now()
@@ -164,7 +165,17 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		error_helpers.ShowError(ctx, initData.Result.Error)
 		return
 	}
+
 	defer initData.Cleanup(ctx)
+
+	// TODO TACTICAL
+	if _, ok := initData.Targets[0].(*resources.DetectionBenchmark); ok {
+		if !viper.IsSet(constants.ArgOutput) {
+			viper.Set(constants.ArgOutput, constants.OutputFormatSnapshot)
+		}
+		detectionRun[*resources.DetectionBenchmark](cmd, args)
+		return
+	}
 
 	// hide the spinner so that warning messages can be shown
 	statushooks.Done(ctx)
