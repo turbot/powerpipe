@@ -12,7 +12,6 @@ import {
   SingleValueWithTags,
 } from "@powerpipe/components/dashboards/inputs/common/Common";
 import { Reorder, useDragControls } from "framer-motion";
-import { SelectOption } from "@powerpipe/components/dashboards/inputs/types";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
@@ -34,6 +33,7 @@ type GroupingTypeSelectProps = {
   index: number;
   item: DisplayGroup;
   type: DisplayGroupType;
+  value?: string;
   update: (index: number, updatedItem: DisplayGroup) => void;
 };
 
@@ -42,20 +42,25 @@ const GroupingTypeSelect = ({
   index,
   item,
   type,
+  value,
   update,
 }: GroupingTypeSelectProps) => {
-  const [currentType, setCurrentType] = useState<DisplayGroupType>(type);
+  const [current, setCurrent] = useState<{
+    type: DisplayGroupType;
+    value?: string;
+  }>({ type, value });
 
   useDeepCompareEffect(() => {
     update(index, {
       ...item,
-      type: currentType,
+      type: current.type,
+      value: current.value,
     });
-  }, [currentType, index, item]);
+  }, [current, index, item]);
 
   const { context: filterValues } = useDashboardControls();
 
-  const allFilters = useMemo(
+  const allDynamicGroups = useMemo(
     () =>
       Object.entries(filterValues || {})
         .reduce((acc: any[], [key]): any[] => {
@@ -66,7 +71,8 @@ const GroupingTypeSelect = ({
             };
             for (let k in filterValues[key]?.key) {
               group.options.push({
-                value: `${key}|${k}`,
+                type: key,
+                value: k,
                 label: k,
               });
             }
@@ -92,7 +98,7 @@ const GroupingTypeSelect = ({
     //   { value: "severity", label: "Severity" },
     //   { value: "status", label: "Status" },
     // ];
-    return allFilters.filter(
+    return allDynamicGroups.filter(
       (t) =>
         t.value === type ||
         t.value === "dimension" ||
@@ -101,7 +107,7 @@ const GroupingTypeSelect = ({
         // @ts-ignore
         !existingTypes.includes(t.value),
     );
-  }, [allFilters, config, type]);
+  }, [allDynamicGroups, config, type]);
 
   const styles = useSelectInputStyles();
 
@@ -119,9 +125,7 @@ const GroupingTypeSelect = ({
       }}
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
-      onChange={(t) =>
-        setCurrentType((t as SelectOption).value as DisplayGroupType)
-      }
+      onChange={setCurrent}
       options={types}
       inputId={`${type}.input`}
       placeholder="Select a group type…"
@@ -134,7 +138,9 @@ const GroupingTypeSelect = ({
           }
           return acc.concat(curr);
         }, [])
-        .find((t) => t.value === type)}
+        .find(
+          (t) => t.value === type || (t.type === type && t.value === value),
+        )}
     />
   );
 };
@@ -167,6 +173,7 @@ const GroupingEditorItem = ({
           index={index}
           item={item}
           type={item.type}
+          value={item.value}
           update={update}
         />
       </div>
@@ -198,7 +205,8 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
     setInnerConfig(
       config.map((c) => ({
         ...c,
-        type: c?.value ? `${c.type}|${c.value}` : c?.type,
+        type: c.type,
+        value: c.value,
       })) as any,
     );
   }, [config, setInnerConfig]);
