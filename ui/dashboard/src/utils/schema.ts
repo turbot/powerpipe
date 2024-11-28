@@ -3,7 +3,8 @@ import {
   DashboardExecutionCompleteEvent,
   DashboardExecutionEventWithSchema,
   DashboardExecutionStartedEvent,
-  DashboardSnapshot, DashboardSnapshotViewMetadata,
+  DashboardSnapshot,
+  DashboardSnapshotViewMetadata,
 } from "@powerpipe/types";
 import {
   EXECUTION_COMPLETE_SCHEMA_VERSION_LATEST,
@@ -212,20 +213,27 @@ const executedCompletedMigrations = [
       const {
         action,
         execution_id,
-        snapshot: { schema_version, layout, panels = {}, metadata, ...snapshotRest },
+        snapshot: {
+          schema_version,
+          layout,
+          panels = {},
+          metadata,
+          ...snapshotRest
+        },
       } = current;
 
       // We need to migrate the view metadata to the new format
       if (metadata) {
-        let hasViewMetadata = false
-        const rootPanel = layout.name
-        const panelKeyedViewMetadata: KeyValuePairs<DashboardSnapshotViewMetadata> = { [rootPanel]: {}}
+        let hasViewMetadata = false;
+        const rootPanel = layout.name;
+        const panelKeyedViewMetadata: KeyValuePairs<DashboardSnapshotViewMetadata> =
+          { [rootPanel]: {} };
         if (metadata.view?.filter_by) {
-          hasViewMetadata = true
+          hasViewMetadata = true;
           panelKeyedViewMetadata[rootPanel].filter_by = metadata.view.filter_by;
         }
         if (metadata.view?.group_by) {
-          hasViewMetadata = true
+          hasViewMetadata = true;
           panelKeyedViewMetadata[rootPanel].group_by = metadata.view.group_by;
         }
         if (hasViewMetadata) {
