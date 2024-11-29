@@ -84,6 +84,13 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 }
 
 func detectionRun[T DetectionTarget](cmd *cobra.Command, args []string) {
+	detectionRunWithInitData[T](cmd, nil, args)
+}
+
+// tactical - to support callint benchmark run and calling either control or dashboard execution flow,
+// we must support calling this from the check command, AFTER the initdata has been fetched
+func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *initialisation.InitData, args []string) {
+
 	ctx := cmd.Context()
 
 	// there can only be a single arg - cobra will validate
@@ -113,7 +120,9 @@ func detectionRun[T DetectionTarget](cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, detectionName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData[T](ctx, cmd, detectionName)
+	if initData == nil {
+		initData = initialisation.NewInitData[T](ctx, cmd, detectionName)
+	}
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(detectionExporters()...)
