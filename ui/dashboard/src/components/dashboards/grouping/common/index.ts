@@ -190,6 +190,7 @@ type DetectionRunProperties = {
 export type DetectionRun = {
   data: LeafNodeData;
   description?: string;
+  documentation?: string;
   error?: string;
   name: string;
   panel_type: "detection";
