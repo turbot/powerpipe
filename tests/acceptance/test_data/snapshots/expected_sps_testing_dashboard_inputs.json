@@ -67,6 +67,7 @@
           "properties": {
               "columns": {
                   "Alternative Names": {
+                      "diff_mode": "include",
                       "name": "Alternative Names",
                       "wrap": "all"
                   }
