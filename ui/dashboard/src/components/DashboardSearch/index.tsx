@@ -1,7 +1,8 @@
 import SearchInput from "../SearchInput";
+import useDebouncedEffect from "@powerpipe/hooks/useDebouncedEffect";
 import { DashboardActions } from "@powerpipe/types";
-import { useCallback } from "react";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useEffect, useState } from "react";
 
 const DashboardSearch = () => {
   const {
@@ -11,21 +12,23 @@ const DashboardSearch = () => {
     search,
     metadata,
   } = useDashboard();
+  const [innerValue, setInnerValue] = useState(search.value);
 
-  const updateSearchValue = useCallback(
-    (value) =>
-      dispatch({ type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE, value }),
-    [dispatch],
-  );
+  useEffect(() => {
+    setInnerValue(() => search.value);
+  }, [search.value]);
+
+  const updateSearchValue = (value) =>
+    dispatch({ type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE, value });
+  useDebouncedEffect(() => updateSearchValue(innerValue), 250, [innerValue]);
 
   return (
     <div className="w-full sm:w-56 md:w-72 lg:w-96">
       <SearchInput
-        //@ts-ignore
         disabled={!metadata || !availableDashboardsLoaded}
         placeholder={minBreakpoint("sm") ? "Search dashboards..." : "Search..."}
-        value={search.value}
-        setValue={updateSearchValue}
+        value={innerValue}
+        setValue={setInnerValue}
       />
     </div>
   );
