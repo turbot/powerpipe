@@ -13,6 +13,19 @@ const (
 	DiffModeKey     DiffMode = "key"
 )
 
+// all and none are valid values for display and wrap
+var validDisplayAndWrap = map[string]struct{}{
+	"all":  {},
+	"none": {},
+}
+
+// include, exclude and key are valid values for diff_mode
+var validDiffMode = map[string]struct{}{
+	string(DiffModeInclude): {},
+	string(DiffModeExclude): {},
+	string(DiffModeKey):     {},
+}
+
 type DashboardTableColumn struct {
 	Name     string    `hcl:"name,label" json:"name" snapshot:"name"`
 	Display  *string   `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
@@ -23,14 +36,18 @@ type DashboardTableColumn struct {
 
 // Validate checks the validity of the column's properties and sets default values.
 func (c *DashboardTableColumn) Validate() error {
-	// validate Display
-	if c.Display != nil && *c.Display != "all" && *c.Display != "none" {
-		return sperr.New(`invalid value for display: %s (allowed values: 'all', 'none')`, *c.Display)
+	// validate display
+	if c.Display != nil {
+		if _, ok := validDisplayAndWrap[*c.Display]; !ok {
+			return sperr.New(`invalid value for display: %s (allowed values: 'all', 'none')`, *c.Display)
+		}
 	}
 
-	// validate Wrap
-	if c.Wrap != nil && *c.Wrap != "all" && *c.Wrap != "none" {
-		return sperr.New(`invalid value for wrap: %s (allowed values: 'all', 'none')`, *c.Wrap)
+	// validate wrap
+	if c.Wrap != nil {
+		if _, ok := validDisplayAndWrap[*c.Wrap]; !ok {
+			return sperr.New(`invalid value for wrap: %s (allowed values: 'all', 'none')`, *c.Wrap)
+		}
 	}
 
 	// Set default DiffMode if not set
@@ -40,7 +57,7 @@ func (c *DashboardTableColumn) Validate() error {
 	}
 
 	// validate DiffMode
-	if c.DiffMode != nil && *c.DiffMode != DiffModeInclude && *c.DiffMode != DiffModeExclude && *c.DiffMode != DiffModeKey {
+	if _, ok := validDiffMode[string(*c.DiffMode)]; !ok {
 		return sperr.New(`invalid value for diff_mode: %s (allowed values: 'include', 'exclude', 'key')`, *c.DiffMode)
 	}
 

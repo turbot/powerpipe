@@ -1,10 +1,13 @@
 package resources
 
 import (
+	"fmt"
+
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/cty_helpers"
+	"github.com/turbot/pipe-fittings/hclhelpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
 	"github.com/turbot/pipe-fittings/schema"
@@ -89,7 +92,8 @@ func (t *DashboardTable) OnDecoded(block *hcl.Block, resourceMapProvider modconf
 				diags = append(diags, &hcl.Diagnostic{
 					Severity: hcl.DiagError,
 					Detail:   err.Error(),
-					Subject:  block.DefRange.Ptr(),
+					Summary:  fmt.Sprintf("column '%s' has invalid value", c.Name),
+					Subject:  hclhelpers.BlockRangePointer(block),
 				})
 				return diags
 			}
