@@ -379,7 +379,7 @@ const DashboardList = () => {
       return;
     }
     if (!searchValue) {
-      setFilteredDashboards(unfilteredDashboards);
+      setFilteredDashboards(() => unfilteredDashboards);
       return;
     }
 
@@ -393,7 +393,9 @@ const DashboardList = () => {
       }
     });
 
-    setFilteredDashboards(sortDashboardSearchResults(filtered, dashboardsMap));
+    setFilteredDashboards(() =>
+      sortDashboardSearchResults(filtered, dashboardsMap),
+    );
   }, [
     availableDashboardsLoaded,
     dashboardsMap,
