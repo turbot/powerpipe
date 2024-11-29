@@ -19,8 +19,8 @@ const NeutralButton = forwardRef(
       <Button
         ref={ref}
         className={classNames(
-          "bg-dashboard-panel border border-black-scale-2 text-light hover:bg-black-scale-2 hover:border-black-scale-2 disabled:bg-dashboard disabled:text-light",
           className,
+          "bg-dashboard-panel border border-black-scale-2 text-light hover:bg-black-scale-2 hover:border-black-scale-2 disabled:bg-dashboard disabled:text-light",
         )}
         disabled={disabled}
         onClick={onClick}
