@@ -9,7 +9,7 @@ _Bug fixes_
 ## v1.0.0 [2024-10-22]
 _Whats new_
 - `connection` resource to manage credentials. [Documentation](https://powerpipe.io/docs/reference/config-files/connection).
-- `database` property has been added to [mod](https://powerpipe.io/docs/powerpipe-hcl/mod). 
+- `database` property has been added to [mod](https://powerpipe.io/docs/powerpipe-hcl/mod). A database can be a connection reference, connection string, or Pipes workspace to query.
 
 _Deprecations_
 - Deprecated `database` CLI arg. See [Setting the Database](https://powerpipe.io/docs/run#selecting-a-database) for the new syntax to set the database.
