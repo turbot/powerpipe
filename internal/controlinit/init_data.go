@@ -22,16 +22,19 @@ type CheckTarget interface {
 }
 
 type InitData[T CheckTarget] struct {
-	initialisation.InitData[T]
+	initialisation.InitData
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
+}
+
+func (i *InitData[T]) BaseInitData() *initialisation.InitData {
+	return &i.InitData
 }
 
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
 func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
-
 	statushooks.SetStatus(ctx, "Loading workspace")
 
 	initData := initialisation.NewInitData[T](ctx, cmd, args...)
@@ -41,10 +44,6 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {
-		return i
-	}
-	// TODO TACTICAL
-	if _, ok := i.Targets[0].(*resources.DetectionBenchmark); ok {
 		return i
 	}
 
