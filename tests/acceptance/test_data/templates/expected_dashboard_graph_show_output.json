@@ -1,9 +1,9 @@
 [
   {
-    "EdgeNames": [
+    "edge_names": [
       "introspection_table_mod.edge.sample_edge_2"
     ],
-    "NodeNames": [
+    "node_names": [
       "introspection_table_mod.node.sample_node_2"
     ],
     "auto_generated": false,

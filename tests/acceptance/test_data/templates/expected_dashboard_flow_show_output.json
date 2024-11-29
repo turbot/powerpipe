@@ -2,13 +2,13 @@
   {
     "auto_generated": false,
     "categories": {},
-    "edges": [
+    "edges_names": [
       "introspection_table_mod.edge.sample_edge_1"
     ],
     "end_line_number": 83,
     "is_anonymous": false,
     "mod_name": "introspection_table_mod",
-    "nodes": [
+    "node_names": [
       "introspection_table_mod.node.sample_node_1"
     ],
     "qualified_name": "introspection_table_mod.flow.sample_flow_1",
