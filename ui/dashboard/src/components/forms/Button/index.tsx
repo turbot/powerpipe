@@ -6,7 +6,7 @@ export type ButtonProps = {
   className?: string;
   disabled?: boolean;
   onClick(): void | Promise<void>;
-  size?: "sm" | "md" | "lg";
+  size?: "sm" | "md" | "lg" | "manual";
   title?: string;
   type?: "button" | "submit";
 };
@@ -24,13 +24,16 @@ const Button = forwardRef(
     }: ButtonProps,
     ref,
   ) => {
-    let sizeClass;
+    let sizeClass: string | null;
     switch (size) {
       case "sm":
         sizeClass = "py-1 px-2 font-sm";
         break;
       case "lg":
         sizeClass = "py-3 px-6 font-sm";
+        break;
+      case "manual":
+        sizeClass = null;
         break;
       default:
         sizeClass = "py-2 px-3";
@@ -40,8 +43,8 @@ const Button = forwardRef(
         // @ts-ignore
         ref={ref}
         className={classNames(
-          sizeClass,
           className,
+          sizeClass,
           "rounded-md shadow-sm whitespace-nowrap focus:outline-none disabled:opacity-50 disabled:cursor-default",
         )}
         disabled={disabled}
