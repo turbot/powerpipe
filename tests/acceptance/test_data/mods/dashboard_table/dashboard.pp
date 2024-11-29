@@ -1,5 +1,5 @@
-dashboard "testing_card_blocks" {
-  title = "Testing card blocks"
+dashboard "testing_tables" {
+  title = "Testing table blocks"
 
   container {
     table {
@@ -25,7 +25,7 @@ dashboard "testing_card_blocks" {
 
       column "id" {
         display = "all"
-        primary_key = true
+        diff_mode = "key"
       }
 
       column "name" {

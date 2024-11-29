@@ -77,11 +77,22 @@ func (t *DashboardTable) Equals(other *DashboardTable) bool {
 // OnDecoded implements HclResource
 func (t *DashboardTable) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModResourcesProvider) hcl.Diagnostics {
 	t.SetBaseProperties()
+	var diags hcl.Diagnostics
 	// populate columns map
 	if len(t.ColumnList) > 0 {
 		t.Columns = make(map[string]*DashboardTableColumn, len(t.ColumnList))
 		for _, c := range t.ColumnList {
 			t.Columns[c.Name] = c
+			// validate column properties
+			if err := c.Validate(); err != nil {
+				// append the validation error to diagnostics
+				diags = append(diags, &hcl.Diagnostic{
+					Severity: hcl.DiagError,
+					Detail:   err.Error(),
+					Subject:  block.DefRange.Ptr(),
+				})
+				return diags
+			}
 		}
 	}
 	return t.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
