@@ -29,6 +29,7 @@ class Detection implements DetectionNode {
   private readonly _name: string;
   private readonly _title: string | undefined;
   private readonly _description: string | undefined;
+  private readonly _documentation: string | undefined;
   private readonly _severity: DetectionSeverity | undefined;
   private readonly _results: DetectionResult[];
   private readonly _summary: DetectionSummary;
@@ -44,6 +45,7 @@ class Detection implements DetectionNode {
     name: string,
     title: string | undefined,
     description: string | undefined,
+    documentation: string | undefined,
     severity: DetectionSeverity | undefined,
     data: LeafNodeData | undefined,
     summary: DetectionSummary | undefined,
@@ -60,6 +62,7 @@ class Detection implements DetectionNode {
     this._name = name;
     this._title = title;
     this._description = description;
+    this._documentation = documentation;
     this._severity = severity;
     this._results = this._build_check_results(data);
     this._summary = summary || {
@@ -105,6 +108,10 @@ class Detection implements DetectionNode {
 
   get title(): string {
     return this._title || this._name;
+  }
+
+  get documentation(): string | undefined {
+    return this._documentation;
   }
 
   get severity(): DetectionSeverity | undefined {
