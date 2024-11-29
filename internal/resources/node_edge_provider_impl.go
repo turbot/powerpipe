@@ -13,8 +13,8 @@ type NodeAndEdgeProviderImpl struct {
 	NodeEdgeProviderRemain hcl.Body          `hcl:",remain" json:"-"`
 	Nodes                  DashboardNodeList `cty:"node_list"  json:"-"`
 	Edges                  DashboardEdgeList `cty:"edge_list" json:"-"`
-	NodeNames              []string          `json:"nodes" snapshot:"nodes"`
-	EdgeNames              []string          `json:"edges" snapshot:"edges"`
+	NodeNames              []string          `json:"node_names" snapshot:"nodes"`
+	EdgeNames              []string          `json:"edge_names" snapshot:"edges"`
 
 	Categories map[string]*DashboardCategory `cty:"categories" json:"categories" snapshot:"categories"`
 }
