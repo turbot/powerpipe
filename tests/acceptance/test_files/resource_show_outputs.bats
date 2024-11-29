@@ -218,7 +218,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
   # removing the 14th, 25th and 32nd lines, since they contains information which would differ in github runners
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # For macOS, adding a backup extension (.bak) and then removing it to mimic in-place editing without a backup
-    run sed -i ".bak" -e "14d;25d;32d" output.json && rm output.json.bak
+    run sed -i ".bak" -e "12d;23d;33d" output.json && rm output.json.bak
   else
     # For Linux, using in-place editing without a backup file directly
     run sed -i -e "14d;25d;32d" output.json
