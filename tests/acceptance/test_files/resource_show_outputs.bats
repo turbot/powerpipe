@@ -196,13 +196,13 @@ load "$LIB_BATS_SUPPORT/load.bash"
   powerpipe dashboard flow show sample_flow_1 --output json > output.json
 
   # checking for OS type, since sed command is different for linux and OSX
-  # removing the 9th line, since it contains information which would differ in github runners
+  # removing the 9th, 20th and 27th lines, since it contains information which would differ in github runners
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # For macOS, adding a backup extension (.bak) and then removing it to mimic in-place editing without a backup
-    run sed -i ".bak" -e "9d" output.json && rm output.json.bak
+    run sed -i ".bak" -e "9d;20d;27d" output.json && rm output.json.bak
   else
     # For Linux, using in-place editing without a backup file directly
-    run sed -i -e "9d" output.json
+    run sed -i -e "9d;20d;27d" output.json
   fi
 
   run jd "$TEST_DATA_DIR/expected_dashboard_flow_show_output.json" output.json
@@ -215,13 +215,13 @@ load "$LIB_BATS_SUPPORT/load.bash"
   powerpipe dashboard graph show sample_graph_1 --output json > output.json
 
   # checking for OS type, since sed command is different for linux and OSX
-  # removing the 14th, 25th and 32nd lines, since they contains information which would differ in github runners
+  # removing the 9th, 20th and 27th lines, since they contains information which would differ in github runners
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # For macOS, adding a backup extension (.bak) and then removing it to mimic in-place editing without a backup
-    run sed -i ".bak" -e "12d;23d;33d" output.json && rm output.json.bak
+    run sed -i ".bak" -e "9d;20d;27d" output.json && rm output.json.bak
   else
     # For Linux, using in-place editing without a backup file directly
-    run sed -i -e "14d;25d;32d" output.json
+    run sed -i -e "9d;20d;27d" output.json
   fi
 
   run jd "$TEST_DATA_DIR/expected_dashboard_graph_show_output.json" output.json
@@ -234,13 +234,13 @@ load "$LIB_BATS_SUPPORT/load.bash"
   powerpipe dashboard hierarchy show sample_hierarchy_1 --output json > output.json
 
   # checking for OS type, since sed command is different for linux and OSX
-  # removing the 14th, 25th and 32nd lines, since they contains information which would differ in github runners
+  # removing the 9th, 20th and 27th lines, since they contains information which would differ in github runners
   if [[ "$OSTYPE" == "darwin"* ]]; then
     # For macOS, adding a backup extension (.bak) and then removing it to mimic in-place editing without a backup
-    run sed -i ".bak" -e "14d;25d;32d" output.json && rm output.json.bak
+    run sed -i ".bak" -e "9d;20d;27d" output.json && rm output.json.bak
   else
     # For Linux, using in-place editing without a backup file directly
-    run sed -i -e "14d;25d;32d" output.json
+    run sed -i -e "9d;20d;27d" output.json
   fi
 
   run jd "$TEST_DATA_DIR/expected_dashboard_hierarchy_show_output.json" output.json
