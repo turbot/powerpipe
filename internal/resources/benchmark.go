@@ -228,3 +228,12 @@ func (b *Benchmark) GetShowData() *printers.RowData {
 	res.Merge(b.ModTreeItemImpl.GetShowData())
 	return res
 }
+
+// GetListData implements printers.Listable
+func (b *Benchmark) GetListData() *printers.RowData {
+	res := b.ModTreeItemImpl.GetListData()
+	// add type
+	res.AddField(printers.NewFieldValue("TYPE", "control"))
+
+	return res
+}

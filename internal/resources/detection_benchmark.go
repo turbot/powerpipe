@@ -147,9 +147,18 @@ func (d *DetectionBenchmark) GetShowData() *printers.RowData {
 		printers.NewFieldValue("Width", d.Width),
 		printers.NewFieldValue("Display", d.Display),
 		printers.NewFieldValue("Inputs", d.Inputs),
-		printers.NewFieldValue("Children", d.ChildNames),
+		printers.NewFieldValue("Children", d.ChildNameStrings),
 	)
 	// merge fields from base, putting base fields first
 	res.Merge(d.ModTreeItemImpl.GetShowData())
+	return res
+}
+
+// GetListData implements printers.Listable
+func (b *DetectionBenchmark) GetListData() *printers.RowData {
+	res := b.ModTreeItemImpl.GetListData()
+	// Add type
+	res.AddField(printers.NewFieldValue("TYPE", "detection"))
+
 	return res
 }
