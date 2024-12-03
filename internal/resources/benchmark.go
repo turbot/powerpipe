@@ -70,6 +70,19 @@ func (b *Benchmark) Equals(other *Benchmark) bool {
 // OnDecoded implements HclResource
 func (b *Benchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	b.SetBaseProperties()
+
+	// set type to default
+	if b.Type == "" {
+		b.Type = "control"
+	} else if b.Type != "control" && b.Type != "benchmark" {
+		return hcl.Diagnostics{{
+			Severity: hcl.DiagError,
+			Summary:  "Invalid benchmark type",
+			Detail:   fmt.Sprintf("Benchmark type must be 'control' or 'benchmark'. Found: %s", b.Type),
+			Subject:  block.DefRange.Ptr(),
+		}}
+	}
+
 	return nil
 }
 
@@ -139,7 +152,7 @@ func (b *Benchmark) Diff(other *Benchmark) *modconfig.ModTreeItemDiffs {
 		}
 	}
 
-	if !utils.SafeStringsEqual(b.Type, other.Type) {
+	if b.Type != other.Type {
 		res.AddPropertyDiff("Type")
 	}
 
