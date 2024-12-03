@@ -13,7 +13,7 @@ import (
 // DetectionBenchmarkRun is a struct representing a container run
 type DetectionBenchmarkRun struct {
 	DashboardParentImpl
-
+	BenchmarkType string `json:"benchmark_type"`
 	dashboardNode *resources.DetectionBenchmark
 }
 
@@ -32,7 +32,10 @@ func (r *DetectionBenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 func NewDetectionBenchmarkRun(container *resources.DetectionBenchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DetectionBenchmarkRun, error) {
 	children := container.GetChildren()
 
-	r := &DetectionBenchmarkRun{dashboardNode: container}
+	r := &DetectionBenchmarkRun{
+		dashboardNode: container,
+		BenchmarkType: "detection",
+	}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(container, parent, r, executionTree)
