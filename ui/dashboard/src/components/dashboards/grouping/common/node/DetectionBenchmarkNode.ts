@@ -11,7 +11,7 @@ class DetectionBenchmarkNode extends DetectionHierarchyNode {
     documentation: string | undefined,
     children?: DetectionNode[],
   ) {
-    super("detection_benchmark", name, title || name, sort, children || []);
+    super("benchmark", name, title || name, sort, children || []);
     this._documentation = documentation;
   }
 

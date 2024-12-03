@@ -77,7 +77,6 @@ const reducer = (state: IDashboardContext, action) => {
       const { dashboards, dashboardsMap } = buildDashboards(
         action.dashboards,
         action.benchmarks,
-        action.detection_benchmarks,
         action.snapshots,
       );
       const selectedDashboard = updateSelectedDashboard(

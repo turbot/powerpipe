@@ -52,7 +52,7 @@ class Detection implements DetectionNode {
     tags: DetectionTags | undefined,
     status: DashboardRunState,
     error: string | undefined,
-    detection_benchmark_trunk: DetectionBenchmark[],
+    benchmark_trunk: DetectionBenchmark[],
     add_detection_results: AddDetectionResultsAction,
   ) {
     this._sortIndex = sortIndex;
@@ -78,22 +78,19 @@ class Detection implements DetectionNode {
       this._status === "running"
     ) {
       add_detection_results([
-        this._build_detection_loading_node(detection_benchmark_trunk),
+        this._build_detection_loading_node(benchmark_trunk),
       ]);
     } else if (this._error) {
       add_detection_results([
-        this._build_detection_error_node(
-          detection_benchmark_trunk,
-          this._error,
-        ),
+        this._build_detection_error_node(benchmark_trunk, this._error),
       ]);
     } else if (!this._results || this._results.length === 0) {
       add_detection_results([
-        this._build_detection_empty_result(detection_benchmark_trunk),
+        this._build_detection_empty_result(benchmark_trunk),
       ]);
     } else {
       add_detection_results(
-        this._build_detection_results(detection_benchmark_trunk, this._results),
+        this._build_detection_results(benchmark_trunk, this._results),
       );
     }
   }
@@ -204,7 +201,7 @@ class Detection implements DetectionNode {
   }
 
   private _build_detection_loading_node = (
-    detection_benchmark_trunk: DetectionBenchmark[],
+    benchmark_trunk: DetectionBenchmark[],
   ): DetectionResult => {
     return {
       type: "loading",
@@ -214,12 +211,12 @@ class Detection implements DetectionNode {
       reason: "",
       resource: "",
       status: CheckResultStatus.ok,
-      detection_benchmark_trunk,
+      benchmark_trunk,
     };
   };
 
   private _build_detection_error_node = (
-    detection_benchmark_trunk: DetectionBenchmark[],
+    benchmark_trunk: DetectionBenchmark[],
     error: string,
   ): DetectionResult => {
     return {
@@ -231,12 +228,12 @@ class Detection implements DetectionNode {
       reason: "",
       resource: "",
       status: CheckResultStatus.error,
-      detection_benchmark_trunk,
+      benchmark_trunk,
     };
   };
 
   private _build_detection_empty_result = (
-    detection_benchmark_trunk: DetectionBenchmark[],
+    benchmark_trunk: DetectionBenchmark[],
   ): DetectionResult => {
     return {
       type: "empty",
@@ -247,12 +244,12 @@ class Detection implements DetectionNode {
       reason: "",
       resource: "",
       status: CheckResultStatus.empty,
-      detection_benchmark_trunk,
+      benchmark_trunk,
     };
   };
 
   private _build_detection_results = (
-    detection_benchmark_trunk: DetectionBenchmark[],
+    benchmark_trunk: DetectionBenchmark[],
     results: DetectionResult[],
   ): DetectionResult[] => {
     return results.map((r) => ({
@@ -260,7 +257,7 @@ class Detection implements DetectionNode {
       type: "result",
       severity: this.severity,
       tags: this.tags,
-      detection_benchmark_trunk,
+      benchmark_trunk,
       detection: this,
     }));
   };

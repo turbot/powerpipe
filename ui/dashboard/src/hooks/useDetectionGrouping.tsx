@@ -199,13 +199,12 @@ const getCheckGroupingKey = (
   group: DetectionDisplayGroup,
 ) => {
   switch (group.type) {
-    case "detection_benchmark":
-      if (checkResult.detection_benchmark_trunk.length <= 1) {
+    case "benchmark":
+      if (checkResult.benchmark_trunk.length <= 1) {
         return null;
       }
-      return checkResult.detection_benchmark_trunk[
-        checkResult.detection_benchmark_trunk.length - 1
-      ].name;
+      return checkResult.benchmark_trunk[checkResult.benchmark_trunk.length - 1]
+        .name;
     case "detection":
       return checkResult.detection.name;
     case "detection_tag":
@@ -228,9 +227,19 @@ const getDetectionGroupingNode = (
   parentGroupType: string | null,
 ): DetectionNodeType => {
   switch (group.type) {
+    case "benchmark":
+      return detectionResult.benchmark_trunk.length > 1
+        ? addBenchmarkTrunkNode(
+            detectionResult.benchmark_trunk.slice(1),
+            children,
+            benchmarkChildrenLookup,
+            groupingKeysBeforeBenchmark,
+            parentGroupType,
+          )
+        : children[0];
     case "detection":
       return new DetectionNode(
-        parentGroupType === "detection_benchmark"
+        parentGroupType === "benchmark"
           ? detectionResult.detection.sort
           : detectionResult.detection.title || detectionResult.detection.name,
         detectionResult.detection.name,
@@ -238,16 +247,6 @@ const getDetectionGroupingNode = (
         detectionResult.detection.documentation,
         children,
       );
-    case "detection_benchmark":
-      return detectionResult.detection_benchmark_trunk.length > 1
-        ? addBenchmarkTrunkNode(
-            detectionResult.detection_benchmark_trunk.slice(1),
-            children,
-            benchmarkChildrenLookup,
-            groupingKeysBeforeBenchmark,
-            parentGroupType,
-          )
-        : children[0];
     case "detection_tag":
       const value = getCheckTagGroupingKey(group.value, detectionResult.tags);
       return new DetectionKeyValuePairNode(
@@ -302,7 +301,7 @@ function getBenchmarkChildrenLookupKey(
 ) {
   const groupingKeysBeforeBenchmark = groupingHierarchyKeys.slice(
     0,
-    groupingHierarchyKeys.indexOf("detection_benchmark"),
+    groupingHierarchyKeys.indexOf("benchmark"),
   );
   const benchmarkChildrenLookupKey =
     groupingKeysBeforeBenchmark.length > 0
@@ -347,8 +346,8 @@ const groupDetectionItems = (
         groupingHierarchyKeys.push(groupKey);
 
         // Collapse all benchmark trunk nodes
-        if (currentGroupingConfig.type === "detection_benchmark") {
-          checkResult.detection_benchmark_trunk.forEach(
+        if (currentGroupingConfig.type === "benchmark") {
+          checkResult.benchmark_trunk.forEach(
             (benchmark) =>
               (detectionNodeStates[benchmark.name] = {
                 expanded: false,
@@ -376,7 +375,7 @@ const groupDetectionItems = (
           );
 
           if (groupingNode) {
-            if (currentGroupingConfig.type === "detection_benchmark") {
+            if (currentGroupingConfig.type === "benchmark") {
               // For benchmarks, we need to get the benchmark nodes including the trunk
               addBenchmarkGroupingNode(cumulativeGrouping._, groupingNode);
             } else {
@@ -394,7 +393,7 @@ const groupDetectionItems = (
         // When we come to get the benchmark grouping node for detection 2, we'll need to add
         // the detection to the existing children of benchmark 1
         if (
-          currentGroupingConfig.type === "detection_benchmark" &&
+          currentGroupingConfig.type === "benchmark" &&
           benchmarkChildrenLookup[benchmarkChildrenLookupKey]
         ) {
           const groupingEntry = cumulativeGrouping[groupKey];
@@ -478,7 +477,7 @@ type DetectionGroupingProviderProps = {
 
 function recordFilterValues(
   filterValues: {
-    detection_benchmark: { value: {} };
+    benchmark: { value: {} };
     detection: { value: {} };
     detection_tag: { key: {}; value: {} };
     dimension: { key: {}; value: {} };
@@ -488,16 +487,16 @@ function recordFilterValues(
 ) {
   // Record the benchmark of this check result to allow assisted filtering later
   if (
-    !!detectionResult.detection_benchmark_trunk &&
-    detectionResult.detection_benchmark_trunk.length > 0
+    !!detectionResult.benchmark_trunk &&
+    detectionResult.benchmark_trunk.length > 0
   ) {
-    for (const benchmark of detectionResult.detection_benchmark_trunk) {
-      filterValues.detection_benchmark.value[benchmark.name] = filterValues
-        .detection_benchmark.value[benchmark.name] || {
+    for (const benchmark of detectionResult.benchmark_trunk) {
+      filterValues.benchmark.value[benchmark.name] = filterValues.benchmark
+        .value[benchmark.name] || {
         title: benchmark.title,
         count: 0,
       };
-      filterValues.detection_benchmark.value[benchmark.name].count +=
+      filterValues.benchmark.value[benchmark.name].count +=
         detectionResult.rows?.length || 0;
     }
   }
@@ -588,13 +587,9 @@ const includeResult = (
     }
 
     switch (filter.type) {
-      case "detection": {
-        matches.push(applyFilter(filter, result.detection.name));
-        break;
-      }
-      case "detection_benchmark": {
+      case "benchmark": {
         let matchesTrunk = false;
-        for (const benchmark of result.detection_benchmark_trunk || []) {
+        for (const benchmark of result.benchmark_trunk || []) {
           const match = applyFilter(filter, benchmark.name);
           if (match) {
             matchesTrunk = true;
@@ -602,6 +597,10 @@ const includeResult = (
           }
         }
         matches.push(matchesTrunk);
+        break;
+      }
+      case "detection": {
+        matches.push(applyFilter(filter, result.detection.name));
         break;
       }
       case "dimension": {
@@ -655,7 +654,7 @@ const useGroupingInternal = (
 
   return useMemo(() => {
     const filterValues = {
-      detection_benchmark: { value: {} },
+      benchmark: { value: {} },
       detection: { value: {} },
       detection_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
@@ -669,7 +668,7 @@ const useGroupingInternal = (
 
     // @ts-ignore
     const nestedDetectionBenchmarks = definition.children?.filter(
-      (child) => child.panel_type === "detection_benchmark",
+      (child) => child.panel_type === "benchmark",
     );
     const nestedDetections =
       definition.panel_type === "detection"

@@ -27,7 +27,6 @@ const useGroupingConfig = (panelName?: string) => {
 
     if (
       panel.panel_type !== "benchmark" &&
-      panel.panel_type !== "detection_benchmark" &&
       panel.panel_type !== "control" &&
       panel.panel_type !== "detection"
     ) {
@@ -38,7 +37,8 @@ const useGroupingConfig = (panelName?: string) => {
     if (found) {
       return found;
     } else if (
-      panel.panel_type === "benchmark" ||
+      ((!panel.benchmark_type || panel.benchmark_type === "benchmark") &&
+        panel.panel_type === "benchmark") ||
       panel.panel_type === "control"
     ) {
       return [
@@ -47,11 +47,12 @@ const useGroupingConfig = (panelName?: string) => {
         { type: "result" },
       ] as DisplayGroup[];
     } else if (
-      panel.panel_type === "detection_benchmark" ||
+      (panel.benchmark_type === "detection" &&
+        panel.panel_type === "benchmark") ||
       panel.panel_type === "detection"
     ) {
       return [
-        { type: "detection_benchmark" },
+        { type: "benchmark" },
         { type: "detection" },
         { type: "result" },
       ] as DisplayGroup[];

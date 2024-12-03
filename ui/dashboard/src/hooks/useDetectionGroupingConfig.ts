@@ -6,7 +6,7 @@ import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const groupingKeys = [
-  "detection_benchmark",
+  "benchmark",
   "detection",
   "detection_tag",
   "dimension",
@@ -48,7 +48,7 @@ const useDetectionGroupingConfig = () => {
       return groupings;
     } else {
       return [
-        { type: "detection_benchmark" },
+        { type: "benchmark" },
         { type: "detection" },
         { type: "result" },
       ] as DetectionDisplayGroup[];

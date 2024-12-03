@@ -216,7 +216,6 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
     const isValid = innerConfig.every((c, i) => {
       switch (c?.type) {
         case "benchmark":
-        case "detection_benchmark":
         case "control":
         case "detection":
         case "reason":

@@ -13,7 +13,6 @@ const filterKeysSorter = (a, b) => {
 
 const filterTypeMap = {
   benchmark: "Benchmark",
-  detection_benchmark: "Benchmark",
   control: "Control",
   control_tag: "Control Tag",
   detection: "Detection",

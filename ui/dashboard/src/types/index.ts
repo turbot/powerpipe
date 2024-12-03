@@ -321,6 +321,8 @@ export type DashboardLayoutNode = {
   children?: DashboardLayoutNode[];
 };
 
+export const DashboardPanelTypeBenchmark = "benchmark";
+
 export type DashboardPanelType =
   | "benchmark"
   | "benchmark_tree"
@@ -330,7 +332,6 @@ export type DashboardPanelType =
   | "control"
   | "dashboard"
   | "detection"
-  | "detection_benchmark"
   | "edge"
   | "error"
   | "flow"
@@ -374,8 +375,8 @@ type AvailableDashboardTags = {
 type AvailableDashboardType =
   | "available_dashboard"
   | "benchmark"
+  | "control"
   | "dashboard"
-  | "detection_benchmark"
   | "detection"
   | "snapshot";
 
@@ -427,25 +428,28 @@ export type DependencyPanelProperties = {
   name: string;
 };
 
+export type PanelDefinitionBenchmarkType = "benchmark" | "detection";
+
 export type PanelDefinition = {
   name: string;
   args?: any[];
+  benchmark_type?: PanelDefinitionBenchmarkType;
+  children?: DashboardLayoutNode[];
+  dashboard: string;
+  data?: LeafNodeData;
+  dependencies?: string[];
+  description?: string;
   display?: string;
   display_type?: string;
-  panel_type: DashboardPanelType;
-  title?: string;
-  description?: string;
   documentation?: string;
-  width?: Width;
-  sql?: string;
-  data?: LeafNodeData;
-  source_definition?: string;
-  status?: DashboardRunState;
   error?: string;
+  panel_type: DashboardPanelType;
   properties?: PanelProperties;
-  dashboard: string;
-  children?: DashboardLayoutNode[];
-  dependencies?: string[];
+  source_definition?: string;
+  sql?: string;
+  status?: DashboardRunState;
+  title?: string;
+  width?: Width;
 };
 
 export type PanelDependenciesByStatus = {
