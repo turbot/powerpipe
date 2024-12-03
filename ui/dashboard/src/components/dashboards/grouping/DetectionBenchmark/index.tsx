@@ -270,7 +270,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
               <Panel
                 key={summaryCard.name}
                 definition={cardProps}
-                parentType="detection_benchmark"
+                parentType="benchmark"
                 showControls={false}
               >
                 <FilterCardWrapper

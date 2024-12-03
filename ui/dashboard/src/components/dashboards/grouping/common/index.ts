@@ -15,7 +15,6 @@ export type GroupingNodeType =
   | "benchmark"
   | "control"
   | "control_tag"
-  | "detection_benchmark"
   | "detection"
   | "detection_tag"
   | "dimension"
@@ -156,7 +155,7 @@ export type DetectionResult = {
   dimensions: DetectionResultDimension[];
   tags: CheckTags;
   detection: DetectionNode;
-  detection_benchmark_trunk: DetectionBenchmark[];
+  benchmark_trunk: DetectionBenchmark[];
   severity?: DetectionSeverity;
   status: CheckResultStatus;
   reason: string;
@@ -214,7 +213,7 @@ export type CheckDisplayGroupType =
   | string;
 
 export type DetectionDisplayGroupType =
-  | "detection_benchmark"
+  | "benchmark"
   | "detection"
   | "detection_tag"
   | "result"

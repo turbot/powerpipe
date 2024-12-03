@@ -109,7 +109,7 @@ const isValidFilterTypeForPanel = (
 ) => {
   return !(
     type === "status" &&
-    (panelType === "detection_benchmark" || panelType === "detection")
+    (panelType === "benchmark" || panelType === "detection")
   );
 };
 
@@ -322,7 +322,6 @@ const FilterValueSelect = ({
     } else if (
       type === "benchmark" ||
       type === "control" ||
-      type === "detection_benchmark" ||
       type === "detection"
     ) {
       return Object.entries(

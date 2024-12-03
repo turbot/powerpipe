@@ -25,19 +25,35 @@ const Child = ({
   const Panel = getComponent("panel");
   switch (layoutDefinition.panel_type) {
     case "benchmark":
+      if (panelDefinition.benchmark_type === "detection") {
+        const DetectionBenchmark = getComponent("detection_benchmark");
+        return (
+          <DetectionBenchmark
+            {...(layoutDefinition as PanelDefinition)}
+            showControls={showPanelControls}
+          />
+        );
+      } else {
+        const Benchmark = getComponent("benchmark");
+        return (
+          <Benchmark
+            {...(layoutDefinition as PanelDefinition)}
+            showControls={showPanelControls}
+          />
+        );
+      }
     case "control":
-      const Benchmark = getComponent("benchmark");
+      const DetectionBenchmark = getComponent("detection_benchmark");
       return (
-        <Benchmark
+        <DetectionBenchmark
           {...(layoutDefinition as PanelDefinition)}
           showControls={showPanelControls}
         />
       );
-    case "detection_benchmark":
     case "detection":
-      const DetectionBenchmark = getComponent("detection_benchmark");
+      const Benchmark = getComponent("benchmark");
       return (
-        <DetectionBenchmark
+        <Benchmark
           {...(layoutDefinition as PanelDefinition)}
           showControls={showPanelControls}
         />

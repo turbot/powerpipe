@@ -83,7 +83,7 @@ const TitlePart = ({ part, searchPathPrefix }) => {
   if (!!searchPathPrefix.length) {
     urlSearch.set("search_path_prefix", searchPathPrefix);
   }
-  if (part.type === "detection" || "detection_benchmark") {
+  if (part.type === "detection" || part.benchmark_type === "detection") {
     urlSearch.set(
       "input.detection_range",
       JSON.stringify({
@@ -114,7 +114,7 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
   if (!!searchPathPrefix.length) {
     urlSearch.set("search_path_prefix", searchPathPrefix);
   }
-  if (benchmark.type === "detection_benchmark") {
+  if (benchmark.benchmark_type === "detection") {
     urlSearch.set(
       "input.detection_range",
       JSON.stringify({
@@ -180,11 +180,11 @@ const Section = ({
           <div className="md:col-span-6 truncate">
             {(dashboard.type === "dashboard" ||
               dashboard.type === "snapshot" ||
+              dashboard.type === "control" ||
               dashboard.type === "detection") && (
               <TitlePart part={dashboard} searchPathPrefix={searchPathPrefix} />
             )}
-            {(dashboard.type === "benchmark" ||
-              dashboard.type === "detection_benchmark") && (
+            {dashboard.type === "benchmark" && (
               <BenchmarkTitle
                 benchmark={dashboard}
                 searchValue={searchValue}

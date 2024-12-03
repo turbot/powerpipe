@@ -124,7 +124,7 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
-        name={result.detection_benchmark_trunk[0].name}
+        name={result.benchmark_trunk[0].name}
         panel_type="table"
         data={{ rows: result.rows, columns: result.columns }}
         properties={{
@@ -331,7 +331,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
           depth === 1 && node.type === "benchmark"
             ? "print:break-before-page"
             : null,
-          node.type === "detection_benchmark" || node.type === "detection"
+          node.type === "benchmark" || node.type === "detection"
             ? "print:break-inside-avoid-page"
             : null,
         )}
