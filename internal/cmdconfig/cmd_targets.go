@@ -15,6 +15,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
+// TODO once we remove DetectionBenchmarks this should return []T
+// https://github.com/turbot/powerpipe/issues/609
 func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	if len(cmdArgs) == 0 {
 		return nil, nil
@@ -43,6 +45,8 @@ func ResolveTargets[T modconfig.ModTreeItem](cmdArgs []string, w *pworkspace.Pow
 //     in this case, convert into a query and add to workspace (to allow for simple snapshot generation)
 //
 // TODO K add unit test
+// TODO once we remove DetectionBenvhmarks this should return []T
+// https://github.com/turbot/powerpipe/issues/609
 func resolveSingleTarget[T modconfig.ModTreeItem](cmdArg string, w *pworkspace.PowerpipeWorkspace) ([]modconfig.ModTreeItem, error) {
 	typeName := resources.GenericTypeToBlockType[T]()
 	var target modconfig.ModTreeItem
