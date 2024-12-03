@@ -659,7 +659,6 @@ const useGroupingInternal = (
       detection_tag: { key: {}, value: {} },
       dimension: { key: {}, value: {} },
       severity: { value: {} },
-      status: { total: 0 },
     };
 
     if (!definition || skip || !panelsMap) {

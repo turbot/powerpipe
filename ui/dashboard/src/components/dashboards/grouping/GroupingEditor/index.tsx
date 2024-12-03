@@ -78,7 +78,10 @@ const GroupingTypeSelect = ({
             }
             return acc.concat(group);
           }
-          return acc.concat({ value: key, label: filterTypeMap[key] });
+          return acc.concat({
+            type: key,
+            label: filterTypeMap[key],
+          });
         }, [])
         .concat({ label: "Result", value: "result" })
         .sort(filterKeysSorter),
@@ -86,7 +89,9 @@ const GroupingTypeSelect = ({
   );
 
   const types = useMemo(() => {
-    const existingTypes = config.map((c) => c.type.toString());
+    const existingTypes = config
+      .filter((c) => !!c.type)
+      .map((c) => c.type.toString());
     // const allTypes: SelectOption[] = [
     //   { value: "benchmark", label: "Benchmark" },
     //   { value: "control", label: "Control" },
