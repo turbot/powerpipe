@@ -148,11 +148,10 @@ type ModAvailableBenchmark struct {
 }
 
 type AvailableDashboardsPayload struct {
-	Action              string                           `json:"action"`
-	Dashboards          map[string]ModAvailableDashboard `json:"dashboards"`
-	Benchmarks          map[string]ModAvailableBenchmark `json:"benchmarks"`
-	DetectionBenchmarks map[string]ModAvailableBenchmark `json:"detection_benchmarks"`
-	Snapshots           map[string]string                `json:"snapshots"`
+	Action     string                           `json:"action"`
+	Dashboards map[string]ModAvailableDashboard `json:"dashboards"`
+	Benchmarks map[string]ModAvailableBenchmark `json:"benchmarks"`
+	Snapshots  map[string]string                `json:"snapshots"`
 }
 
 type ModMetadata struct {

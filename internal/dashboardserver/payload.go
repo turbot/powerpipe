@@ -183,7 +183,7 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *resources.Benchmark:
+		case *resources.DetectionBenchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -195,7 +195,7 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 				FullName:  t.FullName,
 				ShortName: t.ShortName,
 				Tags:      t.Tags,
-				Children:  addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Children:  addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
 			}
 			children = append(children, availableBenchmark)
 		}
@@ -205,11 +205,10 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 
 func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
-		Action:              "available_dashboards",
-		Dashboards:          make(map[string]ModAvailableDashboard),
-		Benchmarks:          make(map[string]ModAvailableBenchmark),
-		DetectionBenchmarks: make(map[string]ModAvailableBenchmark),
-		Snapshots:           workspaceResources.Snapshots,
+		Action:     "available_dashboards",
+		Dashboards: make(map[string]ModAvailableDashboard),
+		Benchmarks: make(map[string]ModAvailableBenchmark),
+		Snapshots:  workspaceResources.Snapshots,
 	}
 
 	// if workspace resources has a mod, populate dashboards and benchmarks
@@ -304,12 +303,12 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				ModFullName: mod.GetFullName(),
 			}
 
-			payload.DetectionBenchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark
+			payload.Benchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark
 		}
 		for detectionBenchmarkName, trunks := range detectionBenchmarkTrunks {
-			if foundDetectionBenchmark, ok := payload.DetectionBenchmarks[detectionBenchmarkName]; ok {
+			if foundDetectionBenchmark, ok := payload.Benchmarks[detectionBenchmarkName]; ok {
 				foundDetectionBenchmark.Trunks = trunks
-				payload.DetectionBenchmarks[detectionBenchmarkName] = foundDetectionBenchmark
+				payload.Benchmarks[detectionBenchmarkName] = foundDetectionBenchmark
 			}
 		}
 	}
