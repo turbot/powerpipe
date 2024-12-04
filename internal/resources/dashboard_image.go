@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -14,16 +13,13 @@ import (
 type DashboardImage struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
 	Src *string `cty:"src" hcl:"src"  json:"src,omitempty" snapshot:"src"`
 	Alt *string `cty:"alt" hcl:"alt"  json:"alt,omitempty" snapshot:"alt"`
-
-	// these properties are JSON serialised by the parent LeafRun
-	Width   *int    `cty:"width" hcl:"width"  json:"width,omitempty" `
-	Display *string `cty:"display" hcl:"display" json:"display,omitempty"`
 
 	Base *DashboardImage `hcl:"base" json:"-"`
 }
@@ -67,20 +63,7 @@ func (i *DashboardImage) Diff(other *DashboardImage) *modconfig.ModTreeItemDiffs
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (i *DashboardImage) GetWidth() int {
-	if i.Width == nil {
-		return 0
-	}
-	return *i.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (i *DashboardImage) GetDisplay() string {
-	return typehelpers.SafeString(i.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (*DashboardImage) GetDocumentation() string {
 	return ""
 }

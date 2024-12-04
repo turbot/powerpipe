@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -14,6 +13,7 @@ import (
 type DashboardCard struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -23,10 +23,7 @@ type DashboardCard struct {
 	Icon  *string `cty:"icon" hcl:"icon" snapshot:"icon" json:"icon,omitempty"`
 	HREF  *string `cty:"href" hcl:"href" snapshot:"href" json:"href,omitempty"`
 
-	Width   *int           `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string        `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string        `cty:"display" hcl:"display" json:"display,omitempty"`
-	Base    *DashboardCard `hcl:"base" json:"-"`
+	Base *DashboardCard `hcl:"base" json:"-"`
 }
 
 func NewDashboardCard(block *hcl.Block, mod *modconfig.Mod, shortName string) modconfig.HclResource {
@@ -82,27 +79,9 @@ func (c *DashboardCard) Diff(other *DashboardCard) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (c *DashboardCard) GetWidth() int {
-	if c.Width == nil {
-		return 0
-	}
-	return *c.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (c *DashboardCard) GetDisplay() string {
-	return typehelpers.SafeString(c.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (c *DashboardCard) GetDocumentation() string {
 	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (c *DashboardCard) GetType() string {
-	return typehelpers.SafeString(c.Type)
 }
 
 // ValidateQuery implements QueryProvider

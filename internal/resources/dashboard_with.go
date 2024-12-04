@@ -11,6 +11,7 @@ import (
 type DashboardWith struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -42,21 +43,6 @@ func (w *DashboardWith) Diff(other *DashboardWith) *modconfig.ModTreeItemDiffs {
 	res.Merge(w.QueryProviderImpl.Diff(other))
 
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (*DashboardWith) GetWidth() int {
-	return 0
-}
-
-// GetDisplay implements DashboardLeafNode
-func (*DashboardWith) GetDisplay() string {
-	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (*DashboardWith) GetType() string {
-	return ""
 }
 
 // CtyValue implements CtyValueProvider

@@ -4,7 +4,10 @@ import (
 	"encoding/json"
 	"reflect"
 
+	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/parse"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 const TagSnapshot = "snapshot"
@@ -64,10 +67,6 @@ func GetAsSnapshotPropertyMap(item any) (map[string]any, error) {
 				}
 				v = target
 			}
-			// to do kai what about slices
-			//else if  val.Kind() == reflect.Slice{
-			//
-			//}
 		}
 
 		if v != nil {
@@ -79,6 +78,27 @@ func GetAsSnapshotPropertyMap(item any) (map[string]any, error) {
 	// add in name property from HclResource
 	if hr, ok := item.(modconfig.HclResource); ok {
 		res["name"] = hr.GetShortName()
+	}
+
+	// tactical add in NodeAndEdgeProviderImpl
+	// TODO K look for nested structs with snapshot tags
+	nestedStructs, diags := parse.GetNestedStructVals(item)
+	if diags.HasErrors() {
+		return nil, error_helpers.HclDiagsToError("Failed to reflect nested structs", diags)
+	}
+
+	for _, nestedStruct := range nestedStructs {
+		switch nestedStruct.(type) {
+		case *resources.NodeAndEdgeProviderImpl:
+			nestedMap, err := GetAsSnapshotPropertyMap(nestedStruct)
+			if err != nil {
+				return nil, err
+			}
+			for k, v := range nestedMap {
+				res[k] = v
+			}
+		}
+
 	}
 	return res, nil
 }

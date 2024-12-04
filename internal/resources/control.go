@@ -18,6 +18,7 @@ import (
 type Control struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -25,10 +26,7 @@ type Control struct {
 	Severity *string `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
 
 	// dashboard specific properties
-	Base    *Control `hcl:"base" json:"-"`
-	Width   *int     `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string  `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string  `cty:"display" hcl:"display" json:"display,omitempty"`
+	Base *Control `hcl:"base" json:"-"`
 
 	parents []modconfig.ModTreeItem
 }
@@ -151,24 +149,6 @@ func (c *Control) OnDecoded(block *hcl.Block, resourceMapProvider modconfig.ModR
 	c.SetBaseProperties()
 
 	return c.QueryProviderImpl.OnDecoded(block, resourceMapProvider)
-}
-
-// GetWidth implements DashboardLeafNode
-func (c *Control) GetWidth() int {
-	if c.Width == nil {
-		return 0
-	}
-	return *c.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (c *Control) GetDisplay() string {
-	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (c *Control) GetType() string {
-	return typehelpers.SafeString(c.Type)
 }
 
 func (c *Control) Diff(other *Control) *modconfig.ModTreeItemDiffs {

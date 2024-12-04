@@ -24,12 +24,11 @@ type Dashboard struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
 	WithProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Width   *int              `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Display *string           `cty:"display" hcl:"display" json:"display,omitempty"`
 	Inputs  []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 	UrlPath string            `cty:"url_path"  json:"url_path,omitempty"`
 	Base    *Dashboard        `hcl:"base" json:"-"`
@@ -142,24 +141,6 @@ func (d *Dashboard) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider
 	}
 
 	return nil
-}
-
-// GetWidth implements DashboardLeafNode
-func (d *Dashboard) GetWidth() int {
-	if d.Width == nil {
-		return 0
-	}
-	return *d.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (d *Dashboard) GetDisplay() string {
-	return typehelpers.SafeString(d.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (d *Dashboard) GetType() string {
-	return ""
 }
 
 func (d *Dashboard) Diff(other *Dashboard) *modconfig.ModTreeItemDiffs {

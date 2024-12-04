@@ -2,6 +2,9 @@
   {
     "auto_generated": false,
     "categories": {},
+    "edge_names": [
+      "introspection_table_mod.edge.sample_edge_1"
+    ],
     "edges": [
       {
         "auto_generated": false,
@@ -18,6 +21,9 @@
     "end_line_number": 83,
     "is_anonymous": false,
     "mod_name": "introspection_table_mod",
+    "node_names": [
+      "introspection_table_mod.node.sample_node_1"
+    ],
     "nodes": [
       {
         "auto_generated": false,
