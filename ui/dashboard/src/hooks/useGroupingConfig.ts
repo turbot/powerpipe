@@ -37,9 +37,8 @@ const useGroupingConfig = (panelName?: string) => {
     if (found) {
       return found;
     } else if (
-      ((!panel.benchmark_type || panel.benchmark_type === "benchmark") &&
-        panel.panel_type === "benchmark") ||
-      panel.panel_type === "control"
+      (!panel.benchmark_type || panel.benchmark_type === "control") &&
+      (panel.panel_type === "benchmark" || panel.panel_type === "control")
     ) {
       return [
         { type: "benchmark" },

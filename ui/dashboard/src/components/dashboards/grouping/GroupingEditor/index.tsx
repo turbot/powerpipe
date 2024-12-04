@@ -29,7 +29,6 @@ type GroupingEditorItemProps = {
 };
 
 type GroupingTypeSelectProps = {
-  config: DisplayGroup[];
   index: number;
   item: DisplayGroup;
   type: DisplayGroupType;
@@ -38,7 +37,6 @@ type GroupingTypeSelectProps = {
 };
 
 const GroupingTypeSelect = ({
-  config,
   index,
   item,
   type,
@@ -60,12 +58,14 @@ const GroupingTypeSelect = ({
 
   const { context: filterValues } = useDashboardControls();
 
-  const allDynamicGroups = useMemo(
+  const options = useMemo(
     () =>
       Object.entries(filterValues || {})
         .reduce((acc: any[], [key]): any[] => {
           if (filterValues[key]?.hasOwnProperty("key")) {
             let group: any = {
+              type: key,
+              dynamic: true,
               label: filterTypeMap[key],
               options: [],
             };
@@ -83,36 +83,10 @@ const GroupingTypeSelect = ({
             label: filterTypeMap[key],
           });
         }, [])
-        .concat({ label: "Result", value: "result" })
+        .concat({ label: "Result", type: "result", value: "result" })
         .sort(filterKeysSorter),
     [filterValues],
   );
-
-  const types = useMemo(() => {
-    const existingTypes = config
-      .filter((c) => !!c.type)
-      .map((c) => c.type.toString());
-    // const allTypes: SelectOption[] = [
-    //   { value: "benchmark", label: "Benchmark" },
-    //   { value: "control", label: "Control" },
-    //   { value: "control_tag", label: "Control Tag" },
-    //   { value: "dimension", label: "Dimension" },
-    //   { value: "reason", label: "Reason" },
-    //   { value: "resource", label: "Resource" },
-    //   { value: "result", label: "Result" },
-    //   { value: "severity", label: "Severity" },
-    //   { value: "status", label: "Status" },
-    // ];
-    return allDynamicGroups.filter(
-      (t) =>
-        t.value === type ||
-        t.value === "dimension" ||
-        t.value === "control_tag" ||
-        t.value === "detection_tag" ||
-        // @ts-ignore
-        !existingTypes.includes(t.value),
-    );
-  }, [allDynamicGroups, config, type]);
 
   const styles = useSelectInputStyles();
 
@@ -131,12 +105,12 @@ const GroupingTypeSelect = ({
       // @ts-ignore as this element definitely exists
       menuPortalTarget={document.getElementById("portals")}
       onChange={setCurrent}
-      options={types}
+      options={options}
       inputId={`${type}.input`}
       placeholder="Select a group type…"
       // @ts-ignore
       styles={styles}
-      value={types
+      value={options
         .reduce((acc, curr) => {
           if (curr?.options) {
             return acc.concat(...curr.options);
@@ -174,7 +148,6 @@ const GroupingEditorItem = ({
       </div>
       <div className="grow">
         <GroupingTypeSelect
-          config={config}
           index={index}
           item={item}
           type={item.type}
