@@ -367,15 +367,15 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)
-	var benchmarkType string
-	diags = parse.DecodeProperty(content, "type", &benchmarkType, parseCtx.EvalCtx)
+	var Type string
+	diags = parse.DecodeProperty(content, "type", &Type, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)
 	// if there are any dependency errors, we cannot proceed as we need to know the type
 	if !res.Success() {
 		return nil, res
 	}
 
-	if benchmarkType == "detection" {
+	if Type == "detection" {
 		return d.decodeDetectionBenchmark(block, parseCtx)
 	}
 

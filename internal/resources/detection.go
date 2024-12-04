@@ -16,8 +16,8 @@ type Detection struct {
 	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
-	Remain   hcl.Body `hcl:",remain" json:"-"`
-	Severity *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
+	Remain         hcl.Body `hcl:",remain" json:"-"`
+	Severity       *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
 	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty"`
 
 	Base *Detection `hcl:"base" json:"-"`
