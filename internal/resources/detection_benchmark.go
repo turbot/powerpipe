@@ -155,8 +155,8 @@ func (d *DetectionBenchmark) GetShowData() *printers.RowData {
 }
 
 // GetListData implements printers.Listable
-func (b *DetectionBenchmark) GetListData() *printers.RowData {
-	res := b.ModTreeItemImpl.GetListData()
+func (d *DetectionBenchmark) GetListData() *printers.RowData {
+	res := d.ModTreeItemImpl.GetListData()
 	// Add type
 	res.AddField(printers.NewFieldValue("TYPE", "detection"))
 
