@@ -428,7 +428,7 @@ export type DependencyPanelProperties = {
   name: string;
 };
 
-export type PanelDefinitionBenchmarkType = "benchmark" | "detection";
+export type PanelDefinitionBenchmarkType = "control" | "detection";
 
 export type PanelDefinition = {
   name: string;
