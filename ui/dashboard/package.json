@@ -45,7 +45,7 @@
     "react-select": "5.8.0",
     "react-syntax-highlighter": "15.6.1",
     "react-table": "7.8.0",
-    "react-use-websocket": "4.8.1",
+    "react-use-websocket": "4.11.1",
     "reactflow": "11.11.4",
     "remark-gfm": "4.0.0",
     "semver": "7.6.3",
