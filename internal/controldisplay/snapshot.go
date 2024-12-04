@@ -33,6 +33,8 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	checkRun = &dashboardexecute.CheckRun{
 		Root:    e.Root.Children[0],
 		Summary: e.Root.Summary,
+		// hardcode benchmark type for now
+		BenchmarkType: "control",
 	}
 	checkRun.DashboardTreeRunImpl = dashboardexecute.NewDashboardTreeRunImpl(dashboardNode, nil, checkRun, nil)
 

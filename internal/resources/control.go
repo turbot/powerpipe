@@ -216,7 +216,6 @@ func (c *Control) GetShowData() *printers.RowData {
 	res := printers.NewRowData(
 		printers.NewFieldValue("Severity", c.Severity),
 		printers.NewFieldValue("Width", c.Width),
-		printers.NewFieldValue("Type", c.Type),
 		printers.NewFieldValue("Display", c.Display),
 	)
 	// merge fields from base, putting base fields first

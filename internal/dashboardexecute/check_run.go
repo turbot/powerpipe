@@ -21,10 +21,10 @@ import (
 type CheckRun struct {
 	DashboardParentImpl
 
-	Summary   *controlexecute.GroupSummary     `json:"summary"`
-	SessionId string                           `json:"-"`
-	Root      controlexecute.ExecutionTreeNode `json:"-"`
-	Type      string                           `json:"benchmark_type"`
+	Summary       *controlexecute.GroupSummary     `json:"summary"`
+	SessionId     string                           `json:"-"`
+	Root          controlexecute.ExecutionTreeNode `json:"-"`
+	BenchmarkType string                           `json:"benchmark_type"`
 
 	controlExecutionTree *controlexecute.ExecutionTree
 	database             connection.ConnectionStringProvider
@@ -97,8 +97,8 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	}
 	r.controlExecutionTree = executionTree
 	r.Root = executionTree.Root.Children[0]
-	// type is always control for check run
-	r.Type = "control"
+	// Type is always control for check run
+	r.BenchmarkType = "control"
 }
 
 // Execute implements DashboardTreeRun
