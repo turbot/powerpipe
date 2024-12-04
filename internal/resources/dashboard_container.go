@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -10,19 +9,16 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// TODO [node_reuse] add DashboardLeafNodeImpl
-
 // DashboardContainer is a struct representing the Dashboard and Container resource
 type DashboardContainer struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Width   *int              `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Display *string           `cty:"display" hcl:"display" json:"display,omitempty"`
-	Inputs  []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
+	Inputs []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
 	// store children in a way which can be serialised via cty
 	ChildNames []string `cty:"children" json:"children,omitempty"`
 }
@@ -48,24 +44,6 @@ func (c *DashboardContainer) OnDecoded(block *hcl.Block, _ modconfig.ModResource
 		c.ChildNames[i] = child.Name()
 	}
 	return nil
-}
-
-// GetWidth implements DashboardLeafNode
-func (c *DashboardContainer) GetWidth() int {
-	if c.Width == nil {
-		return 0
-	}
-	return *c.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (c *DashboardContainer) GetDisplay() string {
-	return typehelpers.SafeString(c.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (c *DashboardContainer) GetType() string {
-	return ""
 }
 
 func (c *DashboardContainer) Diff(other *DashboardContainer) *modconfig.ModTreeItemDiffs {

@@ -2,7 +2,6 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -14,13 +13,11 @@ import (
 type DashboardChart struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
-
+	DashboardLeafNodeImpl
+	
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Width      *int                             `cty:"width" hcl:"width" json:"width,omitempty"`
-	Type       *string                          `cty:"type" hcl:"type" json:"type,omitempty"`
-	Display    *string                          `cty:"display" hcl:"display" json:"display,omitempty"`
 	Legend     *DashboardChartLegend            `cty:"legend" hcl:"legend,block" snapshot:"legend" json:"legend,omitempty"`
 	SeriesList DashboardChartSeriesList         `cty:"series_list" hcl:"series,block" json:"series,omitempty"`
 	Axes       *DashboardChartAxes              `cty:"axes" hcl:"axes,block" snapshot:"axes" json:"axes,omitempty"`
@@ -107,24 +104,6 @@ func (c *DashboardChart) Diff(other *DashboardChart) *modconfig.ModTreeItemDiffs
 	res.Merge(dashboardLeafNodeDiff(c, other))
 
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (c *DashboardChart) GetWidth() int {
-	if c.Width == nil {
-		return 0
-	}
-	return *c.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (c *DashboardChart) GetDisplay() string {
-	return typehelpers.SafeString(c.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (c *DashboardChart) GetType() string {
-	return typehelpers.SafeString(c.Type)
 }
 
 // CtyValue implements CtyValueProvider

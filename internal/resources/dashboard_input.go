@@ -14,6 +14,7 @@ import (
 type DashboardInput struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -26,10 +27,6 @@ type DashboardInput struct {
 	// TODO remove when input names are refactored https://github.com/turbot/steampipe/issues/2863
 	InputName string `cty:"input_name" json:"unqualified_name" snapshot:"unqualified_name"`
 
-	// these properties are JSON serialised by the parent LeafRun
-	Width     *int            `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type      *string         `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display   *string         `cty:"display" hcl:"display" json:"display,omitempty"`
 	Base      *DashboardInput `hcl:"base" json:"-"`
 	dashboard *Dashboard
 }
@@ -51,11 +48,9 @@ func (i *DashboardInput) Clone() *DashboardInput {
 	return &DashboardInput{
 		ResourceWithMetadataImpl: i.ResourceWithMetadataImpl,
 		QueryProviderImpl:        i.QueryProviderImpl,
-		Width:                    i.Width,
-		Type:                     i.Type,
+		DashboardLeafNodeImpl:    i.DashboardLeafNodeImpl,
 		Label:                    i.Label,
 		Placeholder:              i.Placeholder,
-		Display:                  i.Display,
 		Options:                  i.Options,
 		InputName:                i.InputName,
 		dashboard:                i.dashboard,
@@ -106,24 +101,6 @@ func (i *DashboardInput) Diff(other *DashboardInput) *modconfig.ModTreeItemDiffs
 	res.Merge(dashboardLeafNodeDiff(i, other))
 
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (i *DashboardInput) GetWidth() int {
-	if i.Width == nil {
-		return 0
-	}
-	return *i.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (i *DashboardInput) GetDisplay() string {
-	return typehelpers.SafeString(i.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (i *DashboardInput) GetType() string {
-	return typehelpers.SafeString(i.Type)
 }
 
 // SetDashboard sets the parent dashboard container

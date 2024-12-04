@@ -3,7 +3,6 @@ package resources
 import (
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -15,6 +14,7 @@ import (
 type DetectionBenchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -24,18 +24,15 @@ type DetectionBenchmark struct {
 	ChildNameStrings []string                `cty:"child_name_strings" json:"children,omitempty"`
 
 	// dashboard specific properties
-	Inputs  []*DashboardInput   `cty:"inputs" json:"inputs,omitempty"`
-	Base    *DetectionBenchmark `hcl:"base" json:"-"`
-	Width   *int                `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string             `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string             `cty:"display" hcl:"display" json:"display,omitempty"`
+	Inputs []*DashboardInput   `cty:"inputs" json:"inputs,omitempty"`
+	Base   *DetectionBenchmark `hcl:"base" json:"-"`
 }
 
 // NewWrapperDetectionBenchmark creates a new DetectionBenchmark to wrap a detection which we wish to execute
 func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
 	// create a fake block for the wrapper benchmark
 	block := &hcl.Block{
-		Type:   schema.BlockTypeDetectionBenchmark,
+		Type:   schema.BlockTypeBenchmark,
 		Labels: []string{detection.ShortName + "_benchmark"},
 		Body:   &hclsyntax.Body{SrcRange: detection.DeclRange},
 	}
@@ -56,6 +53,10 @@ func NewDetectionBenchmark(block *hcl.Block, mod *modconfig.Mod, shortName strin
 }
 
 func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
+	if other == nil {
+		return false
+	}
+
 	diff := d.Diff(other)
 	return !diff.HasChanges()
 }
@@ -64,24 +65,6 @@ func (d *DetectionBenchmark) Equals(other *DetectionBenchmark) bool {
 func (d *DetectionBenchmark) OnDecoded(block *hcl.Block, _ modconfig.ModResourcesProvider) hcl.Diagnostics {
 	d.SetBaseProperties()
 	return nil
-}
-
-// GetWidth implements DashboardLeafNode
-func (d *DetectionBenchmark) GetWidth() int {
-	if d.Width == nil {
-		return 0
-	}
-	return *d.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (d *DetectionBenchmark) GetDisplay() string {
-	return typehelpers.SafeString(d.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (d *DetectionBenchmark) GetType() string {
-	return ""
 }
 
 func (d *DetectionBenchmark) Diff(other *DetectionBenchmark) *modconfig.ModTreeItemDiffs {

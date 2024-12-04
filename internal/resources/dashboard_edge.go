@@ -11,6 +11,7 @@ import (
 type DashboardEdge struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -70,23 +71,8 @@ func (e *DashboardEdge) Diff(other *DashboardEdge) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (e *DashboardEdge) GetWidth() int {
-	return 0
-}
-
-// GetDisplay implements DashboardLeafNode
-func (e *DashboardEdge) GetDisplay() string {
-	return ""
-}
-
 // GetDocumentation implements DashboardLeafNode
 func (e *DashboardEdge) GetDocumentation() string {
-	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (e *DashboardEdge) GetType() string {
 	return ""
 }
 

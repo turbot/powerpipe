@@ -8,7 +8,6 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/go-kit/types"
-	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/printers"
 	"github.com/turbot/pipe-fittings/utils"
@@ -19,6 +18,7 @@ import (
 type Benchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
@@ -28,10 +28,9 @@ type Benchmark struct {
 	ChildNameStrings []string                `cty:"child_name_strings" json:"children,omitempty"`
 
 	// dashboard specific properties
-	Base    *Benchmark `hcl:"base" json:"-"`
-	Width   *int       `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type    *string    `cty:"type" hcl:"type"  json:"type,omitempty"`
-	Display *string    `cty:"display" hcl:"display" json:"display,omitempty"`
+	Inputs []*DashboardInput `cty:"inputs" json:"inputs,omitempty"`
+
+	Base *Benchmark `hcl:"base" json:"-"`
 }
 
 func NewRootBenchmarkWithChildren(mod *modconfig.Mod, children []modconfig.ModTreeItem) modconfig.HclResource {
@@ -113,29 +112,6 @@ func (b *Benchmark) GetChildControls() []*Control {
 		}
 	}
 	return res
-}
-
-// GetWidth implements DashboardLeafNode
-func (b *Benchmark) GetWidth() int {
-	if b.Width == nil {
-		return 0
-	}
-	return *b.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (b *Benchmark) GetDisplay() string {
-	return typehelpers.SafeString(b.Display)
-}
-
-// GetType implements DashboardLeafNode
-func (b *Benchmark) GetType() string {
-	return typehelpers.SafeString(b.Type)
-}
-
-// GetUnqualifiedName implements DashboardLeafNode, ModTreeItem
-func (b *Benchmark) GetUnqualifiedName() string {
-	return b.UnqualifiedName
 }
 
 func (b *Benchmark) Diff(other *Benchmark) *modconfig.ModTreeItemDiffs {
