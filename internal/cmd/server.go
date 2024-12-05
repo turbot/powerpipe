@@ -84,6 +84,9 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 
 	// setup a new webSocket service
 	webSocket := melody.New()
+	// TODO #graza - is this big enough / too big?
+	//webSocket.Upgrader.ReadBufferSize = 1024 * 1024 * 100
+	webSocket.Config.MaxMessageSize = 1024 * 1024 * 100
 	// create the dashboardServer
 	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData.Workspace, webSocket)
 	error_helpers.FailOnError(err)

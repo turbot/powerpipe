@@ -10,6 +10,7 @@ import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "./useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
+  applyFilter,
   CheckDisplayGroup,
   Filter,
   CheckNode,
@@ -20,7 +21,6 @@ import {
   CheckSummary,
   CheckTags,
   findDimension,
-  applyFilter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   createContext,
@@ -920,7 +920,7 @@ const GroupingProvider = ({
 const useBenchmarkGrouping = () => {
   const context = useContext(GroupingContext);
   if (context === undefined) {
-    throw new Error("useCheckGrouping must be used within a GroupingContext");
+    throw new Error("useBenchmarkGrouping must be used within a GroupingContext");
   }
   return context as ICheckGroupingContext;
 };

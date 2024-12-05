@@ -311,3 +311,81 @@ MultiTimeSeriesGrouped.args = MultiTimeSeriesGroupedDefaults;
 export const MultiTimeSeriesCrosstab = Template.bind({});
 MultiTimeSeriesCrosstab.storyName = "Multiple Time Series (crosstabbed)";
 MultiTimeSeriesCrosstab.args = MultiTimeSeriesCrosstabDefaults;
+
+export const SingleSeriesDiff = Template.bind({});
+SingleSeriesDiff.storyName = "Single Series Diff";
+SingleSeriesDiff.args = {
+  data: {
+    columns: [
+      { name: "Type", data_type: "TEXT" },
+      { name: "Count", data_type: "INT8" },
+    ],
+    rows: [
+      { Type: "User", Count: 12, Count_diff: 10, _diff: "updated" },
+      { Type: "Policy", Count: 93, Count_diff: 100, _diff: "updated" },
+      { Type: "Role", Count: 48, Count_diff: 50, _diff: "updated" },
+    ],
+  },
+};
+
+export const MultiSeriesStackedWithDiff = Template.bind({});
+MultiSeriesStackedWithDiff.storyName = "Multi-Series (stacked) with Diff";
+MultiSeriesStackedWithDiff.args = {
+  data: {
+    columns: [
+      { name: "Country", data_type: "TEXT" },
+      { name: "__diff", data_type: "TEXT" },
+      { name: "Men", data_type: "INT8" },
+      { name: "Men_diff", data_type: "INT8" },
+      { name: "Women", data_type: "INT8" },
+      { name: "Women_diff", data_type: "INT8" },
+      { name: "Children", data_type: "INT8" },
+      { name: "Children_diff", data_type: "INT8" },
+    ],
+    rows: [
+      {
+        Country: "England",
+        _diff: "updated",
+        Men: 16000000,
+        Men_diff: 15000000,
+        Women: 13000000,
+        Women_diff: 14000000,
+        Children: 8000000,
+        Children_diff: 8500000,
+      },
+      {
+        Country: "Scotland",
+        _diff: "updated",
+        Men: 8000000,
+        Men_diff: 7500000,
+        Women: 7000000,
+        Women_diff: 7200000,
+        Children: 3000000,
+        Children_diff: 3100000,
+      },
+      {
+        Country: "Wales",
+        _diff: "updated",
+        Men: 5000000,
+        Men_diff: 4900000,
+        Women: 3000000,
+        Women_diff: 3100000,
+        Children: 2500000,
+        Children_diff: 2600000,
+      },
+      {
+        Country: "Northern Ireland",
+        _diff: "updated",
+        Men: 3000000,
+        Men_diff: 2900000,
+        Women: 2000000,
+        Women_diff: 2100000,
+        Children: 1000000,
+        Children_diff: 1100000,
+      },
+    ],
+  },
+  properties: {
+    grouping: "stack",
+  },
+};

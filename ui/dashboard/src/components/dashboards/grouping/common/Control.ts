@@ -63,10 +63,16 @@ class Control implements CheckNode {
     this._results = this._build_check_results(data);
     this._summary = summary || {
       alarm: 0,
+      alarm_diff: 0,
       ok: 0,
+      ok_diff: 0,
       info: 0,
+      info_diff: 0,
       skip: 0,
+      skip_diff: 0,
       error: 0,
+      error_diff: 0,
+      __diff: "updated",
     };
     this._tags = tags || {};
     this._status = status;
@@ -116,7 +122,35 @@ class Control implements CheckNode {
   }
 
   get summary(): CheckSummary {
-    return this._summary;
+    let baseSummary = this._summary;
+    return {
+      alarm: baseSummary.alarm || 0,
+      alarm_diff:
+        baseSummary.alarm_diff !== undefined
+          ? baseSummary.alarm_diff
+          : baseSummary.alarm || 0,
+      ok: baseSummary.ok || 0,
+      ok_diff:
+        baseSummary.ok_diff !== undefined
+          ? baseSummary.ok_diff
+          : baseSummary.ok || 0,
+      info: baseSummary.info || 0,
+      info_diff:
+        baseSummary.info_diff !== undefined
+          ? baseSummary.info_diff
+          : baseSummary.info || 0,
+      skip: baseSummary.skip || 0,
+      skip_diff:
+        baseSummary.skip_diff !== undefined
+          ? baseSummary.skip_diff
+          : baseSummary.skip || 0,
+      error: baseSummary.error || 0,
+      error_diff:
+        baseSummary.error_diff !== undefined
+          ? baseSummary.error_diff
+          : baseSummary.error || 0,
+      __diff: baseSummary.__diff || "updated", // Preserve __diff if it exists or default to "updated"
+    };
   }
 
   get error(): string | undefined {
@@ -275,6 +309,8 @@ class Control implements CheckNode {
         reason: row.reason,
         resource: row.resource,
         status: row.status,
+        status_diff: row.status_diff,
+        __diff: row.__diff,
         dimensions: dimensionColumns.map((col) => ({
           key: col.name,
           value: row[col.name],

@@ -32,6 +32,11 @@ import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useNavigate } from "react-router-dom";
+import {
+  isDiffColumn,
+  parseDiffColumn,
+  tableRowDiffColumn,
+} from "@powerpipe/utils/data";
 
 const getThemeColorsWithPointOverrides = (
   type: ChartType = "column",
@@ -535,22 +540,55 @@ const getSeriesForChartType = (
   transform: ChartTransform,
   shouldBeTimeSeries: boolean,
   themeColors,
+  dataset,
 ) => {
   if (!data) {
     return [];
   }
+
+  // Keep a map of the series names with their index and configured color override
+  const seriesMap = {};
+
   const series: any[] = [];
   const seriesNames =
     transform === "crosstab"
       ? rowSeriesLabels
-      : data.columns.slice(1).map((col) => col.name);
+      : data.columns
+          .slice(1)
+          .filter((col) => col.name !== "__diff")
+          .map((col) => col.name);
+  const seriesNamesWithoutDiffColumns = seriesNames.filter(
+    (s) => !isDiffColumn(s),
+  );
   const seriesLength = seriesNames.length;
+  const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
+
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     let seriesName = seriesNames[seriesIndex];
+    const diff = parseDiffColumn(seriesName);
     let seriesColor = "auto";
+    const seriesMapSettings = {
+      index: seriesIndex,
+      // Don't set if a diff - see if we set it below via override for paired column
+      // and if not, then we'll try to look up the colour from the paired column index
+      color: diff.isDiff ? undefined : seriesColor,
+      isDiff: diff.isDiff,
+      pairedColumn: diff.pairedColumn,
+      pairedColumnIndex: diff.isDiff
+        ? seriesNamesWithoutDiffColumns.indexOf(diff.pairedColumn)
+        : -1,
+    };
     let seriesOverrides;
+
+    if (diff.isDiff) {
+      seriesName = `${seriesName.split("_")[0]} (Diff)`;
+    }
+
     if (properties) {
-      if (properties.series && properties.series[seriesName]) {
+      if (
+        properties.series &&
+        properties.series[diff.pairedColumn || seriesName]
+      ) {
         seriesOverrides = properties.series[seriesName];
       }
       if (seriesOverrides && seriesOverrides.title) {
@@ -558,7 +596,17 @@ const getSeriesForChartType = (
       }
       if (seriesOverrides && seriesOverrides.color) {
         seriesColor = getColorOverride(seriesOverrides.color, themeColors);
+        seriesMapSettings.color = seriesColor;
       }
+
+      seriesMap[seriesName] = seriesMapSettings;
+    }
+
+    if (diff.isDiff && seriesMapSettings.color === undefined) {
+      seriesMapSettings.color =
+        themeColors.charts[
+          seriesMapSettings.pairedColumnIndex % themeColors.charts.length
+        ];
     }
 
     switch (type) {
@@ -567,7 +615,7 @@ const getSeriesForChartType = (
         series.push({
           name: seriesName,
           type: "bar",
-          ...(properties && properties.grouping === "compare"
+          ...(hasDiffCol || (properties && properties.grouping === "compare")
             ? {}
             : { stack: "total" }),
           itemStyle: {
@@ -578,7 +626,42 @@ const getSeriesForChartType = (
                   ? [0, 5, 5, 0]
                   : [5, 5, 0, 0]
                 : undefined,
-            color: seriesColor,
+            color: !diff.isDiff
+              ? seriesMapSettings.color
+              : {
+                  type: "pattern",
+                  image: (() => {
+                    // Create a canvas for the pattern
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = 8; // Pattern size
+                    canvas.height = 8;
+
+                    // Set base color
+                    const baseColor = seriesMapSettings.color;
+
+                    // Define the colors
+                    const lightColor = lightenColor(baseColor, 0.3);
+                    // const darkColor = darkenColor(baseColor, 0.2);
+
+                    // Draw light background
+                    ctx.fillStyle = lightColor;
+                    ctx.fillRect(0, 0, 8, 8);
+
+                    // Draw wider diagonal dark lines
+                    ctx.strokeStyle = baseColor;
+                    ctx.lineWidth = 4; // Increase line width for wider lines
+                    ctx.beginPath();
+                    ctx.moveTo(-2, 6); // Adjust start and end points for better alignment
+                    ctx.lineTo(6, -2);
+                    ctx.moveTo(2, 10);
+                    ctx.lineTo(10, 2);
+                    ctx.stroke();
+
+                    return canvas;
+                  })(),
+                  repeat: "repeat",
+                },
             borderColor: themeColors.dashboardPanel,
             borderWidth: 1,
           },
@@ -617,27 +700,126 @@ const getSeriesForChartType = (
         });
         break;
       case "pie":
-        series.push({
-          name: seriesName,
-          type: "pie",
-          center: ["50%", "40%"],
-          radius: "50%",
-          label: { color: themeColors.foreground, fontSize: 10 },
-          emphasis: {
-            itemStyle: {
-              color: "inherit",
-              shadowBlur: 5,
-              shadowOffsetX: 0,
-              shadowColor: "rgba(0, 0, 0, 0.5)",
+        if (diff.isDiff) {
+          // Multi-series pie (donut) logic
+          series.push({
+            name: seriesName + " (Original)",
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: ["20%", "40%"], // Inner radius for donut effect
+            data: dataset.slice(1).map((item) => {
+              return {
+                value: item[2], // 'Count'
+                name: item[0], // 'Type'
+              };
+            }),
+            label: {
+              position: "outside",
+              formatter: "{b}: {c}",
+              color: themeColors.foreground,
+              fontSize: 10,
             },
-          },
-          itemStyle: {
-            borderRadius: 5,
-            borderColor: themeColors.dashboardPanel,
-            borderWidth: 2,
-          },
-        });
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+                shadowBlur: 5,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+          });
+
+          series.push({
+            name: seriesName + " (Diff)",
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: ["45%", "65%"], // Outer radius for donut effect
+            data: dataset.slice(1).map((item, index) => {
+              // Get the matching color from the inner series
+              const matchingColor =
+                themeColors.charts[index % themeColors.charts.length];
+              return {
+                value: item[1], // 'Count_diff'
+                name: item[0], // 'Type'
+                itemStyle: {
+                  color: {
+                    type: "pattern",
+                    image: (() => {
+                      // Create a canvas for the hatching pattern
+                      const canvas = document.createElement("canvas");
+                      const ctx = canvas.getContext("2d");
+                      canvas.width = 8; // Pattern size
+                      canvas.height = 8;
+
+                      // Fill the background with the matching color
+                      ctx.fillStyle = matchingColor;
+                      ctx.fillRect(0, 0, 8, 8);
+
+                      // Draw the hatching pattern (e.g., diagonal lines)
+                      ctx.strokeStyle = lightenColor(matchingColor, 0.3); // Use a slightly lighter color for contrast
+                      ctx.lineWidth = 2; // Adjust line width for desired effect
+                      ctx.beginPath();
+                      ctx.moveTo(0, 8); // Start from bottom left
+                      ctx.lineTo(8, 0); // Draw diagonal line to top right
+                      ctx.stroke();
+
+                      return canvas;
+                    })(),
+                    repeat: "repeat",
+                  },
+                  borderColor: themeColors.dashboardPanel,
+                  borderWidth: 2,
+                  borderRadius: 5,
+                },
+              };
+            }),
+            label: {
+              position: "outside",
+              formatter: "{b}: {c}",
+              color: themeColors.foreground,
+              fontSize: 10,
+            },
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+                shadowBlur: 5,
+                shadowOffsetX: 0,
+                shadowColor: "rgba(0, 0, 0, 0.5)",
+              },
+            },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+          });
+        } else {
+          // Single-series pie (standard pie logic)
+          series.push({
+            name: seriesName,
+            type: "pie",
+            center: ["50%", "50%"],
+            radius: ["30%", "50%"],
+            label: { color: themeColors.foreground, fontSize: 10 },
+            itemStyle: {
+              borderRadius: 5,
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 2,
+            },
+            emphasis: {
+              itemStyle: {
+                color: "inherit",
+              },
+            },
+          });
+        }
         break;
+
       case "area":
         series.push({
           name: seriesName,
@@ -652,14 +834,56 @@ const getSeriesForChartType = (
           emphasis: {
             focus: "series",
           },
-          itemStyle: { color: seriesColor },
+          itemStyle: {
+            color: !diff.isDiff
+              ? seriesMapSettings.color
+              : {
+                  type: "pattern",
+                  image: (() => {
+                    // Create a canvas for the pattern
+                    const canvas = document.createElement("canvas");
+                    const ctx = canvas.getContext("2d");
+                    canvas.width = 8; // Pattern size
+                    canvas.height = 8;
+
+                    // Set base color
+                    const baseColor = seriesMapSettings.color;
+
+                    // Define the colors
+                    const lightColor = lightenColor(baseColor, 0.3);
+                    // const darkColor = darkenColor(baseColor, 0.2);
+
+                    // Draw light background
+                    ctx.fillStyle = lightColor;
+                    ctx.fillRect(0, 0, 8, 8);
+
+                    // Draw wider diagonal dark lines
+                    ctx.strokeStyle = baseColor;
+                    ctx.lineWidth = 4; // Increase line width for wider lines
+                    ctx.beginPath();
+                    ctx.moveTo(-2, 6); // Adjust start and end points for better alignment
+                    ctx.lineTo(6, -2);
+                    ctx.moveTo(2, 10);
+                    ctx.lineTo(10, 2);
+                    ctx.stroke();
+
+                    return canvas;
+                  })(),
+                  repeat: "repeat",
+                },
+            borderColor: themeColors.dashboardPanel,
+            borderWidth: 1,
+          },
         });
         break;
       case "line":
         series.push({
           name: seriesName,
           type: "line",
-          itemStyle: { color: seriesColor },
+          itemStyle: { color: seriesMapSettings.color },
+          lineStyle: {
+            type: diff.isDiff ? "dashed" : "solid",
+          },
           // Per https://stackoverflow.com/a/56116442, when using time series you have to manually encode each series
           // We assume that the first dimension/column is the timestamp
           ...(shouldBeTimeSeries ? { encode: { x: 0, y: seriesName } } : {}),
@@ -669,6 +893,34 @@ const getSeriesForChartType = (
   }
   return series;
 };
+
+// Utility functions for color adjustments
+function lightenColor(color, amount) {
+  const [r, g, b] = hexToRgb(color);
+  return rgbToHex(
+    Math.min(255, r + amount * 255),
+    Math.min(255, g + amount * 255),
+    Math.min(255, b + amount * 255),
+  );
+}
+
+function darkenColor(color, amount) {
+  const [r, g, b] = hexToRgb(color);
+  return rgbToHex(
+    Math.max(0, r - amount * 255),
+    Math.max(0, g - amount * 255),
+    Math.max(0, b - amount * 255),
+  );
+}
+
+function hexToRgb(hex) {
+  const bigint = parseInt(hex.slice(1), 16);
+  return [(bigint >> 16) & 255, (bigint >> 8) & 255, bigint & 255];
+}
+
+function rgbToHex(r, g, b) {
+  return `#${((1 << 24) + (r << 16) + (g << 8) + b).toString(16).slice(1)}`;
+}
 
 const adjustGridConfig = (
   config: EChartsOption,
@@ -705,22 +957,75 @@ const adjustGridConfig = (
   return newConfig;
 };
 
+const injectDiffColumns = (data: LeafNodeData) => {
+  const diffSeriesToAdd = {};
+  let newColumns = [...data.columns];
+  for (const row of data.rows) {
+    const keys = Object.keys(row);
+    for (const key of keys) {
+      if (key === "__diff" || key.endsWith("_diff") || !!diffSeriesToAdd[key]) {
+        continue;
+      }
+      const diff = tableRowDiffColumn(row, key);
+      if (
+        diff.hasDiffColumn &&
+        !data.columns.find((c) => c.name === `${key}_diff`)
+      ) {
+        diffSeriesToAdd[`${key}_diff`] = key;
+      }
+
+      // if (hasDiffCol(key)) const series = seriesWithDiffs[key] || [];
+      // series.push(row[key]);
+      // seriesWithDiffs[key] = series;
+    }
+  }
+
+  const diffCol = newColumns.find((c) => c.name === "__diff");
+  for (const diffSeries of Object.keys(diffSeriesToAdd)) {
+    const matchingColumnIndex = newColumns.findIndex(
+      (c) => c.name === diffSeriesToAdd[diffSeries],
+    );
+    const matchingColumn = newColumns.find(
+      (c) => c.name === diffSeriesToAdd[diffSeries],
+    );
+    if (!matchingColumn) {
+      continue;
+    }
+    newColumns = [
+      ...newColumns.slice(0, matchingColumnIndex),
+      { ...matchingColumn, name: `${matchingColumn.name}_diff` },
+      matchingColumn,
+      ...newColumns.slice(matchingColumnIndex + 1),
+    ];
+  }
+
+  if (!diffCol) {
+    newColumns = [...newColumns, { name: "__diff" }];
+  }
+
+  return { columns: newColumns, rows: data.rows };
+};
+
 const buildChartOptions = (props: ChartProps, themeColors: any) => {
+  const updatedData = injectDiffColumns(props.data);
+  // props.data = updatedData;
+
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
-    props.data,
+    updatedData,
     props.properties,
   );
   const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
-    props.data?.columns[0].data_type.toLowerCase() || "",
+    updatedData?.columns[0].data_type.toLowerCase() || "",
   );
   const series = getSeriesForChartType(
     props.display_type || "column",
-    props.data,
+    updatedData,
     props.properties,
     rowSeriesLabels,
     transform,
     treatAsTimeSeries,
     themeColors,
+    dataset,
   );
   const config = merge(
     getCommonBaseOptions(),

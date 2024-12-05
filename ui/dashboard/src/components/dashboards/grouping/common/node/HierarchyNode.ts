@@ -50,18 +50,28 @@ class HierarchyNode implements CheckNode {
   get summary(): CheckSummary {
     const summary = {
       alarm: 0,
+      alarm_diff: 0,
       ok: 0,
+      ok_diff: 0,
       info: 0,
+      info_diff: 0,
       skip: 0,
+      skip_diff: 0,
       error: 0,
+      error_diff: 0,
     };
     for (const child of this._children) {
       const nestedSummary = child.summary;
       summary.alarm += nestedSummary.alarm;
+      summary.alarm_diff += nestedSummary.alarm_diff;
       summary.ok += nestedSummary.ok;
+      summary.ok_diff += nestedSummary.ok_diff;
       summary.info += nestedSummary.info;
+      summary.info_diff += nestedSummary.info_diff;
       summary.skip += nestedSummary.skip;
+      summary.skip_diff += nestedSummary.skip_diff;
       summary.error += nestedSummary.error;
+      summary.error_diff += nestedSummary.error_diff;
     }
     return summary;
   }

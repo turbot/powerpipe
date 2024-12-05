@@ -10,6 +10,7 @@ import {
   DashboardCliMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
+  DashboardDataModeDiff,
   DashboardDataModeLive,
   DashboardDataOptions,
   DashboardRenderOptions,
@@ -131,6 +132,27 @@ const DashboardProvider = ({
   }, [dispatch, state.cliMode, stateDefaults]);
 
   useEffect(() => {
+    if (
+      !socketReady ||
+      state.dataMode !== "diff" ||
+      !state.snapshot ||
+      !state.diff?.snapshot
+    ) {
+      return;
+    }
+    const payload = {
+      action: SocketActions.GET_SNAPSHOT_DIFF,
+      payload: {
+        snapshot_diff: {
+          previous: JSON.stringify(state.diff.snapshot),
+          current: JSON.stringify(state.snapshot),
+        },
+      },
+    };
+    sendSocketMessage(payload);
+  }, [sendSocketMessage, socketReady, state.dataMode, state.diff]);
+
+  useEffect(() => {
     dispatch({
       type: DashboardActions.SET_SEARCH_PATH_PREFIX,
       search_path_prefix: searchPathPrefix,
@@ -213,9 +235,23 @@ const DashboardProvider = ({
 
   useEffect(() => {
     if (
+      location.pathname === "/" &&
+      (state.dataMode === DashboardDataModeCLISnapshot ||
+        state.dataMode === DashboardDataModeDiff)
+    ) {
+      dispatch({
+        type: DashboardActions.SET_DATA_MODE,
+        dataMode: DashboardDataModeLive,
+      });
+    }
+  }, [dispatch, location, state.dataMode]);
+
+  useEffect(() => {
+    if (
       !!dashboard_name &&
       !location.pathname.startsWith("/snapshot/") &&
-      state.dataMode === DashboardDataModeCLISnapshot
+      (state.dataMode === DashboardDataModeCLISnapshot ||
+        state.dataMode === DashboardDataModeDiff)
     ) {
       dispatch({
         type: DashboardActions.SET_DATA_MODE,
@@ -651,7 +687,8 @@ const DashboardProvider = ({
     if (
       !state.availableDashboardsLoaded ||
       !dashboard_name ||
-      state.dataMode === DashboardDataModeCLISnapshot
+      state.dataMode === DashboardDataModeCLISnapshot ||
+      state.dataMode === DashboardDataModeDiff
     ) {
       return;
     }
@@ -671,7 +708,8 @@ const DashboardProvider = ({
   useEffect(() => {
     if (
       location.pathname.startsWith("/snapshot/") &&
-      state.dataMode !== DashboardDataModeCLISnapshot
+      state.dataMode !== DashboardDataModeCLISnapshot &&
+      state.dataMode !== DashboardDataModeDiff
     ) {
       navigate("/");
     }

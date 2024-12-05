@@ -33,10 +33,13 @@ export type BasePrimitiveProps = {
   width?: Width;
 };
 
+export type ColumnDiffState = "none" | "inserted" | "updated" | "deleted";
+
 export type LeafNodeDataColumn = {
   name: string;
   original_name?: string;
   data_type: string;
+  __diff?: ColumnDiffState;
 };
 
 export type LeafNodeDataRow = {
@@ -133,10 +136,20 @@ const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
 };
 
 const defaultDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
+  const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
+
   return {
     dataset: [
-      data.columns.map((col) => col.name),
-      ...data.rows.map((row) => data.columns.map((col) => row[col.name])),
+      hasDiffCol
+        ? data.columns
+            .filter((col) => col.name !== "__diff")
+            .map((col) => col.name)
+        : data.columns.map((col) => col.name),
+      ...data.rows.map((row) =>
+        data.columns
+          .filter((col) => col.name !== "__diff")
+          .map((col) => row[col.name]),
+      ),
     ],
     rowSeriesLabels: [],
     transform: "none",

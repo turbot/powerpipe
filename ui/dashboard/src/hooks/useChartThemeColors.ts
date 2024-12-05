@@ -54,7 +54,10 @@ const useChartThemeColors = () => {
         charts,
       } as KeyValuePairs;
     } else {
-      return {};
+      const charts = getChartColors(theme);
+      return {
+        charts,
+      };
     }
   }, [theme, wrapperRef]);
 

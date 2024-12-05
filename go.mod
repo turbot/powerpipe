@@ -46,6 +46,7 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb v1.8.3
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/r3labs/diff/v3 v3.0.1
 	github.com/thediveo/enumflag/v2 v2.0.5
 	golang.org/x/sync v0.8.0
 	golang.org/x/text v0.19.0
@@ -213,6 +214,8 @@ require (
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.3.5 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect

@@ -1,11 +1,14 @@
-import { DashboardDataModeLive } from "@powerpipe/types";
+import { DashboardDataModeDiff, DashboardDataModeLive } from "@powerpipe/types";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 const DashboardProgress = () => {
   const { dataMode, progress, state } = useDashboard();
 
   // We only show a progress indicator in live mode
-  if (dataMode !== DashboardDataModeLive) {
+  if (
+    dataMode !== DashboardDataModeLive &&
+    dataMode !== DashboardDataModeDiff
+  ) {
     return null;
   }
 

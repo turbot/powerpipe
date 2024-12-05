@@ -7,6 +7,7 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/cmdconfig"
 	"github.com/turbot/pipe-fittings/constants"
@@ -61,6 +62,7 @@ func rootCommand() *cobra.Command {
 		resourceCmd[*resources.Dashboard](),
 		resourceCmd[*resources.Query](),
 		resourceCmd[*modconfig.Variable](),
+		snapshotCmd(),
 	)
 
 	// disable auto completion generation, since we don't want to support
