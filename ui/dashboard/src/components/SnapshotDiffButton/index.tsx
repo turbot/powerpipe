@@ -50,7 +50,6 @@ const SnapshotDiffButton = () => {
                 snapshot: data,
               });
             } catch (err: any) {
-              console.log(err);
               dispatch({
                 type: DashboardActions.WORKSPACE_ERROR,
                 error: "Unable to load snapshot:" + err.message,

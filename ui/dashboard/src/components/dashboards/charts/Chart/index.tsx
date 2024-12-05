@@ -563,12 +563,9 @@ const getSeriesForChartType = (
   const seriesLength = seriesNames.length;
   const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
 
-  console.log({ data, hasDiffCol });
-
   for (let seriesIndex = 0; seriesIndex < seriesLength; seriesIndex++) {
     let seriesName = seriesNames[seriesIndex];
     const diff = parseDiffColumn(seriesName);
-    console.log(diff);
     let seriesColor = "auto";
     const seriesMapSettings = {
       index: seriesIndex,
@@ -642,8 +639,6 @@ const getSeriesForChartType = (
 
                     // Set base color
                     const baseColor = seriesMapSettings.color;
-
-                    console.log(seriesMapSettings);
 
                     // Define the colors
                     const lightColor = lightenColor(baseColor, 0.3);
@@ -985,8 +980,6 @@ const injectDiffColumns = (data: LeafNodeData) => {
     }
   }
 
-  console.log(diffSeriesToAdd);
-
   const diffCol = newColumns.find((c) => c.name === "__diff");
   for (const diffSeries of Object.keys(diffSeriesToAdd)) {
     const matchingColumnIndex = newColumns.findIndex(
@@ -1021,7 +1014,6 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     updatedData,
     props.properties,
   );
-  console.log({ updatedData, dataset });
   const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
     updatedData?.columns[0].data_type.toLowerCase() || "",
   );
