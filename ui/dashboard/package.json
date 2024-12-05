@@ -123,7 +123,7 @@
   "lint-staged": {
     "*.{js,css,md}": "prettier --write"
   },
-  "packageManager": "yarn@4.5.0",
+  "packageManager": "yarn@4.5.3",
   "engines": {
     "node": ">=20",
     "npm": ">=8"

@@ -10,6 +10,7 @@ import SubmitButton from "@powerpipe/components/forms/SubmitButton";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import utc from "dayjs/plugin/utc";
 import { classNames } from "@powerpipe/utils/styles";
+import { createPortal } from "react-dom";
 import { DashboardActions } from "@powerpipe/types";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import {
@@ -19,8 +20,10 @@ import {
 import { parseDate } from "@powerpipe/utils/date";
 import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useState } from "react";
+import { usePopper } from "react-popper";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
 dayjs.extend(utc);
@@ -354,6 +357,19 @@ const CustomDatePicker = ({
 
 const DateRangePicker = (props: InputProps) => {
   const { dispatch, selectedDashboardInputs } = useDashboard();
+  const [popperElement, setPopperElement] = useState(null);
+  const [referenceElement, setReferenceElement] = useState(null);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    placement: "bottom-start",
+    modifiers: [
+      {
+        name: "flip",
+        options: {
+          fallbackPlacements: ["top-start", "right-start"],
+        },
+      },
+    ],
+  });
 
   const stateValue = selectedDashboardInputs[props.name];
 
@@ -551,29 +567,49 @@ const DateRangePicker = (props: InputProps) => {
           if (preset.value === "custom") {
             return (
               <Popover key={preset.value} className="relative">
-                <Popover.Button as="div" className={presetClassName}>
+                <Popover.Button
+                  ref={setReferenceElement}
+                  as="div"
+                  className={presetClassName}
+                >
                   {preset.label}
                 </Popover.Button>
                 <Popover.Panel className="absolute z-10 pt-px">
-                  {({ close }) => (
-                    <CustomDatePicker
-                      duration={duration}
-                      tempState={tempState}
-                      unitOfTime={unitOfTime}
-                      setDuration={setDuration}
-                      setTempState={setTempState}
-                      setUnitOfTime={setUnitOfTime}
-                      onApply={() => {
-                        handleApply();
-                        close();
-                      }}
-                      onCancel={() => {
-                        handleCancel();
-                        close();
-                      }}
-                      onTimeOptionClick={handleTimeOptionClick}
-                    />
-                  )}
+                  {({ close }) =>
+                    createPortal(
+                      <ThemeProvider>
+                        <ThemeWrapper>
+                          <div
+                            // @ts-ignore
+                            ref={setPopperElement}
+                            style={{ ...styles.popper }}
+                            {...attributes.popper}
+                            onClick={(e) => e.stopPropagation()}
+                          >
+                            <CustomDatePicker
+                              duration={duration}
+                              tempState={tempState}
+                              unitOfTime={unitOfTime}
+                              setDuration={setDuration}
+                              setTempState={setTempState}
+                              setUnitOfTime={setUnitOfTime}
+                              onApply={() => {
+                                handleApply();
+                                close();
+                              }}
+                              onCancel={() => {
+                                handleCancel();
+                                close();
+                              }}
+                              onTimeOptionClick={handleTimeOptionClick}
+                            />
+                          </div>
+                        </ThemeWrapper>
+                      </ThemeProvider>,
+                      // @ts-ignore as this element definitely exists
+                      document.getElementById("portals"),
+                    )
+                  }
                 </Popover.Panel>
               </Popover>
             );
