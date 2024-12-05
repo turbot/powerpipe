@@ -210,7 +210,11 @@ const CustomDatePicker = ({
                     from: tempState.from.toDate(),
                     to: tempState.to?.toDate(),
                   }}
-                  onSelect={({ from, to }) => {
+                  onSelect={(selectEvent) => {
+                    if (!selectEvent) {
+                      return;
+                    }
+                    const { from, to } = selectEvent;
                     const newFrom = parseDate(
                       new Date(
                         from.getFullYear(),
