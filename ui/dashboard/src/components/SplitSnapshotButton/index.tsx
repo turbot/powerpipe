@@ -77,6 +77,40 @@ const useSaveSnapshot = () => {
   };
 };
 
+const useOpenDiff = () => {
+  const { dispatch } = useDashboard();
+  const navigate = useNavigate();
+
+  return (e: ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+    const fr = new FileReader();
+    fr.onload = () => {
+      if (!fr.result) {
+        return;
+      }
+
+      e.target.value = "";
+      try {
+        navigate(`/snapshot/diff`);
+        const data = JSON.parse(fr.result.toString());
+        dispatch({
+          type: DashboardActions.GET_SNAPSHOT_DIFF,
+          snapshot: data,
+        });
+      } catch (err: any) {
+        dispatch({
+          type: DashboardActions.WORKSPACE_ERROR,
+          error: "Unable to load snapshot:" + err.message,
+        });
+      }
+    };
+    fr.readAsText(files[0]);
+  };
+};
+
 const useOpenSnapshot = () => {
   const { dispatch } = useDashboard();
   const navigate = useNavigate();
@@ -144,8 +178,10 @@ interface SplitSnapshotAction {
 
 const SplitSnapshotButton = () => {
   const { dashboard, selectedDashboard, snapshot } = useDashboard();
+  const openDiff = useOpenDiff();
   const openSnapshot = useOpenSnapshot();
   const saveSnapshot = useSaveSnapshot();
+  const openDiffRef = useRef<HTMLInputElement | null>(null);
   const openSnapshotRef = useRef<HTMLInputElement | null>(null);
 
   let actions: KeyValuePairs<SplitSnapshotAction> = {
@@ -162,13 +198,20 @@ const SplitSnapshotButton = () => {
       title: "Take snapshot.",
       action: saveSnapshot,
     },
+    diff: {
+      icon: "difference",
+      disabled: !dashboard || !snapshot,
+      label: "Diff",
+      title: "Open snapshot to diff against.",
+      action: () => openDiffRef.current?.click(),
+    },
   };
 
   let defaultAction: SplitSnapshotAction;
   let otherActions: SplitSnapshotAction[] = [];
   if (selectedDashboard) {
     defaultAction = actions.save;
-    otherActions = [actions.open];
+    otherActions = [actions.open, actions.diff];
   } else {
     defaultAction = actions.open;
   }
@@ -205,7 +248,7 @@ const SplitSnapshotButton = () => {
                   <Menu.Item key={idx}>
                     <div
                       className={classNames(
-                        "flex items-center space-x-2 p-2 cursor-pointer hover:bg-black-scale-2",
+                        "flex items-center space-x-2 p-2 hover:bg-black-scale-2",
                         otherAction.disabled
                           ? "disabled:bg-dashboard disabled:text-light"
                           : "cursor-pointer",
@@ -234,6 +277,15 @@ const SplitSnapshotButton = () => {
         name="open-snapshot"
         type="file"
         onChange={openSnapshot}
+      />
+      <input
+        ref={openDiffRef}
+        accept="application/json, .pps, .sps"
+        className="hidden"
+        id="snapshot-diff"
+        name="snapshot-diff"
+        type="file"
+        onChange={openDiff}
       />
     </>
   );
