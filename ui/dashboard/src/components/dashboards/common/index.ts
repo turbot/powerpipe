@@ -12,7 +12,7 @@ import {
   NodesAndEdges,
 } from "./types";
 import { ChartProperties, ChartTransform, ChartType } from "../charts/types";
-import { DashboardRunState } from "@powerpipe/types";
+import { DashboardDataMode, DashboardRunState } from "@powerpipe/types";
 import { ExpandedNodes } from "../graphs/common/useGraph";
 import { FlowProperties, FlowType } from "../flows/types";
 import { getColumn } from "@powerpipe/utils/data";
@@ -82,7 +82,10 @@ type ChartDatasetResponse = {
   transform: ChartTransform;
 };
 
-const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
+const crosstabDataTransform = (
+  data: LeafNodeData,
+  dataMode: DashboardDataMode,
+): ChartDatasetResponse => {
   if (data.columns.length < 3) {
     return { dataset: [], rowSeriesLabels: [], transform: "none" };
   }
@@ -135,21 +138,45 @@ const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   return { dataset, rowSeriesLabels: seriesLabels, transform: "crosstab" };
 };
 
-const defaultDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
-  const hasDiffCol = !!data.columns.find((col) => col.name === "__diff");
+const defaultDataTransform = (
+  data: LeafNodeData,
+  dataMode: DashboardDataMode,
+): ChartDatasetResponse => {
+  if (dataMode !== "diff") {
+    return {
+      dataset: [
+        data.columns.map((col) => col.name),
+        ...data.rows.map((row) => data.columns.map((col) => row[col.name])),
+      ],
+      rowSeriesLabels: [],
+      transform: "none",
+    };
+  }
+
+  const categoryColumn = data.columns.find(
+    (col) => col.data_type === "TEXT",
+  ).name;
+  const numericColumns = data.columns
+    .filter((col) => col.data_type !== "TEXT") // Exclude the category column
+    .map((col) => col.name);
 
   return {
     dataset: [
-      hasDiffCol
-        ? data.columns
-            .filter((col) => col.name !== "__diff")
-            .map((col) => col.name)
-        : data.columns.map((col) => col.name),
-      ...data.rows.map((row) =>
-        data.columns
-          .filter((col) => col.name !== "__diff")
-          .map((col) => row[col.name]),
-      ),
+      [
+        categoryColumn,
+        ...numericColumns,
+        ...numericColumns.map((c) => `${c}_diff`),
+      ], // Header row
+      ...data.rows.map((row) => {
+        const rowValues = numericColumns.map((colName) => row[colName] ?? null); // Original values
+        const diffValues = numericColumns.map(
+          (colName) =>
+            row._diff === "updated" && `${colName}_diff` in row
+              ? row[`${colName}_diff`] // Use diff value if present
+              : (row[colName] ?? null), // Otherwise, repeat the original value
+        );
+        return [row[categoryColumn], ...rowValues, ...diffValues];
+      }),
     ],
     rowSeriesLabels: [],
     transform: "none",
@@ -169,7 +196,10 @@ const isNumericCol = (data_type: string | null | undefined) => {
   );
 };
 
-const automaticDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
+const automaticDataTransform = (
+  data: LeafNodeData,
+  dataMode: DashboardDataMode,
+): ChartDatasetResponse => {
   // We want to check if the data looks like something that can be crosstab transformed.
   // If that's 3 columns, with the first 2 non-numeric and the last numeric, we'll apply
   // a crosstab transform, else we'll apply the default transform
@@ -182,15 +212,16 @@ const automaticDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
       !isNumericCol(col2Type) &&
       isNumericCol(col3Type)
     ) {
-      return crosstabDataTransform(data);
+      return crosstabDataTransform(data, dataMode);
     }
   }
-  return defaultDataTransform(data);
+  return defaultDataTransform(data, dataMode);
 };
 
 const buildChartDataset = (
   data: LeafNodeData | undefined,
   properties: ChartProperties | undefined,
+  dataMode: DashboardDataMode,
 ): ChartDatasetResponse => {
   if (!data || !data.columns) {
     return { dataset: [], rowSeriesLabels: [], transform: "none" };
@@ -200,13 +231,13 @@ const buildChartDataset = (
 
   switch (transform) {
     case "crosstab":
-      return crosstabDataTransform(data);
+      return crosstabDataTransform(data, dataMode);
     case "none":
-      return defaultDataTransform(data);
+      return defaultDataTransform(data, dataMode);
     // Must be not specified or "auto", which should check to see
     // if the data matches crosstab format and transform if it is
     default:
-      return automaticDataTransform(data);
+      return automaticDataTransform(data, dataMode);
   }
 };
 

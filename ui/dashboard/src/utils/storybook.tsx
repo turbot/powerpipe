@@ -3,6 +3,7 @@ import Dashboard from "@powerpipe/components/dashboards/layout/Dashboard";
 import { buildComponentsMap } from "@powerpipe/components";
 import { DashboardContext } from "@powerpipe/hooks/useDashboard";
 import {
+  DashboardDataMode,
   DashboardDataModeLive,
   DashboardPanelType,
   DashboardRunState,
@@ -12,6 +13,7 @@ import { noop } from "@powerpipe/utils/func";
 import { useStorybookTheme } from "@powerpipe/hooks/useStorybookTheme";
 
 type PanelStoryDecoratorProps = {
+  dataMode?: DashboardDataMode;
   definition: any;
   panelType: DashboardPanelType;
   panels?: {
@@ -29,6 +31,7 @@ const stubDashboardSearch: DashboardSearch = {
 };
 
 export const PanelStoryDecorator = ({
+  dataMode = DashboardDataModeLive,
   definition = {},
   panels = {},
   panelType,
@@ -65,7 +68,7 @@ export const PanelStoryDecorator = ({
         },
         availableDashboardsLoaded: true,
         closePanelDetail: noop,
-        dataMode: DashboardDataModeLive,
+        dataMode,
         snapshotId: null,
         dispatch: noop,
         error: null,

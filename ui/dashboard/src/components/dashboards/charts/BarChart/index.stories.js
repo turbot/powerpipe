@@ -296,13 +296,11 @@ SingleSeriesDiff.args = {
   data: {
     columns: [
       { name: "Type", data_type: "TEXT" },
-      { name: "__diff", data_type: "INT8" },
-      { name: "Count_diff", data_type: "INT8" },
       { name: "Count", data_type: "INT8" },
     ],
     rows: [
       { Type: "User", Count: 12, Count_diff: 10, _diff: "updated" },
-      { Type: "Policy", Count: 93, Count_diff: 100, _diff: "updated" },
+      { Type: "Policy", Count: 93 },
       { Type: "Role", Count: 48, Count_diff: 50, _diff: "updated" },
     ],
   },

@@ -15,7 +15,6 @@ import {
   LeafNodeData,
   Width,
 } from "@powerpipe/components/dashboards/common";
-import { EChartsOption } from "echarts-for-react/src/types";
 import {
   ChartProperties,
   ChartProps,
@@ -24,19 +23,21 @@ import {
   ChartTransform,
   ChartType,
 } from "@powerpipe/components/dashboards/charts/types";
+import { DashboardDataMode } from "@powerpipe/types";
+import { EChartsOption } from "echarts-for-react/src/types";
 import { FlowType } from "@powerpipe/components/dashboards/flows/types";
 import { getChartComponent } from "@powerpipe/components/dashboards/charts";
 import { GraphType } from "@powerpipe/components/dashboards/graphs/types";
 import { HierarchyType } from "@powerpipe/components/dashboards/hierarchies/types";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useNavigate } from "react-router-dom";
 import {
   isDiffColumn,
   parseDiffColumn,
   tableRowDiffColumn,
 } from "@powerpipe/utils/data";
+import { registerComponent } from "@powerpipe/components/dashboards";
+import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useNavigate } from "react-router-dom";
 
 const getThemeColorsWithPointOverrides = (
   type: ChartType = "column",
@@ -1006,20 +1007,26 @@ const injectDiffColumns = (data: LeafNodeData) => {
   return { columns: newColumns, rows: data.rows };
 };
 
-const buildChartOptions = (props: ChartProps, themeColors: any) => {
-  const updatedData = injectDiffColumns(props.data);
+const buildChartOptions = (
+  props: ChartProps,
+  dataMode: DashboardDataMode,
+  themeColors: any,
+) => {
+  // const updatedData = injectDiffColumns(props.data);
   // props.data = updatedData;
 
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
-    updatedData,
+    props.data,
     props.properties,
+    dataMode,
   );
+  console.log({ data: props.data, dataset });
   const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
-    updatedData?.columns[0].data_type.toLowerCase() || "",
+    props.data?.columns[0].data_type.toLowerCase() || "",
   );
   const series = getSeriesForChartType(
     props.display_type || "column",
-    updatedData,
+    props.data,
     props.properties,
     rowSeriesLabels,
     transform,
@@ -1157,6 +1164,7 @@ const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
 
 const ChartWrapper = (props: ChartProps) => {
   const {
+    dataMode,
     searchPathPrefix,
     themeContext: { wrapperRef },
   } = useDashboard();
@@ -1172,7 +1180,7 @@ const ChartWrapper = (props: ChartProps) => {
 
   return (
     <Chart
-      options={buildChartOptions(props, themeColors)}
+      options={buildChartOptions(props, dataMode, themeColors)}
       searchPathPrefix={searchPathPrefix}
       type={props.display_type || "column"}
     />

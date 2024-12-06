@@ -1,4 +1,5 @@
 import ColumnChart from "./index";
+import { DashboardDataModeDiff } from "@powerpipe/types";
 import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
 import {
   MultiTimeSeriesDefaults,
@@ -16,6 +17,7 @@ export default story;
 
 const Template = (args) => (
   <PanelStoryDecorator
+    dataMode={args.dataMode}
     definition={{ ...args, display_type: "column" }}
     panelType="chart"
   />
@@ -322,10 +324,11 @@ SingleSeriesDiff.args = {
     ],
     rows: [
       { Type: "User", Count: 12, Count_diff: 10, _diff: "updated" },
-      { Type: "Policy", Count: 93, Count_diff: 100, _diff: "updated" },
+      { Type: "Policy", Count: 93 },
       { Type: "Role", Count: 48, Count_diff: 50, _diff: "updated" },
     ],
   },
+  dataMode: DashboardDataModeDiff,
 };
 
 export const MultiSeriesStackedWithDiff = Template.bind({});
