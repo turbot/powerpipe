@@ -15,7 +15,7 @@
     "build-storybook": "storybook build -s public"
   },
   "dependencies": {
-    "@headlessui/react": "2.2.0",
+    "@headlessui/react": "1.7.19",
     "@heroicons/react": "2.2.0",
     "@material-symbols/svg-300": "0.27.1",
     "@popperjs/core": "2.11.8",
@@ -30,7 +30,7 @@
     "echarts-gl": "2.0.9",
     "file-saver": "2.0.5",
     "framer-motion": "11.12.0",
-    "jq-web": "0.6.0",
+    "jq-web": "0.5.1",
     "lodash": "4.17.21",
     "react": "18.3.1",
     "react-cool-img": "1.2.12",
@@ -40,7 +40,7 @@
     "react-papaparse": "4.4.0",
     "react-placeholder": "4.1.0",
     "react-popper": "2.3.0",
-    "react-router-dom": "7.0.2",
+    "react-router-dom": "6.28.0",
     "react-router-hash-link": "2.4.3",
     "react-select": "5.8.3",
     "react-syntax-highlighter": "15.6.1",
