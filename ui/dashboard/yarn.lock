@@ -5780,12 +5780,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/react-dom@npm:18.3.0":
-  version: 18.3.0
-  resolution: "@types/react-dom@npm:18.3.0"
+"@types/react-dom@npm:19.0.1":
+  version: 19.0.1
+  resolution: "@types/react-dom@npm:19.0.1"
   dependencies:
     "@types/react": "npm:*"
-  checksum: 10c0/6c90d2ed72c5a0e440d2c75d99287e4b5df3e7b011838cdc03ae5cd518ab52164d86990e73246b9d812eaf02ec351d74e3b4f5bd325bf341e13bf980392fd53b
+  checksum: 10c0/fb40069a7c5c70475155dff91d25ff5a51226c14d45c8ad55894480366876426981c8be63ef322486af879bb220bf48443f2344c1a89cb75a47a1a761acee9d3
   languageName: node
   linkType: hard
 
@@ -16544,7 +16544,7 @@ __metadata:
     "@types/lodash": "npm:4.17.7"
     "@types/node": "npm:22.5.4"
     "@types/react": "npm:18.3.5"
-    "@types/react-dom": "npm:18.3.0"
+    "@types/react-dom": "npm:19.0.1"
     autoprefixer: "npm:10.4.20"
     buffer: "npm:6.0.3"
     circular-dependency-plugin: "npm:5.2.2"
@@ -16570,7 +16570,7 @@ __metadata:
     prop-types: "npm:15.8.1"
     react: "npm:18.3.1"
     react-cool-img: "npm:1.2.12"
-    react-dom: "npm:18.3.1"
+    react-dom: "npm:19.0.0"
     react-hotkeys: "npm:2.0.0"
     react-markdown: "npm:9.0.1"
     react-papaparse: "npm:4.4.0"
@@ -17003,7 +17003,18 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-dom@npm:18.3.1, react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0":
+"react-dom@npm:19.0.0":
+  version: 19.0.0
+  resolution: "react-dom@npm:19.0.0"
+  dependencies:
+    scheduler: "npm:^0.25.0"
+  peerDependencies:
+    react: ^19.0.0
+  checksum: 10c0/a36ce7ab507b237ae2759c984cdaad4af4096d8199fb65b3815c16825e5cfeb7293da790a3fc2184b52bfba7ba3ff31c058c01947aff6fd1a3701632aabaa6a9
+  languageName: node
+  linkType: hard
+
+"react-dom@npm:^16.8.0 || ^17.0.0 || ^18.0.0":
   version: 18.3.1
   resolution: "react-dom@npm:18.3.1"
   dependencies:
@@ -18060,6 +18071,13 @@ __metadata:
   dependencies:
     loose-envify: "npm:^1.1.0"
   checksum: 10c0/26383305e249651d4c58e6705d5f8425f153211aef95f15161c151f7b8de885f24751b377e4a0b3dd42cce09aad3f87a61dab7636859c0d89b7daf1a1e2a5c78
+  languageName: node
+  linkType: hard
+
+"scheduler@npm:^0.25.0":
+  version: 0.25.0
+  resolution: "scheduler@npm:0.25.0"
+  checksum: 10c0/a4bb1da406b613ce72c1299db43759526058fdcc413999c3c3e0db8956df7633acf395cb20eb2303b6a65d658d66b6585d344460abaee8080b4aa931f10eaafe
   languageName: node
   linkType: hard
 
