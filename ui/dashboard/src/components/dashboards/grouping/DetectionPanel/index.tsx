@@ -25,7 +25,10 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import { noop } from "@powerpipe/utils/func";
+import useDownloadPanelData from "@powerpipe/hooks/useDownloadPanelData";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -288,6 +291,17 @@ const DetectionPanelSeverity = ({
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
     useDetectionGrouping();
+  const definition = useMemo(
+    () => ({
+      data: node.data,
+      panel_type: "detection",
+      dashboard: node.name,
+    }),
+    [node],
+  );
+  const { download } = useDownloadPanelData(definition);
+  const [referenceElement, setReferenceElement] = useState(null);
+  const [showControls, setShowControls] = useState(false);
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
@@ -322,6 +336,25 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
       ];
     }, [groupingConfig, node]);
 
+  const controls = useMemo(
+    () => [
+      {
+        action: async (e) => {
+          e.stopPropagation();
+          download();
+        },
+        icon: "arrow-down-tray",
+        title: "Download data",
+      },
+    ],
+    [],
+  );
+
+  const hasResults =
+    can_be_expanded &&
+    groupingConfig &&
+    groupingConfig[groupingConfig.length - 1].type === "result";
+
   return (
     <>
       <div
@@ -337,6 +370,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
         )}
       >
         <section
+          ref={setReferenceElement}
           className={classNames(
             "bg-dashboard-panel shadow-sm rounded-md border-divide print:border print:bg-white print:shadow-none",
             can_be_expanded ? "cursor-pointer" : null,
@@ -357,7 +391,18 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                 })
               : null
           }
+          onMouseEnter={
+            node.type === "detection" ? () => setShowControls(true) : noop
+          }
+          onMouseLeave={() => setShowControls(false)}
         >
+          {showControls && (
+            <PanelControls
+              referenceElement={referenceElement}
+              controls={controls}
+              withOffset
+            />
+          )}
           <div className="p-4 flex items-center space-x-6">
             <div className="flex flex-grow justify-between items-center space-x-6">
               <div className="flex items-center space-x-4">
@@ -398,16 +443,13 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
             {!can_be_expanded && <div className="w-5 md:w-7 h-5 md:h-7" />}
           </div>
         </section>
-        {can_be_expanded &&
-          expanded &&
-          groupingConfig &&
-          groupingConfig[groupingConfig.length - 1].type === "result" && (
-            <DetectionResults
-              empties={empty_nodes}
-              errors={error_nodes}
-              results={result_nodes}
-            />
-          )}
+        {hasResults && expanded && (
+          <DetectionResults
+            empties={empty_nodes}
+            errors={error_nodes}
+            results={result_nodes}
+          />
+        )}
       </div>
       {can_be_expanded && expanded && (
         <DetectionChildren children={child_nodes} depth={depth + 1} />
