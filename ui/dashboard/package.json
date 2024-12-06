@@ -50,7 +50,7 @@
     "remark-gfm": "4.0.0",
     "semver": "7.6.3",
     "use-deep-compare-effect": "1.8.1",
-    "uuid": "10.0.0",
+    "uuid": "11.0.3",
     "web-vitals": "4.2.4"
   },
   "devDependencies": {
