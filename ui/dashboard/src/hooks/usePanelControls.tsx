@@ -19,6 +19,7 @@ import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 import { PanelDefinition } from "@powerpipe/types";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
+import { noop } from "@powerpipe/utils/func";
 
 export type IPanelControlsContext = {
   enabled: boolean;
@@ -47,13 +48,22 @@ type PanelControlsProviderProps = {
 };
 
 export interface IPanelControl {
+  disabled?: boolean;
+  key: string;
   action: (e: any) => Promise<void>;
   component?: ReactNode;
   icon?: string;
   title: string;
 }
 
-const PanelControlsContext = createContext<IPanelControlsContext | null>(null);
+const PanelControlsContext = createContext<IPanelControlsContext | null>({
+  enabled: false,
+  panelControls: [],
+  showPanelControls: false,
+  setCustomControls: noop,
+  setPanelData: noop,
+  setShowPanelControls: noop,
+});
 
 const PanelControlsProvider = ({
   children,
@@ -85,16 +95,18 @@ const PanelControlsProvider = ({
     }
     if (panelData) {
       controls.push({
-        action: downloadPanelData,
-        icon: "arrow-down-tray",
+        key: "download-data",
         title: "Download data",
+        icon: "arrow-down-tray",
+        action: downloadPanelData,
       });
     }
     if (panelDetailEnabled) {
       controls.push({
-        action: select,
-        icon: "arrows-pointing-out",
+        key: "view-panel-detail",
         title: "View detail",
+        icon: "arrows-pointing-out",
+        action: select,
       });
     }
     return controls;
@@ -104,7 +116,23 @@ const PanelControlsProvider = ({
   const [customControls, setCustomControls] = useState<IPanelControl[]>([]);
 
   useEffect(() => {
-    setPanelControls(() => [...customControls, ...getBasePanelControls()]);
+    const uniqueCustomControls: IPanelControl[] = [];
+    let baseControls = getBasePanelControls();
+    for (const control of customControls) {
+      const existingIndex = baseControls.findIndex(
+        (c) => c.key === control.key,
+      );
+      if (existingIndex === -1) {
+        uniqueCustomControls.push(control);
+      } else {
+        baseControls = [
+          ...baseControls.slice(0, existingIndex),
+          control,
+          ...baseControls.slice(existingIndex + 1),
+        ];
+      }
+    }
+    setPanelControls(() => [...uniqueCustomControls, ...baseControls]);
   }, [customControls, getBasePanelControls]);
 
   return (

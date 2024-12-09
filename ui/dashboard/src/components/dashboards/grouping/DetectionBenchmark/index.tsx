@@ -63,13 +63,14 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   useEffect(() => {
     setCustomControls([
       {
+        key: "filter-and-group",
+        title: "Filter & Group",
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
         action: async () =>
           dispatch({
             type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
             panel_name: props.definition.name,
           }),
-        component: <CustomizeViewSummary panelName={props.definition.name} />,
-        title: "Filter & Group",
       },
     ]);
   }, [dispatch, props.definition.name, setCustomControls]);

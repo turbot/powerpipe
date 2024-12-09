@@ -8,6 +8,7 @@ import DocumentationView from "@powerpipe/components/dashboards/grouping/Documen
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import sortBy from "lodash/sortBy";
 import Table from "@powerpipe/components/dashboards/Table";
+import useDownloadDetectionData from "@powerpipe/hooks/useDownloadDetectionData";
 import {
   AlarmIcon,
   CollapseBenchmarkIcon,
@@ -31,7 +32,7 @@ import {
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -291,6 +292,20 @@ const DetectionPanelSeverity = ({
   );
 };
 
+const recordChildResults = (
+  node: DetectionNode,
+  allResults: DetectionResultNode[],
+): DetectionResultNode[] => {
+  for (const child of node.children || []) {
+    if (child.type === "result") {
+      allResults.push(child as DetectionResultNode);
+    } else if (child.children?.length) {
+      return recordChildResults(child, allResults);
+    }
+  }
+  return allResults;
+};
+
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
     useDetectionGrouping();
@@ -298,6 +313,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     enabled: panelControlsEnabled,
     panelControls,
     showPanelControls,
+    setCustomControls,
     setShowPanelControls,
   } = usePanelControls();
   const [referenceElement, setReferenceElement] = useState(null);
@@ -305,35 +321,64 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     ? nodeStates[node.name].expanded
     : false;
 
-  const [child_nodes, error_nodes, empty_nodes, result_nodes, can_be_expanded] =
-    useMemo(() => {
-      const children: DetectionNode[] = [];
-      const errors: DetectionErrorNode[] = [];
-      const empty: DetectionEmptyResultNode[] = [];
-      const results: DetectionResultNode[] = [];
-      for (const child of node.children || []) {
-        if (child.type === "error") {
-          errors.push(child as DetectionErrorNode);
-        } else if (child.type === "result") {
-          results.push(child as DetectionResultNode);
-        } else if (child.type === "empty_result") {
-          empty.push(child as DetectionEmptyResultNode);
-        } else if (child.type !== "running") {
-          children.push(child);
-        }
+  const [
+    child_nodes,
+    error_nodes,
+    empty_nodes,
+    result_nodes,
+    descendant_result_nodes,
+    can_be_expanded,
+  ] = useMemo(() => {
+    const children: DetectionNode[] = [];
+    const errors: DetectionErrorNode[] = [];
+    const empty: DetectionEmptyResultNode[] = [];
+    const results: DetectionResultNode[] = [];
+    let descendantResults: DetectionResultNode[] = [];
+    for (const child of node.children || []) {
+      if (child.type === "error") {
+        errors.push(child as DetectionErrorNode);
+      } else if (child.type === "result") {
+        results.push(child as DetectionResultNode);
+      } else if (child.type === "empty_result") {
+        empty.push(child as DetectionEmptyResultNode);
+      } else if (child.type !== "running") {
+        children.push(child);
       }
-      return [
-        sortBy(children, "sort"),
-        sortBy(errors, "sort"),
-        sortBy(empty, "sort"),
-        results,
-        children.length > 0 ||
-          (groupingConfig &&
-            groupingConfig.length > 0 &&
-            groupingConfig[groupingConfig.length - 1].type === "result" &&
-            (errors.length > 0 || empty.length > 0 || results.length > 0)),
-      ];
-    }, [groupingConfig, node]);
+
+      if (child.children?.length) {
+        recordChildResults(child, descendantResults);
+      }
+    }
+    return [
+      sortBy(children, "sort"),
+      sortBy(errors, "sort"),
+      sortBy(empty, "sort"),
+      results,
+      descendantResults,
+      children.length > 0 ||
+        (groupingConfig &&
+          groupingConfig.length > 0 &&
+          groupingConfig[groupingConfig.length - 1].type === "result" &&
+          (errors.length > 0 || empty.length > 0 || results.length > 0)),
+    ];
+  }, [groupingConfig, node]);
+
+  const { download } = useDownloadDetectionData(
+    node.name,
+    descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
+  );
+
+  useEffect(() => {
+    setCustomControls([
+      {
+        key: "download-data",
+        disabled: descendant_result_nodes.length === 0,
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
+      },
+    ]);
+  }, [descendant_result_nodes, setCustomControls]);
 
   const hasResults =
     can_be_expanded &&
@@ -456,7 +501,7 @@ const DetectionPanelWrapper = ({ node, depth }: DetectionPanelProps) => {
   return (
     <PanelControlsProvider
       definition={definition}
-      enabled={node.type === "detection"}
+      enabled={true}
       panelDetailEnabled={false}
     >
       <DetectionPanel node={node} depth={depth} />
