@@ -3,7 +3,10 @@ import useDownloadPanelData from "@powerpipe/hooks/useDownloadPanelData";
 import { noop } from "@powerpipe/utils/func";
 
 const PanelDetailDataDownloadButton = ({ panelDefinition, size }) => {
-  const { download, processing } = useDownloadPanelData(panelDefinition);
+  const { download, processing } = useDownloadPanelData(
+    panelDefinition,
+    panelDefinition.data,
+  );
 
   return (
     <NeutralButton

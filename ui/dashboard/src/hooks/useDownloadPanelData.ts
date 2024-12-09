@@ -1,3 +1,4 @@
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 import { PanelDefinition } from "@powerpipe/types";
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
@@ -5,17 +6,19 @@ import { useCallback, useState } from "react";
 import { useDashboard } from "./useDashboard";
 import { usePapaParse } from "react-papaparse";
 
-const useDownloadPanelData = (definition: PanelDefinition) => {
+const useDownloadPanelData = (
+  definition: PanelDefinition,
+  data?: LeafNodeData,
+) => {
   const { selectedDashboard } = useDashboard();
   const { jsonToCSV } = usePapaParse();
   const [processing, setProcessing] = useState(false);
 
   const downloadQueryData = useCallback(async () => {
-    if (!definition.data) {
+    if (!data) {
       return;
     }
     setProcessing(true);
-    const data = definition.data;
     const colNames = data.columns.map((c) => c.name);
     let csvRows: any[] = [];
 
@@ -49,7 +52,7 @@ const useDownloadPanelData = (definition: PanelDefinition) => {
       )}.csv`,
     );
     setProcessing(false);
-  }, [definition, jsonToCSV, selectedDashboard]);
+  }, [definition, data, jsonToCSV, selectedDashboard]);
 
   return { download: downloadQueryData, processing };
 };

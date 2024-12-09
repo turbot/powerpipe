@@ -10,7 +10,6 @@ import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
-import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
 import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
@@ -26,6 +25,10 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
+import {
+  PanelControlsProvider,
+  usePanelControls,
+} from "@powerpipe/hooks/usePanelControls";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -52,26 +55,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
   const { dispatch, selectedPanel } = useDashboard();
-  const benchmarkDataTable = useMemo(() => {
-    if (
-      !props.benchmark ||
-      !props.grouping ||
-      props.grouping.status !== "complete"
-    ) {
-      return undefined;
-    }
-    return props.benchmark.get_data_table();
-  }, [props.benchmark, props.grouping]);
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
-  const definitionWithData = useMemo(() => {
-    return {
-      ...props.definition,
-      data: benchmarkDataTable,
-    };
-  }, [benchmarkDataTable, props.definition]);
   const { panelControls: benchmarkControls, setCustomControls } =
-    usePanelControls(definitionWithData, props.showControls);
+    usePanelControls();
 
   useEffect(() => {
     setCustomControls([
@@ -398,7 +385,9 @@ type DetectionBenchmarkWrapperProps = PanelDefinition & {
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
     <GroupingProvider definition={props}>
-      <Inner showControls={props.showControls} withTitle={props.withTitle} />
+      <PanelControlsProvider definition={props} enabled={props.showControls}>
+        <Inner showControls={props.showControls} withTitle={props.withTitle} />
+      </PanelControlsProvider>
     </GroupingProvider>
   );
 };

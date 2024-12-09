@@ -10,7 +10,6 @@ import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
-import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
@@ -31,6 +30,10 @@ import {
 import { noop } from "@powerpipe/utils/func";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
+import {
+  PanelControlsProvider,
+  usePanelControls,
+} from "@powerpipe/hooks/usePanelControls";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -46,7 +49,6 @@ type InnerCheckProps = {
   grouping: CheckNode;
   groupingConfig: CheckDisplayGroup[];
   firstChildSummaries: CheckSummary[];
-  showControls: boolean;
   withTitle: boolean;
 };
 
@@ -67,14 +69,12 @@ const Benchmark = (props: InnerCheckProps) => {
   }, [props.benchmark, props.grouping]);
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
-  const definitionWithData = useMemo(() => {
-    return {
-      ...props.definition,
-      data: benchmarkDataTable,
-    };
-  }, [benchmarkDataTable, props.definition]);
-  const { panelControls: benchmarkControls, setCustomControls } =
-    usePanelControls(definitionWithData, props.showControls);
+  const {
+    panelControls: benchmarkControls,
+    showPanelControls,
+    setCustomControls,
+    setPanelData,
+  } = usePanelControls();
 
   useEffect(() => {
     setCustomControls([
@@ -89,6 +89,13 @@ const Benchmark = (props: InnerCheckProps) => {
       },
     ]);
   }, [dispatch, props.definition.name, setCustomControls]);
+
+  useEffect(() => {
+    if (!benchmarkDataTable) {
+      return;
+    }
+    setPanelData(benchmarkDataTable);
+  }, [benchmarkDataTable, setPanelData]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
@@ -192,7 +199,7 @@ const Benchmark = (props: InnerCheckProps) => {
       name={props.definition.name}
       width={props.definition.width}
       events={{
-        onMouseEnter: props.showControls
+        onMouseEnter: showPanelControls
           ? () => setShowBenchmarkControls(true)
           : noop,
         onMouseLeave: () => setShowBenchmarkControls(false),
@@ -246,7 +253,6 @@ const Benchmark = (props: InnerCheckProps) => {
                 key={summaryCard.name}
                 definition={cardProps}
                 parentType="benchmark"
-                showControls={false}
               >
                 <FilterCardWrapper
                   cardName={summaryCard.name}
@@ -315,7 +321,7 @@ const BenchmarkTableView = ({
   );
 };
 
-const Inner = ({ showControls, withTitle }) => {
+const Inner = ({ withTitle }) => {
   const {
     benchmark,
     definition,
@@ -336,7 +342,6 @@ const Inner = ({ showControls, withTitle }) => {
         grouping={grouping}
         groupingConfig={groupingConfig}
         firstChildSummaries={firstChildSummaries}
-        showControls={showControls}
         withTitle={withTitle}
       />
     );
@@ -371,7 +376,9 @@ type BenchmarkProps = PanelDefinition & {
 const BenchmarkWrapper = (props: BenchmarkProps) => {
   return (
     <GroupingProvider definition={props}>
-      <Inner showControls={props.showControls} withTitle={props.withTitle} />
+      <PanelControlsProvider definition={props} enabled={props.showControls}>
+        <Inner withTitle={props.withTitle} />
+      </PanelControlsProvider>
     </GroupingProvider>
   );
 };

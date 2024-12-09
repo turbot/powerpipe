@@ -5,6 +5,7 @@ import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node
 import DetectionResultNode from "../common/node/DetectionResultNode";
 import DetectionSummaryChart from "@powerpipe/components/dashboards/grouping/DetetctionSummaryChart";
 import DocumentationView from "@powerpipe/components/dashboards/grouping/DocumentationView";
+import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import sortBy from "lodash/sortBy";
 import Table from "@powerpipe/components/dashboards/Table";
 import {
@@ -24,11 +25,13 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
+import { noop } from "@powerpipe/utils/func";
+import {
+  PanelControlsProvider,
+  usePanelControls,
+} from "@powerpipe/hooks/usePanelControls";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useMemo, useState } from "react";
-import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
-import { noop } from "@powerpipe/utils/func";
-import useDownloadPanelData from "@powerpipe/hooks/useDownloadPanelData";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -98,7 +101,7 @@ const DetectionChildren = ({ children, depth }: DetectionChildrenProps) => {
   return (
     <>
       {children.map((child) => (
-        <DetectionPanel key={child.name} depth={depth} node={child} />
+        <DetectionPanelWrapper key={child.name} depth={depth} node={child} />
       ))}
     </>
   );
@@ -291,17 +294,13 @@ const DetectionPanelSeverity = ({
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
     useDetectionGrouping();
-  const definition = useMemo(
-    () => ({
-      data: node.data,
-      panel_type: "detection",
-      dashboard: node.name,
-    }),
-    [node],
-  );
-  const { download } = useDownloadPanelData(definition);
+  const {
+    enabled: panelControlsEnabled,
+    panelControls,
+    showPanelControls,
+    setShowPanelControls,
+  } = usePanelControls();
   const [referenceElement, setReferenceElement] = useState(null);
-  const [showControls, setShowControls] = useState(false);
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
@@ -336,20 +335,6 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
       ];
     }, [groupingConfig, node]);
 
-  const controls = useMemo(
-    () => [
-      {
-        action: async (e) => {
-          e.stopPropagation();
-          download();
-        },
-        icon: "arrow-down-tray",
-        title: "Download data",
-      },
-    ],
-    [],
-  );
-
   const hasResults =
     can_be_expanded &&
     groupingConfig &&
@@ -369,9 +354,9 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
             : null,
         )}
         onMouseEnter={
-          node.type === "detection" ? () => setShowControls(true) : noop
+          panelControlsEnabled ? () => setShowPanelControls(true) : noop
         }
-        onMouseLeave={() => setShowControls(false)}
+        onMouseLeave={() => setShowPanelControls(false)}
       >
         <section
           ref={setReferenceElement}
@@ -396,10 +381,10 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
               : null
           }
         >
-          {showControls && (
+          {showPanelControls && (
             <PanelControls
               referenceElement={referenceElement}
-              controls={controls}
+              controls={panelControls}
               withOffset
             />
           )}
@@ -458,4 +443,25 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   );
 };
 
-export default DetectionPanel;
+const DetectionPanelWrapper = ({ node, depth }: DetectionPanelProps) => {
+  const definition = useMemo(
+    () => ({
+      data: node.data,
+      panel_type: node.type,
+      dashboard: node.name,
+    }),
+    [node],
+  );
+
+  return (
+    <PanelControlsProvider
+      definition={definition}
+      enabled={node.type === "detection"}
+      panelDetailEnabled={false}
+    >
+      <DetectionPanel node={node} depth={depth} />
+    </PanelControlsProvider>
+  );
+};
+
+export default DetectionPanelWrapper;
