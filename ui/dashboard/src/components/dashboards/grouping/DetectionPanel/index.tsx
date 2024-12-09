@@ -368,6 +368,10 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
             ? "print:break-inside-avoid-page"
             : null,
         )}
+        onMouseEnter={
+          node.type === "detection" ? () => setShowControls(true) : noop
+        }
+        onMouseLeave={() => setShowControls(false)}
       >
         <section
           ref={setReferenceElement}
@@ -391,10 +395,6 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                 })
               : null
           }
-          onMouseEnter={
-            node.type === "detection" ? () => setShowControls(true) : noop
-          }
-          onMouseLeave={() => setShowControls(false)}
         >
           {showControls && (
             <PanelControls
