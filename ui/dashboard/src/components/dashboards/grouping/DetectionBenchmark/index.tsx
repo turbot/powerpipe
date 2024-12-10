@@ -9,8 +9,8 @@ import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterC
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import useDownloadDetectionBenchmarkData from "@powerpipe/hooks/useDownloadDetectionBenchmarkData";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
-import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
 import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
@@ -26,6 +26,10 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
+import {
+  PanelControlsProvider,
+  usePanelControls,
+} from "@powerpipe/hooks/usePanelControls";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -52,40 +56,46 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
   const { dispatch, selectedPanel } = useDashboard();
-  const benchmarkDataTable = useMemo(() => {
-    if (
-      !props.benchmark ||
-      !props.grouping ||
-      props.grouping.status !== "complete"
-    ) {
-      return undefined;
-    }
-    return props.benchmark.get_data_table();
-  }, [props.benchmark, props.grouping]);
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
-  const definitionWithData = useMemo(() => {
-    return {
-      ...props.definition,
-      data: benchmarkDataTable,
-    };
-  }, [benchmarkDataTable, props.definition]);
   const { panelControls: benchmarkControls, setCustomControls } =
-    usePanelControls(definitionWithData, props.showControls);
+    usePanelControls();
+  const { download, processing } = useDownloadDetectionBenchmarkData(
+    props.benchmark,
+  );
 
   useEffect(() => {
     setCustomControls([
       {
+        key: "filter-and-group",
+        title: "Filter & Group",
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
         action: async () =>
           dispatch({
             type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
             panel_name: props.definition.name,
           }),
-        component: <CustomizeViewSummary panelName={props.definition.name} />,
-        title: "Filter & Group",
+      },
+      {
+        key: "download-data",
+        disabled:
+          processing ||
+          !props.benchmark ||
+          !props.grouping ||
+          props.grouping.status !== "complete",
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
       },
     ]);
-  }, [dispatch, props.definition.name, setCustomControls]);
+  }, [
+    dispatch,
+    processing,
+    props.benchmark,
+    props.grouping,
+    props.definition.name,
+    setCustomControls,
+  ]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
@@ -238,6 +248,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
+            // Always include the total card
+            if (name === `${props.definition.name}.container.summary.total`) {
+              return true;
+            }
             const severityFilter = expressions?.find(
               (expr) => expr.type === "severity",
             );
@@ -398,7 +412,9 @@ type DetectionBenchmarkWrapperProps = PanelDefinition & {
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
     <GroupingProvider definition={props}>
-      <Inner showControls={props.showControls} withTitle={props.withTitle} />
+      <PanelControlsProvider definition={props} enabled={props.showControls}>
+        <Inner showControls={props.showControls} withTitle={props.withTitle} />
+      </PanelControlsProvider>
     </GroupingProvider>
   );
 };

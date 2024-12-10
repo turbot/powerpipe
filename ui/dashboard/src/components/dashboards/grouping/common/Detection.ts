@@ -1,15 +1,14 @@
+import DetectionBenchmark from "@powerpipe/components/dashboards/grouping/common/DetectionBenchmark";
 import {
   AddDetectionResultsAction,
   CheckNodeStatus,
   CheckResultStatus,
-  DetectionDynamicColsMap,
   DetectionNode,
   DetectionResult,
   DetectionSeverity,
   DetectionSeveritySummary,
   DetectionTags,
   DetectionSummary,
-  findDimension,
   GroupingNodeType,
   DetectionResultDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
@@ -19,7 +18,6 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "@powerpipe/components/dashboards/common";
-import DetectionBenchmark from "@powerpipe/components/dashboards/grouping/common/DetectionBenchmark";
 
 class Detection implements DetectionNode {
   private readonly _sortIndex: string;
@@ -150,54 +148,18 @@ class Detection implements DetectionNode {
     return this._tags;
   }
 
-  get_dynamic_cols(): DetectionDynamicColsMap {
-    const dimensionKeysMap = {
-      dimensions: {},
-      tags: {},
-    };
-
-    Object.keys(this._tags).forEach((t) => (dimensionKeysMap.tags[t] = true));
-
+  get_data_columns(): LeafNodeDataColumn[] {
     if (this._results.length === 0) {
-      return dimensionKeysMap;
+      return [];
     }
-    for (const result of this._results) {
-      for (const dimension of result.dimensions || []) {
-        dimensionKeysMap.dimensions[dimension.key] = true;
-      }
-    }
-    return dimensionKeysMap;
+    return this._results[0].columns || [];
   }
 
-  get_data_rows(tags: string[], dimensions: string[]): LeafNodeDataRow[] {
-    let rows: LeafNodeDataRow[] = [];
-    this._results.forEach((result) => {
-      const row: LeafNodeDataRow = {
-        group_id: this._group_id,
-        title: this._group_title ? this._group_title : null,
-        description: this._group_description ? this._group_description : null,
-        detection_id: this._name,
-        detection_title: this._title ? this._title : null,
-        detection_description: this._description ? this._description : null,
-        severity: this._severity ? this._severity : null,
-        reason: result.reason,
-        resource: result.resource,
-        status: result.status,
-      };
-
-      tags.forEach((tag) => {
-        const val = this._tags[tag];
-        row[tag] = val === undefined ? null : val;
-      });
-
-      dimensions.forEach((dimension) => {
-        const val = findDimension(result.dimensions, dimension);
-        row[dimension] = val === undefined ? null : val.value;
-      });
-
-      rows.push(row);
-    });
-    return rows;
+  get_data_rows(): LeafNodeDataRow[] {
+    if (this._results.length === 0 || !this._results[0].rows?.length) {
+      return [];
+    }
+    return this._results[0].rows;
   }
 
   private _build_detection_loading_node = (

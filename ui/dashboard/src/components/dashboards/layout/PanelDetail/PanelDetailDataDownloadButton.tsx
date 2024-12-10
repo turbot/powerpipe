@@ -8,7 +8,7 @@ const PanelDetailDataDownloadButton = ({ panelDefinition, size }) => {
   return (
     <NeutralButton
       disabled={processing}
-      onClick={processing ? noop : () => download()}
+      onClick={processing ? noop : () => download(panelDefinition.data)}
       size={size}
     >
       <>Download</>

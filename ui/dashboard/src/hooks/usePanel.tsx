@@ -1,4 +1,3 @@
-import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { BaseChartProps } from "@powerpipe/components/dashboards/charts/types";
 import { CardProps } from "@powerpipe/components/dashboards/Card";
 import {
@@ -26,8 +25,8 @@ import {
   InputProperties,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
-import { IPanelControl } from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
+import { PanelControlsProvider } from "@powerpipe/hooks/usePanelControls";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -48,12 +47,9 @@ type IPanelContext = {
   dependencies: PanelDefinition[];
   dependenciesByStatus: PanelDependenciesByStatus;
   inputPanelsAwaitingValue: PanelDefinition[];
-  panelControls: IPanelControl[];
   panelInformation: ReactNode | null;
-  showPanelControls: boolean;
   showPanelInformation: boolean;
   setPanelInformation: (information: ReactNode) => void;
-  setShowPanelControls: (show: boolean) => void;
   setShowPanelInformation: (show: boolean) => void;
 };
 
@@ -133,12 +129,10 @@ const PanelProvider = ({
 }: PanelProviderProps) => {
   const { updateChildStatus } = useContainer();
   const { selectedDashboardInputs, panelsMap } = useDashboard();
-  const [showPanelControls, setShowPanelControls] = useState(false);
   const [showPanelInformation, setShowPanelInformation] = useState(false);
   const [panelInformation, setPanelInformation] = useState<ReactNode | null>(
     null,
   );
-  const { panelControls } = usePanelControls(definition, showControls);
   const { dependencies, dependenciesByStatus, inputPanelsAwaitingValue } =
     useMemo(() => {
       if (!definition) {
@@ -231,23 +225,22 @@ const PanelProvider = ({
   }, [definition, inputPanelsAwaitingValue, parentType, updateChildStatus]);
 
   return (
-    <PanelContext.Provider
-      value={{
-        definition,
-        dependencies,
-        dependenciesByStatus,
-        inputPanelsAwaitingValue,
-        panelControls,
-        panelInformation,
-        showPanelControls,
-        showPanelInformation,
-        setPanelInformation,
-        setShowPanelControls,
-        setShowPanelInformation,
-      }}
-    >
-      {children}
-    </PanelContext.Provider>
+    <PanelControlsProvider definition={definition} enabled={showControls}>
+      <PanelContext.Provider
+        value={{
+          definition,
+          dependencies,
+          dependenciesByStatus,
+          inputPanelsAwaitingValue,
+          panelInformation,
+          showPanelInformation,
+          setPanelInformation,
+          setShowPanelInformation,
+        }}
+      >
+        {children}
+      </PanelContext.Provider>
+    </PanelControlsProvider>
   );
 };
 
