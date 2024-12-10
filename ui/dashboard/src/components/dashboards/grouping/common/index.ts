@@ -101,11 +101,6 @@ export type CheckDynamicColsMap = {
   tags: CheckDynamicValueMap;
 };
 
-export type DetectionDynamicColsMap = {
-  dimensions: CheckDynamicValueMap;
-  tags: CheckDynamicValueMap;
-};
-
 export type CheckTags = {
   [key: string]: string;
 };

@@ -5,8 +5,10 @@ import DetectionNode from "@powerpipe/components/dashboards/grouping/common/node
 import DetectionResultNode from "../common/node/DetectionResultNode";
 import DetectionSummaryChart from "@powerpipe/components/dashboards/grouping/DetetctionSummaryChart";
 import DocumentationView from "@powerpipe/components/dashboards/grouping/DocumentationView";
+import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import sortBy from "lodash/sortBy";
 import Table from "@powerpipe/components/dashboards/Table";
+import useDownloadDetectionData from "@powerpipe/hooks/useDownloadDetectionData";
 import {
   AlarmIcon,
   CollapseBenchmarkIcon,
@@ -24,8 +26,14 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
+import { noop } from "@powerpipe/utils/func";
+import {
+  IPanelControl,
+  PanelControlsProvider,
+  usePanelControls,
+} from "@powerpipe/hooks/usePanelControls";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -95,7 +103,7 @@ const DetectionChildren = ({ children, depth }: DetectionChildrenProps) => {
   return (
     <>
       {children.map((child) => (
-        <DetectionPanel key={child.name} depth={depth} node={child} />
+        <DetectionPanelWrapper key={child.name} depth={depth} node={child} />
       ))}
     </>
   );
@@ -285,42 +293,110 @@ const DetectionPanelSeverity = ({
   );
 };
 
+const recordChildResults = (
+  node: DetectionNode,
+  allResults: DetectionResultNode[],
+): DetectionResultNode[] => {
+  for (const child of node.children || []) {
+    if (child.type === "result") {
+      allResults.push(child as DetectionResultNode);
+    } else if (child.children?.length) {
+      return recordChildResults(child, allResults);
+    }
+  }
+  return allResults;
+};
+
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
     useDetectionGrouping();
+  const {
+    enabled: panelControlsEnabled,
+    panelControls,
+    showPanelControls,
+    setCustomControls,
+    setShowPanelControls,
+  } = usePanelControls();
+  const [referenceElement, setReferenceElement] = useState(null);
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
 
-  const [child_nodes, error_nodes, empty_nodes, result_nodes, can_be_expanded] =
-    useMemo(() => {
-      const children: DetectionNode[] = [];
-      const errors: DetectionErrorNode[] = [];
-      const empty: DetectionEmptyResultNode[] = [];
-      const results: DetectionResultNode[] = [];
-      for (const child of node.children || []) {
-        if (child.type === "error") {
-          errors.push(child as DetectionErrorNode);
-        } else if (child.type === "result") {
-          results.push(child as DetectionResultNode);
-        } else if (child.type === "empty_result") {
-          empty.push(child as DetectionEmptyResultNode);
-        } else if (child.type !== "running") {
-          children.push(child);
-        }
+  const [
+    child_nodes,
+    error_nodes,
+    empty_nodes,
+    result_nodes,
+    descendant_result_nodes,
+    can_be_expanded,
+  ] = useMemo(() => {
+    const children: DetectionNode[] = [];
+    const errors: DetectionErrorNode[] = [];
+    const empty: DetectionEmptyResultNode[] = [];
+    const results: DetectionResultNode[] = [];
+    let descendantResults: DetectionResultNode[] = [];
+    for (const child of node.children || []) {
+      if (child.type === "error") {
+        errors.push(child as DetectionErrorNode);
+      } else if (child.type === "result") {
+        results.push(child as DetectionResultNode);
+      } else if (child.type === "empty_result") {
+        empty.push(child as DetectionEmptyResultNode);
+      } else if (child.type !== "running") {
+        children.push(child);
       }
-      return [
-        sortBy(children, "sort"),
-        sortBy(errors, "sort"),
-        sortBy(empty, "sort"),
-        results,
-        children.length > 0 ||
-          (groupingConfig &&
-            groupingConfig.length > 0 &&
-            groupingConfig[groupingConfig.length - 1].type === "result" &&
-            (errors.length > 0 || empty.length > 0 || results.length > 0)),
-      ];
-    }, [groupingConfig, node]);
+
+      if (child.children?.length) {
+        recordChildResults(child, descendantResults);
+      }
+    }
+    return [
+      sortBy(children, "sort"),
+      sortBy(errors, "sort"),
+      sortBy(empty, "sort"),
+      results,
+      descendantResults,
+      children.length > 0 ||
+        (groupingConfig &&
+          groupingConfig.length > 0 &&
+          groupingConfig[groupingConfig.length - 1].type === "result" &&
+          (errors.length > 0 || empty.length > 0 || results.length > 0)),
+    ];
+  }, [groupingConfig, node]);
+
+  const { download } = useDownloadDetectionData(
+    node,
+    descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
+  );
+
+  useEffect(() => {
+    const controls: IPanelControl[] = [
+      {
+        key: "download-data",
+        disabled: descendant_result_nodes.length === 0,
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
+      },
+    ];
+    if (node.type === "benchmark") {
+      controls.push({
+        key: "open-in-new-window",
+        title: "Open in new window",
+        icon: "open_in_new",
+        action: async () => {
+          console.log(window.location);
+          window.open(window.location.origin + "/" + node.name, "_blank");
+        },
+      });
+    }
+    setCustomControls(controls);
+  }, [node, descendant_result_nodes, setCustomControls]);
+
+  const hasResults =
+    can_be_expanded &&
+    groupingConfig &&
+    groupingConfig[groupingConfig.length - 1].type === "result";
 
   return (
     <>
@@ -335,8 +411,13 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
             ? "print:break-inside-avoid-page"
             : null,
         )}
+        onMouseEnter={
+          panelControlsEnabled ? () => setShowPanelControls(true) : noop
+        }
+        onMouseLeave={() => setShowPanelControls(false)}
       >
         <section
+          ref={setReferenceElement}
           className={classNames(
             "bg-dashboard-panel shadow-sm rounded-md border-divide print:border print:bg-white print:shadow-none",
             can_be_expanded ? "cursor-pointer" : null,
@@ -358,6 +439,13 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
               : null
           }
         >
+          {showPanelControls && (
+            <PanelControls
+              referenceElement={referenceElement}
+              controls={panelControls}
+              withOffset
+            />
+          )}
           <div className="p-4 flex items-center space-x-6">
             <div className="flex flex-grow justify-between items-center space-x-6">
               <div className="flex items-center space-x-4">
@@ -398,16 +486,13 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
             {!can_be_expanded && <div className="w-5 md:w-7 h-5 md:h-7" />}
           </div>
         </section>
-        {can_be_expanded &&
-          expanded &&
-          groupingConfig &&
-          groupingConfig[groupingConfig.length - 1].type === "result" && (
-            <DetectionResults
-              empties={empty_nodes}
-              errors={error_nodes}
-              results={result_nodes}
-            />
-          )}
+        {hasResults && expanded && (
+          <DetectionResults
+            empties={empty_nodes}
+            errors={error_nodes}
+            results={result_nodes}
+          />
+        )}
       </div>
       {can_be_expanded && expanded && (
         <DetectionChildren children={child_nodes} depth={depth + 1} />
@@ -416,4 +501,25 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   );
 };
 
-export default DetectionPanel;
+const DetectionPanelWrapper = ({ node, depth }: DetectionPanelProps) => {
+  const definition = useMemo(
+    () => ({
+      data: node.data,
+      panel_type: node.type,
+      dashboard: node.name,
+    }),
+    [node],
+  );
+
+  return (
+    <PanelControlsProvider
+      definition={definition}
+      enabled={true}
+      panelDetailEnabled={false}
+    >
+      <DetectionPanel node={node} depth={depth} />
+    </PanelControlsProvider>
+  );
+};
+
+export default DetectionPanelWrapper;

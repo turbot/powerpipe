@@ -21,6 +21,7 @@ import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 
 type PanelProps = {
   children: ReactNode;
@@ -47,24 +48,20 @@ const Panel = ({
   children,
   className,
   definition,
-  showControls = true,
   showPanelError = true,
   showPanelStatus = true,
   forceBackground = false,
 }: PanelProps) => {
   const { selectedPanel } = useDashboard();
-  const {
-    inputPanelsAwaitingValue,
-    panelControls,
-    showPanelControls,
-    setShowPanelControls,
-  } = usePanel();
+  const { inputPanelsAwaitingValue } = usePanel();
   const [referenceElement, setReferenceElement] = useState(null);
   const baseStyles = classNames(
     "relative col-span-12",
     getResponsivePanelWidthClass(definition.width),
     "overflow-auto",
   );
+  const { panelControls, showPanelControls, setShowPanelControls } =
+    usePanelControls();
 
   if (inputPanelsAwaitingValue.length > 0) {
     return null;
@@ -87,7 +84,9 @@ const Panel = ({
       ref={setReferenceElement}
       id={definition.name}
       className={baseStyles}
-      onMouseEnter={showControls ? () => setShowPanelControls(true) : undefined}
+      onMouseEnter={
+        showPanelControls ? () => setShowPanelControls(true) : undefined
+      }
       onMouseLeave={() => setShowPanelControls(false)}
     >
       <section

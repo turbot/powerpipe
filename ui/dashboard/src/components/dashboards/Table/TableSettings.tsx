@@ -102,7 +102,7 @@ const TableSettings = ({ table }: { table: Table<KeyValuePairs> }) => {
     <Popover className="relative">
       {/*@ts-ignore*/}
       <Popover.Button ref={setReferenceElement} as="div">
-        <Icon icon="settings" className="h-4 w-4 cursor-pointer" />
+        <Icon icon="data_table" className="h-4 w-4 cursor-pointer" />
       </Popover.Button>
       <Popover.Panel className="absolute z-10 pt-px">
         {createPortal(

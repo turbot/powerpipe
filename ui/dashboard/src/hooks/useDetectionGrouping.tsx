@@ -245,6 +245,7 @@ const getDetectionGroupingNode = (
         detectionResult.detection.name,
         detectionResult.detection.title,
         detectionResult.detection.documentation,
+        detectionResult.detection._results?.[0],
         children,
       );
     case "detection_tag":

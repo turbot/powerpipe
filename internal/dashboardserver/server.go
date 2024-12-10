@@ -162,6 +162,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedCards := e.ChangedCards
 		changedCharts := e.ChangedCharts
 		changedDashboards := e.ChangedDashboards
+		changedDetections := e.ChangedDetections
+		changedDetectionsBenchmarks := e.ChangedDetectionBenchmarks
 		changedEdges := e.ChangedEdges
 		changedFlows := e.ChangedFlows
 		changedGraphs := e.ChangedGraphs
@@ -182,6 +184,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			len(changedCards) == 0 &&
 			len(changedCharts) == 0 &&
 			len(changedDashboards) == 0 &&
+			len(changedDetections) == 0 &&
+			len(changedDetectionsBenchmarks) == 0 &&
 			len(changedEdges) == 0 &&
 			len(changedFlows) == 0 &&
 			len(changedGraphs) == 0 &&
@@ -241,6 +245,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedControls)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCards)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCharts)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetections)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetectionsBenchmarks)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedEdges)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedFlows)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedGraphs)...)

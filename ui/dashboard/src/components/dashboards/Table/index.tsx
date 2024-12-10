@@ -23,9 +23,9 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "../common";
-import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
+import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import {
   flexRender,
   getCoreRowModel,
@@ -799,12 +799,37 @@ const TableViewVirtualizedRows = ({
     doRender();
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
+  // const tableSettingsControl = useMemo<IPanelControl | null>(() => {
+  //   if (!table) {
+  //     return null;
+  //   }
+  //   return {
+  //     key: "table-settings",
+  //     title: "Table settings",
+  //     icon: "data_table",
+  //     //component: <TableSettings table={table} />,
+  //     action: noop,
+  //   };
+  // }, [table]);
+
+  // const { enabled: panelControlsEnabled, setCustomControls } =
+  //   usePanelControls();
+
+  // useEffect(() => {
+  //   if (!panelControlsEnabled || !tableSettingsControl) {
+  //     return;
+  //   }
+  //   setCustomControls([tableSettingsControl]);
+  // }, [panelControlsEnabled, tableSettingsControl, setCustomControls]);
+
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {filterEnabled && (
         <div
           className={classNames(
+            // "flex w-full",
             "flex w-full p-4",
+            // filters.length ? "justify-between p-4" : "justify-end",
             filters.length ? "justify-between" : "justify-end",
           )}
         >
