@@ -28,6 +28,7 @@ import {
 } from "@powerpipe/hooks/useDetectionGrouping";
 import { noop } from "@powerpipe/utils/func";
 import {
+  IPanelControl,
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
@@ -369,7 +370,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   );
 
   useEffect(() => {
-    setCustomControls([
+    const controls: IPanelControl[] = [
       {
         key: "download-data",
         disabled: descendant_result_nodes.length === 0,
@@ -377,8 +378,20 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
         icon: "arrow-down-tray",
         action: download,
       },
-    ]);
-  }, [descendant_result_nodes, setCustomControls]);
+    ];
+    if (node.type === "benchmark") {
+      controls.push({
+        key: "open-in-new-window",
+        title: "Open in new window",
+        icon: "open_in_new",
+        action: async () => {
+          console.log(window.location);
+          window.open(window.location.origin + "/" + node.name, "_blank");
+        },
+      });
+    }
+    setCustomControls(controls);
+  }, [node, descendant_result_nodes, setCustomControls]);
 
   const hasResults =
     can_be_expanded &&
