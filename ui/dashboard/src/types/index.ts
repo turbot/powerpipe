@@ -2,10 +2,13 @@ import {
   CheckDisplayGroup,
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
+import {
+  KeyValuePairs,
+  TableConfig,
+} from "@powerpipe/components/dashboards/common/types";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 export type IDashboardContext = {
   cliMode: DashboardCliMode;
@@ -346,10 +349,12 @@ export type DashboardPanelType =
 
 export type DashboardSnapshotViewFilterByMetadata = Filter;
 export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
+export type DashboardSnapshotViewTableConfigMetadata = TableConfig;
 
 export type DashboardSnapshotViewMetadata = {
   filter_by?: DashboardSnapshotViewFilterByMetadata;
   group_by?: DashboardSnapshotViewGroupByMetadata;
+  table?: DashboardSnapshotViewTableConfigMetadata;
 };
 
 export type DashboardSnapshotMetadata = {

@@ -12,6 +12,7 @@ import {
   CheckDisplayGroupType,
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
+import { TableConfig } from "@powerpipe/components/dashboards/common/types";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {
@@ -96,8 +97,15 @@ const filterToSnapshotMetadata = (filter: Filter): Filter => {
   return filter;
 };
 
+const tableConfigToSnapshotMetadata = (
+  tableConfig: TableConfig,
+): TableConfig => {
+  return tableConfig;
+};
+
 export {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
+  tableConfigToSnapshotMetadata,
 };

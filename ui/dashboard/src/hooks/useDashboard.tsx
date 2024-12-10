@@ -14,7 +14,9 @@ import {
   DashboardDataOptions,
   DashboardRenderOptions,
   DashboardSearch,
+  DashboardSnapshotViewFilterByMetadata,
   DashboardSnapshotViewMetadata,
+  DashboardSnapshotViewTableConfigMetadata,
   IDashboardContext,
   SelectedDashboardStates,
   SocketURLFactory,
@@ -33,7 +35,10 @@ import {
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { GlobalHotKeys } from "react-hotkeys";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
+import {
+  KeyValuePairs,
+  TableConfig,
+} from "@powerpipe/components/dashboards/common/types";
 import { noop } from "@powerpipe/utils/func";
 import {
   useLocation,
@@ -171,6 +176,7 @@ const DashboardProvider = ({
 
     const panelFilters: KeyValuePairs<Filter> = {};
     const panelGroups: KeyValuePairs<DisplayGroup[]> = {};
+    const panelTableConfig: KeyValuePairs<TableConfig> = {};
 
     for (const [panel, metadata] of Object.entries(
       state.snapshot.metadata.view,
@@ -179,15 +185,20 @@ const DashboardProvider = ({
         continue;
       }
       const viewMetadata = metadata as DashboardSnapshotViewMetadata;
-      const filterBy = viewMetadata.filter_by || {};
-      const groupBy =
-        (metadata as DashboardSnapshotViewMetadata).group_by || [];
+      const filterBy =
+        viewMetadata.filter_by || ({} as DashboardSnapshotViewFilterByMetadata);
+      const groupBy = viewMetadata.group_by || [];
+      const tableConfig =
+        viewMetadata.table || ({} as DashboardSnapshotViewTableConfigMetadata);
 
       if (!!Object.keys(filterBy).length) {
         panelFilters[panel] = filterBy;
       }
-      if (!!Object.keys(groupBy).length!!) {
+      if (!!groupBy.length) {
         panelGroups[panel] = groupBy;
+      }
+      if (!!Object.keys(tableConfig).length) {
+        panelTableConfig[panel] = tableConfig;
       }
     }
 
@@ -197,6 +208,10 @@ const DashboardProvider = ({
 
     if (!!Object.keys(panelGroups).length) {
       searchParams.set("grouping", JSON.stringify(panelGroups));
+    }
+
+    if (!!Object.keys(panelTableConfig).length) {
+      searchParams.set("table", JSON.stringify(panelTableConfig));
     }
 
     setSearchParams(searchParams, { replace: true });
@@ -344,7 +359,6 @@ const DashboardProvider = ({
         searchParams.delete("tag");
       }
     }
-
     setSearchParams(searchParams, { replace: true });
   }, [
     dashboard_name,
@@ -624,14 +638,15 @@ const DashboardProvider = ({
         state.selectedDashboard.full_name;
 
     // Sync params into the URL
-    const newParams = {
-      ...searchParams,
-      ...state.selectedDashboardInputs,
-    };
-    if (!!state.searchPathPrefix.length) {
-      newParams.search_path_prefix = state.searchPathPrefix.join(",");
+    for (const [inputName, inputValue] of Object.entries(
+      state.selectedDashboardInputs || {},
+    )) {
+      searchParams.set(inputName, inputValue);
     }
-    setSearchParams(newParams, {
+    if (!!state.searchPathPrefix.length) {
+      searchParams.set("search_path_prefix", state.searchPathPrefix.join(","));
+    }
+    setSearchParams(searchParams, {
       replace: !shouldRecordHistory,
     });
   }, [

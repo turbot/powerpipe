@@ -5,6 +5,7 @@ import isObject from "lodash/isObject";
 import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -863,7 +864,7 @@ const TableViewVirtualizedRows = ({
               })}
             </div>
           )}
-          <TableSettings table={table} />
+          <TableSettings name={panelName} table={table} />
         </div>
       )}
       <div
@@ -989,9 +990,17 @@ const TableViewVirtualizedRows = ({
 
 // TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
+  const {
+    table: { display_columns },
+  } = useTableConfig(props.name);
+
   const { columns, columnVisibility } = useMemo(
-    () => getColumns(props.data ? props.data.columns : [], props.properties),
-    [props.data, props.properties],
+    () =>
+      getColumns(props.data ? props.data.columns : [], {
+        ...props.properties,
+        display_columns,
+      }),
+    [props.data, props.properties, display_columns],
   );
   const rowData = useMemo(
     () => getData(columns, props.data ? props.data.rows : []),

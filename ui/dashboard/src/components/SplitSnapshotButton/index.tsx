@@ -2,6 +2,7 @@ import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
+import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import { ChangeEvent, useRef } from "react";
 import { classNames } from "@powerpipe/utils/styles";
 import {
@@ -14,6 +15,7 @@ import {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
+  tableConfigToSnapshotMetadata,
 } from "@powerpipe/utils/snapshot";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { Menu } from "@headlessui/react";
@@ -29,6 +31,7 @@ const useSaveSnapshot = () => {
   const { dashboard, snapshot } = useDashboard();
   const { allFilters } = useFilterConfig();
   const { allGroupings } = useGroupingConfig();
+  const { allTables } = useTableConfig();
 
   return () => {
     if (!dashboard || !snapshot) {
@@ -64,6 +67,15 @@ const useSaveSnapshot = () => {
           metadata.view[panel] = metadata.view[panel] || {};
           // @ts-ignore
           metadata.view[panel].group_by = groupingToSnapshotMetadata(grouping);
+        }
+      }
+      if (!!Object.keys(allTables).length) {
+        for (const [panel, tableConfig] of Object.entries(allTables)) {
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].table =
+            tableConfigToSnapshotMetadata(tableConfig);
         }
       }
       withMetadata.metadata = metadata;

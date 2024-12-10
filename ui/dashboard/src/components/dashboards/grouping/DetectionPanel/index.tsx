@@ -26,12 +26,12 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
-import { noop } from "@powerpipe/utils/func";
 import {
   IPanelControl,
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
+import { noop } from "@powerpipe/utils/func";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useEffect, useMemo, useState } from "react";
 
@@ -132,7 +132,7 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
-        name={result.benchmark_trunk[0].name}
+        name={result.detection.name}
         panel_type="table"
         data={{ rows: result.rows, columns: result.columns }}
         properties={{
@@ -369,29 +369,32 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
   );
 
-  useEffect(() => {
-    const controls: IPanelControl[] = [
-      {
-        key: "download-data",
-        disabled: descendant_result_nodes.length === 0,
-        title: "Download data",
-        icon: "arrow-down-tray",
-        action: download,
-      },
-    ];
-    if (node.type === "benchmark") {
-      controls.push({
-        key: "open-in-new-window",
-        title: "Open in new window",
-        icon: "open_in_new",
-        action: async () => {
-          console.log(window.location);
-          window.open(window.location.origin + "/" + node.name, "_blank");
-        },
-      });
-    }
-    setCustomControls(controls);
-  }, [node, descendant_result_nodes, setCustomControls]);
+  // useEffect(() => {
+  //   console.log("Setting DetectionPanel custom controls", {
+  //     node,
+  //     descendant_result_nodes,
+  //   });
+  //   const controls: IPanelControl[] = [
+  //     {
+  //       key: "download-data",
+  //       disabled: descendant_result_nodes.length === 0,
+  //       title: "Download data",
+  //       icon: "arrow-down-tray",
+  //       action: download,
+  //     },
+  //   ];
+  //   if (node.type === "benchmark") {
+  //     controls.push({
+  //       key: "open-in-new-window",
+  //       title: "Open in new window",
+  //       icon: "open_in_new",
+  //       action: async () => {
+  //         window.open(window.location.origin + "/" + node.name, "_blank");
+  //       },
+  //     });
+  //   }
+  //   setCustomControls(controls);
+  // }, [node.name, node.type, descendant_result_nodes, setCustomControls]);
 
   const hasResults =
     can_be_expanded &&

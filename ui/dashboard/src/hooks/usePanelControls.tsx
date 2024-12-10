@@ -88,7 +88,7 @@ const PanelControlsProvider = ({
     [definition, download],
   );
 
-  const getBasePanelControls = useCallback(() => {
+  const getBasePanelControls = () => {
     const controls: IPanelControl[] = [];
     if (!enabled || !definition) {
       return controls;
@@ -110,7 +110,7 @@ const PanelControlsProvider = ({
       });
     }
     return controls;
-  }, [definition, downloadPanelData, panelDetailEnabled, select, enabled]);
+  };
 
   const [panelControls, setPanelControls] = useState(getBasePanelControls());
   const [customControls, setCustomControls] = useState<IPanelControl[]>([]);
@@ -133,7 +133,7 @@ const PanelControlsProvider = ({
       }
     }
     setPanelControls(() => [...uniqueCustomControls, ...baseControls]);
-  }, [customControls, getBasePanelControls]);
+  }, [customControls]);
 
   return (
     <PanelControlsContext.Provider

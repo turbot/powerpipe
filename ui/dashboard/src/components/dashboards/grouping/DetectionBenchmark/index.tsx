@@ -64,38 +64,38 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     props.benchmark,
   );
 
-  useEffect(() => {
-    setCustomControls([
-      {
-        key: "filter-and-group",
-        title: "Filter & Group",
-        component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () =>
-          dispatch({
-            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
-            panel_name: props.definition.name,
-          }),
-      },
-      {
-        key: "download-data",
-        disabled:
-          processing ||
-          !props.benchmark ||
-          !props.grouping ||
-          props.grouping.status !== "complete",
-        title: "Download data",
-        icon: "arrow-down-tray",
-        action: download,
-      },
-    ]);
-  }, [
-    dispatch,
-    processing,
-    props.benchmark,
-    props.grouping,
-    props.definition.name,
-    setCustomControls,
-  ]);
+  // useEffect(() => {
+  //   console.log("Setting DetectionBenchmark custom controls", {
+  //     processing,
+  //     grouping: props.grouping,
+  //     name: props.definition.name,
+  //   });
+  //   setCustomControls([
+  //     {
+  //       key: "filter-and-group",
+  //       title: "Filter & Group",
+  //       component: <CustomizeViewSummary panelName={props.definition.name} />,
+  //       action: async () =>
+  //         dispatch({
+  //           type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
+  //           panel_name: props.definition.name,
+  //         }),
+  //     },
+  //     {
+  //       key: "download-data",
+  //       disabled: processing || props.grouping.status !== "complete",
+  //       title: "Download data",
+  //       icon: "arrow-down-tray",
+  //       action: download,
+  //     },
+  //   ]);
+  // }, [
+  //   dispatch,
+  //   processing,
+  //   props.grouping.status,
+  //   props.definition.name,
+  //   setCustomControls,
+  // ]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
