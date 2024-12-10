@@ -35,13 +35,8 @@ import {
 import { formatDate, parseDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import {
-  IPanelControl,
-  usePanelControls,
-} from "@powerpipe/hooks/usePanelControls";
 import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboard } from "@powerpipe/hooks/useDashboard";
@@ -804,36 +799,38 @@ const TableViewVirtualizedRows = ({
     doRender();
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
-  const tableSettingsControl = useMemo<IPanelControl | null>(() => {
-    if (!table) {
-      return null;
-    }
-    return {
-      key: "table-settings",
-      title: "Table settings",
-      icon: "data_table",
-      //component: <TableSettings table={table} />,
-      action: noop,
-    };
-  }, [table]);
+  // const tableSettingsControl = useMemo<IPanelControl | null>(() => {
+  //   if (!table) {
+  //     return null;
+  //   }
+  //   return {
+  //     key: "table-settings",
+  //     title: "Table settings",
+  //     icon: "data_table",
+  //     //component: <TableSettings table={table} />,
+  //     action: noop,
+  //   };
+  // }, [table]);
 
-  const { enabled: panelControlsEnabled, setCustomControls } =
-    usePanelControls();
+  // const { enabled: panelControlsEnabled, setCustomControls } =
+  //   usePanelControls();
 
-  useEffect(() => {
-    if (!panelControlsEnabled || !tableSettingsControl) {
-      return;
-    }
-    setCustomControls([tableSettingsControl]);
-  }, [panelControlsEnabled, tableSettingsControl, setCustomControls]);
+  // useEffect(() => {
+  //   if (!panelControlsEnabled || !tableSettingsControl) {
+  //     return;
+  //   }
+  //   setCustomControls([tableSettingsControl]);
+  // }, [panelControlsEnabled, tableSettingsControl, setCustomControls]);
 
   return (
     <div className="flex flex-col w-full overflow-hidden">
       {filterEnabled && (
         <div
           className={classNames(
-            "flex w-full",
-            filters.length ? "justify-between p-4" : "justify-end",
+            // "flex w-full",
+            "flex w-full p-4",
+            // filters.length ? "justify-between p-4" : "justify-end",
+            filters.length ? "justify-between" : "justify-end",
           )}
         >
           {filters.length > 0 && (
@@ -866,6 +863,7 @@ const TableViewVirtualizedRows = ({
               })}
             </div>
           )}
+          <TableSettings table={table} />
         </div>
       )}
       <div

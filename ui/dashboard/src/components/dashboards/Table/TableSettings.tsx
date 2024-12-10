@@ -1,9 +1,11 @@
 import Icon from "@powerpipe/components/Icon";
 import SearchInput from "@powerpipe/components/SearchInput";
 import { classNames } from "@powerpipe/utils/styles";
+import { createPortal } from "react-dom";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { Popover } from "@headlessui/react";
 import { Table } from "@tanstack/react-table";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { usePopper } from "react-popper";
 import { useState } from "react";
 
@@ -32,13 +34,12 @@ const TableSettingsColumns = ({ table }: { table: Table<KeyValuePairs> }) => {
     >
       <input
         className="inline-block focus:outline-none focus:ring-0"
-        type="checkbox"
-        checked={column.getIsVisible()}
-        onChange={(e) => {
-          e.stopPropagation();
-          column.getToggleVisibilityHandler()(e);
+        {...{
+          type: "checkbox",
+          checked: column.getIsVisible(),
+          onChange: column.getToggleVisibilityHandler(),
         }}
-      />
+      />{" "}
       <span className="inline-block truncate" title={column.id}>
         {column.id}
       </span>
@@ -101,22 +102,27 @@ const TableSettings = ({ table }: { table: Table<KeyValuePairs> }) => {
     <Popover className="relative">
       {/*@ts-ignore*/}
       <Popover.Button ref={setReferenceElement} as="div">
-        <Icon icon="data_table" className="h-4.5 w-4.5" />
+        <Icon icon="data_table" className="h-4 w-4 cursor-pointer" />
       </Popover.Button>
       <Popover.Panel className="absolute z-10 pt-px">
-        <div
-          // @ts-ignore
-          ref={setPopperElement}
-          style={{ ...styles.popper }}
-          {...attributes.popper}
-        >
-          <div
-            onClick={(e) => e.stopPropagation()}
-            className="border border-dashboard-panel rounded-md bg-dashboard mt-1 p-3 space-y-3 min-w-60 max-w-96"
-          >
-            <TableSettingsColumns table={table} />
-          </div>
-        </div>
+        {createPortal(
+          <ThemeProvider>
+            <ThemeWrapper>
+              <div
+                // @ts-ignore
+                ref={setPopperElement}
+                style={{ ...styles.popper }}
+                {...attributes.popper}
+              >
+                <div className="border border-dashboard-panel rounded-md bg-dashboard mt-1 p-3 space-y-3 min-w-60 max-w-96">
+                  <TableSettingsColumns table={table} />
+                </div>
+              </div>
+            </ThemeWrapper>
+          </ThemeProvider>,
+          // @ts-ignore as this element definitely exists
+          document.getElementById("portals"),
+        )}
       </Popover.Panel>
     </Popover>
   );
