@@ -74,7 +74,7 @@ const PanelControlsProvider = ({
   const [panelData, setPanelData] = useState<LeafNodeData | undefined>(
     definition.data,
   );
-  const { download } = useDownloadPanelData(definition, panelData);
+  const { download } = useDownloadPanelData(definition);
   const { select } = useSelectPanel(definition);
   const [showPanelControls, setShowPanelControls] = useState(false);
 
@@ -83,9 +83,9 @@ const PanelControlsProvider = ({
   const downloadPanelData = useCallback(
     async (e) => {
       e.stopPropagation();
-      await download();
+      await download(definition.data);
     },
-    [download],
+    [definition, download],
   );
 
   const getBasePanelControls = useCallback(() => {

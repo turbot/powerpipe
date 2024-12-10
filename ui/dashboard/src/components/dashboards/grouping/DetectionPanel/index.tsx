@@ -364,7 +364,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   }, [groupingConfig, node]);
 
   const { download } = useDownloadDetectionData(
-    node.name,
+    node,
     descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
   );
 

@@ -1,9 +1,7 @@
 import Detection from "@powerpipe/components/dashboards/grouping/common/Detection";
-import merge from "lodash/merge";
 import padStart from "lodash/padStart";
 import {
   AddDetectionResultsAction,
-  DetectionDynamicColsMap,
   DetectionNode,
   DetectionNodeStatus,
   GroupingNodeType,
@@ -18,6 +16,7 @@ import {
   LeafNodeDataColumn,
   LeafNodeDataRow,
 } from "@powerpipe/components/dashboards/common";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 
 class DetectionBenchmark implements DetectionNode {
   private readonly _sortIndex: string;
@@ -194,26 +193,8 @@ class DetectionBenchmark implements DetectionNode {
   }
 
   get_data_table(): LeafNodeData {
-    const columns: LeafNodeDataColumn[] = [
-      {
-        name: "timestamp",
-        data_type: "TIMESTAMP",
-      },
-    ];
-    const { dimensions, tags } = this.get_dynamic_cols();
-    Object.keys(tags).forEach((tag) =>
-      columns.push({
-        name: tag,
-        data_type: "TEXT",
-      }),
-    );
-    Object.keys(dimensions).forEach((dimension) =>
-      columns.push({
-        name: dimension,
-        data_type: "TEXT",
-      }),
-    );
-    const rows = this.get_data_rows(Object.keys(tags), Object.keys(dimensions));
+    const columns = this.get_data_columns();
+    const rows = this.get_data_rows();
 
     return {
       columns,
@@ -221,29 +202,40 @@ class DetectionBenchmark implements DetectionNode {
     };
   }
 
-  get_dynamic_cols(): DetectionDynamicColsMap {
-    let keys = {
-      dimensions: {},
-      tags: {},
-    };
+  get_data_columns(): LeafNodeDataColumn[] {
+    const columnMap: KeyValuePairs<LeafNodeDataColumn> = {};
+    const columns: LeafNodeDataColumn[] = [];
+
     this._benchmarks.forEach((benchmark) => {
-      const subBenchmarkKeys = benchmark.get_dynamic_cols();
-      keys = merge(keys, subBenchmarkKeys);
+      const nestedColumns = benchmark.get_data_columns();
+      for (const nestedColumn of nestedColumns) {
+        if (columnMap[nestedColumn.name]) {
+          continue;
+        }
+        columnMap[nestedColumn.name] = nestedColumn;
+        columns.push(nestedColumn);
+      }
     });
     this._detections.forEach((detection) => {
-      const controlKeys = detection.get_dynamic_cols();
-      keys = merge(keys, controlKeys);
+      const nestedColumns = detection.get_data_columns();
+      for (const nestedColumn of nestedColumns) {
+        if (columnMap[nestedColumn.name]) {
+          continue;
+        }
+        columnMap[nestedColumn.name] = nestedColumn;
+        columns.push(nestedColumn);
+      }
     });
-    return keys;
+    return columns;
   }
 
-  get_data_rows(tags: string[], dimensions: string[]): LeafNodeDataRow[] {
+  get_data_rows(): LeafNodeDataRow[] {
     let rows: LeafNodeDataRow[] = [];
     this._benchmarks.forEach((benchmark) => {
-      rows = [...rows, ...benchmark.get_data_rows(tags, dimensions)];
+      rows = [...rows, ...benchmark.get_data_rows()];
     });
     this._detections.forEach((detection) => {
-      rows = [...rows, ...detection.get_data_rows(tags, dimensions)];
+      rows = [...rows, ...detection.get_data_rows()];
     });
     return rows;
   }

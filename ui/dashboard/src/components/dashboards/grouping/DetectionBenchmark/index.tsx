@@ -9,6 +9,7 @@ import FilterCardWrapper from "@powerpipe/components/dashboards/grouping/FilterC
 import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
+import useDownloadDetectionBenchmarkData from "@powerpipe/hooks/useDownloadDetectionBenchmarkData";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
 import { DashboardActions, PanelDefinition } from "@powerpipe/types";
@@ -59,6 +60,9 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =
     usePanelControls();
+  const { download, processing } = useDownloadDetectionBenchmarkData(
+    props.benchmark,
+  );
 
   useEffect(() => {
     setCustomControls([
@@ -72,8 +76,26 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
             panel_name: props.definition.name,
           }),
       },
+      {
+        key: "download-data",
+        disabled:
+          processing ||
+          !props.benchmark ||
+          !props.grouping ||
+          props.grouping.status !== "complete",
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
+      },
     ]);
-  }, [dispatch, props.definition.name, setCustomControls]);
+  }, [
+    dispatch,
+    processing,
+    props.benchmark,
+    props.grouping,
+    props.definition.name,
+    setCustomControls,
+  ]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {

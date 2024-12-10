@@ -1,4 +1,5 @@
 import DetectionResultNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionResultNode";
+import { DetectionNode } from "@powerpipe/components/dashboards/grouping/common";
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useCallback, useState } from "react";
@@ -6,14 +7,14 @@ import { useDashboard } from "./useDashboard";
 import { usePapaParse } from "react-papaparse";
 
 const useDownloadDetectionData = (
-  name: string,
+  node: DetectionNode,
   resultNodes?: DetectionResultNode[],
 ) => {
   const { selectedDashboard } = useDashboard();
   const { jsonToCSV } = usePapaParse();
   const [processing, setProcessing] = useState(false);
 
-  const downloadQueryData = useCallback(async () => {
+  const download = useCallback(async () => {
     if (!resultNodes || resultNodes.length === 0) {
       return;
     }
@@ -24,7 +25,9 @@ const useDownloadDetectionData = (
     let csvRows: any[] = [];
 
     const jsonbColIndices = columns
-      .filter((i) => i.data_type === "JSONB")
+      .filter(
+        (i) => i.data_type === "VARCHAR[]" || i.data_type.startsWith("STRUCT"),
+      )
       .map((i) => columns.indexOf(i)); // would return e.g. [3,6,9]
 
     for (const resultNode of resultNodes) {
@@ -49,14 +52,14 @@ const useDownloadDetectionData = (
 
     saveAs(
       blob,
-      `${name.replaceAll(".", "_")}_detection_${timestampForFilename(
+      `${node.name.replaceAll(".", "_")}_${node.type}_${timestampForFilename(
         Date.now(),
       )}.csv`,
     );
     setProcessing(false);
-  }, [name, resultNodes, jsonToCSV, selectedDashboard]);
+  }, [node.name, resultNodes, jsonToCSV, selectedDashboard]);
 
-  return { download: downloadQueryData, processing };
+  return { download, processing };
 };
 
 export default useDownloadDetectionData;

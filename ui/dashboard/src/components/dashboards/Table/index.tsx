@@ -808,7 +808,6 @@ const TableViewVirtualizedRows = ({
     if (!table) {
       return null;
     }
-    console.log("Table changed");
     return {
       key: "table-settings",
       title: "Table settings",
