@@ -21,7 +21,12 @@ const useDownloadPanelData = (definition: PanelDefinition) => {
       let csvRows: any[] = [];
 
       const jsonbColIndices = data.columns
-        .filter((i) => i.data_type === "JSONB")
+        .filter(
+          (i) =>
+            i.data_type === "JSONB" ||
+            i.data_type === "VARCHAR[]" ||
+            i.data_type.startsWith("STRUCT"),
+        )
         .map((i) => data.columns.indexOf(i)); // would return e.g. [3,6,9]
 
       for (const row of data.rows) {
