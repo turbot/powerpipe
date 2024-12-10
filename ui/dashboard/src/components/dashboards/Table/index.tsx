@@ -811,7 +811,7 @@ const TableViewVirtualizedRows = ({
     return {
       key: "table-settings",
       title: "Table settings",
-      icon: "settings",
+      icon: "data_table",
       //component: <TableSettings table={table} />,
       action: noop,
     };

@@ -101,7 +101,7 @@ const TableSettings = ({ table }: { table: Table<KeyValuePairs> }) => {
     <Popover className="relative">
       {/*@ts-ignore*/}
       <Popover.Button ref={setReferenceElement} as="div">
-        <Icon icon="settings" className="h-4.5 w-4.5" />
+        <Icon icon="data_table" className="h-4.5 w-4.5" />
       </Popover.Button>
       <Popover.Panel className="absolute z-10 pt-px">
         <div
