@@ -226,6 +226,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {
+            // Always include the total card
+            if (name === `${props.definition.name}.container.summary.total`) {
+              return true;
+            }
             const severityFilter = expressions?.find(
               (expr) => expr.type === "severity",
             );
