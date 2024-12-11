@@ -12,8 +12,14 @@ import {
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 
-const DashboardExecutionContext = createContext(null);
+interface IDashboardExecutionContext {
+  executeDashboard: (dashboardFullName: string | null | undefined) => void;
+}
+
+const DashboardExecutionContext =
+  createContext<IDashboardExecutionContext | null>(null);
 
 export const DashboardExecutionProvider = ({
   children,
@@ -27,8 +33,7 @@ export const DashboardExecutionProvider = ({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { dashboard_name } = useParams();
-  const { dashboards, dataMode, dispatch, selectedDashboardInputs } =
-    useDashboardState();
+  const { dashboards, dataMode, dispatch } = useDashboardState();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
     eventHooks,
@@ -38,7 +43,10 @@ export const DashboardExecutionProvider = ({
     eventHandler,
     socketUrlFactory,
   );
+  const { inputs } = useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
+
+  console.log({ inputs, searchPathPrefix });
 
   useEffect(() => {
     if (pathname !== "/" || dataMode === DashboardDataModeLive) {
@@ -70,15 +78,12 @@ export const DashboardExecutionProvider = ({
       dashboard,
     });
 
-    console.log("Executing", dashboardFullName);
-
     // Clear any existing executions
     sendMessage({
       action: SocketActions.CLEAR_DASHBOARD,
     });
 
-    const { "input.detection_range": detectionRange, ...rest } =
-      selectedDashboardInputs || {};
+    const { "input.detection_range": detectionRange, ...rest } = inputs || {};
     let detectionFrom, detectionTo;
     if (detectionRange) {
       try {
@@ -117,17 +122,22 @@ export const DashboardExecutionProvider = ({
       selectDashboardMessage.payload.search_path_prefix = searchPathPrefix;
     }
 
+    console.log("Executing", {
+      dashboardFullName,
+      selectDashboardMessage,
+      inputs,
+      dashboard,
+    });
     sendMessage(selectDashboardMessage);
   };
 
   useDeepCompareEffect(() => {
-    // We don
+    // We don't need to "execute" if we're in snapshot mode
     if (dataMode === DashboardDataModeCLISnapshot) {
       return;
     }
-    console.log({ dashboard_name, selectedDashboardInputs });
     executeDashboard(dashboard_name);
-  }, [dataMode, dashboard_name, selectedDashboardInputs]);
+  }, [dataMode, dashboard_name, inputs]);
 
   return (
     <DashboardExecutionContext.Provider value={{ executeDashboard }}>

@@ -124,17 +124,14 @@ export type DashboardRunState =
 
 export const DashboardActions: IActions = {
   AVAILABLE_DASHBOARDS: "available_dashboards",
-  CLEAR_DASHBOARD_INPUTS: "clear_dashboard_inputs",
   CONTROL_COMPLETE: "control_complete",
   CONTROL_ERROR: "control_error",
   CONTROLS_UPDATED: "controls_updated",
   SERVER_METADATA: "server_metadata",
   DASHBOARD_METADATA: "dashboard_metadata",
-  DELETE_DASHBOARD_INPUT: "delete_dashboard_input",
   EXECUTION_COMPLETE: "execution_complete",
   EXECUTION_ERROR: "execution_error",
   EXECUTION_STARTED: "execution_started",
-  INPUT_VALUES_CLEARED: "input_values_cleared",
   LEAF_NODE_COMPLETE: "leaf_node_complete",
   LEAF_NODE_UPDATED: "leaf_node_updated",
   LEAF_NODES_COMPLETE: "leaf_nodes_complete",
@@ -143,8 +140,6 @@ export const DashboardActions: IActions = {
   SELECT_PANEL: "select_panel",
   SET_CLI_MODE: "set_cli_mode",
   SET_DASHBOARD: "set_dashboard",
-  SET_DASHBOARD_INPUT: "set_dashboard_input",
-  SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
@@ -236,16 +231,6 @@ export type DashboardSearch = {
 
 export type DashboardTags = {
   keys: string[];
-};
-
-export type SelectedDashboardStates = {
-  dashboard_name: string | undefined;
-  dataMode: DashboardDataMode;
-  refetchDashboard: boolean;
-  search: DashboardSearch;
-  searchParams: URLSearchParams;
-  selectedDashboard: AvailableDashboard | null;
-  selectedDashboardInputs: DashboardInputs;
 };
 
 export type DashboardInputs = {

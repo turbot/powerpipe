@@ -1,16 +1,18 @@
 import { ClearIcon, SubmitIcon } from "@powerpipe/constants/icons";
-import { DashboardActions, DashboardDataModeLive } from "@powerpipe/types";
+import { DashboardDataModeLive } from "@powerpipe/types";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import {
   IInput,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 
 const TextInput = (props: InputProps) => {
-  const { dataMode, dispatch, selectedDashboardInputs } = useDashboardState();
-  const stateValue = selectedDashboardInputs[props.name];
+  const { dataMode } = useDashboardState();
+  const { inputs, updateInput, deleteInput } = useDashboardInputs();
+  const stateValue = inputs[props.name];
   const [value, setValue] = useState<string>(() => {
     return stateValue || "";
   });
@@ -24,29 +26,16 @@ const TextInput = (props: InputProps) => {
   const submit = () => {
     setIsDirty(false);
     if (value) {
-      dispatch({
-        type: DashboardActions.SET_DASHBOARD_INPUT,
-        name: props.name,
-        value,
-        recordInputsHistory: !!stateValue,
-      });
+      updateInput(props.name, value, !!stateValue);
     } else {
-      dispatch({
-        type: DashboardActions.DELETE_DASHBOARD_INPUT,
-        name: props.name,
-        recordInputsHistory: !!stateValue,
-      });
+      deleteInput(props.name, !!stateValue);
     }
   };
 
   const clear = () => {
     setValue("");
     setIsDirty(false);
-    dispatch({
-      type: DashboardActions.DELETE_DASHBOARD_INPUT,
-      name: props.name,
-      recordInputsHistory: true,
-    });
+    deleteInput(props.name, true);
   };
 
   useEffect(() => {

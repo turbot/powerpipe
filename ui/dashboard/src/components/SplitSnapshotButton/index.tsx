@@ -26,6 +26,7 @@ import { timestampForFilename } from "@powerpipe/utils/date";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useNavigate } from "react-router-dom";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 
 const useSaveSnapshot = () => {
   const { dashboard, snapshot } = useDashboardState();
@@ -91,6 +92,7 @@ const useSaveSnapshot = () => {
 
 const useOpenSnapshot = () => {
   const { dispatch } = useDashboardState();
+  const { clearInputs, setInputs } = useDashboardInputs();
   const navigate = useNavigate();
 
   return (e: ChangeEvent<HTMLInputElement>) => {
@@ -111,10 +113,7 @@ const useOpenSnapshot = () => {
         const eventMigrator =
           new SnapshotDataToExecutionCompleteSchemaMigrator();
         const migratedEvent = eventMigrator.toLatest(data);
-        dispatch({
-          type: DashboardActions.CLEAR_DASHBOARD_INPUTS,
-          recordInputsHistory: false,
-        });
+        clearInputs(false);
         dispatch({
           type: DashboardActions.SELECT_DASHBOARD,
           dashboard: null,
@@ -130,11 +129,7 @@ const useOpenSnapshot = () => {
           type: DashboardActions.EXECUTION_COMPLETE,
           ...migratedEvent,
         });
-        dispatch({
-          type: DashboardActions.SET_DASHBOARD_INPUTS,
-          value: migratedEvent.snapshot.inputs,
-          recordInputsHistory: false,
-        });
+        setInputs(migratedEvent.snapshot.inputs, false);
       } catch (err: any) {
         dispatch({
           type: DashboardActions.WORKSPACE_ERROR,
