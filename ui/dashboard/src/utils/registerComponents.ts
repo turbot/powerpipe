@@ -1,13 +1,15 @@
+// Component overrides
+import "@powerpipe/components/ExternalLink";
+import "@powerpipe/components/SnapshotHeader";
+
 // Layout
 import "@powerpipe/components/dashboards/layout/Panel";
 import "@powerpipe/components/dashboards/layout/Container";
 
 // General
-import "@powerpipe/components/ExternalLink";
 import "@powerpipe/components/dashboards/Error";
 import "@powerpipe/components/dashboards/Table";
 import "@powerpipe/components/dashboards/Text";
-import "@powerpipe/components/SnapshotHeader";
 
 // Charts
 import "@powerpipe/components/dashboards/charts/AreaChart";
