@@ -43,7 +43,8 @@ export const DashboardExecutionProvider = ({
     eventHandler,
     socketUrlFactory,
   );
-  const { inputs } = useDashboardInputs();
+  const { inputs, lastChangedInput, setLastChangedInput } =
+    useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
 
   console.log({ inputs, searchPathPrefix });
@@ -68,20 +69,11 @@ export const DashboardExecutionProvider = ({
       dispatch({
         type: DashboardActions.SELECT_DASHBOARD,
         dashboard: null,
-        recordInputsHistory: false,
       });
       navigate("../", { replace: true });
+      setLastChangedInput(null);
       return;
     }
-    dispatch({
-      type: DashboardActions.SELECT_DASHBOARD,
-      dashboard,
-    });
-
-    // Clear any existing executions
-    sendMessage({
-      action: SocketActions.CLEAR_DASHBOARD,
-    });
 
     const { "input.detection_range": detectionRange, ...rest } = inputs || {};
     let detectionFrom, detectionTo;
@@ -95,8 +87,7 @@ export const DashboardExecutionProvider = ({
       }
     }
 
-    const selectDashboardMessage: any = {
-      action: SocketActions.SELECT_DASHBOARD,
+    const dashboardMessage: any = {
       payload: {
         dashboard: {
           full_name: dashboard.full_name,
@@ -106,29 +97,39 @@ export const DashboardExecutionProvider = ({
     };
 
     if (detectionFrom) {
-      selectDashboardMessage.payload.input_values.detection_time_ranges =
-        selectDashboardMessage.payload.input_values.detection_time_ranges || {};
-      selectDashboardMessage.payload.input_values.detection_time_ranges.from =
+      dashboardMessage.payload.input_values.detection_time_ranges =
+        dashboardMessage.payload.input_values.detection_time_ranges || {};
+      dashboardMessage.payload.input_values.detection_time_ranges.from =
         detectionFrom;
     }
     if (detectionTo) {
-      selectDashboardMessage.payload.input_values.detection_time_ranges =
-        selectDashboardMessage.payload.input_values.detection_time_ranges || {};
-      selectDashboardMessage.payload.input_values.detection_time_ranges.to =
+      dashboardMessage.payload.input_values.detection_time_ranges =
+        dashboardMessage.payload.input_values.detection_time_ranges || {};
+      dashboardMessage.payload.input_values.detection_time_ranges.to =
         detectionTo;
     }
 
     if (!!searchPathPrefix.length) {
-      selectDashboardMessage.payload.search_path_prefix = searchPathPrefix;
+      dashboardMessage.payload.search_path_prefix = searchPathPrefix;
     }
 
-    console.log("Executing", {
-      dashboardFullName,
-      selectDashboardMessage,
-      inputs,
-      dashboard,
-    });
-    sendMessage(selectDashboardMessage);
+    if (lastChangedInput) {
+      dashboardMessage.action = SocketActions.INPUT_CHANGED;
+      dashboardMessage.changed_input = lastChangedInput;
+      sendMessage(dashboardMessage);
+    } else {
+      // Ensure the dashboard is selected
+      dispatch({
+        type: DashboardActions.SELECT_DASHBOARD,
+        dashboard,
+      });
+      // Clear any existing executions
+      sendMessage({
+        action: SocketActions.CLEAR_DASHBOARD,
+      });
+      dashboardMessage.action = SocketActions.SELECT_DASHBOARD;
+      sendMessage(dashboardMessage);
+    }
   };
 
   useDeepCompareEffect(() => {

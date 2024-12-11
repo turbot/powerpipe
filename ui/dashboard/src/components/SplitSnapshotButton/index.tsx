@@ -117,7 +117,6 @@ const useOpenSnapshot = () => {
         dispatch({
           type: DashboardActions.SELECT_DASHBOARD,
           dashboard: null,
-          recordInputsHistory: false,
         });
         navigate(`/snapshot/${fileName}`);
         dispatch({
