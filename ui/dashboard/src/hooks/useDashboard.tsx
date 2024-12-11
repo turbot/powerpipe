@@ -7,11 +7,11 @@ import {
 } from "@powerpipe/types";
 import { DashboardExecutionProvider } from "@powerpipe/hooks/useDashboardExecution";
 import { DashboardInputsProvider } from "@powerpipe/hooks/useDashboardInputs";
+import { DashboardPanelDetailProvider } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { DashboardSearchPathProvider } from "@powerpipe/hooks/useDashboardSearchPath";
 import { DashboardSearchProvider } from "@powerpipe/hooks/useDashboardSearch";
 import { DashboardStateProvider } from "./useDashboardState";
 import { DashboardThemeProvider } from "@powerpipe/hooks/useDashboardTheme";
-import DashboardGlobalHotKeys from "@powerpipe/components/DashboardGlobalHotKeys";
 
 type DashboardProviderProps = {
   analyticsContext: any;
@@ -602,15 +602,16 @@ const DashboardProvider = ({
             stateDefaults={stateDefaults}
             versionMismatchCheck={versionMismatchCheck}
           >
-            <DashboardInputsProvider>
-              <DashboardExecutionProvider
-                eventHooks={eventHooks}
-                socketUrlFactory={socketUrlFactory}
-              >
-                <DashboardGlobalHotKeys />
-                {children}
-              </DashboardExecutionProvider>
-            </DashboardInputsProvider>
+            <DashboardPanelDetailProvider>
+              <DashboardInputsProvider>
+                <DashboardExecutionProvider
+                  eventHooks={eventHooks}
+                  socketUrlFactory={socketUrlFactory}
+                >
+                  {children}
+                </DashboardExecutionProvider>
+              </DashboardInputsProvider>
+            </DashboardPanelDetailProvider>
           </DashboardStateProvider>
         </DashboardSearchPathProvider>
       </DashboardSearchProvider>

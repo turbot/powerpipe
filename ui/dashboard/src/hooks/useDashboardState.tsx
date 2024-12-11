@@ -384,9 +384,7 @@ export const DashboardStateProvider = ({
 export const useDashboardState = () => {
   const context = useContext(DashboardContext);
   if (!context) {
-    throw new Error(
-      "useDashboardExecution must be used within a DashboardExecutionProvider",
-    );
+    throw new Error("useDashboardState must be used within a DashboardContext");
   }
   return context;
 };

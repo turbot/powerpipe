@@ -72,7 +72,7 @@ export const useDashboardSearch = () => {
   const context = useContext(DashboardSearchContext);
   if (!context) {
     throw new Error(
-      "useDashboardExecution must be used within a DashboardExecutionProvider",
+      "useDashboardSearch must be used within a DashboardSearchContext",
     );
   }
   return context;

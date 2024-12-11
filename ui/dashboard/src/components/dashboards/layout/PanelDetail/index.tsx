@@ -8,6 +8,7 @@ import PanelDetailPreview from "./PanelDetailPreview";
 import PanelDetailQuery from "./PanelDetailQuery";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardDataModeLive, PanelDefinition } from "@powerpipe/types";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo, useState } from "react";
 
@@ -47,10 +48,10 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
   const [selectedTab, setSelectedTab] = useState(Tabs.PREVIEW);
   const {
     breakpointContext: { minBreakpoint },
-    closePanelDetail,
     dataMode,
     panelsLog,
   } = useDashboardState();
+  const { closePanelDetail } = useDashboardPanelDetail();
   const isTablet = minBreakpoint("md");
 
   const panelLog = panelsLog[definition.name];

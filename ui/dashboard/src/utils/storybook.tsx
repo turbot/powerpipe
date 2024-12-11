@@ -64,7 +64,6 @@ export const PanelStoryDecorator = ({
           telemetry: "none",
         },
         availableDashboardsLoaded: true,
-        closePanelDetail: noop,
         dataMode: DashboardDataModeLive,
         snapshotId: null,
         dispatch: noop,
@@ -81,7 +80,6 @@ export const PanelStoryDecorator = ({
           mod_full_name: "mod.storybook",
           is_top_level: true,
         },
-        lastChangedInput: null,
         execution_id: null,
         panelsLog: {},
         panelsMap: {
