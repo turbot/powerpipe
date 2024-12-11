@@ -9,10 +9,10 @@ import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
 } from "@powerpipe/types";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 
 interface IDashboardExecutionContext {
   executeDashboard: (dashboardFullName: string | null | undefined) => void;
@@ -33,7 +33,8 @@ export const DashboardExecutionProvider = ({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { dashboard_name } = useParams();
-  const { dashboards, dataMode, dispatch } = useDashboardState();
+  const { availableDashboardsLoaded, dashboards, dataMode, dispatch } =
+    useDashboardState();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
     eventHooks,
@@ -134,11 +135,14 @@ export const DashboardExecutionProvider = ({
 
   useDeepCompareEffect(() => {
     // We don't need to "execute" if we're in snapshot mode
-    if (dataMode === DashboardDataModeCLISnapshot) {
+    if (
+      !availableDashboardsLoaded ||
+      dataMode === DashboardDataModeCLISnapshot
+    ) {
       return;
     }
     executeDashboard(dashboard_name);
-  }, [dataMode, dashboard_name, inputs]);
+  }, [availableDashboardsLoaded, dataMode, dashboard_name, inputs]);
 
   return (
     <DashboardExecutionContext.Provider value={{ executeDashboard }}>

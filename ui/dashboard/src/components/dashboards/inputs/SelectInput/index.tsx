@@ -11,9 +11,9 @@ import {
   OptionWithTags,
   SingleValueWithTags,
 } from "@powerpipe/components/dashboards/inputs/common/Common";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
-import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 
 type SelectInputProps = InputProps & {
   multi?: boolean;

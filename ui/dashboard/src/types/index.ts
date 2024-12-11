@@ -23,8 +23,6 @@ export type IDashboardContext = {
   dataMode: DashboardDataMode;
   snapshotId: string | null;
 
-  refetchDashboard: boolean;
-
   error: any;
 
   panelsLog: PanelsLog;
@@ -39,7 +37,6 @@ export type IDashboardContext = {
 
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
-  selectedDashboardInputs: DashboardInputs;
   lastChangedInput: string | null;
 
   dashboardTags: DashboardTags;
@@ -144,7 +141,6 @@ export const DashboardActions: IActions = {
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
   SET_DATA_MODE: "set_data_mode",
-  SET_REFETCH_DASHBOARD: "set_refetch_dashboard",
   SHOW_CUSTOMIZE_BENCHMARK_PANEL: "show_customize_benchmark_panel",
   HIDE_CUSTOMIZE_BENCHMARK_PANEL: "hide_customize_benchmark_panel",
   WORKSPACE_ERROR: "workspace_error",

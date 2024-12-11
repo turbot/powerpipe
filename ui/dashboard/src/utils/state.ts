@@ -179,18 +179,6 @@ const updatePanelsLogFromCompletedPanels = (
   return newPanelsLog;
 };
 
-const buildSelectedDashboardInputsFromSearchParams = (searchParams) => {
-  const selectedDashboardInputs = {};
-  // @ts-ignore
-  for (const entry of searchParams.entries()) {
-    if (!entry[0].startsWith("input")) {
-      continue;
-    }
-    selectedDashboardInputs[entry[0]] = entry[1];
-  }
-  return selectedDashboardInputs;
-};
-
 const updateSelectedDashboard = (
   selectedDashboard: AvailableDashboard | null,
   newDashboards: AvailableDashboard[],
@@ -233,7 +221,6 @@ export {
   addUpdatedPanelLogs,
   buildDashboards,
   buildPanelsLog,
-  buildSelectedDashboardInputsFromSearchParams,
   panelLogTitle,
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,

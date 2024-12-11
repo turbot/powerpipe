@@ -81,7 +81,6 @@ export const PanelStoryDecorator = ({
           mod_full_name: "mod.storybook",
           is_top_level: true,
         },
-        selectedDashboardInputs: {},
         lastChangedInput: null,
         execution_id: null,
         panelsLog: {},
@@ -117,7 +116,6 @@ export const PanelStoryDecorator = ({
         },
 
         components: buildComponentsMap(),
-        refetchDashboard: false,
         state: "complete",
         progress: 100,
         snapshot: null,

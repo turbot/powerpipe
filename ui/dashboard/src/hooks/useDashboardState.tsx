@@ -3,7 +3,6 @@ import { buildComponentsMap } from "@powerpipe/components";
 import {
   buildDashboards,
   buildPanelsLog,
-  buildSelectedDashboardInputsFromSearchParams,
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,
   wrapDefinitionInArtificialDashboard,
@@ -141,7 +140,6 @@ const reducer = (state: IDashboardContext, action) => {
         panelsMap: migratedEvent.panels,
         dashboard,
         execution_id: migratedEvent.execution_id,
-        refetchDashboard: false,
         progress: 0,
         snapshot: null,
         state: "running",
@@ -225,11 +223,6 @@ const reducer = (state: IDashboardContext, action) => {
         newState.snapshotId = null;
       }
       return newState;
-    case DashboardActions.SET_REFETCH_DASHBOARD:
-      return {
-        ...state,
-        refetchDashboard: true,
-      };
     case DashboardActions.SET_DASHBOARD:
       return {
         ...state,
@@ -310,7 +303,6 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     },
     dataMode: defaults.dataMode || DashboardDataModeLive,
     snapshotId: defaults.snapshotId ? defaults.snapshotId : null,
-    refetchDashboard: false,
     error: null,
     panelsLog: {},
     panelsMap: {},
@@ -318,8 +310,6 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     dashboardsMetadata: {},
     selectedPanel: null,
     selectedDashboard: null,
-    selectedDashboardInputs:
-      buildSelectedDashboardInputsFromSearchParams(searchParams),
     snapshot: null,
     lastChangedInput: null,
 
