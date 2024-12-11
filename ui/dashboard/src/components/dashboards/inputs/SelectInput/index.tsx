@@ -11,7 +11,7 @@ import {
   OptionWithTags,
   SingleValueWithTags,
 } from "@powerpipe/components/dashboards/inputs/common/Common";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 
 type SelectInputProps = InputProps & {
@@ -45,7 +45,7 @@ const SelectInput = ({
   properties,
   status,
 }: SelectInputProps) => {
-  const { dataMode, dispatch, selectedDashboardInputs } = useDashboard();
+  const { dataMode, dispatch, selectedDashboardInputs } = useDashboardState();
   const [initialisedFromState, setInitialisedFromState] = useState(false);
   const [value, setValue] = useState<SelectOption | SelectOption[] | null>(
     null,

@@ -1,14 +1,15 @@
 import SearchPathEditor from "@powerpipe/components/dashboards/SearchPathEditor";
-import useDashboardSearchPathPrefix from "@powerpipe/hooks/useDashboardSearchPathPrefix";
 import { SearchPathMetadata } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const SearchPathConfig = ({ onClose }) => {
-  const { selectedDashboard, metadata, dashboardsMetadata } = useDashboard();
+  const { selectedDashboard, metadata, dashboardsMetadata } =
+    useDashboardState();
   const [, setSearchParams] = useSearchParams();
-  const searchPathPrefix = useDashboardSearchPathPrefix();
+  const { searchPathPrefix } = useDashboardSearchPath();
 
   const { configuredSearchPath, availableConnections } = useMemo(() => {
     const hasServerMetadataSearchPath =

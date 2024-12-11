@@ -40,7 +40,7 @@ import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -163,7 +163,7 @@ const CellValue = ({
   isScrolling = false,
   context = "",
 }: CellValueProps) => {
-  const { searchPathPrefix } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [referenceElement, setReferenceElement] = useState();

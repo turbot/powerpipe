@@ -1,9 +1,9 @@
 import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { useCallback } from "react";
-import { useDashboard } from "./useDashboard";
+import { useDashboardState } from "./useDashboardState";
 
 const useSelectPanel = (definition: PanelDefinition) => {
-  const { dispatch } = useDashboard();
+  const { dispatch } = useDashboardState();
   const openPanelDetail = useCallback(
     async (e) => {
       e.stopPropagation();

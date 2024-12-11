@@ -2,10 +2,10 @@ import FilterConfig from "@powerpipe/components/dashboards/grouping/FilterConfig
 import GroupingConfig from "@powerpipe/components/dashboards/grouping/GroupingConfig";
 import Icon from "@powerpipe/components/Icon";
 import { DashboardActions } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const DashboardControls = ({ panelName }: { panelName: string }) => {
-  const { dispatch } = useDashboard();
+  const { dispatch } = useDashboardState();
   const hideControls = () =>
     dispatch({ type: DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL });
 

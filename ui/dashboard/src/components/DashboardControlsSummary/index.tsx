@@ -8,7 +8,6 @@ import { ReactNode } from "react";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 type DashboardControlsSummaryProps = {
-  searchPathPrefix: string[];
   filterConfig: Filter;
   groupingConfig: CheckDisplayGroup[];
   onClose: Noop;
@@ -54,48 +53,6 @@ const DashboardFilterButton = ({
   </button>
 );
 
-const DashboardSearchPathPrefixControlButton = ({
-  searchPathPrefix,
-  toggleControls,
-}) => {
-  // <div className="flex items-center space-x-3 shrink-0">
-  //   <Icon className="h-5 w-5 shrink-0" icon="list" />
-  //   <div className="space-x-0.5 truncate">
-  //     {modifiedSearchPath.length > 0 &&
-  //       modifiedSearchPath
-  //         .map<ReactNode>((item, i) => (
-  //           <span key={`${item}-${i}`} className="font-medium">
-  //             {item}
-  //           </span>
-  //         ))
-  //         .reduce((prev, curr, idx) => [
-  //           prev,
-  //           <span key={idx} className="text-foreground-lighter">
-  //             ,
-  //           </span>,
-  //           curr,
-  //         ])}
-  //     {modifiedSearchPath.length === 0 && (
-  //       <span className="text-foreground-lighter">
-  //         No search path prefix set
-  //       </span>
-  //     )}
-  //   </div>
-  //   <Icon
-  //     className="h-5 w-5 cursor-pointer shrink-0"
-  //     icon="edit_square"
-  //     onClick={() => setShowEditor(true)}
-  //     title="Edit search path prefix"
-  //   />
-  // </div>;
-
-  return (
-    <DashboardFilterButton onClick={toggleControls}>
-      Search Path
-    </DashboardFilterButton>
-  );
-};
-
 const DashboardFilterControlButton = ({ filterConfig, toggleControls }) => {
   const filterCount = filterConfig?.expressions?.length
     ? filterConfig.expressions.filter(validateFilter).length
@@ -129,31 +86,7 @@ const DashboardFilterControlButton = ({ filterConfig, toggleControls }) => {
   );
 };
 
-const DashboardGroupingControlButton = ({ groupingConfig, toggleControls }) => {
-  // <div className="flex items-center space-x-3 shrink-0">
-  //   <Icon className="h-5 w-5" icon="workspaces" />
-  //   {groupingConfig
-  //     .map<ReactNode>((item) => (
-  //       <CheckGroupingTitleLabel
-  //         key={`${item.type}${!!item.value ? `-${item.value}` : ""}`}
-  //         item={item}
-  //       />
-  //     ))
-  //     .reduce((prev, curr, idx) => [
-  //       prev,
-  //       <Icon key={idx} className="h-4 w-4" icon="arrow-long-right" />,
-  //       curr,
-  //     ])}
-  //   {!showEditor && (
-  //     <Icon
-  //       className="h-5 w-5 cursor-pointer shrink-0"
-  //       icon="edit_square"
-  //       onClick={() => setShowEditor(true)}
-  //       title="Edit grouping"
-  //     />
-  //   )}
-  // </div>
-
+const DashboardGroupingControlButton = ({ toggleControls }) => {
   return (
     <DashboardFilterButton onClick={toggleControls}>
       Grouping
@@ -162,7 +95,6 @@ const DashboardGroupingControlButton = ({ groupingConfig, toggleControls }) => {
 };
 
 const DashboardControlsSummary = ({
-  searchPathPrefix,
   filterConfig,
   groupingConfig,
   onClose,
@@ -170,10 +102,6 @@ const DashboardControlsSummary = ({
   return (
     <>
       <div className="grow flex items-center justify-end space-x-4">
-        {/*<DashboardSearchPathPrefixControlButton*/}
-        {/*  searchPathPrefix={searchPathPrefix}*/}
-        {/*  toggleControls={toggleControls}*/}
-        {/*/>*/}
         <DashboardFilterControlButton
           filterConfig={filterConfig}
           toggleControls={onClose}

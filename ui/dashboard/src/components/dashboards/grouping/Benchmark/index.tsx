@@ -28,7 +28,7 @@ import {
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
 import { noop } from "@powerpipe/utils/func";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import {
   PanelControlsProvider,
@@ -56,7 +56,7 @@ const Benchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboard();
+  const { dispatch, selectedPanel } = useDashboardState();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||

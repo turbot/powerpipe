@@ -8,7 +8,7 @@ import PanelDetailPreview from "./PanelDetailPreview";
 import PanelDetailQuery from "./PanelDetailQuery";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardDataModeLive, PanelDefinition } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo, useState } from "react";
 
 export type PanelDetailProps = {
@@ -50,7 +50,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
     closePanelDetail,
     dataMode,
     panelsLog,
-  } = useDashboard();
+  } = useDashboardState();
   const isTablet = minBreakpoint("md");
 
   const panelLog = panelsLog[definition.name];

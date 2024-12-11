@@ -6,41 +6,15 @@ import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
 } from "@powerpipe/types";
-import { forwardRef, Fragment, useMemo } from "react";
+import { forwardRef, Fragment } from "react";
 import { Popover, Transition } from "@headlessui/react";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const PopoverButton = forwardRef((props, ref) => {
-  const {
-    metadata,
-    dataMode,
-    dashboardsMetadata,
-    searchPathPrefix,
-    selectedDashboard,
-  } = useDashboard();
-  const {
-    enabled,
-    hasServerMetadataSearchPath,
-    hasDashboardMetadataSearchPath,
-  } = useMemo(() => {
-    const hasServerMetadataSearchPath =
-      !!metadata?.search_path?.original_search_path &&
-      !!metadata.search_path.original_search_path.length;
-    const hasDashboardMetadataSearchPath =
-      !!selectedDashboard &&
-      !!dashboardsMetadata &&
-      !!dashboardsMetadata[selectedDashboard.full_name] &&
-      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path &&
-      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
-        ?.original_search_path &&
-      !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
-        ?.original_search_path?.length;
-    return {
-      enabled: hasServerMetadataSearchPath || hasDashboardMetadataSearchPath,
-      hasServerMetadataSearchPath,
-      hasDashboardMetadataSearchPath,
-    };
-  }, [selectedDashboard, metadata, dashboardsMetadata]);
+  const { metadata, dataMode, dashboardsMetadata, selectedDashboard } =
+    useDashboardState();
+  const { searchPathPrefix } = useDashboardSearchPath();
 
   if (
     dataMode === DashboardDataModeCLISnapshot ||
@@ -48,6 +22,24 @@ const PopoverButton = forwardRef((props, ref) => {
   ) {
     return null;
   }
+
+  const hasServerMetadataSearchPath =
+    !!metadata?.search_path?.original_search_path &&
+    !!metadata.search_path.original_search_path.length;
+  const hasDashboardMetadataSearchPath =
+    !!selectedDashboard &&
+    !!dashboardsMetadata &&
+    !!dashboardsMetadata[selectedDashboard.full_name] &&
+    !!dashboardsMetadata[selectedDashboard.full_name]?.search_path &&
+    !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+      ?.original_search_path &&
+    !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
+      ?.original_search_path?.length;
+  const enabled = {
+    enabled: hasServerMetadataSearchPath || hasDashboardMetadataSearchPath,
+    hasServerMetadataSearchPath,
+    hasDashboardMetadataSearchPath,
+  };
 
   return (
     // @ts-ignore

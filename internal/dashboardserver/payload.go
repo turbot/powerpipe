@@ -167,11 +167,12 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
 			availableBenchmark := ModAvailableBenchmark{
-				Title:     t.GetTitle(),
-				FullName:  t.FullName,
-				ShortName: t.ShortName,
-				Tags:      t.Tags,
-				Children:  addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Title:         t.GetTitle(),
+				FullName:      t.FullName,
+				ShortName:     t.ShortName,
+				BenchmarkType: "control",
+				Tags:          t.Tags,
+				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
 			}
 			children = append(children, availableBenchmark)
 		}
@@ -191,11 +192,12 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
 			availableBenchmark := ModAvailableBenchmark{
-				Title:     t.GetTitle(),
-				FullName:  t.FullName,
-				ShortName: t.ShortName,
-				Tags:      t.Tags,
-				Children:  addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Title:         t.GetTitle(),
+				FullName:      t.FullName,
+				ShortName:     t.ShortName,
+				BenchmarkType: "detection",
+				Tags:          t.Tags,
+				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
 			}
 			children = append(children, availableBenchmark)
 		}
@@ -253,13 +255,14 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			}
 
 			availableBenchmark := ModAvailableBenchmark{
-				Title:       benchmark.GetTitle(),
-				FullName:    benchmark.FullName,
-				ShortName:   benchmark.ShortName,
-				Tags:        benchmark.Tags,
-				IsTopLevel:  isTopLevel,
-				Children:    addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
-				ModFullName: mod.GetFullName(),
+				Title:         benchmark.GetTitle(),
+				FullName:      benchmark.FullName,
+				ShortName:     benchmark.ShortName,
+				BenchmarkType: "control",
+				Tags:          benchmark.Tags,
+				IsTopLevel:    isTopLevel,
+				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
+				ModFullName:   mod.GetFullName(),
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark
@@ -294,13 +297,14 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			}
 
 			availableDetectionBenchmark := ModAvailableBenchmark{
-				Title:       detectionBenchmark.GetTitle(),
-				FullName:    detectionBenchmark.FullName,
-				ShortName:   detectionBenchmark.ShortName,
-				Tags:        detectionBenchmark.Tags,
-				IsTopLevel:  isTopLevel,
-				Children:    addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
-				ModFullName: mod.GetFullName(),
+				Title:         detectionBenchmark.GetTitle(),
+				FullName:      detectionBenchmark.FullName,
+				ShortName:     detectionBenchmark.ShortName,
+				BenchmarkType: "detection",
+				Tags:          detectionBenchmark.Tags,
+				IsTopLevel:    isTopLevel,
+				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
+				ModFullName:   mod.GetFullName(),
 			}
 
 			payload.Benchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark

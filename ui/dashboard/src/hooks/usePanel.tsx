@@ -29,7 +29,7 @@ import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/t
 import { PanelControlsProvider } from "@powerpipe/hooks/usePanelControls";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useContainer } from "@powerpipe/hooks/useContainer";
 
 type IPanelContext = {
@@ -128,7 +128,7 @@ const PanelProvider = ({
   showControls,
 }: PanelProviderProps) => {
   const { updateChildStatus } = useContainer();
-  const { selectedDashboardInputs, panelsMap } = useDashboard();
+  const { selectedDashboardInputs, panelsMap } = useDashboardState();
   const [showPanelInformation, setShowPanelInformation] = useState(false);
   const [panelInformation, setPanelInformation] = useState<ReactNode | null>(
     null,

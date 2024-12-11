@@ -1,7 +1,7 @@
 import "@powerpipe/utils/registerComponents";
 import Dashboard from "@powerpipe/components/dashboards/layout/Dashboard";
 import { buildComponentsMap } from "@powerpipe/components";
-import { DashboardContext } from "@powerpipe/hooks/useDashboard";
+import { DashboardContext } from "@powerpipe/hooks/useDashboardState";
 import {
   DashboardDataModeLive,
   DashboardPanelType,
@@ -120,7 +120,6 @@ export const PanelStoryDecorator = ({
         refetchDashboard: false,
         state: "complete",
         progress: 100,
-        render: { headless: false, snapshotCompleteDiv: false },
         snapshot: null,
         snapshotFileName: null,
       }}

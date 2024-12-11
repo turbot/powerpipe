@@ -3,11 +3,11 @@ import { PanelDefinition } from "@powerpipe/types";
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useCallback, useState } from "react";
-import { useDashboard } from "./useDashboard";
+import { useDashboardState } from "./useDashboardState";
 import { usePapaParse } from "react-papaparse";
 
 const useDownloadPanelData = (definition: PanelDefinition) => {
-  const { selectedDashboard } = useDashboard();
+  const { selectedDashboard } = useDashboardState();
   const { jsonToCSV } = usePapaParse();
   const [processing, setProcessing] = useState(false);
 

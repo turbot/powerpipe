@@ -21,7 +21,7 @@ import { parseDate } from "@powerpipe/utils/date";
 import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 import { usePopper } from "react-popper";
 import "react-day-picker/dist/style.css";
@@ -360,7 +360,7 @@ const CustomDatePicker = ({
 };
 
 const DateRangePicker = (props: InputProps) => {
-  const { dispatch, selectedDashboardInputs } = useDashboard();
+  const { dispatch, selectedDashboardInputs } = useDashboardState();
   const [popperElement, setPopperElement] = useState(null);
   const [referenceElement, setReferenceElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {

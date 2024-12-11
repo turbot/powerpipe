@@ -42,31 +42,18 @@ export type IDashboardContext = {
   selectedDashboardInputs: DashboardInputs;
   lastChangedInput: string | null;
 
-  searchPathPrefix: string[];
-
   dashboardTags: DashboardTags;
 
-  search: DashboardSearch;
-
   breakpointContext: IBreakpointContext;
-  themeContext: IThemeContext;
 
   components: ComponentsMap;
 
   progress: number;
   state: DashboardRunState;
-  render: {
-    headless: boolean;
-    snapshotCompleteDiv: boolean;
-  };
 
   snapshot: DashboardSnapshot | null;
   snapshotFileName: string | null;
   snapshot_metadata_loaded: boolean;
-
-  diff?: {
-    snapshotFileName: string;
-  };
 
   filterAndGroupControlPanel?: string;
 };
@@ -144,7 +131,6 @@ export const DashboardActions: IActions = {
   SERVER_METADATA: "server_metadata",
   DASHBOARD_METADATA: "dashboard_metadata",
   DELETE_DASHBOARD_INPUT: "delete_dashboard_input",
-  DIFF_SNAPSHOT: "diff_snapshot",
   EXECUTION_COMPLETE: "execution_complete",
   EXECUTION_ERROR: "execution_error",
   EXECUTION_STARTED: "execution_started",
@@ -161,8 +147,6 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
-  SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
-  SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
   SET_DATA_MODE: "set_data_mode",
   SET_REFETCH_DASHBOARD: "set_refetch_dashboard",
@@ -238,7 +222,7 @@ export type DashboardAction = {
   [key: string]: any;
 };
 
-type DashboardSearchGroupByMode = "mod" | "tag";
+export type DashboardSearchGroupByMode = "mod" | "tag";
 
 type DashboardSearchGroupBy = {
   value: DashboardSearchGroupByMode;
@@ -260,7 +244,6 @@ export type SelectedDashboardStates = {
   refetchDashboard: boolean;
   search: DashboardSearch;
   searchParams: URLSearchParams;
-  searchPathPrefix: string[];
   selectedDashboard: AvailableDashboard | null;
   selectedDashboardInputs: DashboardInputs;
 };
@@ -389,6 +372,7 @@ export type AvailableDashboard = {
   full_name: string;
   short_name: string;
   mod_full_name?: string;
+  benchmark_type?: "control" | "detection";
   tags: AvailableDashboardTags;
   title: string;
   is_top_level: boolean;
@@ -474,13 +458,4 @@ export type DashboardDefinition = {
 export type DashboardsCollection = {
   dashboards: AvailableDashboard[];
   dashboardsMap: AvailableDashboardsDictionary;
-};
-
-export type DashboardDataOptions = {
-  dataMode: DashboardDataMode;
-  snapshotId?: string;
-};
-
-export type DashboardRenderOptions = {
-  headless?: boolean;
 };

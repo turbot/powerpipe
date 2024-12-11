@@ -12,7 +12,8 @@ import {
   DashboardDefinition,
 } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type DashboardProps = {
   definition: DashboardDefinition;
@@ -34,7 +35,7 @@ const Dashboard = ({
     components: { SnapshotHeader },
     dataMode,
     filterAndGroupControlPanel,
-  } = useDashboard();
+  } = useDashboardState();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
       {isRoot && !definition.artificial && (
@@ -74,8 +75,9 @@ const Dashboard = ({
 const DashboardWrapper = ({
   showPanelControls = true,
 }: DashboardWrapperProps) => {
-  const { dashboard, dataMode, search, selectedDashboard, selectedPanel } =
-    useDashboard();
+  const { dashboard, dataMode, selectedDashboard, selectedPanel } =
+    useDashboardState();
+  const { search } = useDashboardSearch();
 
   if (
     search.value ||

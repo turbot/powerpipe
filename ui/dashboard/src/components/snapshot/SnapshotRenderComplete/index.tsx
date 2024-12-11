@@ -1,11 +1,17 @@
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import {
+  DashboardDataModeCLISnapshot,
+  DashboardDataModeCloudSnapshot,
+} from "@powerpipe/types";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const SnapshotRenderComplete = () => {
-  const {
-    render: { snapshotCompleteDiv },
-  } = useDashboard();
+  const { dataMode, state } = useDashboardState();
 
-  if (!snapshotCompleteDiv) {
+  if (
+    dataMode === DashboardDataModeCLISnapshot ||
+    dataMode === DashboardDataModeCloudSnapshot ||
+    state !== "complete"
+  ) {
     return null;
   }
 

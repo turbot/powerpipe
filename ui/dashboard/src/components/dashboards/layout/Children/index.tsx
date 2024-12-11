@@ -4,7 +4,7 @@ import {
   DashboardPanelType,
   PanelDefinition,
 } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type ChildrenProps = {
   children: ContainerDefinition[] | PanelDefinition[] | undefined;
@@ -17,7 +17,7 @@ const Children = ({
   parentType,
   showPanelControls = true,
 }: ChildrenProps) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   return (
     <>
       {children.map((child) => {

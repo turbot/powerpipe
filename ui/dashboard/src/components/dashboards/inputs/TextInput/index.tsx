@@ -5,11 +5,11 @@ import {
   IInput,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 
 const TextInput = (props: InputProps) => {
-  const { dataMode, dispatch, selectedDashboardInputs } = useDashboard();
+  const { dataMode, dispatch, selectedDashboardInputs } = useDashboardState();
   const stateValue = selectedDashboardInputs[props.name];
   const [value, setValue] = useState<string>(() => {
     return stateValue || "";

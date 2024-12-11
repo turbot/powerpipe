@@ -3,14 +3,14 @@ import { DetectionNode } from "@powerpipe/components/dashboards/grouping/common"
 import { saveAs } from "file-saver";
 import { timestampForFilename } from "@powerpipe/utils/date";
 import { useCallback, useState } from "react";
-import { useDashboard } from "./useDashboard";
+import { useDashboardState } from "./useDashboardState";
 import { usePapaParse } from "react-papaparse";
 
 const useDownloadDetectionData = (
   node: DetectionNode,
   resultNodes?: DetectionResultNode[],
 ) => {
-  const { selectedDashboard } = useDashboard();
+  const { selectedDashboard } = useDashboardState();
   const { jsonToCSV } = usePapaParse();
   const [processing, setProcessing] = useState(false);
 

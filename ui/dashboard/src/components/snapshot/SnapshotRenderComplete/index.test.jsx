@@ -1,6 +1,6 @@
 import React from "react";
 import SnapshotRenderComplete from "./index.tsx";
-import { DashboardContext } from "@powerpipe/hooks/useDashboard";
+import { DashboardContext } from "@powerpipe/hooks/useDashboardState";
 import { render } from "@testing-library/react";
 import "@testing-library/jest-dom";
 

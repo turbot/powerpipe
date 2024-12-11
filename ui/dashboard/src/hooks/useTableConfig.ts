@@ -3,13 +3,13 @@ import {
   TableConfig,
 } from "@powerpipe/components/dashboards/common/types";
 import { TableProperties } from "@powerpipe/components/dashboards/Table";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const useTableConfig = (panelName?: string) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   const panel = panelName ? panelsMap[panelName] : undefined;
 
   const allTables = useMemo(() => {

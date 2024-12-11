@@ -24,7 +24,7 @@ import {
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
 import { PanelProperties } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useEffect, useState } from "react";
 
 const Table = getComponent("table");
@@ -189,7 +189,7 @@ const ValueWithDiff = ({ loading, value, diff }) => (
 const Card = (props: CardProps) => {
   const ExternalLink = getComponent("external_link");
   const state = useCardState(props);
-  const { searchPathPrefix } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
     state.href || null,

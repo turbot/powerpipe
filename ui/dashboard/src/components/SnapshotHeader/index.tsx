@@ -2,10 +2,10 @@ import Icon from "@powerpipe/components/Icon";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardDataModeCLISnapshot } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const SnapshotHeader = () => {
-  const { dataMode, snapshotFileName } = useDashboard();
+  const { dataMode, snapshotFileName } = useDashboardState();
 
   if (dataMode !== DashboardDataModeCLISnapshot) {
     return null;

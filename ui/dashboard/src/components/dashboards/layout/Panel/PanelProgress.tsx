@@ -2,13 +2,13 @@ import { classNames } from "@powerpipe/utils/styles";
 import { DashboardDataModeLive } from "@powerpipe/types";
 import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo } from "react";
 import { usePanel } from "@powerpipe/hooks/usePanel";
 
 const PanelProgress = ({ className }) => {
   const { definition } = usePanel();
-  const { dataMode, panelsMap } = useDashboard();
+  const { dataMode, panelsMap } = useDashboardState();
 
   const showProgress = useMemo(
     () =>

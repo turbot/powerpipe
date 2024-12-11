@@ -23,12 +23,12 @@ import { noop } from "@powerpipe/utils/func";
 import { saveAs } from "file-saver";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
 import { timestampForFilename } from "@powerpipe/utils/date";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useNavigate } from "react-router-dom";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const useSaveSnapshot = () => {
-  const { dashboard, snapshot } = useDashboard();
+  const { dashboard, snapshot } = useDashboardState();
   const { allFilters } = useFilterConfig();
   const { allGroupings } = useGroupingConfig();
   const { allTables } = useTableConfig();
@@ -90,7 +90,7 @@ const useSaveSnapshot = () => {
 };
 
 const useOpenSnapshot = () => {
-  const { dispatch } = useDashboard();
+  const { dispatch } = useDashboardState();
   const navigate = useNavigate();
 
   return (e: ChangeEvent<HTMLInputElement>) => {
@@ -155,7 +155,7 @@ interface SplitSnapshotAction {
 }
 
 const SplitSnapshotButton = () => {
-  const { dashboard, selectedDashboard, snapshot } = useDashboard();
+  const { dashboard, selectedDashboard, snapshot } = useDashboardState();
   const openSnapshot = useOpenSnapshot();
   const saveSnapshot = useSaveSnapshot();
   const openSnapshotRef = useRef<HTMLInputElement | null>(null);

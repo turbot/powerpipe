@@ -1,7 +1,6 @@
 // Ensure Table is loaded & registered first
 import "@powerpipe/components/dashboards/Table";
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
-import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
@@ -12,7 +11,6 @@ import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelCo
 import useDownloadDetectionBenchmarkData from "@powerpipe/hooks/useDownloadDetectionBenchmarkData";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
@@ -30,10 +28,11 @@ import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
+import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useEffect, useMemo, useState } from "react";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 type BenchmarkTableViewProps = {
@@ -55,7 +54,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboard();
+  const { selectedPanel } = useDashboardState();
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =

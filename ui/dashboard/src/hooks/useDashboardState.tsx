@@ -1,5 +1,5 @@
-import get from "lodash/get";
 import useDashboardVersionCheck from "./useDashboardVersionCheck";
+import { buildComponentsMap } from "@powerpipe/components";
 import {
   buildDashboards,
   buildPanelsLog,
@@ -14,12 +14,22 @@ import {
   migratePanelStatuses,
 } from "@powerpipe/utils/dashboardEventHandlers";
 import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from "react";
+import {
   DashboardActions,
+  DashboardCliMode,
+  DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
   DashboardDataModeLive,
-  DashboardDataOptions,
-  DashboardRenderOptions,
+  DashboardSearch,
   IDashboardContext,
 } from "@powerpipe/types";
 import {
@@ -30,7 +40,8 @@ import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,
 } from "@powerpipe/utils/schema";
-import { useCallback, useReducer } from "react";
+
+const DashboardContext = createContext<IDashboardContext | null>(null);
 
 const reducer = (state: IDashboardContext, action) => {
   switch (action.type) {
@@ -68,16 +79,10 @@ const reducer = (state: IDashboardContext, action) => {
         ...state,
         cliMode: action.cli_mode,
       };
-    case DashboardActions.SET_SEARCH_PATH_PREFIX:
-      return {
-        ...state,
-        searchPathPrefix: action.search_path_prefix,
-      };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
         action.dashboards,
         action.benchmarks,
-        action.snapshots,
       );
       const selectedDashboard = updateSelectedDashboard(
         state.selectedDashboard,
@@ -134,32 +139,12 @@ const reducer = (state: IDashboardContext, action) => {
           migratedEvent.start_time,
         ),
         panelsMap: migratedEvent.panels,
-        diff: null,
         dashboard,
         execution_id: migratedEvent.execution_id,
         refetchDashboard: false,
         progress: 0,
         snapshot: null,
         state: "running",
-      };
-    }
-    case DashboardActions.DIFF_SNAPSHOT: {
-      // If we're in live mode, do nothing
-      if (state.dataMode === DashboardDataModeLive) {
-        return state;
-      }
-
-      const eventMigrator = new ExecutionCompleteSchemaMigrator();
-      const migratedEvent = eventMigrator.toLatest(action);
-      const panels = migratedEvent.snapshot.panels;
-      const panelsMap = migratePanelStatuses(panels, action.schema_version);
-
-      return {
-        ...state,
-        diff: {
-          panelsMap,
-          snapshotFileName: action.snapshotFileName,
-        },
       };
     }
     case DashboardActions.EXECUTION_COMPLETE: {
@@ -199,7 +184,6 @@ const reducer = (state: IDashboardContext, action) => {
           panels,
           migratedEvent.snapshot.end_time,
         ),
-        diff: null,
         panelsMap,
         dashboard,
         progress: 100,
@@ -350,25 +334,6 @@ const reducer = (state: IDashboardContext, action) => {
         recordInputsHistory: false,
       };
     }
-    case DashboardActions.SET_DASHBOARD_SEARCH_VALUE:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          value: action.value,
-        },
-      };
-    case DashboardActions.SET_DASHBOARD_SEARCH_GROUP_BY:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          groupBy: {
-            value: action.value,
-            tag: action.tag,
-          },
-        },
-      };
     case DashboardActions.SET_DASHBOARD_TAG_KEYS:
       return {
         ...state,
@@ -416,7 +381,6 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
-    searchPathPrefix: [],
     selectedPanel: null,
     selectedDashboard: null,
     selectedDashboardInputs:
@@ -424,56 +388,80 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     snapshot: null,
     lastChangedInput: null,
 
-    search: {
-      value: searchParams.get("search") || "",
-      groupBy: {
-        value:
-          searchParams.get("group_by") ||
-          get(defaults, "search.groupBy.value", "tag"),
-        tag:
-          searchParams.get("tag") ||
-          get(defaults, "search.groupBy.value", "service"),
-      },
-    },
-
     execution_id: null,
 
     progress: 0,
   };
 };
 
-type DashboardStateProps = {
-  dataOptions: DashboardDataOptions;
-  renderOptions: DashboardRenderOptions;
-  searchParams: URLSearchParams;
-  stateDefaults: {};
+type DashboardStateProviderProps = {
+  analyticsContext: any;
+  breakpointContext: any;
+  children: ReactNode;
+  componentOverrides?: {};
+  dataMode: DashboardDataMode;
+  stateDefaults?: {
+    cliMode?: DashboardCliMode;
+    search?: DashboardSearch;
+  };
   versionMismatchCheck: boolean;
 };
 
-const useDashboardState = ({
-  dataOptions = {
-    dataMode: DashboardDataModeLive,
-  },
-  renderOptions = {
-    headless: false,
-  },
-  searchParams,
-  stateDefaults = {},
+export const DashboardStateProvider = ({
+  children,
+  analyticsContext,
+  breakpointContext,
+  componentOverrides = {},
+  dataMode,
+  stateDefaults,
   versionMismatchCheck,
-}: DashboardStateProps) => {
-  const initialState = getInitialState(searchParams, {
-    ...stateDefaults,
-    ...dataOptions,
-    ...renderOptions,
-    versionMismatchCheck,
-  });
+}: DashboardStateProviderProps) => {
+  const {
+    setMetadata: setAnalyticsMetadata,
+    setSelectedDashboard: setAnalyticsSelectedDashboard,
+  } = analyticsContext;
+  const components = buildComponentsMap(componentOverrides);
+  const initialState = useMemo(() => {
+    const searchParams = new URLSearchParams(window.location.search);
+    return getInitialState(searchParams, {
+      ...stateDefaults,
+      dataMode,
+      versionMismatchCheck,
+    });
+  }, []);
   const [state, dispatchInner] = useReducer(reducer, initialState);
   useDashboardVersionCheck(state);
   const dispatch = useCallback((action) => {
     // console.log(action.type, action);
     dispatchInner(action);
   }, []);
-  return [state, dispatch];
+
+  console.log(state);
+
+  // Alert analytics
+  useEffect(() => {
+    setAnalyticsMetadata(state.metadata);
+  }, [state.metadata, setAnalyticsMetadata]);
+
+  useEffect(() => {
+    setAnalyticsSelectedDashboard(state.selectedDashboard);
+  }, [state.selectedDashboard, setAnalyticsSelectedDashboard]);
+
+  return (
+    <DashboardContext.Provider
+      value={{ ...state, breakpointContext, components, dispatch }}
+    >
+      {children}
+    </DashboardContext.Provider>
+  );
 };
 
-export default useDashboardState;
+export const useDashboardState = () => {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    throw new Error(
+      "useDashboardExecution must be used within a DashboardExecutionProvider",
+    );
+  }
+  return context;
+};

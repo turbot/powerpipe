@@ -1,25 +1,22 @@
 import SearchInput from "../SearchInput";
 import useDebouncedEffect from "@powerpipe/hooks/useDebouncedEffect";
-import { DashboardActions } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 
 const DashboardSearch = () => {
   const {
     availableDashboardsLoaded,
     breakpointContext: { minBreakpoint },
-    dispatch,
-    search,
     metadata,
-  } = useDashboard();
+  } = useDashboardState();
+  const { search, updateSearchValue } = useDashboardSearch();
   const [innerValue, setInnerValue] = useState(search.value);
 
   useEffect(() => {
     setInnerValue(() => search.value);
   }, [search.value]);
 
-  const updateSearchValue = (value) =>
-    dispatch({ type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE, value });
   useDebouncedEffect(() => updateSearchValue(innerValue), 250, [innerValue]);
 
   return (

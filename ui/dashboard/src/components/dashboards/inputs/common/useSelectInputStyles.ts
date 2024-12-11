@@ -1,11 +1,9 @@
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useEffect, useState } from "react";
 
 const useSelectInputStyles = () => {
   const [, setRandomVal] = useState(0);
-  const {
-    themeContext: { theme, wrapperRef },
-  } = useDashboard();
+  const { theme, wrapperRef } = useDashboardTheme();
 
   // This is annoying, but unless I force a refresh the theme doesn't stay in sync when you switch
   useEffect(() => setRandomVal(Math.random()), [theme.name]);

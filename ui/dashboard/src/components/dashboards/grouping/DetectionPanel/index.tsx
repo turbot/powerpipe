@@ -27,13 +27,12 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import {
-  IPanelControl,
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
 import { noop } from "@powerpipe/utils/func";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useEffect, useMemo, useState } from "react";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useMemo, useState } from "react";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -128,7 +127,7 @@ const getDetectionResultRowIconTitle = (total: number) => {
 };
 
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
@@ -314,7 +313,6 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     enabled: panelControlsEnabled,
     panelControls,
     showPanelControls,
-    setCustomControls,
     setShowPanelControls,
   } = usePanelControls();
   const [referenceElement, setReferenceElement] = useState(null);
