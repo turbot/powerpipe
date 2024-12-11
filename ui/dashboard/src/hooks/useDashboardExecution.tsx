@@ -71,7 +71,10 @@ export const DashboardExecutionProvider = ({
         type: DashboardActions.SELECT_DASHBOARD,
         dashboard: null,
       });
-      navigate("../", { replace: true });
+      navigate(
+        `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
+        { replace: true },
+      );
       setLastChangedInput(null);
       return;
     }
@@ -142,7 +145,13 @@ export const DashboardExecutionProvider = ({
       return;
     }
     executeDashboard(dashboard_name);
-  }, [availableDashboardsLoaded, dataMode, dashboard_name, inputs]);
+  }, [
+    availableDashboardsLoaded,
+    dataMode,
+    dashboard_name,
+    inputs,
+    searchPathPrefix,
+  ]);
 
   return (
     <DashboardExecutionContext.Provider value={{ executeDashboard }}>

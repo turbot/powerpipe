@@ -1,15 +1,11 @@
-import {
-  CheckDisplayGroup,
-  Filter,
-} from "@powerpipe/components/dashboards/grouping/common";
 import { classNames } from "@powerpipe/utils/styles";
+import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { Noop } from "@powerpipe/types/func";
 import { ReactNode } from "react";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 type DashboardControlsSummaryProps = {
   filterConfig: Filter;
-  groupingConfig: CheckDisplayGroup[];
   onClose: Noop;
 };
 
@@ -96,7 +92,6 @@ const DashboardGroupingControlButton = ({ toggleControls }) => {
 
 const DashboardControlsSummary = ({
   filterConfig,
-  groupingConfig,
   onClose,
 }: DashboardControlsSummaryProps) => {
   return (
@@ -106,10 +101,7 @@ const DashboardControlsSummary = ({
           filterConfig={filterConfig}
           toggleControls={onClose}
         />
-        <DashboardGroupingControlButton
-          groupingConfig={groupingConfig}
-          toggleControls={onClose}
-        />
+        <DashboardGroupingControlButton toggleControls={onClose} />
       </div>
     </>
   );

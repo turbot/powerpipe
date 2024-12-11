@@ -11,6 +11,7 @@ import { DashboardSearchPathProvider } from "@powerpipe/hooks/useDashboardSearch
 import { DashboardSearchProvider } from "@powerpipe/hooks/useDashboardSearch";
 import { DashboardStateProvider } from "./useDashboardState";
 import { DashboardThemeProvider } from "@powerpipe/hooks/useDashboardTheme";
+import DashboardGlobalHotKeys from "@powerpipe/components/DashboardGlobalHotKeys";
 
 type DashboardProviderProps = {
   analyticsContext: any;
@@ -589,27 +590,6 @@ const DashboardProvider = ({
   //   }
   // }, [state.selectedDashboard]);
 
-  // const [hotKeysHandlers, setHotKeysHandlers] = useState({
-  //   CLOSE_PANEL_DETAIL: noop,
-  // });
-
-  // const hotKeysMap = {
-  //   CLOSE_PANEL_DETAIL: ["esc"],
-  // };
-
-  // const closePanelDetail = useCallback(() => {
-  //   dispatch({
-  //     type: DashboardActions.SELECT_PANEL,
-  //     panel: null,
-  //   });
-  // }, [dispatch]);
-
-  // useEffect(() => {
-  //   setHotKeysHandlers({
-  //     CLOSE_PANEL_DETAIL: closePanelDetail,
-  //   });
-  // }, [closePanelDetail]);
-
   return (
     <DashboardThemeProvider themeContext={themeContext}>
       <DashboardSearchProvider defaultSearch={stateDefaults?.search}>
@@ -627,11 +607,7 @@ const DashboardProvider = ({
                 eventHooks={eventHooks}
                 socketUrlFactory={socketUrlFactory}
               >
-                {/*<GlobalHotKeys*/}
-                {/*  allowChanges*/}
-                {/*  keyMap={hotKeysMap}*/}
-                {/*  handlers={hotKeysHandlers}*/}
-                {/*/>*/}
+                <DashboardGlobalHotKeys />
                 {children}
               </DashboardExecutionProvider>
             </DashboardInputsProvider>

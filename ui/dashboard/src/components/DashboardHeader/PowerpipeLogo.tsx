@@ -16,6 +16,8 @@ const PowerpipeLogo = () => {
   const { searchPathPrefix } = useDashboardSearchPath();
   const ExternalLink = getComponent("external_link");
 
+  console.log({ searchPathPrefix });
+
   return (
     <div className="mr-1 md:mr-4">
       <ExternalLink
