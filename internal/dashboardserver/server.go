@@ -409,7 +409,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.setDashboardInputsForSession(sessionId, nil)
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
 		case "get_snapshot_diff":
-			snap, err := snapshot.Diff(*request.Payload.SnapshotDiff)
+			snap, err := snapshot.GenerateDiff(*request.Payload.SnapshotDiff)
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_snapshot_diff"))
 			}
