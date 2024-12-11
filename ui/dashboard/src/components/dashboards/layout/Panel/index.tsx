@@ -48,6 +48,7 @@ const Panel = ({
   children,
   className,
   definition,
+  showControls = true,
   showPanelError = true,
   showPanelStatus = true,
   forceBackground = false,
@@ -84,9 +85,7 @@ const Panel = ({
       ref={setReferenceElement}
       id={definition.name}
       className={baseStyles}
-      onMouseEnter={
-        showPanelControls ? () => setShowPanelControls(true) : undefined
-      }
+      onMouseEnter={showControls ? () => setShowPanelControls(true) : undefined}
       onMouseLeave={() => setShowPanelControls(false)}
     >
       <section
