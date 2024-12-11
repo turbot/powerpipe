@@ -27,12 +27,13 @@ import {
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
 import {
+  IPanelControl,
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
 import { noop } from "@powerpipe/utils/func";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type DetectionChildrenProps = {
   depth: number;
@@ -313,6 +314,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     enabled: panelControlsEnabled,
     panelControls,
     showPanelControls,
+    setCustomControls,
     setShowPanelControls,
   } = usePanelControls();
   const [referenceElement, setReferenceElement] = useState(null);
@@ -367,32 +369,32 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
   );
 
-  // useEffect(() => {
-  //   console.log("Setting DetectionPanel custom controls", {
-  //     node,
-  //     descendant_result_nodes,
-  //   });
-  //   const controls: IPanelControl[] = [
-  //     {
-  //       key: "download-data",
-  //       disabled: descendant_result_nodes.length === 0,
-  //       title: "Download data",
-  //       icon: "arrow-down-tray",
-  //       action: download,
-  //     },
-  //   ];
-  //   if (node.type === "benchmark") {
-  //     controls.push({
-  //       key: "open-in-new-window",
-  //       title: "Open in new window",
-  //       icon: "open_in_new",
-  //       action: async () => {
-  //         window.open(window.location.origin + "/" + node.name, "_blank");
-  //       },
-  //     });
-  //   }
-  //   setCustomControls(controls);
-  // }, [node.name, node.type, descendant_result_nodes, setCustomControls]);
+  useEffect(() => {
+    console.log("Setting DetectionPanel custom controls", {
+      node,
+      descendant_result_nodes,
+    });
+    const controls: IPanelControl[] = [
+      {
+        key: "download-data",
+        disabled: descendant_result_nodes.length === 0,
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
+      },
+    ];
+    if (node.type === "benchmark") {
+      controls.push({
+        key: "open-in-new-window",
+        title: "Open in new window",
+        icon: "open_in_new",
+        action: async () => {
+          window.open(window.location.origin + "/" + node.name, "_blank");
+        },
+      });
+    }
+    setCustomControls(controls);
+  }, [node.name, node.type, descendant_result_nodes, setCustomControls]);
 
   const hasResults =
     can_be_expanded &&

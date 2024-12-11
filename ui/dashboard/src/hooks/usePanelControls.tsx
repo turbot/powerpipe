@@ -83,9 +83,9 @@ const PanelControlsProvider = ({
   const downloadPanelData = useCallback(
     async (e) => {
       e.stopPropagation();
-      await download(definition.data);
+      await download(panelData);
     },
-    [definition, download],
+    [definition, download, panelData],
   );
 
   const getBasePanelControls = () => {
@@ -93,14 +93,13 @@ const PanelControlsProvider = ({
     if (!enabled || !definition) {
       return controls;
     }
-    if (panelData) {
-      controls.push({
-        key: "download-data",
-        title: "Download data",
-        icon: "arrow-down-tray",
-        action: downloadPanelData,
-      });
-    }
+    controls.push({
+      key: "download-data",
+      disabled: !panelData,
+      title: panelData ? "Download data" : "No data to download",
+      icon: "arrow-down-tray",
+      action: downloadPanelData,
+    });
     if (panelDetailEnabled) {
       controls.push({
         key: "view-panel-detail",
@@ -133,7 +132,7 @@ const PanelControlsProvider = ({
       }
     }
     setPanelControls(() => [...uniqueCustomControls, ...baseControls]);
-  }, [customControls]);
+  }, [customControls, panelData]);
 
   return (
     <PanelControlsContext.Provider

@@ -43,17 +43,17 @@ const Child = ({
         );
       }
     case "control":
-      const DetectionBenchmark = getComponent("detection_benchmark");
+      const Benchmark = getComponent("benchmark");
       return (
-        <DetectionBenchmark
+        <Benchmark
           {...(layoutDefinition as PanelDefinition)}
           showControls={showPanelControls}
         />
       );
     case "detection":
-      const Benchmark = getComponent("benchmark");
+      const DetectionBenchmark = getComponent("detection_benchmark");
       return (
-        <Benchmark
+        <DetectionBenchmark
           {...(layoutDefinition as PanelDefinition)}
           showControls={showPanelControls}
         />

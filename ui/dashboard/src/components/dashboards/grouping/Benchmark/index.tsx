@@ -68,12 +68,13 @@ const Benchmark = (props: InnerCheckProps) => {
     return props.benchmark.get_data_table();
   }, [props.benchmark, props.grouping]);
   const [referenceElement, setReferenceElement] = useState(null);
-  const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const {
+    enabled: panelControlsEnabled,
     panelControls: benchmarkControls,
     showPanelControls,
     setCustomControls,
     setPanelData,
+    setShowPanelControls,
   } = usePanelControls();
 
   useEffect(() => {
@@ -200,10 +201,10 @@ const Benchmark = (props: InnerCheckProps) => {
       name={props.definition.name}
       width={props.definition.width}
       events={{
-        onMouseEnter: showPanelControls
-          ? () => setShowBenchmarkControls(true)
+        onMouseEnter: panelControlsEnabled
+          ? () => setShowPanelControls(true)
           : noop,
-        onMouseLeave: () => setShowBenchmarkControls(false),
+        onMouseLeave: () => setShowPanelControls(false),
       }}
       setRef={setReferenceElement}
     >
@@ -212,7 +213,7 @@ const Benchmark = (props: InnerCheckProps) => {
         <DashboardTitle
           title={props.definition.title}
           controls={
-            showBenchmarkControls ? (
+            showPanelControls ? (
               <PanelControls
                 referenceElement={referenceElement}
                 controls={benchmarkControls}

@@ -1,6 +1,7 @@
 // Ensure Table is loaded & registered first
 import "@powerpipe/components/dashboards/Table";
 import Card, { CardProps } from "@powerpipe/components/dashboards/Card";
+import CustomizeViewSummary from "../CustomizeViewSummary";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import DetectionGrouping from "../DetectionGrouping";
 import Error from "@powerpipe/components/dashboards/Error";
@@ -28,11 +29,11 @@ import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
-import { PanelDefinition } from "@powerpipe/types";
+import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 type BenchmarkTableViewProps = {
@@ -54,7 +55,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { selectedPanel } = useDashboardState();
+  const { dispatch, selectedPanel } = useDashboardState();
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =
@@ -63,38 +64,38 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
     props.benchmark,
   );
 
-  // useEffect(() => {
-  //   console.log("Setting DetectionBenchmark custom controls", {
-  //     processing,
-  //     grouping: props.grouping,
-  //     name: props.definition.name,
-  //   });
-  //   setCustomControls([
-  //     {
-  //       key: "filter-and-group",
-  //       title: "Filter & Group",
-  //       component: <CustomizeViewSummary panelName={props.definition.name} />,
-  //       action: async () =>
-  //         dispatch({
-  //           type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
-  //           panel_name: props.definition.name,
-  //         }),
-  //     },
-  //     {
-  //       key: "download-data",
-  //       disabled: processing || props.grouping.status !== "complete",
-  //       title: "Download data",
-  //       icon: "arrow-down-tray",
-  //       action: download,
-  //     },
-  //   ]);
-  // }, [
-  //   dispatch,
-  //   processing,
-  //   props.grouping.status,
-  //   props.definition.name,
-  //   setCustomControls,
-  // ]);
+  useEffect(() => {
+    console.log("Setting DetectionBenchmark custom controls", {
+      processing,
+      grouping: props.grouping,
+      name: props.definition.name,
+    });
+    setCustomControls([
+      {
+        key: "filter-and-group",
+        title: "Filter & Group",
+        component: <CustomizeViewSummary panelName={props.definition.name} />,
+        action: async () =>
+          dispatch({
+            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
+            panel_name: props.definition.name,
+          }),
+      },
+      {
+        key: "download-data",
+        disabled: processing || props.grouping.status !== "complete",
+        title: "Download data",
+        icon: "arrow-down-tray",
+        action: download,
+      },
+    ]);
+  }, [
+    dispatch,
+    processing,
+    props.grouping.status,
+    props.definition.name,
+    setCustomControls,
+  ]);
 
   const summaryCards = useMemo(() => {
     if (!props.grouping) {
