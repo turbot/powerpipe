@@ -55,7 +55,7 @@ import {
   ZoomInIcon,
   ZoomOutIcon,
 } from "@powerpipe/constants/icons";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useEffect, useMemo } from "react";
 import { usePanel } from "@powerpipe/hooks/usePanel";
 import "reactflow/dist/style.css";
@@ -584,7 +584,7 @@ const useNodeAndEdgePanelInformation = (
 };
 
 const Graph = (props) => {
-  const { selectedPanel } = useDashboardState();
+  const { selectedPanel } = useDashboardPanelDetail();
   const graphOptions = useGraphOptions(props);
   useNodeAndEdgePanelInformation(
     props.nodeAndEdgeStatus,

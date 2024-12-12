@@ -20,7 +20,7 @@ import { ReactNode } from "react";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 
 type PanelProps = {
@@ -53,7 +53,7 @@ const Panel = ({
   showPanelStatus = true,
   forceBackground = false,
 }: PanelProps) => {
-  const { selectedPanel } = useDashboardState();
+  const { selectedPanel } = useDashboardPanelDetail();
   const { inputPanelsAwaitingValue } = usePanel();
   const [referenceElement, setReferenceElement] = useState(null);
   const baseStyles = classNames(

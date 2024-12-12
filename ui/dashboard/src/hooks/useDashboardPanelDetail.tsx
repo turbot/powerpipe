@@ -8,10 +8,11 @@ import {
 } from "react";
 import { GlobalHotKeys } from "react-hotkeys";
 import { noop } from "@powerpipe/utils/func";
+import { PanelDefinition } from "@powerpipe/types";
 
 interface IDashboardPanelDetailContext {
   selectedPanel: string | null;
-  selectPanel: (panelName: string | null) => void;
+  selectPanel: (panelName: PanelDefinition | null) => void;
   closePanel: () => void;
   selectedFilterAndGroupPanel: string | null;
   selectFilterAndGroupPanel: (panelName: string | null) => void;

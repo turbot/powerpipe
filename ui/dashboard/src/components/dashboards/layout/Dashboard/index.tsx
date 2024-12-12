@@ -75,8 +75,8 @@ const Dashboard = ({
 const DashboardWrapper = ({
   showPanelControls = true,
 }: DashboardWrapperProps) => {
-  const { dashboard, dataMode, selectedDashboard, selectedPanel } =
-    useDashboardState();
+  const { dashboard, dataMode, selectedDashboard } = useDashboardState();
+  const { selectedPanel } = useDashboardPanelDetail();
   const { search } = useDashboardSearch();
 
   usePageTitle([

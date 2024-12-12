@@ -33,7 +33,6 @@ import {
 } from "@powerpipe/hooks/usePanelControls";
 import { PanelDefinition } from "@powerpipe/types";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
@@ -57,7 +56,7 @@ const Benchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboardState();
+  const { selectedPanel } = useDashboardPanelDetail();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -88,7 +87,7 @@ const Benchmark = (props: InnerCheckProps) => {
         action: async () => selectFilterAndGroupPanel(props.definition.name),
       },
     ]);
-  }, [dispatch, props.definition.name, setCustomControls]);
+  }, [props.definition.name, setCustomControls]);
 
   useEffect(() => {
     if (!benchmarkDataTable) {

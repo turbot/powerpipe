@@ -32,7 +32,6 @@ export type IDashboardContext = {
   dashboardsMetadata: DashboardsMetadataDictionary;
   dashboard: DashboardDefinition | null;
 
-  selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
 
   dashboardTags: DashboardTags;

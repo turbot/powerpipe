@@ -33,7 +33,6 @@ import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
@@ -56,7 +55,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboardState();
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =
@@ -64,7 +62,8 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
-  const { selectFilterAndGroupPanel } = useDashboardPanelDetail();
+  const { selectFilterAndGroupPanel, selectedPanel } =
+    useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -83,7 +82,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
       },
     ]);
   }, [
-    dispatch,
     processing,
     props.grouping.status,
     props.definition.name,
