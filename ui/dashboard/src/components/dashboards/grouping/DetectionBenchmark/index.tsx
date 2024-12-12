@@ -29,9 +29,10 @@ import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
-import { DashboardActions, PanelDefinition } from "@powerpipe/types";
+import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
@@ -63,6 +64,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
+  const { selectFilterAndGroupPanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -70,11 +72,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () =>
-          dispatch({
-            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
-            panel_name: props.definition.name,
-          }),
+        action: async () => selectFilterAndGroupPanel(props.definition.name),
       },
       {
         key: "download-data",

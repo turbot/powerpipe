@@ -6,13 +6,16 @@ import {
   useEffect,
   useState,
 } from "react";
-import { DashboardActions } from "@powerpipe/types";
 import { GlobalHotKeys } from "react-hotkeys";
 import { noop } from "@powerpipe/utils/func";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 interface IDashboardPanelDetailContext {
-  closePanelDetail: () => void;
+  selectedPanel: string | null;
+  selectPanel: (panelName: string | null) => void;
+  closePanel: () => void;
+  selectedFilterAndGroupPanel: string | null;
+  selectFilterAndGroupPanel: (panelName: string | null) => void;
+  closeFilterAndGroupPanel: () => void;
 }
 
 interface DashboardPanelDetailProviderProps {
@@ -25,7 +28,9 @@ const DashboardPanelDetailContext =
 export const DashboardPanelDetailProvider = ({
   children,
 }: DashboardPanelDetailProviderProps) => {
-  const { dispatch } = useDashboardState();
+  const [selectedPanel, setSelectedPanel] = useState<string | null>(null);
+  const [selectedFilterAndGroupPanel, setSelectedFilterAndGroupPanel] =
+    useState<string | null>(null);
 
   const [hotKeysHandlers, setHotKeysHandlers] = useState({
     CLOSE_PANEL_DETAIL: noop,
@@ -35,23 +40,30 @@ export const DashboardPanelDetailProvider = ({
     CLOSE_PANEL_DETAIL: ["esc"],
   };
 
-  const closePanelDetail = useCallback(() => {
-    dispatch({
-      type: DashboardActions.SELECT_PANEL,
-      panel: null,
-    });
-  }, [dispatch]);
+  const selectPanel = (panelName: string | null) => {
+    setSelectedPanel(panelName);
+  };
+
+  const closePanel = useCallback(() => {
+    setSelectedPanel(null);
+  }, []);
 
   useEffect(() => {
     setHotKeysHandlers({
-      CLOSE_PANEL_DETAIL: closePanelDetail,
+      CLOSE_PANEL_DETAIL: closePanel,
     });
-  }, [closePanelDetail]);
+  }, [closePanel]);
 
   return (
     <DashboardPanelDetailContext.Provider
       value={{
-        closePanelDetail,
+        selectedPanel,
+        selectPanel,
+        closePanel,
+        selectedFilterAndGroupPanel,
+        selectFilterAndGroupPanel: (panelName: string | null) =>
+          setSelectedFilterAndGroupPanel(panelName),
+        closeFilterAndGroupPanel: () => setSelectedFilterAndGroupPanel(null),
       }}
     >
       <GlobalHotKeys

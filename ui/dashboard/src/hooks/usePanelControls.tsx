@@ -1,5 +1,4 @@
 import useDownloadPanelData from "./useDownloadPanelData";
-import useSelectPanel from "./useSelectPanel";
 import { BaseChartProps } from "@powerpipe/components/dashboards/charts/types";
 import { CardProps } from "@powerpipe/components/dashboards/Card";
 import {
@@ -16,10 +15,11 @@ import { HierarchyProps } from "@powerpipe/components/dashboards/hierarchies/typ
 import { ImageProps } from "@powerpipe/components/dashboards/Image";
 import { InputProps } from "@powerpipe/components/dashboards/inputs/types";
 import { LeafNodeData } from "@powerpipe/components/dashboards/common";
+import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { noop } from "@powerpipe/utils/func";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
 export type IPanelControlsContext = {
   enabled: boolean;
@@ -75,7 +75,7 @@ const PanelControlsProvider = ({
     definition.data,
   );
   const { download } = useDownloadPanelData(definition);
-  const { select } = useSelectPanel(definition);
+  const { selectPanel } = useDashboardPanelDetail();
   const [showPanelControls, setShowPanelControls] = useState(false);
 
   useEffect(() => setPanelData(() => definition.data), [definition.data]);
@@ -105,7 +105,7 @@ const PanelControlsProvider = ({
         key: "view-panel-detail",
         title: "View detail",
         icon: "arrows-pointing-out",
-        action: select,
+        action: async () => selectPanel(definition.name),
       });
     }
     return controls;

@@ -73,11 +73,6 @@ const reducer = (state: IDashboardContext, action) => {
           [state.selectedDashboard?.full_name]: action.metadata,
         },
       };
-    case DashboardActions.SET_CLI_MODE:
-      return {
-        ...state,
-        cliMode: action.cli_mode,
-      };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
         action.dashboards,
@@ -205,8 +200,6 @@ const reducer = (state: IDashboardContext, action) => {
         EXECUTION_SCHEMA_VERSION_20221222,
         state,
       );
-    case DashboardActions.SELECT_PANEL:
-      return { ...state, selectedPanel: action.panel };
     case DashboardActions.SET_DATA_MODE:
       const newState = {
         ...state,
@@ -259,8 +252,6 @@ const reducer = (state: IDashboardContext, action) => {
         snapshotId: null,
         state: null,
         selectedDashboard: action.dashboard,
-        selectedPanel: null,
-        lastChangedInput: null,
       };
     case DashboardActions.SET_DASHBOARD_TAG_KEYS:
       return {
@@ -274,24 +265,13 @@ const reducer = (state: IDashboardContext, action) => {
       return { ...state, snapshot_metadata_loaded: true };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
-    case DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL:
-      return {
-        ...state,
-        filterAndGroupControlPanel: action.panel_name,
-      };
-    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL: {
-      const { filterAndGroupControlPanel, ...rest } = state;
-      return {
-        ...rest,
-      };
-    }
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
   }
 };
 
-const getInitialState = (searchParams, defaults: any = {}) => {
+const getInitialState = (defaults: any = {}) => {
   return {
     cliMode: defaults.cliMode || "powerpipe",
     versionMismatchCheck: defaults.versionMismatchCheck,
@@ -308,10 +288,8 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
-    selectedPanel: null,
     selectedDashboard: null,
     snapshot: null,
-    lastChangedInput: null,
 
     execution_id: null,
 
@@ -347,8 +325,7 @@ export const DashboardStateProvider = ({
   } = analyticsContext;
   const components = buildComponentsMap(componentOverrides);
   const initialState = useMemo(() => {
-    const searchParams = new URLSearchParams(window.location.search);
-    return getInitialState(searchParams, {
+    return getInitialState({
       ...stateDefaults,
       dataMode,
       versionMismatchCheck,
@@ -361,7 +338,7 @@ export const DashboardStateProvider = ({
     dispatchInner(action);
   }, []);
 
-  // Alert analytics
+  // Set up analytics
   useEffect(() => {
     setAnalyticsMetadata(state.metadata);
   }, [state.metadata, setAnalyticsMetadata]);

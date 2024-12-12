@@ -13,6 +13,7 @@ import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
 interface IDashboardExecutionContext {
   executeDashboard: (dashboardFullName: string | null | undefined) => void;
@@ -35,6 +36,7 @@ export const DashboardExecutionProvider = ({
   const { dashboard_name } = useParams();
   const { availableDashboardsLoaded, dashboards, dataMode, dispatch } =
     useDashboardState();
+  const { selectPanel } = useDashboardPanelDetail();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
     eventHooks,
@@ -62,6 +64,8 @@ export const DashboardExecutionProvider = ({
     const dashboard = dashboards.find(
       (dashboard) => dashboard.full_name === dashboardFullName,
     );
+
+    selectPanel(null);
 
     // If the dashboard we're viewing no longer exists, go back to the main page
     if (!dashboard) {

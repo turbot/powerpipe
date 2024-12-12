@@ -51,7 +51,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
     dataMode,
     panelsLog,
   } = useDashboardState();
-  const { closePanelDetail } = useDashboardPanelDetail();
+  const { closePanel } = useDashboardPanelDetail();
   const isTablet = minBreakpoint("md");
 
   const panelLog = panelsLog[definition.name];
@@ -106,10 +106,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
             panelDefinition={definition}
             size={isTablet ? "md" : "sm"}
           />
-          <NeutralButton
-            onClick={closePanelDetail}
-            size={isTablet ? "md" : "sm"}
-          >
+          <NeutralButton onClick={closePanel} size={isTablet ? "md" : "sm"}>
             <>
               Close<span className="ml-2 font-light text-xxs">ESC</span>
             </>

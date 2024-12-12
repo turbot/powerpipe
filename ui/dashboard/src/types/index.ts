@@ -17,7 +17,6 @@ export type IDashboardContext = {
   metadata: ServerMetadata | null;
   availableDashboardsLoaded: boolean;
 
-  closePanelDetail(): void;
   dispatch(action: DashboardAction): void;
 
   dataMode: DashboardDataMode;
@@ -37,7 +36,6 @@ export type IDashboardContext = {
 
   selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
-  lastChangedInput: string | null;
 
   dashboardTags: DashboardTags;
 
@@ -51,8 +49,6 @@ export type IDashboardContext = {
   snapshot: DashboardSnapshot | null;
   snapshotFileName: string | null;
   snapshot_metadata_loaded: boolean;
-
-  filterAndGroupControlPanel?: string;
 };
 
 export type IBreakpointContext = {
@@ -134,15 +130,11 @@ export const DashboardActions: IActions = {
   LEAF_NODES_COMPLETE: "leaf_nodes_complete",
   LEAF_NODES_UPDATED: "leaf_nodes_updated",
   SELECT_DASHBOARD: "select_dashboard",
-  SELECT_PANEL: "select_panel",
-  SET_CLI_MODE: "set_cli_mode",
   SET_DASHBOARD: "set_dashboard",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
   SET_DATA_MODE: "set_data_mode",
-  SHOW_CUSTOMIZE_BENCHMARK_PANEL: "show_customize_benchmark_panel",
-  HIDE_CUSTOMIZE_BENCHMARK_PANEL: "hide_customize_benchmark_panel",
   WORKSPACE_ERROR: "workspace_error",
 };
 

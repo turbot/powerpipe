@@ -591,18 +591,18 @@ const DashboardProvider = ({
           stateDefaults={stateDefaults}
           versionMismatchCheck={versionMismatchCheck}
         >
-          <DashboardPanelDetailProvider>
-            <DashboardInputsProvider>
-              <DashboardSearchPathProvider>
+          <DashboardInputsProvider>
+            <DashboardSearchPathProvider>
+              <DashboardPanelDetailProvider>
                 <DashboardExecutionProvider
                   eventHooks={eventHooks}
                   socketUrlFactory={socketUrlFactory}
                 >
                   {children}
                 </DashboardExecutionProvider>
-              </DashboardSearchPathProvider>
-            </DashboardInputsProvider>
-          </DashboardPanelDetailProvider>
+              </DashboardPanelDetailProvider>
+            </DashboardSearchPathProvider>
+          </DashboardInputsProvider>
         </DashboardStateProvider>
       </DashboardSearchProvider>
     </DashboardThemeProvider>

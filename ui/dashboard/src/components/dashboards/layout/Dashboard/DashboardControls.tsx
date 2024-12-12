@@ -1,13 +1,14 @@
 import FilterConfig from "@powerpipe/components/dashboards/grouping/FilterConfig";
 import GroupingConfig from "@powerpipe/components/dashboards/grouping/GroupingConfig";
 import Icon from "@powerpipe/components/Icon";
-import { DashboardActions } from "@powerpipe/types";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
-const DashboardControls = ({ panelName }: { panelName: string }) => {
-  const { dispatch } = useDashboardState();
-  const hideControls = () =>
-    dispatch({ type: DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL });
+const DashboardControls = ({ panelName }: { panelName: string | null }) => {
+  const { closeFilterAndGroupPanel } = useDashboardPanelDetail();
+
+  if (!panelName) {
+    return null;
+  }
 
   return (
     <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden overflow-y-auto">
@@ -16,7 +17,7 @@ const DashboardControls = ({ panelName }: { panelName: string }) => {
         <Icon
           className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
           icon="close"
-          onClick={hideControls}
+          onClick={closeFilterAndGroupPanel}
           title="Close customize view"
         />
       </div>

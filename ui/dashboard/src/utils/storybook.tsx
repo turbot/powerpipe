@@ -83,7 +83,6 @@ export const PanelStoryDecorator = ({
             error: null,
             dashboards: [],
             dashboardsMap: {},
-            selectedPanel: null,
             selectedDashboard: {
               title: "Storybook Dashboard Wrapper",
               full_name: "storybook.dashboard.storybook_dashboard_wrapper",
@@ -116,12 +115,6 @@ export const PanelStoryDecorator = ({
               maxBreakpoint: () => true,
               minBreakpoint: () => true,
               width: 0,
-            },
-
-            themeContext: {
-              theme,
-              setTheme: noop,
-              wrapperRef,
             },
 
             components: buildComponentsMap(),

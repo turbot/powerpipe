@@ -5,6 +5,7 @@ import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTit
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
 import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
+import usePageTitle from "@powerpipe/hooks/usePageTitle";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
 import {
   DashboardDataModeCLISnapshot,
@@ -12,9 +13,9 @@ import {
   DashboardDefinition,
 } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import usePageTitle from "@powerpipe/hooks/usePageTitle";
 
 type DashboardProps = {
   definition: DashboardDefinition;
@@ -35,8 +36,8 @@ const Dashboard = ({
   const {
     components: { SnapshotHeader },
     dataMode,
-    filterAndGroupControlPanel,
   } = useDashboardState();
+  const { selectedFilterAndGroupPanel } = useDashboardPanelDetail();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
       {isRoot && !definition.artificial && (
@@ -65,9 +66,7 @@ const Dashboard = ({
         ) : (
           <div className="w-full">{grid}</div>
         )}
-        {!!filterAndGroupControlPanel && (
-          <DashboardControls panelName={filterAndGroupControlPanel} />
-        )}
+        <DashboardControls panelName={selectedFilterAndGroupPanel} />
       </div>
     </DashboardControlsProvider>
   );
