@@ -85,6 +85,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
       dataMode === DashboardDataModeLive &&
       definition.panel_type !== "benchmark" &&
       definition.panel_type !== "control" &&
+      definition.panel_type !== "detection" &&
       !!panelLog
     ) {
       tabs.push({
