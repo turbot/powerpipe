@@ -40,7 +40,7 @@ import {
   ExecutionStartedSchemaMigrator,
 } from "@powerpipe/utils/schema";
 
-const DashboardContext = createContext<IDashboardContext | null>(null);
+export const DashboardContext = createContext<IDashboardContext | null>(null);
 
 const reducer = (state: IDashboardContext, action) => {
   switch (action.type) {
