@@ -36,8 +36,12 @@ export const DashboardInputsProvider = ({
 
   const updateInput = useCallback(
     (name: string, value: string, recordHistory: boolean) => {
+      const currentValue = searchParams.get(name);
       searchParams.set(name, value);
       setSearchParams(searchParams, { replace: !recordHistory });
+      if (value === currentValue) {
+        return;
+      }
       setLastChangedInput(name);
     },
     [searchParams, setLastChangedInput, setSearchParams],

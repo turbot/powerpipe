@@ -9,6 +9,7 @@ import {
   useCallback,
   useContext,
   useEffect,
+  useRef,
 } from "react";
 import {
   DashboardActions,
@@ -49,8 +50,12 @@ export const DashboardExecutionProvider = ({
     dashboards,
     dataMode,
     dispatch,
+    selectedDashboard,
     snapshotFileName,
   } = useDashboardState();
+  const selectedDashboardRef = useRef<string | null>(
+    selectedDashboard?.full_name || null,
+  );
   const { selectPanel } = useDashboardPanelDetail();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
@@ -192,11 +197,15 @@ export const DashboardExecutionProvider = ({
       dashboardMessage.payload.search_path_prefix = searchPathPrefix;
     }
 
-    if (lastChangedInput) {
+    if (
+      lastChangedInput &&
+      selectedDashboardRef.current === dashboardFullName
+    ) {
       dashboardMessage.action = SocketActions.INPUT_CHANGED;
       dashboardMessage.changed_input = lastChangedInput;
       sendMessage(dashboardMessage);
     } else {
+      selectedDashboardRef.current = dashboard.full_name;
       // Ensure the dashboard is selected
       dispatch({
         type: DashboardActions.SELECT_DASHBOARD,
