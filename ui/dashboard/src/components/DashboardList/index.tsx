@@ -7,6 +7,7 @@ import {
   AvailableDashboard,
   AvailableDashboardsDictionary,
   DashboardActions,
+  DashboardDataModeCLISnapshot,
   ModServerMetadata,
 } from "@powerpipe/types";
 import { classNames } from "@powerpipe/utils/styles";
@@ -289,7 +290,6 @@ const sortDashboardSearchResults = (
 const DashboardList = () => {
   const {
     availableDashboardsLoaded,
-    cliMode,
     components: { DashboardListEmptyCallToAction },
     dashboards,
     dashboardsMap,
@@ -444,7 +444,7 @@ const DashboardList = () => {
         </div>
       </div>
       <div className="col-span-12 lg:col-span-3 mt-4 lg:mt-2">
-        <CallToActions cliMode={cliMode} />
+        <CallToActions />
       </div>
     </div>
   );
@@ -453,9 +453,13 @@ const DashboardList = () => {
 const DashboardListWrapper = ({ wrapperClassName = "" }) => {
   const { dashboard_name } = useParams();
   const { search } = useDashboardSearch();
+  const { dataMode } = useDashboardState();
 
   // If we have a dashboard selected and no search, we don't want to show the list
-  if (dashboard_name && !search.value) {
+  if (
+    (dashboard_name || dataMode === DashboardDataModeCLISnapshot) &&
+    !search.value
+  ) {
     return null;
   }
 

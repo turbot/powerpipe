@@ -11,8 +11,6 @@ import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
 
 export type IDashboardContext = {
-  cliMode: DashboardCliMode;
-
   versionMismatchCheck: boolean;
   metadata: ServerMetadata | null;
   availableDashboardsLoaded: boolean;
@@ -129,6 +127,7 @@ export const DashboardActions: IActions = {
   LEAF_NODE_UPDATED: "leaf_node_updated",
   LEAF_NODES_COMPLETE: "leaf_nodes_complete",
   LEAF_NODES_UPDATED: "leaf_nodes_updated",
+  LOAD_SNAPSHOT: "load_snapshot",
   SELECT_DASHBOARD: "select_dashboard",
   SET_DASHBOARD: "set_dashboard",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",

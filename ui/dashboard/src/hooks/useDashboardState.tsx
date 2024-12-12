@@ -23,7 +23,6 @@ import {
 } from "react";
 import {
   DashboardActions,
-  DashboardCliMode,
   DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
@@ -53,16 +52,6 @@ const reducer = (state: IDashboardContext, action) => {
         },
       };
     case DashboardActions.DASHBOARD_METADATA:
-      // TODO remove once all workspaces are running Powerpipe as this is actually SERVER_METADATA in Powerpipe
-      if (state.cliMode === "steampipe") {
-        return {
-          ...state,
-          metadata: {
-            mod: {},
-            ...action.metadata,
-          },
-        };
-      }
       if (!state.selectedDashboard?.full_name) {
         return state;
       }
@@ -200,6 +189,56 @@ const reducer = (state: IDashboardContext, action) => {
         EXECUTION_SCHEMA_VERSION_20221222,
         state,
       );
+    case DashboardActions.CLEAR_DASHBOARD:
+      return {
+        ...state,
+        dataMode: DashboardDataModeLive,
+        dashboard: null,
+        error: null,
+        execution_id: null,
+        panelsLog: {},
+        panelsMap: {},
+        selectedDashboard: null,
+        snapshot: null,
+        progress: 0,
+      };
+    case DashboardActions.LOAD_SNAPSHOT:
+      const { executionCompleteEvent, snapshotFileName } = action;
+      const layout = executionCompleteEvent.snapshot.layout;
+      const panels = executionCompleteEvent.snapshot.panels;
+      const rootPanel = panels[layout.name];
+      let dashboard;
+
+      if (rootPanel.panel_type !== "dashboard") {
+        dashboard = wrapDefinitionInArtificialDashboard(rootPanel, layout);
+      } else {
+        dashboard = {
+          ...rootPanel,
+          ...layout,
+        };
+      }
+
+      const panelsMap = migratePanelStatuses(
+        panels,
+        executionCompleteEvent.schema_version,
+      );
+
+      return {
+        ...state,
+        dashboard,
+        dataMode: DashboardDataModeCLISnapshot,
+        error: null,
+        panelsLog: updatePanelsLogFromCompletedPanels(
+          state.panelsLog,
+          panels,
+          executionCompleteEvent.snapshot.end_time,
+        ),
+        panelsMap,
+        progress: 100,
+        snapshot: executionCompleteEvent.snapshot,
+        snapshotFileName,
+        state: "complete",
+      };
     case DashboardActions.SET_DATA_MODE:
       const newState = {
         ...state,
@@ -273,8 +312,6 @@ const reducer = (state: IDashboardContext, action) => {
 
 const getInitialState = (defaults: any = {}) => {
   return {
-    cliMode: defaults.cliMode || "powerpipe",
-    versionMismatchCheck: defaults.versionMismatchCheck,
     availableDashboardsLoaded: false,
     metadata: null,
     dashboards: [],
@@ -290,10 +327,9 @@ const getInitialState = (defaults: any = {}) => {
     dashboardsMetadata: {},
     selectedDashboard: null,
     snapshot: null,
-
     execution_id: null,
-
     progress: 0,
+    versionMismatchCheck: defaults.versionMismatchCheck,
   };
 };
 
@@ -304,7 +340,6 @@ type DashboardStateProviderProps = {
   componentOverrides?: {};
   dataMode: DashboardDataMode;
   stateDefaults?: {
-    cliMode?: DashboardCliMode;
     search?: DashboardSearch;
   };
   versionMismatchCheck: boolean;

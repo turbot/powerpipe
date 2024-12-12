@@ -5,11 +5,7 @@ import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import { ChangeEvent, useRef } from "react";
 import { classNames } from "@powerpipe/utils/styles";
-import {
-  DashboardActions,
-  DashboardDataModeCLISnapshot,
-  DashboardSnapshotMetadata,
-} from "@powerpipe/types";
+import { DashboardActions, DashboardSnapshotMetadata } from "@powerpipe/types";
 import { EXECUTION_SCHEMA_VERSION_20241125 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
@@ -23,13 +19,14 @@ import { noop } from "@powerpipe/utils/func";
 import { saveAs } from "file-saver";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
 import { timestampForFilename } from "@powerpipe/utils/date";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import { useNavigate } from "react-router-dom";
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
+import { useDashboardExecution } from "@powerpipe/hooks/useDashboardExecution";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const useSaveSnapshot = () => {
   const { dashboard, snapshot } = useDashboardState();
+  const { inputs } = useDashboardInputs();
   const { allFilters } = useFilterConfig();
   const { allGroupings } = useGroupingConfig();
   const { allTables } = useTableConfig();
@@ -80,6 +77,7 @@ const useSaveSnapshot = () => {
         }
       }
       withMetadata.metadata = metadata;
+      withMetadata.inputs = inputs;
       withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
     }
 
@@ -92,8 +90,7 @@ const useSaveSnapshot = () => {
 
 const useOpenSnapshot = () => {
   const { dispatch } = useDashboardState();
-  const { clearInputs, setInputs } = useDashboardInputs();
-  const navigate = useNavigate();
+  const { loadSnapshot } = useDashboardExecution();
 
   return (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -113,22 +110,7 @@ const useOpenSnapshot = () => {
         const eventMigrator =
           new SnapshotDataToExecutionCompleteSchemaMigrator();
         const migratedEvent = eventMigrator.toLatest(data);
-        clearInputs(false);
-        dispatch({
-          type: DashboardActions.SELECT_DASHBOARD,
-          dashboard: null,
-        });
-        navigate(`/snapshot/${fileName}`);
-        dispatch({
-          type: DashboardActions.SET_DATA_MODE,
-          dataMode: DashboardDataModeCLISnapshot,
-          snapshotFileName: fileName,
-        });
-        dispatch({
-          type: DashboardActions.EXECUTION_COMPLETE,
-          ...migratedEvent,
-        });
-        setInputs(migratedEvent.snapshot.inputs, false);
+        loadSnapshot(migratedEvent, fileName);
       } catch (err: any) {
         dispatch({
           type: DashboardActions.WORKSPACE_ERROR,

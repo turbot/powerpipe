@@ -15,7 +15,7 @@ const DashboardSearch = () => {
 
   useEffect(() => {
     setInnerValue(() => search.value);
-  }, []);
+  }, [search.value]);
 
   useDebouncedEffect(() => updateSearchValue(innerValue), 250, [innerValue]);
 

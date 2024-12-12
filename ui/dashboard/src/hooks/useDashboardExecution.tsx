@@ -3,20 +3,30 @@ import useDashboardWebSocket, {
 } from "@powerpipe/hooks/useDashboardWebSocket";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import useDeepCompareEffect from "use-deep-compare-effect";
-import { createContext, ReactNode, useContext, useEffect } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+} from "react";
 import {
   DashboardActions,
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
+  DashboardExecutionCompleteEvent,
 } from "@powerpipe/types";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
-import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
 interface IDashboardExecutionContext {
-  executeDashboard: (dashboardFullName: string | null | undefined) => void;
+  loadSnapshot: (
+    executionCompleteEvent: DashboardExecutionCompleteEvent,
+    snapshotFileName: string,
+  ) => void;
 }
 
 const DashboardExecutionContext =
@@ -34,8 +44,13 @@ export const DashboardExecutionProvider = ({
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const { dashboard_name } = useParams();
-  const { availableDashboardsLoaded, dashboards, dataMode, dispatch } =
-    useDashboardState();
+  const {
+    availableDashboardsLoaded,
+    dashboards,
+    dataMode,
+    dispatch,
+    snapshotFileName,
+  } = useDashboardState();
   const { selectPanel } = useDashboardPanelDetail();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
@@ -50,17 +65,75 @@ export const DashboardExecutionProvider = ({
     useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
 
+  const clearDashboard = () => {
+    // Clear any existing executions
+    sendMessage({
+      action: SocketActions.CLEAR_DASHBOARD,
+    });
+    navigate(
+      `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
+      { replace: true },
+    );
+    dispatch({
+      type: DashboardActions.CLEAR_DASHBOARD,
+    });
+  };
+
   useEffect(() => {
-    if (pathname !== "/" || dataMode === DashboardDataModeLive) {
+    if (pathname !== "/") {
       return;
     }
-    dispatch({
-      type: DashboardActions.SET_DATA_MODE,
-      dataMode: DashboardDataModeLive,
-    });
-  }, [dispatch, pathname, dataMode]);
+    clearDashboard();
+  }, [pathname, searchPathPrefix]);
+
+  const loadSnapshot = useCallback(
+    (
+      executionCompleteEvent: DashboardExecutionCompleteEvent,
+      snapshotFileName: string,
+    ) => {
+      // Clear any existing executions
+      sendMessage({
+        action: SocketActions.CLEAR_DASHBOARD,
+      });
+
+      // Navigate to the snapshot page
+      let inputsSearchParams = new URLSearchParams();
+      for (const [key, value] of Object.entries(
+        executionCompleteEvent.snapshot.inputs || {},
+      )) {
+        inputsSearchParams.set(key, value);
+      }
+      const inputsSearchParamsString = inputsSearchParams.toString();
+      navigate(
+        `/snapshot/${snapshotFileName}${inputsSearchParamsString ? `?${inputsSearchParamsString}` : ""}`,
+      );
+      dispatch({
+        type: DashboardActions.LOAD_SNAPSHOT,
+        executionCompleteEvent,
+        snapshotFileName,
+      });
+    },
+    [dispatch, navigate, sendMessage],
+  );
 
   const executeDashboard = (dashboardFullName: string | null | undefined) => {
+    if (
+      dataMode === DashboardDataModeCLISnapshot &&
+      snapshotFileName &&
+      pathname.startsWith("/snapshot/")
+    ) {
+      return;
+    } else if (dataMode === DashboardDataModeCLISnapshot && dashboard_name) {
+      dispatch({
+        type: DashboardActions.SET_DATA_MODE,
+        dataMode: DashboardDataModeLive,
+      });
+      setLastChangedInput(null);
+      return;
+    } else if (!dashboardFullName) {
+      return;
+    }
+
     const dashboard = dashboards.find(
       (dashboard) => dashboard.full_name === dashboardFullName,
     );
@@ -140,10 +213,7 @@ export const DashboardExecutionProvider = ({
 
   useDeepCompareEffect(() => {
     // We don't need to "execute" if we're in snapshot mode
-    if (
-      !availableDashboardsLoaded ||
-      dataMode === DashboardDataModeCLISnapshot
-    ) {
+    if (!availableDashboardsLoaded) {
       return;
     }
     executeDashboard(dashboard_name);
@@ -155,10 +225,8 @@ export const DashboardExecutionProvider = ({
     searchPathPrefix,
   ]);
 
-  console.log("DashboardExecutionContext render", { inputs, searchPathPrefix });
-
   return (
-    <DashboardExecutionContext.Provider value={{ executeDashboard }}>
+    <DashboardExecutionContext.Provider value={{ loadSnapshot }}>
       {children}
     </DashboardExecutionContext.Provider>
   );

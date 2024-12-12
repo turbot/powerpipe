@@ -1,7 +1,13 @@
 import usePrefixedSearchParams from "@powerpipe/hooks/usePrefixedSearchParams";
-import { createContext, ReactNode, useContext, useState } from "react";
-import { useSearchParams } from "react-router-dom";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useState,
+} from "react";
 import { KeyValueStringPairs } from "@powerpipe/components/dashboards/common/types";
+import { useSearchParams } from "react-router-dom";
 
 interface IDashboardInputsContext {
   inputs: Record<string, string>;
@@ -28,36 +34,48 @@ export const DashboardInputsProvider = ({
   const [searchParams, setSearchParams] = useSearchParams();
   const inputs = usePrefixedSearchParams("input.");
 
-  const updateInput = (name: string, value: string, recordHistory: boolean) => {
-    searchParams.set(name, value);
-    setSearchParams(searchParams, { replace: !recordHistory });
-    setLastChangedInput(name);
-  };
-
-  const deleteInput = (name: string, recordHistory: boolean) => {
-    searchParams.delete(name);
-    setSearchParams(searchParams, { replace: !recordHistory });
-    setLastChangedInput(name);
-  };
-
-  const setInputs = (values: KeyValueStringPairs, recordHistory: boolean) => {
-    for (const key of Object.keys(inputs)) {
-      searchParams.delete(key);
-    }
-    for (const [name, value] of Object.entries(values) || {}) {
+  const updateInput = useCallback(
+    (name: string, value: string, recordHistory: boolean) => {
       searchParams.set(name, value);
-    }
-    setSearchParams(searchParams, { replace: !recordHistory });
-    setLastChangedInput(null);
-  };
+      setSearchParams(searchParams, { replace: !recordHistory });
+      setLastChangedInput(name);
+    },
+    [searchParams, setLastChangedInput, setSearchParams],
+  );
 
-  const clearInputs = (recordHistory: boolean) => {
-    for (const key of Object.keys(inputs)) {
-      searchParams.delete(key);
-    }
-    setSearchParams(searchParams, { replace: !recordHistory });
-    setLastChangedInput(null);
-  };
+  const deleteInput = useCallback(
+    (name: string, recordHistory: boolean) => {
+      searchParams.delete(name);
+      setSearchParams(searchParams, { replace: !recordHistory });
+      setLastChangedInput(name);
+    },
+    [searchParams, setLastChangedInput, setSearchParams],
+  );
+
+  const setInputs = useCallback(
+    (values: KeyValueStringPairs, recordHistory: boolean) => {
+      for (const key of Object.keys(inputs)) {
+        searchParams.delete(key);
+      }
+      for (const [name, value] of Object.entries(values) || {}) {
+        searchParams.set(name, value);
+      }
+      setSearchParams(searchParams, { replace: !recordHistory });
+      setLastChangedInput(null);
+    },
+    [inputs, searchParams, setLastChangedInput, setSearchParams],
+  );
+
+  const clearInputs = useCallback(
+    (recordHistory: boolean) => {
+      for (const key of Object.keys(inputs)) {
+        searchParams.delete(key);
+      }
+      setSearchParams(searchParams, { replace: !recordHistory });
+      setLastChangedInput(null);
+    },
+    [inputs, searchParams, setLastChangedInput, setSearchParams],
+  );
 
   return (
     <DashboardInputsContext.Provider
