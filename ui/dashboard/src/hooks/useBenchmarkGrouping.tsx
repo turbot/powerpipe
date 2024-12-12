@@ -36,7 +36,7 @@ import {
   PanelDefinition,
   PanelsMap,
 } from "@powerpipe/types";
-import { useDashboard } from "./useDashboard";
+import { useDashboardState } from "./useDashboardState";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
@@ -863,7 +863,7 @@ const GroupingProvider = ({
   children,
   definition,
 }: CheckGroupingProviderProps) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
   const { grouping: groupingConfig } = useGroupingConfig(definition.name);

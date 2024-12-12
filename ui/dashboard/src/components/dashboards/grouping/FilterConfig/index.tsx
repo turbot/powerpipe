@@ -1,9 +1,9 @@
 import FilterEditor from "@powerpipe/components/dashboards/grouping/FilterEditor";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const FilterConfig = ({ panelName }: { panelName: string }) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   const panel = panelsMap[panelName];
   const { filter: filterConfig, update } = useFilterConfig(panelName);
   return (

@@ -17,7 +17,6 @@ import {
   CheckSummary,
 } from "../common";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { default as BenchmarkType } from "../common/Benchmark";
 import {
   getComponent,
@@ -28,12 +27,13 @@ import {
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
 import { noop } from "@powerpipe/utils/func";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useEffect, useMemo, useState } from "react";
 import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
+import { PanelDefinition } from "@powerpipe/types";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
 const Table = getComponent("table");
@@ -56,7 +56,7 @@ const Benchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboard();
+  const { selectedPanel } = useDashboardPanelDetail();
   const benchmarkDataTable = useMemo(() => {
     if (
       !props.benchmark ||
@@ -68,13 +68,15 @@ const Benchmark = (props: InnerCheckProps) => {
     return props.benchmark.get_data_table();
   }, [props.benchmark, props.grouping]);
   const [referenceElement, setReferenceElement] = useState(null);
-  const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const {
+    enabled: panelControlsEnabled,
     panelControls: benchmarkControls,
     showPanelControls,
     setCustomControls,
     setPanelData,
+    setShowPanelControls,
   } = usePanelControls();
+  const { selectFilterAndGroupPanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -82,14 +84,10 @@ const Benchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () =>
-          dispatch({
-            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
-            panel_name: props.definition.name,
-          }),
+        action: async () => selectFilterAndGroupPanel(props.definition.name),
       },
     ]);
-  }, [dispatch, props.definition.name, setCustomControls]);
+  }, [props.definition.name, setCustomControls]);
 
   useEffect(() => {
     if (!benchmarkDataTable) {
@@ -200,10 +198,10 @@ const Benchmark = (props: InnerCheckProps) => {
       name={props.definition.name}
       width={props.definition.width}
       events={{
-        onMouseEnter: showPanelControls
-          ? () => setShowBenchmarkControls(true)
+        onMouseEnter: panelControlsEnabled
+          ? () => setShowPanelControls(true)
           : noop,
-        onMouseLeave: () => setShowBenchmarkControls(false),
+        onMouseLeave: () => setShowPanelControls(false),
       }}
       setRef={setReferenceElement}
     >
@@ -212,7 +210,7 @@ const Benchmark = (props: InnerCheckProps) => {
         <DashboardTitle
           title={props.definition.title}
           controls={
-            showBenchmarkControls ? (
+            showPanelControls ? (
               <PanelControls
                 referenceElement={referenceElement}
                 controls={benchmarkControls}

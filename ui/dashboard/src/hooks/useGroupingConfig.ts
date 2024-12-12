@@ -1,12 +1,12 @@
 import { DisplayGroup } from "@powerpipe/components/dashboards/grouping/common";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const useGroupingConfig = (panelName?: string) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   const panel = panelName ? panelsMap[panelName] : undefined;
 
   const allGroupings = useMemo(() => {

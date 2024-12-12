@@ -16,7 +16,8 @@ import {
 } from "@powerpipe/components/dashboards/hierarchies/types";
 import { NodesAndEdges } from "@powerpipe/components/dashboards/common/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const getCommonBaseOptions = () => ({
   animation: false,
@@ -122,9 +123,8 @@ const buildHierarchyOptions = (props: HierarchyProps, themeColors) => {
 
 const HierarchyWrapper = (props: HierarchyProps) => {
   const themeColors = useChartThemeColors();
-  const {
-    themeContext: { wrapperRef },
-  } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
+  const { wrapperRef } = useDashboardTheme();
 
   const nodeAndEdgeData = useNodeAndEdgeData(
     props.data,
@@ -156,6 +156,7 @@ const HierarchyWrapper = (props: HierarchyProps) => {
         },
         themeColors,
       )}
+      searchPathPrefix={searchPathPrefix}
       type={props.display_type || "tree"}
     />
   );

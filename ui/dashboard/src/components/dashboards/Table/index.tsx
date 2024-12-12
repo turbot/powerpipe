@@ -5,6 +5,7 @@ import isObject from "lodash/isObject";
 import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import useTemplateRender from "@powerpipe/hooks/useTemplateRender";
 import {
   AlarmIcon,
@@ -39,7 +40,7 @@ import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -162,7 +163,7 @@ const CellValue = ({
   isScrolling = false,
   context = "",
 }: CellValueProps) => {
-  const { searchPathPrefix } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [referenceElement, setReferenceElement] = useState();
@@ -863,7 +864,7 @@ const TableViewVirtualizedRows = ({
               })}
             </div>
           )}
-          <TableSettings table={table} />
+          <TableSettings name={panelName} table={table} />
         </div>
       )}
       <div
@@ -989,9 +990,17 @@ const TableViewVirtualizedRows = ({
 
 // TODO retain full width on mobile, no padding
 const TableViewWrapper = (props: TableProps) => {
+  const {
+    table: { display_columns },
+  } = useTableConfig(props.name);
+
   const { columns, columnVisibility } = useMemo(
-    () => getColumns(props.data ? props.data.columns : [], props.properties),
-    [props.data, props.properties],
+    () =>
+      getColumns(props.data ? props.data.columns : [], {
+        ...props.properties,
+        display_columns,
+      }),
+    [props.data, props.properties, display_columns],
   );
   const rowData = useMemo(
     () => getData(columns, props.data ? props.data.rows : []),

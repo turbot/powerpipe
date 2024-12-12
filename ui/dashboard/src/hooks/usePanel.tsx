@@ -29,8 +29,9 @@ import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/t
 import { PanelControlsProvider } from "@powerpipe/hooks/usePanelControls";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useContainer } from "@powerpipe/hooks/useContainer";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type IPanelContext = {
   definition:
@@ -75,7 +76,7 @@ const PanelContext = createContext<IPanelContext | null>(null);
 const recordDependency = (
   definition: PanelDefinition,
   panelsMap: PanelsMap,
-  selectedDashboardInputs: DashboardInputs,
+  inputs: DashboardInputs,
   dependencies: PanelDefinition[],
   dependenciesByStatus: PanelDependenciesByStatus,
   inputPanelsAwaitingValue: PanelDefinition[],
@@ -98,7 +99,7 @@ const recordDependency = (
   const hasInputValue =
     isInput &&
     inputProperties?.unqualified_name &&
-    !!selectedDashboardInputs[inputProperties?.unqualified_name];
+    !!inputs[inputProperties?.unqualified_name];
   if (isInput && !hasInputValue && !recordedInputPanels[definition.name]) {
     inputPanelsAwaitingValue.push(definition);
     recordedInputPanels[definition.name] = definition;
@@ -112,7 +113,7 @@ const recordDependency = (
     recordDependency(
       dependencyPanel,
       panelsMap,
-      selectedDashboardInputs,
+      inputs,
       dependencies,
       dependenciesByStatus,
       inputPanelsAwaitingValue,
@@ -128,7 +129,8 @@ const PanelProvider = ({
   showControls,
 }: PanelProviderProps) => {
   const { updateChildStatus } = useContainer();
-  const { selectedDashboardInputs, panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
+  const { inputs } = useDashboardInputs();
   const [showPanelInformation, setShowPanelInformation] = useState(false);
   const [panelInformation, setPanelInformation] = useState<ReactNode | null>(
     null,
@@ -171,7 +173,7 @@ const PanelProvider = ({
           recordDependency(
             nodePanel,
             panelsMap,
-            selectedDashboardInputs,
+            inputs,
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
@@ -186,7 +188,7 @@ const PanelProvider = ({
           recordDependency(
             edgePanel,
             panelsMap,
-            selectedDashboardInputs,
+            inputs,
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
@@ -203,7 +205,7 @@ const PanelProvider = ({
         recordDependency(
           dependencyPanel,
           panelsMap,
-          selectedDashboardInputs,
+          inputs,
           dependencies,
           dependenciesByStatus,
           inputPanelsAwaitingValue,
@@ -212,7 +214,7 @@ const PanelProvider = ({
       }
 
       return { dependencies, dependenciesByStatus, inputPanelsAwaitingValue };
-    }, [definition, panelsMap, selectedDashboardInputs]);
+    }, [definition, panelsMap, inputs]);
 
   useEffect(() => {
     if (parentType !== "container") {

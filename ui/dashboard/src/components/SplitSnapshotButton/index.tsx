@@ -2,18 +2,16 @@ import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
+import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import { ChangeEvent, useRef } from "react";
 import { classNames } from "@powerpipe/utils/styles";
-import {
-  DashboardActions,
-  DashboardDataModeCLISnapshot,
-  DashboardSnapshotMetadata,
-} from "@powerpipe/types";
+import { DashboardActions, DashboardSnapshotMetadata } from "@powerpipe/types";
 import { EXECUTION_SCHEMA_VERSION_20241125 } from "@powerpipe/constants/versions";
 import {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
+  tableConfigToSnapshotMetadata,
 } from "@powerpipe/utils/snapshot";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { Menu } from "@headlessui/react";
@@ -21,14 +19,17 @@ import { noop } from "@powerpipe/utils/func";
 import { saveAs } from "file-saver";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
 import { timestampForFilename } from "@powerpipe/utils/date";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
-import { useNavigate } from "react-router-dom";
+import { useDashboardExecution } from "@powerpipe/hooks/useDashboardExecution";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const useSaveSnapshot = () => {
-  const { dashboard, snapshot } = useDashboard();
+  const { dashboard, snapshot } = useDashboardState();
+  const { inputs } = useDashboardInputs();
   const { allFilters } = useFilterConfig();
   const { allGroupings } = useGroupingConfig();
+  const { allTables } = useTableConfig();
 
   return () => {
     if (!dashboard || !snapshot) {
@@ -66,7 +67,17 @@ const useSaveSnapshot = () => {
           metadata.view[panel].group_by = groupingToSnapshotMetadata(grouping);
         }
       }
+      if (!!Object.keys(allTables).length) {
+        for (const [panel, tableConfig] of Object.entries(allTables)) {
+          // @ts-ignore
+          metadata.view[panel] = metadata.view[panel] || {};
+          // @ts-ignore
+          metadata.view[panel].table =
+            tableConfigToSnapshotMetadata(tableConfig);
+        }
+      }
       withMetadata.metadata = metadata;
+      withMetadata.inputs = inputs;
       withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
     }
 
@@ -78,8 +89,8 @@ const useSaveSnapshot = () => {
 };
 
 const useOpenSnapshot = () => {
-  const { dispatch } = useDashboard();
-  const navigate = useNavigate();
+  const { dispatch } = useDashboardState();
+  const { loadSnapshot } = useDashboardExecution();
 
   return (e: ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
@@ -99,30 +110,7 @@ const useOpenSnapshot = () => {
         const eventMigrator =
           new SnapshotDataToExecutionCompleteSchemaMigrator();
         const migratedEvent = eventMigrator.toLatest(data);
-        dispatch({
-          type: DashboardActions.CLEAR_DASHBOARD_INPUTS,
-          recordInputsHistory: false,
-        });
-        dispatch({
-          type: DashboardActions.SELECT_DASHBOARD,
-          dashboard: null,
-          recordInputsHistory: false,
-        });
-        navigate(`/snapshot/${fileName}`);
-        dispatch({
-          type: DashboardActions.SET_DATA_MODE,
-          dataMode: DashboardDataModeCLISnapshot,
-          snapshotFileName: fileName,
-        });
-        dispatch({
-          type: DashboardActions.EXECUTION_COMPLETE,
-          ...migratedEvent,
-        });
-        dispatch({
-          type: DashboardActions.SET_DASHBOARD_INPUTS,
-          value: migratedEvent.snapshot.inputs,
-          recordInputsHistory: false,
-        });
+        loadSnapshot(migratedEvent, fileName);
       } catch (err: any) {
         dispatch({
           type: DashboardActions.WORKSPACE_ERROR,
@@ -143,7 +131,7 @@ interface SplitSnapshotAction {
 }
 
 const SplitSnapshotButton = () => {
-  const { dashboard, selectedDashboard, snapshot } = useDashboard();
+  const { dashboard, selectedDashboard, snapshot } = useDashboardState();
   const openSnapshot = useOpenSnapshot();
   const saveSnapshot = useSaveSnapshot();
   const openSnapshotRef = useRef<HTMLInputElement | null>(null);

@@ -23,7 +23,7 @@ import {
   NodeAndEdgeStatus,
   WithStatusMap,
 } from "@powerpipe/components/dashboards/graphs/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo } from "react";
 
 // Categories may be sourced from a node, an edge, a flow, a graph or a hierarchy
@@ -128,7 +128,7 @@ const useNodeAndEdgeData = (
   properties: NodeAndEdgeProperties | undefined,
   status: DashboardRunState,
 ) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   const themeColors = useChartThemeColors();
   const dataFormat = getNodeAndEdgeDataFormat(properties);
   const panels = useMemo(() => {

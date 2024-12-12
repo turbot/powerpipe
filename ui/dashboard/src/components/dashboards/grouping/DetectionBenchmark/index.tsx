@@ -12,7 +12,6 @@ import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelCo
 import useDownloadDetectionBenchmarkData from "@powerpipe/hooks/useDownloadDetectionBenchmarkData";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DashboardActions, PanelDefinition } from "@powerpipe/types";
 import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
@@ -30,9 +29,10 @@ import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
+import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
@@ -55,7 +55,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const {
     filter: { expressions },
   } = useFilterConfig(props.definition?.name);
-  const { dispatch, selectedPanel } = useDashboard();
   const [referenceElement, setReferenceElement] = useState(null);
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =
@@ -63,6 +62,8 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
+  const { selectFilterAndGroupPanel, selectedPanel } =
+    useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -70,29 +71,19 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () =>
-          dispatch({
-            type: DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL,
-            panel_name: props.definition.name,
-          }),
+        action: async () => selectFilterAndGroupPanel(props.definition.name),
       },
       {
         key: "download-data",
-        disabled:
-          processing ||
-          !props.benchmark ||
-          !props.grouping ||
-          props.grouping.status !== "complete",
+        disabled: processing || props.grouping.status !== "complete",
         title: "Download data",
         icon: "arrow-down-tray",
         action: download,
       },
     ]);
   }, [
-    dispatch,
     processing,
-    props.benchmark,
-    props.grouping,
+    props.grouping.status,
     props.definition.name,
     setCustomControls,
   ]);

@@ -6,8 +6,8 @@ import LoadingIndicator from "../dashboards/LoadingIndicator";
 import {
   AvailableDashboard,
   AvailableDashboardsDictionary,
-  DashboardAction,
   DashboardActions,
+  DashboardDataModeCLISnapshot,
   ModServerMetadata,
 } from "@powerpipe/types";
 import { classNames } from "@powerpipe/utils/styles";
@@ -15,7 +15,9 @@ import { default as lodashGroupBy } from "lodash/groupBy";
 import { Fragment, useEffect, useState } from "react";
 import { getComponent } from "../dashboards";
 import { stringToColor } from "@powerpipe/utils/color";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useParams } from "react-router-dom";
 
 type DashboardListSection = {
@@ -30,51 +32,37 @@ type AvailableDashboardWithMod = AvailableDashboard & {
 type DashboardTagProps = {
   tagKey: string;
   tagValue: string;
-  dispatch?: (action: DashboardAction) => void;
   searchValue?: string;
 };
 
 type SectionProps = {
   title: string;
   dashboards: AvailableDashboardWithMod[];
-  dispatch: (action: DashboardAction) => void;
   searchValue: string;
   searchPathPrefix: string[];
 };
 
-const DashboardTag = ({
-  tagKey,
-  tagValue,
-  dispatch,
-  searchValue,
-}: DashboardTagProps) => (
-  <span
-    className={classNames(
-      "rounded-md text-xs",
-      dispatch ? "cursor-pointer" : null,
-    )}
-    onClick={
-      dispatch
-        ? () => {
-            const existingSearch = searchValue ? searchValue.trim() : "";
-            const searchWithTag = existingSearch
-              ? existingSearch.indexOf(tagValue) < 0
-                ? `${existingSearch} ${tagValue}`
-                : existingSearch
-              : tagValue;
-            dispatch({
-              type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE,
-              value: searchWithTag,
-            });
-          }
-        : undefined
-    }
-    style={{ color: stringToColor(tagValue) }}
-    title={`${tagKey} = ${tagValue}`}
-  >
-    {tagValue}
-  </span>
-);
+const DashboardTag = ({ tagKey, tagValue, searchValue }: DashboardTagProps) => {
+  const { updateSearchValue } = useDashboardSearch();
+  return (
+    <span
+      className={classNames("rounded-md text-xs cursor-pointer")}
+      onClick={() => {
+        const existingSearch = searchValue ? searchValue.trim() : "";
+        const searchWithTag = existingSearch
+          ? existingSearch.indexOf(tagValue) < 0
+            ? `${existingSearch} ${tagValue}`
+            : existingSearch
+          : tagValue;
+        updateSearchValue(searchWithTag);
+      }}
+      style={{ color: stringToColor(tagValue) }}
+      title={`${tagKey} = ${tagValue}`}
+    >
+      {tagValue}
+    </span>
+  );
+};
 
 const TitlePart = ({ part, searchPathPrefix }) => {
   const ExternalLink = getComponent("external_link");
@@ -108,7 +96,7 @@ const TitlePart = ({ part, searchPathPrefix }) => {
 };
 
 const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
-  const { dashboardsMap } = useDashboard();
+  const { dashboardsMap } = useDashboardState();
   const ExternalLink = getComponent("external_link");
   const urlSearch = new URLSearchParams();
   if (!!searchPathPrefix.length) {
@@ -168,7 +156,6 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
 const Section = ({
   title,
   dashboards,
-  dispatch,
   searchValue,
   searchPathPrefix,
 }: SectionProps) => {
@@ -202,7 +189,6 @@ const Section = ({
                   key={key}
                   tagKey={key}
                   tagValue={value}
-                  dispatch={dispatch}
                   searchValue={searchValue}
                 />
               );
@@ -304,15 +290,17 @@ const sortDashboardSearchResults = (
 const DashboardList = () => {
   const {
     availableDashboardsLoaded,
-    cliMode,
     components: { DashboardListEmptyCallToAction },
     dashboards,
     dashboardsMap,
     dispatch,
     metadata,
+  } = useDashboardState();
+  const {
     search: { value: searchValue, groupBy: searchGroupBy },
-    searchPathPrefix,
-  } = useDashboard();
+    updateSearchValue,
+  } = useDashboardSearch();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const [unfilteredDashboards, setUnfilteredDashboards] = useState<
     AvailableDashboardWithMod[]
   >([]);
@@ -430,12 +418,7 @@ const DashboardList = () => {
                       <span>No search results.</span>{" "}
                       <span
                         className="link-highlight"
-                        onClick={() =>
-                          dispatch({
-                            type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE,
-                            value: "",
-                          })
-                        }
+                        onClick={() => updateSearchValue("")}
                       >
                         Clear
                       </span>
@@ -452,7 +435,6 @@ const DashboardList = () => {
                   key={section.title}
                   title={section.title}
                   dashboards={section.dashboards}
-                  dispatch={dispatch}
                   searchValue={searchValue}
                   searchPathPrefix={searchPathPrefix}
                 />
@@ -462,7 +444,7 @@ const DashboardList = () => {
         </div>
       </div>
       <div className="col-span-12 lg:col-span-3 mt-4 lg:mt-2">
-        <CallToActions cliMode={cliMode} />
+        <CallToActions />
       </div>
     </div>
   );
@@ -470,10 +452,14 @@ const DashboardList = () => {
 
 const DashboardListWrapper = ({ wrapperClassName = "" }) => {
   const { dashboard_name } = useParams();
-  const { search } = useDashboard();
+  const { search } = useDashboardSearch();
+  const { dataMode } = useDashboardState();
 
   // If we have a dashboard selected and no search, we don't want to show the list
-  if (dashboard_name && !search.value) {
+  if (
+    (dashboard_name || dataMode === DashboardDataModeCLISnapshot) &&
+    !search.value
+  ) {
     return null;
   }
 
