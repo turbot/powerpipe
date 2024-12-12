@@ -48,8 +48,6 @@ export const DashboardExecutionProvider = ({
     useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
 
-  console.log({ inputs, searchPathPrefix });
-
   useEffect(() => {
     if (pathname !== "/" || dataMode === DashboardDataModeLive) {
       return;
@@ -152,6 +150,8 @@ export const DashboardExecutionProvider = ({
     inputs,
     searchPathPrefix,
   ]);
+
+  console.log("DashboardExecutionContext render", { inputs, searchPathPrefix });
 
   return (
     <DashboardExecutionContext.Provider value={{ executeDashboard }}>

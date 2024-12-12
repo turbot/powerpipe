@@ -65,11 +65,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   );
 
   useEffect(() => {
-    console.log("Setting DetectionBenchmark custom controls", {
-      processing,
-      grouping: props.grouping,
-      name: props.definition.name,
-    });
     setCustomControls([
       {
         key: "filter-and-group",

@@ -61,7 +61,6 @@ const TableSettingsColumns = ({
     const visibleColumns = columnVisibility
       .filter(({ visible }) => visible)
       .map((c) => c.id);
-    console.log("Update table config", { visibleColumns, columnVisibility });
     update(
       visibleColumns.length
         ? null
@@ -70,8 +69,6 @@ const TableSettingsColumns = ({
           },
     );
   }, [columnVisibility]);
-
-  console.log({ allLeafColumns, columnMap, columnVisibility, filteredColumns });
 
   const ColumnRender = ({ column }) => (
     <label

@@ -370,10 +370,6 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
   );
 
   useEffect(() => {
-    console.log("Setting DetectionPanel custom controls", {
-      node,
-      descendant_result_nodes,
-    });
     const controls: IPanelControl[] = [
       {
         key: "download-data",

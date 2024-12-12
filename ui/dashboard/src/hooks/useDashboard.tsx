@@ -593,27 +593,27 @@ const DashboardProvider = ({
   return (
     <DashboardThemeProvider themeContext={themeContext}>
       <DashboardSearchProvider defaultSearch={stateDefaults?.search}>
-        <DashboardSearchPathProvider>
-          <DashboardStateProvider
-            analyticsContext={analyticsContext}
-            breakpointContext={breakpointContext}
-            componentOverrides={componentOverrides}
-            dataMode={dataMode}
-            stateDefaults={stateDefaults}
-            versionMismatchCheck={versionMismatchCheck}
-          >
-            <DashboardPanelDetailProvider>
-              <DashboardInputsProvider>
+        <DashboardStateProvider
+          analyticsContext={analyticsContext}
+          breakpointContext={breakpointContext}
+          componentOverrides={componentOverrides}
+          dataMode={dataMode}
+          stateDefaults={stateDefaults}
+          versionMismatchCheck={versionMismatchCheck}
+        >
+          <DashboardPanelDetailProvider>
+            <DashboardInputsProvider>
+              <DashboardSearchPathProvider>
                 <DashboardExecutionProvider
                   eventHooks={eventHooks}
                   socketUrlFactory={socketUrlFactory}
                 >
                   {children}
                 </DashboardExecutionProvider>
-              </DashboardInputsProvider>
-            </DashboardPanelDetailProvider>
-          </DashboardStateProvider>
-        </DashboardSearchPathProvider>
+              </DashboardSearchPathProvider>
+            </DashboardInputsProvider>
+          </DashboardPanelDetailProvider>
+        </DashboardStateProvider>
       </DashboardSearchProvider>
     </DashboardThemeProvider>
   );

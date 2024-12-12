@@ -1,7 +1,6 @@
 import dayjs from "dayjs";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import SubmitButton from "@powerpipe/components/forms/SubmitButton";
-import useDeepCompareEffect from "use-deep-compare-effect";
 import utc from "dayjs/plugin/utc";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
@@ -422,7 +421,7 @@ const DateRangePicker = (props: InputProps) => {
     );
   }, [stateValue]);
 
-  useDeepCompareEffect(() => {
+  useEffect(() => {
     if (state.showCustom) {
       return;
     }

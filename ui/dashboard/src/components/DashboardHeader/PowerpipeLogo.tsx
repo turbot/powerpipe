@@ -12,11 +12,9 @@ import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath"
 import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const PowerpipeLogo = () => {
-  const { theme } = useDashboardTheme();
   const { searchPathPrefix } = useDashboardSearchPath();
+  const { theme } = useDashboardTheme();
   const ExternalLink = getComponent("external_link");
-
-  console.log({ searchPathPrefix });
 
   return (
     <div className="mr-1 md:mr-4">

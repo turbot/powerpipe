@@ -361,8 +361,6 @@ export const DashboardStateProvider = ({
     dispatchInner(action);
   }, []);
 
-  console.log(state);
-
   // Alert analytics
   useEffect(() => {
     setAnalyticsMetadata(state.metadata);

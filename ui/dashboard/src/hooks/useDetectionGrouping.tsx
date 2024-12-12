@@ -6,7 +6,6 @@ import DetectionErrorNode from "@powerpipe/components/dashboards/grouping/common
 import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionKeyValuePairNode";
 import DetectionRootNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRootNode";
 import DetectionRunningNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRunningNode";
-import useDeepCompareEffect from "use-deep-compare-effect";
 import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import usePrevious from "./usePrevious";
@@ -775,8 +774,7 @@ const GroupingProvider = ({
     });
   }, [previousGroupings, groupingConfig, tempNodeStates]);
 
-  useDeepCompareEffect(() => {
-    console.log("Setting dashboard controls context", filterValues);
+  useEffect(() => {
     setDashboardControlsContext(() => filterValues);
   }, [filterValues]);
 
