@@ -2,7 +2,7 @@ import { classNames } from "@powerpipe/utils/styles";
 import { ClearIcon, SearchIcon } from "@powerpipe/constants/icons";
 import { forwardRef } from "react";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const SearchInput = forwardRef(
   (
@@ -23,9 +23,7 @@ const SearchInput = forwardRef(
     },
     ref,
   ) => {
-    const {
-      themeContext: { theme },
-    } = useDashboard();
+    const { theme } = useDashboardTheme();
     return (
       <div className="relative">
         <div className="pointer-events-none absolute inset-y-0 left-0 pl-3 flex items-center text-foreground-light text-sm">

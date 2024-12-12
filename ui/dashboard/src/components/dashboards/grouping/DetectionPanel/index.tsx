@@ -26,13 +26,13 @@ import {
   GroupingActions,
   useDetectionGrouping,
 } from "@powerpipe/hooks/useDetectionGrouping";
-import { noop } from "@powerpipe/utils/func";
 import {
   IPanelControl,
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { noop } from "@powerpipe/utils/func";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 
 type DetectionChildrenProps = {
@@ -128,11 +128,11 @@ const getDetectionResultRowIconTitle = (total: number) => {
 };
 
 const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
   return (
     <div className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4 overflow-x-auto">
       <Table
-        name={result.benchmark_trunk[0].name}
+        name={result.detection.name}
         panel_type="table"
         data={{ rows: result.rows, columns: result.columns }}
         properties={{
@@ -385,13 +385,12 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
         title: "Open in new window",
         icon: "open_in_new",
         action: async () => {
-          console.log(window.location);
           window.open(window.location.origin + "/" + node.name, "_blank");
         },
       });
     }
     setCustomControls(controls);
-  }, [node, descendant_result_nodes, setCustomControls]);
+  }, [node.name, node.type, descendant_result_nodes, setCustomControls]);
 
   const hasResults =
     can_be_expanded &&

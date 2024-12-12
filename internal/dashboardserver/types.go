@@ -137,14 +137,15 @@ type ModAvailableDashboard struct {
 }
 
 type ModAvailableBenchmark struct {
-	Title       string                  `json:"title,omitempty"`
-	FullName    string                  `json:"full_name"`
-	ShortName   string                  `json:"short_name"`
-	Tags        map[string]string       `json:"tags"`
-	IsTopLevel  bool                    `json:"is_top_level"`
-	Children    []ModAvailableBenchmark `json:"children,omitempty"`
-	Trunks      [][]string              `json:"trunks"`
-	ModFullName string                  `json:"mod_full_name"`
+	Title         string                  `json:"title,omitempty"`
+	FullName      string                  `json:"full_name"`
+	ShortName     string                  `json:"short_name"`
+	BenchmarkType string                  `json:"benchmark_type"`
+	Tags          map[string]string       `json:"tags"`
+	IsTopLevel    bool                    `json:"is_top_level"`
+	Children      []ModAvailableBenchmark `json:"children,omitempty"`
+	Trunks        [][]string              `json:"trunks"`
+	ModFullName   string                  `json:"mod_full_name"`
 }
 
 type AvailableDashboardsPayload struct {

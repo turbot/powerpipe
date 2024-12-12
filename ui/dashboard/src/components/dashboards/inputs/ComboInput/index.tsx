@@ -1,7 +1,7 @@
 import CreatableSelect from "react-select/creatable";
 import useSelectInputStyles from "@powerpipe/components/dashboards/inputs/common/useSelectInputStyles";
 import useSelectInputValues from "@powerpipe/components/dashboards/inputs/common/useSelectInputValues";
-import { DashboardActions, DashboardDataModeLive } from "@powerpipe/types";
+import { DashboardDataModeLive } from "@powerpipe/types";
 import {
   InputProps,
   SelectOption,
@@ -11,7 +11,8 @@ import {
   OptionWithTags,
   SingleValueWithTags,
 } from "@powerpipe/components/dashboards/inputs/common/Common";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 
 type SelectInputProps = InputProps & {
@@ -71,7 +72,8 @@ const ComboInput = ({
   properties,
   status,
 }: SelectInputProps) => {
-  const { dataMode, dispatch, selectedDashboardInputs } = useDashboard();
+  const { dataMode } = useDashboardState();
+  const { inputs, updateInput, deleteInput } = useDashboardInputs();
   const [initialisedFromState, setInitialisedFromState] = useState(false);
   const [value, setValue] = useState<SelectOption | SelectOption[] | null>(
     null,
@@ -80,7 +82,7 @@ const ComboInput = ({
   // Get the options for the select
   const options = useSelectInputValues(properties.options, data, status);
 
-  const stateValue = selectedDashboardInputs[name];
+  const stateValue = inputs[name];
 
   // Bind the selected option to the reducer state
   useEffect(() => {
@@ -114,12 +116,7 @@ const ComboInput = ({
       setInitialisedFromState(true);
       const newValue = multi ? [options[0]] : options[0];
       setValue(newValue);
-      dispatch({
-        type: DashboardActions.SET_DASHBOARD_INPUT,
-        name,
-        value: getValueForState(multi, newValue),
-        recordInputsHistory: false,
-      });
+      updateInput(name, getValueForState(multi, newValue), false);
     } else if (initialisedFromState && stateValue) {
       const parsedUrlValue = multi ? stateValue.split(",") : stateValue;
       const foundOptions = findOptionsForUrlValue(
@@ -134,16 +131,10 @@ const ComboInput = ({
       } else {
         const newValue = multi ? [options[0]] : options[0];
         setValue(newValue);
-        dispatch({
-          type: DashboardActions.SET_DASHBOARD_INPUT,
-          name,
-          value: getValueForState(multi, newValue),
-          recordInputsHistory: false,
-        });
+        updateInput(name, getValueForState(multi, newValue), false);
       }
     }
   }, [
-    dispatch,
     initialisedFromState,
     multi,
     name,
@@ -156,18 +147,9 @@ const ComboInput = ({
   const updateValue = (newValue) => {
     setValue(newValue);
     if (!newValue || newValue.length === 0) {
-      dispatch({
-        type: DashboardActions.DELETE_DASHBOARD_INPUT,
-        name,
-        recordInputsHistory: true,
-      });
+      deleteInput(name, true);
     } else {
-      dispatch({
-        type: DashboardActions.SET_DASHBOARD_INPUT,
-        name,
-        value: getValueForState(multi, newValue),
-        recordInputsHistory: true,
-      });
+      updateInput(name, getValueForState(multi, newValue), true);
     }
   };
 

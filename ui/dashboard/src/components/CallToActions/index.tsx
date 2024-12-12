@@ -1,28 +1,18 @@
-import { DashboardCliMode } from "@powerpipe/types";
 import { getComponent } from "../dashboards";
 
-interface CallToActionsProps {
-  cliMode: DashboardCliMode;
-}
-
-const items = (cliMode: DashboardCliMode) => [
+const items = [
   {
     title: "Find a Dashboard",
-    description: `${cliMode === "powerpipe" ? "Powerpipe" : "Steampipe"} Hub has hundreds of open source dashboards to get you started.`,
-    href:
-      cliMode === "powerpipe"
-        ? "https://hub.powerpipe.io"
-        : "https://hub.steampipe.io/mods",
+    description:
+      "Powerpipe Hub has hundreds of open source dashboards to get you started.",
+    href: "https://hub.powerpipe.io",
     withReferrer: true,
   },
   {
     title: "Build a Dashboard",
     description:
       "It's easy to create your own dashboard as code! Start with this tutorial.",
-    href:
-      cliMode === "powerpipe"
-        ? "https://powerpipe.io/docs/build/writing-dashboards"
-        : "https://steampipe.io/docs/mods/writing-dashboards",
+    href: "https://powerpipe.io/docs/build/writing-dashboards",
     withReferrer: true,
   },
   {
@@ -34,11 +24,11 @@ const items = (cliMode: DashboardCliMode) => [
   },
 ];
 
-const CallToActions = ({ cliMode }: CallToActionsProps) => {
+const CallToActions = () => {
   const ExternalLink = getComponent("external_link");
   return (
     <ul className="mt-4 md:mt-0 space-y-6">
-      {items(cliMode).map((item, itemIdx) => (
+      {items.map((item, itemIdx) => (
         <li key={itemIdx} className="flow-root">
           <div className="p-3 flex items-center space-x-4 rounded-md hover:bg-dashboard-panel focus-within:ring-2 focus-within:ring-blue-500">
             <ExternalLink

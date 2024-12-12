@@ -1,17 +1,9 @@
-// import DatePickerProvider, {
-//   Title,
-//   Header,
-//   WeekDays,
-//   DaySlots,
-// } from "headless-react-datepicker";
 import dayjs from "dayjs";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import SubmitButton from "@powerpipe/components/forms/SubmitButton";
-import useDeepCompareEffect from "use-deep-compare-effect";
 import utc from "dayjs/plugin/utc";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
-import { DashboardActions } from "@powerpipe/types";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import {
   IInput,
@@ -21,7 +13,7 @@ import { parseDate } from "@powerpipe/utils/date";
 import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useEffect, useState } from "react";
 import { usePopper } from "react-popper";
 import "react-day-picker/dist/style.css";
@@ -360,7 +352,7 @@ const CustomDatePicker = ({
 };
 
 const DateRangePicker = (props: InputProps) => {
-  const { dispatch, selectedDashboardInputs } = useDashboard();
+  const { inputs, updateInput } = useDashboardInputs();
   const [popperElement, setPopperElement] = useState(null);
   const [referenceElement, setReferenceElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
@@ -375,7 +367,7 @@ const DateRangePicker = (props: InputProps) => {
     ],
   });
 
-  const stateValue = selectedDashboardInputs[props.name];
+  const stateValue = inputs[props.name];
 
   const [state, setState] = useState<{
     from: dayjs.Dayjs;
@@ -383,7 +375,7 @@ const DateRangePicker = (props: InputProps) => {
     relative?: string | null;
     showCustom?: boolean;
   }>(() => {
-    const stateValue = selectedDashboardInputs[props.name];
+    const stateValue = inputs[props.name];
     if (stateValue) {
       try {
         const parsed = JSON.parse(stateValue);
@@ -418,32 +410,30 @@ const DateRangePicker = (props: InputProps) => {
     if (stateValue) {
       return;
     }
-    dispatch({
-      type: DashboardActions.SET_DASHBOARD_INPUT,
-      name: props.name,
-      value: JSON.stringify({
+    updateInput(
+      props.name,
+      JSON.stringify({
         from: dayjs().subtract(1, "day").utc(),
         to: null,
         relative: "1d",
       }),
-      recordInputsHistory: !!stateValue,
-    });
-  }, []);
+      !!stateValue,
+    );
+  }, [stateValue]);
 
-  useDeepCompareEffect(() => {
+  useEffect(() => {
     if (state.showCustom) {
       return;
     }
-    dispatch({
-      type: DashboardActions.SET_DASHBOARD_INPUT,
-      name: props.name,
-      value: JSON.stringify({
+    updateInput(
+      props.name,
+      JSON.stringify({
         from: state.from,
         to: state.to,
         relative: state.relative,
       }),
-      recordInputsHistory: !!stateValue,
-    });
+      !!stateValue,
+    );
   }, [state]);
 
   const [tempState, setTempState] = useState<{

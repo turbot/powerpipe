@@ -5,7 +5,7 @@ import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
 import { classNames } from "@powerpipe/utils/styles";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useMemo, useState } from "react";
 import {
   vs,
@@ -30,9 +30,7 @@ const CodeBlock = ({
   style = {},
 }: CodeBlockProps) => {
   const [showCopyIcon, setShowCopyIcon] = useState(false);
-  const {
-    themeContext: { theme },
-  } = useDashboard();
+  const { theme } = useDashboardTheme();
 
   const styles = useMemo(() => {
     const commonStyles = {

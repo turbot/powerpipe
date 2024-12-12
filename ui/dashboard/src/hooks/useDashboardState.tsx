@@ -1,9 +1,8 @@
-import get from "lodash/get";
 import useDashboardVersionCheck from "./useDashboardVersionCheck";
+import { buildComponentsMap } from "@powerpipe/components";
 import {
   buildDashboards,
   buildPanelsLog,
-  buildSelectedDashboardInputsFromSearchParams,
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,
   wrapDefinitionInArtificialDashboard,
@@ -14,12 +13,21 @@ import {
   migratePanelStatuses,
 } from "@powerpipe/utils/dashboardEventHandlers";
 import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useReducer,
+} from "react";
+import {
   DashboardActions,
+  DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
   DashboardDataModeLive,
-  DashboardDataOptions,
-  DashboardRenderOptions,
+  DashboardSearch,
   IDashboardContext,
 } from "@powerpipe/types";
 import {
@@ -30,7 +38,8 @@ import {
   ExecutionCompleteSchemaMigrator,
   ExecutionStartedSchemaMigrator,
 } from "@powerpipe/utils/schema";
-import { useCallback, useReducer } from "react";
+
+export const DashboardContext = createContext<IDashboardContext | null>(null);
 
 const reducer = (state: IDashboardContext, action) => {
   switch (action.type) {
@@ -43,16 +52,6 @@ const reducer = (state: IDashboardContext, action) => {
         },
       };
     case DashboardActions.DASHBOARD_METADATA:
-      // TODO remove once all workspaces are running Powerpipe as this is actually SERVER_METADATA in Powerpipe
-      if (state.cliMode === "steampipe") {
-        return {
-          ...state,
-          metadata: {
-            mod: {},
-            ...action.metadata,
-          },
-        };
-      }
       if (!state.selectedDashboard?.full_name) {
         return state;
       }
@@ -63,21 +62,10 @@ const reducer = (state: IDashboardContext, action) => {
           [state.selectedDashboard?.full_name]: action.metadata,
         },
       };
-    case DashboardActions.SET_CLI_MODE:
-      return {
-        ...state,
-        cliMode: action.cli_mode,
-      };
-    case DashboardActions.SET_SEARCH_PATH_PREFIX:
-      return {
-        ...state,
-        searchPathPrefix: action.search_path_prefix,
-      };
     case DashboardActions.AVAILABLE_DASHBOARDS:
       const { dashboards, dashboardsMap } = buildDashboards(
         action.dashboards,
         action.benchmarks,
-        action.snapshots,
       );
       const selectedDashboard = updateSelectedDashboard(
         state.selectedDashboard,
@@ -134,32 +122,11 @@ const reducer = (state: IDashboardContext, action) => {
           migratedEvent.start_time,
         ),
         panelsMap: migratedEvent.panels,
-        diff: null,
         dashboard,
         execution_id: migratedEvent.execution_id,
-        refetchDashboard: false,
         progress: 0,
         snapshot: null,
         state: "running",
-      };
-    }
-    case DashboardActions.DIFF_SNAPSHOT: {
-      // If we're in live mode, do nothing
-      if (state.dataMode === DashboardDataModeLive) {
-        return state;
-      }
-
-      const eventMigrator = new ExecutionCompleteSchemaMigrator();
-      const migratedEvent = eventMigrator.toLatest(action);
-      const panels = migratedEvent.snapshot.panels;
-      const panelsMap = migratePanelStatuses(panels, action.schema_version);
-
-      return {
-        ...state,
-        diff: {
-          panelsMap,
-          snapshotFileName: action.snapshotFileName,
-        },
       };
     }
     case DashboardActions.EXECUTION_COMPLETE: {
@@ -199,7 +166,6 @@ const reducer = (state: IDashboardContext, action) => {
           panels,
           migratedEvent.snapshot.end_time,
         ),
-        diff: null,
         panelsMap,
         dashboard,
         progress: 100,
@@ -223,8 +189,56 @@ const reducer = (state: IDashboardContext, action) => {
         EXECUTION_SCHEMA_VERSION_20221222,
         state,
       );
-    case DashboardActions.SELECT_PANEL:
-      return { ...state, selectedPanel: action.panel };
+    case DashboardActions.CLEAR_DASHBOARD:
+      return {
+        ...state,
+        dataMode: DashboardDataModeLive,
+        dashboard: null,
+        error: null,
+        execution_id: null,
+        panelsLog: {},
+        panelsMap: {},
+        selectedDashboard: null,
+        snapshot: null,
+        progress: 0,
+      };
+    case DashboardActions.LOAD_SNAPSHOT:
+      const { executionCompleteEvent, snapshotFileName } = action;
+      const layout = executionCompleteEvent.snapshot.layout;
+      const panels = executionCompleteEvent.snapshot.panels;
+      const rootPanel = panels[layout.name];
+      let dashboard;
+
+      if (rootPanel.panel_type !== "dashboard") {
+        dashboard = wrapDefinitionInArtificialDashboard(rootPanel, layout);
+      } else {
+        dashboard = {
+          ...rootPanel,
+          ...layout,
+        };
+      }
+
+      const panelsMap = migratePanelStatuses(
+        panels,
+        executionCompleteEvent.schema_version,
+      );
+
+      return {
+        ...state,
+        dashboard,
+        dataMode: DashboardDataModeCLISnapshot,
+        error: null,
+        panelsLog: updatePanelsLogFromCompletedPanels(
+          state.panelsLog,
+          panels,
+          executionCompleteEvent.snapshot.end_time,
+        ),
+        panelsMap,
+        progress: 100,
+        snapshot: executionCompleteEvent.snapshot,
+        snapshotFileName,
+        state: "complete",
+      };
     case DashboardActions.SET_DATA_MODE:
       const newState = {
         ...state,
@@ -241,11 +255,6 @@ const reducer = (state: IDashboardContext, action) => {
         newState.snapshotId = null;
       }
       return newState;
-    case DashboardActions.SET_REFETCH_DASHBOARD:
-      return {
-        ...state,
-        refetchDashboard: true,
-      };
     case DashboardActions.SET_DASHBOARD:
       return {
         ...state,
@@ -282,92 +291,6 @@ const reducer = (state: IDashboardContext, action) => {
         snapshotId: null,
         state: null,
         selectedDashboard: action.dashboard,
-        selectedPanel: null,
-        lastChangedInput: null,
-      };
-    case DashboardActions.CLEAR_DASHBOARD_INPUTS:
-      return {
-        ...state,
-        selectedDashboardInputs: {},
-        lastChangedInput: null,
-        recordInputsHistory: !!action.recordInputsHistory,
-      };
-    case DashboardActions.DELETE_DASHBOARD_INPUT:
-      const { [action.name]: toDelete, ...rest } =
-        state.selectedDashboardInputs;
-      return {
-        ...state,
-        selectedDashboardInputs: {
-          ...rest,
-        },
-        lastChangedInput: action.name,
-        recordInputsHistory: !!action.recordInputsHistory,
-      };
-    case DashboardActions.SET_DASHBOARD_INPUT:
-      return {
-        ...state,
-        selectedDashboardInputs: {
-          ...state.selectedDashboardInputs,
-          [action.name]: action.value,
-        },
-        lastChangedInput: action.name,
-        recordInputsHistory: !!action.recordInputsHistory,
-      };
-    case DashboardActions.SET_DASHBOARD_INPUTS:
-      return {
-        ...state,
-        selectedDashboardInputs: action.value,
-        lastChangedInput: null,
-        recordInputsHistory: !!action.recordInputsHistory,
-      };
-    case DashboardActions.INPUT_VALUES_CLEARED: {
-      // We're not expecting execution events for this ID
-      if (action.execution_id !== state.execution_id) {
-        return state;
-      }
-      const newSelectedDashboardInputs = { ...state.selectedDashboardInputs };
-      const newPanelsMap = { ...state.panelsMap };
-      const panelsMapKeys = Object.keys(newPanelsMap);
-      for (const input of action.cleared_inputs || []) {
-        delete newSelectedDashboardInputs[input];
-        const matchingPanelKey = panelsMapKeys.find((key) =>
-          key.endsWith(input),
-        );
-        if (!matchingPanelKey) {
-          continue;
-        }
-        const panel = newPanelsMap[matchingPanelKey];
-        newPanelsMap[matchingPanelKey] = {
-          ...panel,
-          status: "initialized",
-        };
-      }
-      return {
-        ...state,
-        panelsMap: newPanelsMap,
-        selectedDashboardInputs: newSelectedDashboardInputs,
-        lastChangedInput: null,
-        recordInputsHistory: false,
-      };
-    }
-    case DashboardActions.SET_DASHBOARD_SEARCH_VALUE:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          value: action.value,
-        },
-      };
-    case DashboardActions.SET_DASHBOARD_SEARCH_GROUP_BY:
-      return {
-        ...state,
-        search: {
-          ...state.search,
-          groupBy: {
-            value: action.value,
-            tag: action.tag,
-          },
-        },
       };
     case DashboardActions.SET_DASHBOARD_TAG_KEYS:
       return {
@@ -381,27 +304,14 @@ const reducer = (state: IDashboardContext, action) => {
       return { ...state, snapshot_metadata_loaded: true };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
-    case DashboardActions.SHOW_CUSTOMIZE_BENCHMARK_PANEL:
-      return {
-        ...state,
-        filterAndGroupControlPanel: action.panel_name,
-      };
-    case DashboardActions.HIDE_CUSTOMIZE_BENCHMARK_PANEL: {
-      const { filterAndGroupControlPanel, ...rest } = state;
-      return {
-        ...rest,
-      };
-    }
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
   }
 };
 
-const getInitialState = (searchParams, defaults: any = {}) => {
+const getInitialState = (defaults: any = {}) => {
   return {
-    cliMode: defaults.cliMode || "powerpipe",
-    versionMismatchCheck: defaults.versionMismatchCheck,
     availableDashboardsLoaded: false,
     metadata: null,
     dashboards: [],
@@ -410,70 +320,81 @@ const getInitialState = (searchParams, defaults: any = {}) => {
     },
     dataMode: defaults.dataMode || DashboardDataModeLive,
     snapshotId: defaults.snapshotId ? defaults.snapshotId : null,
-    refetchDashboard: false,
     error: null,
     panelsLog: {},
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
-    searchPathPrefix: [],
-    selectedPanel: null,
     selectedDashboard: null,
-    selectedDashboardInputs:
-      buildSelectedDashboardInputsFromSearchParams(searchParams),
     snapshot: null,
-    lastChangedInput: null,
-
-    search: {
-      value: searchParams.get("search") || "",
-      groupBy: {
-        value:
-          searchParams.get("group_by") ||
-          get(defaults, "search.groupBy.value", "tag"),
-        tag:
-          searchParams.get("tag") ||
-          get(defaults, "search.groupBy.value", "service"),
-      },
-    },
-
     execution_id: null,
-
     progress: 0,
+    versionMismatchCheck: defaults.versionMismatchCheck,
   };
 };
 
-type DashboardStateProps = {
-  dataOptions: DashboardDataOptions;
-  renderOptions: DashboardRenderOptions;
-  searchParams: URLSearchParams;
-  stateDefaults: {};
+type DashboardStateProviderProps = {
+  analyticsContext: any;
+  breakpointContext: any;
+  children: ReactNode;
+  componentOverrides?: {};
+  dataMode: DashboardDataMode;
+  stateDefaults?: {
+    search?: DashboardSearch;
+  };
   versionMismatchCheck: boolean;
 };
 
-const useDashboardState = ({
-  dataOptions = {
-    dataMode: DashboardDataModeLive,
-  },
-  renderOptions = {
-    headless: false,
-  },
-  searchParams,
-  stateDefaults = {},
+export const DashboardStateProvider = ({
+  children,
+  analyticsContext,
+  breakpointContext,
+  componentOverrides = {},
+  dataMode,
+  stateDefaults,
   versionMismatchCheck,
-}: DashboardStateProps) => {
-  const initialState = getInitialState(searchParams, {
-    ...stateDefaults,
-    ...dataOptions,
-    ...renderOptions,
-    versionMismatchCheck,
-  });
+}: DashboardStateProviderProps) => {
+  const {
+    setMetadata: setAnalyticsMetadata,
+    setSelectedDashboard: setAnalyticsSelectedDashboard,
+  } = analyticsContext;
+  const components = buildComponentsMap(componentOverrides);
+  const initialState = useMemo(() => {
+    return getInitialState({
+      ...stateDefaults,
+      dataMode,
+      versionMismatchCheck,
+    });
+  }, []);
   const [state, dispatchInner] = useReducer(reducer, initialState);
   useDashboardVersionCheck(state);
   const dispatch = useCallback((action) => {
     // console.log(action.type, action);
     dispatchInner(action);
   }, []);
-  return [state, dispatch];
+
+  // Set up analytics
+  useEffect(() => {
+    setAnalyticsMetadata(state.metadata);
+  }, [state.metadata, setAnalyticsMetadata]);
+
+  useEffect(() => {
+    setAnalyticsSelectedDashboard(state.selectedDashboard);
+  }, [state.selectedDashboard, setAnalyticsSelectedDashboard]);
+
+  return (
+    <DashboardContext.Provider
+      value={{ ...state, breakpointContext, components, dispatch }}
+    >
+      {children}
+    </DashboardContext.Provider>
+  );
 };
 
-export default useDashboardState;
+export const useDashboardState = () => {
+  const context = useContext(DashboardContext);
+  if (!context) {
+    throw new Error("useDashboardState must be used within a DashboardContext");
+  }
+  return context;
+};

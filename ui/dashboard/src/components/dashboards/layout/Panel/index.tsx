@@ -20,7 +20,7 @@ import { ReactNode } from "react";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 
 type PanelProps = {
@@ -48,11 +48,12 @@ const Panel = ({
   children,
   className,
   definition,
+  showControls = true,
   showPanelError = true,
   showPanelStatus = true,
   forceBackground = false,
 }: PanelProps) => {
-  const { selectedPanel } = useDashboard();
+  const { selectedPanel } = useDashboardPanelDetail();
   const { inputPanelsAwaitingValue } = usePanel();
   const [referenceElement, setReferenceElement] = useState(null);
   const baseStyles = classNames(
@@ -84,9 +85,7 @@ const Panel = ({
       ref={setReferenceElement}
       id={definition.name}
       className={baseStyles}
-      onMouseEnter={
-        showPanelControls ? () => setShowPanelControls(true) : undefined
-      }
+      onMouseEnter={showControls ? () => setShowPanelControls(true) : undefined}
       onMouseLeave={() => setShowPanelControls(false)}
     >
       <section

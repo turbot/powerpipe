@@ -8,13 +8,12 @@ import { ReactComponent as LogoWordmark } from "./logos/powerpipe-logo-wordmark.
 // @ts-ignore
 import { ReactComponent as LogoWordmarkDarkmode } from "./logos/powerpipe-logo-wordmark-darkmode.svg";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const PowerpipeLogo = () => {
-  const {
-    themeContext: { theme },
-    searchPathPrefix,
-  } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
+  const { theme } = useDashboardTheme();
   const ExternalLink = getComponent("external_link");
 
   return (

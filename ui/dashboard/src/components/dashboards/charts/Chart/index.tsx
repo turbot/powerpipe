@@ -30,7 +30,8 @@ import { GraphType } from "@powerpipe/components/dashboards/graphs/types";
 import { HierarchyType } from "@powerpipe/components/dashboards/hierarchies/types";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useNavigate } from "react-router-dom";
 
 const getThemeColorsWithPointOverrides = (
@@ -851,10 +852,8 @@ const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
 };
 
 const ChartWrapper = (props: ChartProps) => {
-  const {
-    searchPathPrefix,
-    themeContext: { wrapperRef },
-  } = useDashboard();
+  const { wrapperRef } = useDashboardTheme();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const themeColors = useChartThemeColors();
 
   if (!wrapperRef) {
