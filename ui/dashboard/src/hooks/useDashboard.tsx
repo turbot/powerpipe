@@ -580,16 +580,6 @@ const DashboardProvider = ({
   //   }
   // }, [location, navigate, state.dataMode]);
 
-  // useEffect(() => {
-  //   if (!state.selectedDashboard) {
-  //     document.title = "Dashboards | Steampipe";
-  //   } else {
-  //     document.title = `${
-  //       state.selectedDashboard.title || state.selectedDashboard.full_name
-  //     } | Dashboards | Steampipe`;
-  //   }
-  // }, [state.selectedDashboard]);
-
   return (
     <DashboardThemeProvider themeContext={themeContext}>
       <DashboardSearchProvider defaultSearch={stateDefaults?.search}>

@@ -14,6 +14,7 @@ import {
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import usePageTitle from "@powerpipe/hooks/usePageTitle";
 
 type DashboardProps = {
   definition: DashboardDefinition;
@@ -78,6 +79,13 @@ const DashboardWrapper = ({
   const { dashboard, dataMode, selectedDashboard, selectedPanel } =
     useDashboardState();
   const { search } = useDashboardSearch();
+
+  usePageTitle([
+    selectedDashboard
+      ? selectedDashboard.title || selectedDashboard.full_name
+      : null,
+    "Dashboards",
+  ]);
 
   if (
     search.value ||
