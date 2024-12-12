@@ -105,7 +105,7 @@ const PanelControlsProvider = ({
         key: "view-panel-detail",
         title: "View detail",
         icon: "arrows-pointing-out",
-        action: async () => selectPanel(definition),
+        action: async () => selectPanel(definition, panelData),
       });
     }
     return controls;

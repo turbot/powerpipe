@@ -7,13 +7,15 @@ import {
   useState,
 } from "react";
 import { GlobalHotKeys } from "react-hotkeys";
+import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 
 interface IDashboardPanelDetailContext {
-  selectedPanel: string | null;
-  selectPanel: (panelName: PanelDefinition | null) => void;
+  selectedPanel: PanelDefinition | null;
+  selectPanel: (panelName: PanelDefinition | null, data?: LeafNodeData) => void;
   closePanel: () => void;
+  panelOverrideData: LeafNodeData | null;
   selectedFilterAndGroupPanel: string | null;
   selectFilterAndGroupPanel: (panelName: string | null) => void;
   closeFilterAndGroupPanel: () => void;
@@ -29,9 +31,13 @@ const DashboardPanelDetailContext =
 export const DashboardPanelDetailProvider = ({
   children,
 }: DashboardPanelDetailProviderProps) => {
-  const [selectedPanel, setSelectedPanel] = useState<string | null>(null);
+  const [selectedPanel, setSelectedPanel] = useState<PanelDefinition | null>(
+    null,
+  );
   const [selectedFilterAndGroupPanel, setSelectedFilterAndGroupPanel] =
     useState<string | null>(null);
+  const [panelOverrideData, setPanelOverrideData] =
+    useState<LeafNodeData | null>(null);
 
   const [hotKeysHandlers, setHotKeysHandlers] = useState({
     CLOSE_PANEL_DETAIL: noop,
@@ -41,8 +47,14 @@ export const DashboardPanelDetailProvider = ({
     CLOSE_PANEL_DETAIL: ["esc"],
   };
 
-  const selectPanel = (panelName: string | null) => {
+  const selectPanel = (
+    panelName: PanelDefinition | null,
+    data?: LeafNodeData,
+  ) => {
     setSelectedPanel(panelName);
+    if (data) {
+      setPanelOverrideData(data);
+    }
   };
 
   const closePanel = useCallback(() => {
@@ -61,6 +73,7 @@ export const DashboardPanelDetailProvider = ({
         selectedPanel,
         selectPanel,
         closePanel,
+        panelOverrideData,
         selectedFilterAndGroupPanel,
         selectFilterAndGroupPanel: (panelName: string | null) =>
           setSelectedFilterAndGroupPanel(panelName),

@@ -51,7 +51,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
     dataMode,
     panelsLog,
   } = useDashboardState();
-  const { closePanel } = useDashboardPanelDetail();
+  const { closePanel, panelOverrideData } = useDashboardPanelDetail();
   const isTablet = minBreakpoint("md");
 
   const panelLog = panelsLog[definition.name];
@@ -75,7 +75,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
         selected: selectedTab.name === Tabs.DEFINITION.name,
       });
     }
-    if (definition.data) {
+    if (panelOverrideData || definition.data) {
       tabs.push({
         ...Tabs.DATA,
         selected: selectedTab.name === Tabs.DATA.name,
