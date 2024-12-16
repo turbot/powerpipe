@@ -396,7 +396,13 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
       });
     }
     setCustomControls(controls);
-  }, [node.name, node.type, descendant_result_nodes, setCustomControls]);
+  }, [
+    download,
+    node.name,
+    node.type,
+    descendant_result_nodes,
+    setCustomControls,
+  ]);
 
   const hasResults =
     can_be_expanded &&
