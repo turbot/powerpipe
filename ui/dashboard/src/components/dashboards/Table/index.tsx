@@ -779,7 +779,7 @@ const TableViewVirtualizedRows = ({
       {
         key: "table-select-columns",
         title: "Select table columns",
-        icon: "data_table",
+        icon: "add_column_right",
         action: async () => {
           setShowColumnSettingsModal(true);
         },
