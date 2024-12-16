@@ -1,8 +1,8 @@
-import React, { Fragment, ReactNode, useState } from "react";
+import { classNames } from "@powerpipe/utils/styles";
 import { CloseIcon } from "@powerpipe/constants/icons";
 import { Dialog, Transition } from "@headlessui/react";
+import { Fragment, ReactNode, useState } from "react";
 import { ModalThemeWrapper, ThemeProvider } from "@powerpipe/hooks/useTheme";
-import { classNames } from "@powerpipe/utils/styles";
 
 interface ModalProps {
   actions?: ReactNode[];

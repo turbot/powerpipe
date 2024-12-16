@@ -101,17 +101,48 @@ export const DashboardExecutionProvider = ({
         action: SocketActions.CLEAR_DASHBOARD,
       });
 
-      // Navigate to the snapshot page
-      let inputsSearchParams = new URLSearchParams();
+      // Build the inputs search params
+      const snapshotSearchParams = new URLSearchParams();
       for (const [key, value] of Object.entries(
         executionCompleteEvent.snapshot.inputs || {},
       )) {
-        inputsSearchParams.set(key, value);
+        snapshotSearchParams.set(key, value);
       }
-      const inputsSearchParamsString = inputsSearchParams.toString();
+
+      // Build the filter & group search params
+      const filtersByPanel = {};
+      const groupingsByPanel = {};
+      const tableSettingsByPanel = {};
+      for (const [panel, panelViewSettings] of Object.entries(
+        executionCompleteEvent.snapshot.metadata?.view || {},
+      )) {
+        if (panelViewSettings.filter_by) {
+          filtersByPanel[panel] = panelViewSettings.filter_by;
+        }
+        if (panelViewSettings.group_by) {
+          groupingsByPanel[panel] = panelViewSettings.group_by;
+        }
+        if (panelViewSettings.table) {
+          tableSettingsByPanel[panel] = panelViewSettings.table;
+        }
+      }
+      if (Object.keys(filtersByPanel).length) {
+        snapshotSearchParams.set("where", JSON.stringify(filtersByPanel));
+      }
+      if (Object.keys(groupingsByPanel).length) {
+        snapshotSearchParams.set("grouping", JSON.stringify(groupingsByPanel));
+      }
+      if (Object.keys(tableSettingsByPanel).length) {
+        snapshotSearchParams.set("table", JSON.stringify(tableSettingsByPanel));
+      }
+
+      const snapshotSearchParamsString = snapshotSearchParams.toString();
+
+      // Navigate to the snapshot page
       navigate(
-        `/snapshot/${snapshotFileName}${inputsSearchParamsString ? `?${inputsSearchParamsString}` : ""}`,
+        `/snapshot/${snapshotFileName}${snapshotSearchParamsString ? `?${snapshotSearchParamsString}` : ""}`,
       );
+
       dispatch({
         type: DashboardActions.LOAD_SNAPSHOT,
         executionCompleteEvent,
