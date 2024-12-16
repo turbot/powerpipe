@@ -60,10 +60,10 @@ const TableSettingsColumns = ({
       .map((c) => c.id);
     update(
       visibleColumns.length
-        ? null
-        : {
+        ? {
             display_columns: sortBy(visibleColumns, (c) => columnMap[c].index),
-          },
+          }
+        : null,
     );
   }, [columnVisibility]);
 
