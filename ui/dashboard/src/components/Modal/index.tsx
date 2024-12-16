@@ -67,7 +67,7 @@ const Modal = ({
                 leaveFrom="opacity-100 translate-y-0 scale-100"
                 leaveTo="opacity-0 translate-y-0 scale-95"
               >
-                <div className="inline-block w-full sm:max-w-xl lg:max-w-3xl h-full sm:h-auto align-middle bg-dashboard rounded-lg p-4 text-left overflow-hidden shadow-xl transform transition-all my-8 space-y-4">
+                <div className="inline-block w-full sm:max-w-xl lg:max-w-3xl h-full sm:h-auto align-middle bg-dashboard rounded-lg p-4 text-left overflow-hidden transform transition-all my-8 space-y-4">
                   <div className="flex items-center space-x-3">
                     {icon && (
                       <div className="flex-shrink-0 flex items-start">
