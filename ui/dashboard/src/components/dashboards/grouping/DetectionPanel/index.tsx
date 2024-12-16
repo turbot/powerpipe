@@ -366,14 +366,20 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
 
   const { download } = useDownloadDetectionData(
     node,
-    descendant_result_nodes.length > 0 ? descendant_result_nodes : undefined,
+    node.type === "detection"
+      ? node.children
+      : descendant_result_nodes.length > 0
+        ? descendant_result_nodes
+        : undefined,
   );
 
   useEffect(() => {
     const controls: IPanelControl[] = [
       {
         key: "download-data",
-        disabled: descendant_result_nodes.length === 0,
+        disabled:
+          (node.type === "detection" && !node.children?.length) ||
+          (node.type !== "detection" && descendant_result_nodes.length === 0),
         title: "Download data",
         icon: "arrow-down-tray",
         action: download,
