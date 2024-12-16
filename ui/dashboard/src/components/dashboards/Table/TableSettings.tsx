@@ -1,15 +1,12 @@
-import Icon from "@powerpipe/components/Icon";
+import Modal from "@powerpipe/components/Modal";
 import SearchInput from "@powerpipe/components/SearchInput";
 import sortBy from "lodash/sortBy";
 import useTableConfig from "@powerpipe/hooks/useTableConfig";
+import { AsyncNoop } from "@powerpipe/types/func";
 import { classNames } from "@powerpipe/utils/styles";
-import { createPortal } from "react-dom";
-import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import { Popover } from "@headlessui/react";
 import { Column, Table } from "@tanstack/react-table";
-import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useEffect, useMemo, useState } from "react";
-import { usePopper } from "react-popper";
 
 type TableSettingsColumnsViewType = "all" | "visible" | "hidden";
 
@@ -63,10 +60,10 @@ const TableSettingsColumns = ({
       .map((c) => c.id);
     update(
       visibleColumns.length
-        ? null
-        : {
+        ? {
             display_columns: sortBy(visibleColumns, (c) => columnMap[c].index),
-          },
+          }
+        : null,
     );
   }, [columnVisibility]);
 
@@ -119,7 +116,7 @@ const TableSettingsColumns = ({
 
   return (
     <div className="space-y-3">
-      <span className="font-semibold">Visible Columns</span>
+      {/*<span className="font-semibold">Visible Columns</span>*/}
       <SearchInput
         placeholder="Search columns..."
         value={search}
@@ -143,43 +140,22 @@ const TableSettingsColumns = ({
 const TableSettings = ({
   name,
   table,
+  show,
+  onClose,
 }: {
   name: string;
   table: Table<KeyValuePairs>;
+  show: boolean;
+  onClose: AsyncNoop;
 }) => {
-  const [popperElement, setPopperElement] = useState(null);
-  const [referenceElement, setReferenceElement] = useState(null);
-  const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    placement: "bottom-end",
-  });
+  if (!show) {
+    return null;
+  }
 
   return (
-    <Popover className="relative">
-      {/*@ts-ignore*/}
-      <Popover.Button ref={setReferenceElement} as="div">
-        <Icon icon="data_table" className="h-4 w-4 cursor-pointer" />
-      </Popover.Button>
-      <Popover.Panel className="absolute z-10 pt-px">
-        {createPortal(
-          <ThemeProvider>
-            <ThemeWrapper>
-              <div
-                // @ts-ignore
-                ref={setPopperElement}
-                style={{ ...styles.popper }}
-                {...attributes.popper}
-              >
-                <div className="border border-dashboard-panel rounded-md bg-dashboard mt-1 p-3 space-y-3 min-w-60 max-w-96">
-                  <TableSettingsColumns name={name} table={table} />
-                </div>
-              </div>
-            </ThemeWrapper>
-          </ThemeProvider>,
-          // @ts-ignore as this element definitely exists
-          document.getElementById("portals"),
-        )}
-      </Popover.Panel>
-    </Popover>
+    <Modal allowClickAway onClose={onClose} title="Select table columns">
+      <TableSettingsColumns name={name} table={table} />
+    </Modal>
   );
 };
 

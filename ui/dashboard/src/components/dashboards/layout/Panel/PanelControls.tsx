@@ -6,7 +6,7 @@ import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { usePopper } from "react-popper";
 
 export interface PanelControlProps {
-  action: (e: any) => Promise<void>;
+  action: (e: any, ref?: HTMLDivElement | null) => Promise<void>;
   component?: ReactNode;
   disabled?: boolean;
   icon: string;
@@ -33,7 +33,7 @@ const PanelControl = ({
         if (disabled) {
           return;
         }
-        await action(e);
+        action && (await action(e));
       }}
       title={title}
     >
