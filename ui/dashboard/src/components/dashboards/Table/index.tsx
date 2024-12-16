@@ -825,71 +825,37 @@ const TableViewVirtualizedRows = ({
     doRender();
   }, [columns, renderTemplates, rows, virtualizedRows, templateRenderReady]);
 
-  // const tableSettingsControl = useMemo<IPanelControl | null>(() => {
-  //   if (!table) {
-  //     return null;
-  //   }
-  //   return {
-  //     key: "table-settings",
-  //     title: "Table settings",
-  //     icon: "data_table",
-  //     //component: <TableSettings table={table} />,
-  //     action: noop,
-  //   };
-  // }, [table]);
-
-  // const { enabled: panelControlsEnabled, setCustomControls } =
-  //   usePanelControls();
-
-  // useEffect(() => {
-  //   if (!panelControlsEnabled || !tableSettingsControl) {
-  //     return;
-  //   }
-  //   setCustomControls([tableSettingsControl]);
-  // }, [panelControlsEnabled, tableSettingsControl, setCustomControls]);
-
   return (
     <>
       <div className="flex flex-col w-full overflow-hidden">
-        {filterEnabled && (
-          <div
-            className={classNames(
-              // "flex w-full",
-              "flex w-full p-4",
-              // filters.length ? "justify-between p-4" : "justify-end",
-              filters.length ? "justify-between" : "justify-end",
-            )}
-          >
-            {filters.length > 0 && (
-              <div className="flex flex-wrap gap-2">
-                {filters.map((filter) => {
-                  return (
-                    <div
-                      key={`${filter.operator}:${filter.key}:${filter.value}`}
-                      className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
-                    >
-                      <Icon
-                        className="w-4 h-4"
-                        icon={
-                          filter.operator === "equal"
-                            ? "add_circle"
-                            : "do_not_disturb_on"
-                        }
-                      />
-                      <span>{`${filter.key}: ${filter.value}`}</span>
-                      <span
-                        onClick={() =>
-                          removeFilter(filter.key, filter.value, filter.context)
-                        }
-                        className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
-                      >
-                        <Icon className="w-4 h-4" icon="close" />
-                      </span>
-                    </div>
-                  );
-                })}
-              </div>
-            )}
+        {filterEnabled && !!filters.length && (
+          <div className="flex flex-wrap gap-2 w-full p-4 justify-between">
+            {filters.map((filter) => {
+              return (
+                <div
+                  key={`${filter.operator}:${filter.key}:${filter.value}`}
+                  className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
+                >
+                  <Icon
+                    className="w-4 h-4"
+                    icon={
+                      filter.operator === "equal"
+                        ? "add_circle"
+                        : "do_not_disturb_on"
+                    }
+                  />
+                  <span>{`${filter.key}: ${filter.value}`}</span>
+                  <span
+                    onClick={() =>
+                      removeFilter(filter.key, filter.value, filter.context)
+                    }
+                    className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
+                  >
+                    <Icon className="w-4 h-4" icon="close" />
+                  </span>
+                </div>
+              );
+            })}
           </div>
         )}
         <div
