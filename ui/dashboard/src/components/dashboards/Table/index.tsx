@@ -41,6 +41,7 @@ import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
@@ -762,6 +763,30 @@ const TableViewVirtualizedRows = ({
     getSortedRowModel: getSortedRowModel(),
   });
 
+  const { customControls, setCustomControls } = usePanelControls();
+
+  const [showColumnSettingsModal, setShowColumnSettingsModal] = useState(false);
+
+  useDeepCompareEffect(() => {
+    const tableColumnChooser = customControls.find(
+      (c) => c.key === "table-select-columns",
+    );
+    if (tableColumnChooser) {
+      return;
+    }
+    setCustomControls([
+      ...customControls,
+      {
+        key: "table-select-columns",
+        title: "Select table columns",
+        icon: "data_table",
+        action: async () => {
+          setShowColumnSettingsModal(true);
+        },
+      },
+    ]);
+  }, [customControls, setCustomControls]);
+
   const { rows } = table.getRowModel();
 
   const virtualizer = useVirtualizer({
@@ -824,167 +849,177 @@ const TableViewVirtualizedRows = ({
   // }, [panelControlsEnabled, tableSettingsControl, setCustomControls]);
 
   return (
-    <div className="flex flex-col w-full overflow-hidden">
-      {filterEnabled && (
-        <div
-          className={classNames(
-            // "flex w-full",
-            "flex w-full p-4",
-            // filters.length ? "justify-between p-4" : "justify-end",
-            filters.length ? "justify-between" : "justify-end",
-          )}
-        >
-          {filters.length > 0 && (
-            <div className="flex flex-wrap gap-2">
-              {filters.map((filter) => {
-                return (
-                  <div
-                    key={`${filter.operator}:${filter.key}:${filter.value}`}
-                    className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
-                  >
-                    <Icon
-                      className="w-4 h-4"
-                      icon={
-                        filter.operator === "equal"
-                          ? "add_circle"
-                          : "do_not_disturb_on"
-                      }
-                    />
-                    <span>{`${filter.key}: ${filter.value}`}</span>
-                    <span
-                      onClick={() =>
-                        removeFilter(filter.key, filter.value, filter.context)
-                      }
-                      className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
-                    >
-                      <Icon className="w-4 h-4" icon="close" />
-                    </span>
-                  </div>
-                );
-              })}
-            </div>
-          )}
-          <TableSettings name={panelName} table={table} />
-        </div>
-      )}
-      <div
-        ref={parentRef}
-        className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
-      >
-        <div className={`h-[${virtualizer.getTotalSize()}px}]`}>
-          <table
+    <>
+      <div className="flex flex-col w-full overflow-hidden">
+        {filterEnabled && (
+          <div
             className={classNames(
-              "w-full divide-y divide-table-divide",
-              hasTopBorder ? "border-t border-divide" : null,
+              // "flex w-full",
+              "flex w-full p-4",
+              // filters.length ? "justify-between p-4" : "justify-end",
+              filters.length ? "justify-between" : "justify-end",
             )}
           >
-            <thead className="text-table-head border-b border-divide">
-              {table.getHeaderGroups().map((headerGroup) => (
-                <tr key={headerGroup.id}>
-                  {headerGroup.headers.map((header) => {
-                    return (
-                      <th
-                        key={header.id}
-                        colSpan={header.colSpan}
-                        scope="col"
-                        className={classNames(
-                          "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
-                        )}
-                        //style={{ width: header.getSize() }}
+            {filters.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {filters.map((filter) => {
+                  return (
+                    <div
+                      key={`${filter.operator}:${filter.key}:${filter.value}`}
+                      className="flex items-center bg-black-scale-2 px-3 py-1 rounded-md space-x-2"
+                    >
+                      <Icon
+                        className="w-4 h-4"
+                        icon={
+                          filter.operator === "equal"
+                            ? "add_circle"
+                            : "do_not_disturb_on"
+                        }
+                      />
+                      <span>{`${filter.key}: ${filter.value}`}</span>
+                      <span
+                        onClick={() =>
+                          removeFilter(filter.key, filter.value, filter.context)
+                        }
+                        className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
                       >
-                        {header.isPlaceholder ? null : (
-                          <div
-                            {...{
-                              className: header.column.getCanSort()
-                                ? "cursor-pointer select-none"
-                                : "",
-                              onClick: header.column.getToggleSortingHandler(),
-                            }}
-                          >
-                            {flexRender(
-                              header.column.columnDef.header,
-                              header.getContext(),
-                            )}
-                            {{
-                              asc: (
-                                <SortAscendingIcon
-                                  className={classNames("inline-block h-4 w-4")}
-                                />
-                              ),
-                              desc: (
-                                <SortDescendingIcon className="inline-block h-4 w-4" />
-                              ),
-                            }[header.column.getIsSorted() as string] ?? null}
-                          </div>
-                        )}
-                      </th>
-                    );
-                  })}
-                </tr>
-              ))}
-            </thead>
-            <tbody className="divide-y divide-table-divide">
-              {rows.length === 0 && (
-                <tr>
-                  <td
-                    className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
-                    colSpan={columns.length}
-                  >
-                    No results
-                  </td>
-                </tr>
+                        <Icon className="w-4 h-4" icon="close" />
+                      </span>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+        <div
+          ref={parentRef}
+          className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
+        >
+          <div className={`h-[${virtualizer.getTotalSize()}px}]`}>
+            <table
+              className={classNames(
+                "w-full divide-y divide-table-divide",
+                hasTopBorder ? "border-t border-divide" : null,
               )}
-              {virtualizer.getVirtualItems().map((virtualRow, index) => {
-                const row = rows[virtualRow.index];
-                return (
-                  <tr
-                    key={row.id}
-                    style={{
-                      height: `${virtualRow.size}px`,
-                      transform: `translateY(${
-                        virtualRow.start - index * virtualRow.size
-                      }px)`,
-                    }}
-                  >
-                    {row.getVisibleCells().map((cell) => {
+            >
+              <thead className="text-table-head border-b border-divide">
+                {table.getHeaderGroups().map((headerGroup) => (
+                  <tr key={headerGroup.id}>
+                    {headerGroup.headers.map((header) => {
                       return (
-                        <td
-                          key={cell.id}
+                        <th
+                          key={header.id}
+                          colSpan={header.colSpan}
+                          scope="col"
                           className={classNames(
-                            "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
-                            isNumericCol(cell.column.columnDef.data_type)
-                              ? "text-right"
-                              : "",
-                            cell.column.columnDef.wrap === "all"
-                              ? "break-keep"
-                              : "whitespace-nowrap",
+                            "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
                           )}
+                          //style={{ width: header.getSize() }}
                         >
-                          {/*{flexRender(*/}
-                          {/*  cell.column.columnDef.cell,*/}
-                          {/*  cell.getContext(),*/}
-                          {/*)}*/}
-                          <CellValue
-                            column={cell.column.columnDef}
-                            rowIndex={index}
-                            rowTemplateData={rowTemplateData}
-                            value={cell.getValue()}
-                            filterEnabled={filterEnabled}
-                            isScrolling={isScrolling}
-                            addFilter={addFilter}
-                            context={context}
-                          />
-                        </td>
+                          {header.isPlaceholder ? null : (
+                            <div
+                              {...{
+                                className: header.column.getCanSort()
+                                  ? "cursor-pointer select-none"
+                                  : "",
+                                onClick:
+                                  header.column.getToggleSortingHandler(),
+                              }}
+                            >
+                              {flexRender(
+                                header.column.columnDef.header,
+                                header.getContext(),
+                              )}
+                              {{
+                                asc: (
+                                  <SortAscendingIcon
+                                    className={classNames(
+                                      "inline-block h-4 w-4",
+                                    )}
+                                  />
+                                ),
+                                desc: (
+                                  <SortDescendingIcon className="inline-block h-4 w-4" />
+                                ),
+                              }[header.column.getIsSorted() as string] ?? null}
+                            </div>
+                          )}
+                        </th>
                       );
                     })}
                   </tr>
-                );
-              })}
-            </tbody>
-          </table>
+                ))}
+              </thead>
+              <tbody className="divide-y divide-table-divide">
+                {rows.length === 0 && (
+                  <tr>
+                    <td
+                      className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                      colSpan={columns.length}
+                    >
+                      No results
+                    </td>
+                  </tr>
+                )}
+                {virtualizer.getVirtualItems().map((virtualRow, index) => {
+                  const row = rows[virtualRow.index];
+                  return (
+                    <tr
+                      key={row.id}
+                      style={{
+                        height: `${virtualRow.size}px`,
+                        transform: `translateY(${
+                          virtualRow.start - index * virtualRow.size
+                        }px)`,
+                      }}
+                    >
+                      {row.getVisibleCells().map((cell) => {
+                        return (
+                          <td
+                            key={cell.id}
+                            className={classNames(
+                              "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
+                              isNumericCol(cell.column.columnDef.data_type)
+                                ? "text-right"
+                                : "",
+                              cell.column.columnDef.wrap === "all"
+                                ? "break-keep"
+                                : "whitespace-nowrap",
+                            )}
+                          >
+                            {/*{flexRender(*/}
+                            {/*  cell.column.columnDef.cell,*/}
+                            {/*  cell.getContext(),*/}
+                            {/*)}*/}
+                            <CellValue
+                              column={cell.column.columnDef}
+                              rowIndex={index}
+                              rowTemplateData={rowTemplateData}
+                              value={cell.getValue()}
+                              filterEnabled={filterEnabled}
+                              isScrolling={isScrolling}
+                              addFilter={addFilter}
+                              context={context}
+                            />
+                          </td>
+                        );
+                      })}
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
-    </div>
+      <TableSettings
+        name={panelName}
+        table={table}
+        show={showColumnSettingsModal}
+        onClose={async () => setShowColumnSettingsModal(false)}
+      />
+    </>
   );
 };
 

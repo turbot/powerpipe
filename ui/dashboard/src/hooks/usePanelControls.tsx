@@ -24,6 +24,7 @@ import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetai
 export type IPanelControlsContext = {
   enabled: boolean;
   panelControls: IPanelControl[];
+  customControls: IPanelControl[];
   showPanelControls: boolean;
   setShowPanelControls: (show: boolean) => void;
   setCustomControls: (controls: IPanelControl[]) => void;
@@ -50,7 +51,7 @@ type PanelControlsProviderProps = {
 export interface IPanelControl {
   disabled?: boolean;
   key: string;
-  action: (e: any) => Promise<void>;
+  action?: (e: any) => Promise<void>;
   component?: ReactNode;
   icon?: string;
   title: string;
@@ -59,6 +60,7 @@ export interface IPanelControl {
 const PanelControlsContext = createContext<IPanelControlsContext | null>({
   enabled: false,
   panelControls: [],
+  customControls: [],
   showPanelControls: false,
   setCustomControls: noop,
   setPanelData: noop,
@@ -139,6 +141,7 @@ const PanelControlsProvider = ({
       value={{
         enabled: enabled || false,
         panelControls,
+        customControls,
         showPanelControls,
         setShowPanelControls,
         setCustomControls,
