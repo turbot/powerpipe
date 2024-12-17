@@ -1,4 +1,3 @@
-import Icon from "@powerpipe/components/Icon";
 import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
 import {
   CheckNodeStatus,
@@ -47,29 +46,18 @@ const DetectionSummaryChart = ({
   const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
   const summaryTotalDigits = summary.total.toString().length;
 
-  // if (summary.total > 0) {
-  //   console.log({
-  //     total: summary.total,
-  //     maxFirstChildTotal,
-  //     status,
-  //     summary,
-  //     severitySummary,
-  //     firstChildSummaries,
-  //   });
-  // }
-
   let isRunning = status === "running";
   const hasTotal = summary.total > 0;
 
   return (
     <div className="flex items-center justify-end">
       {isRunning && !hasTotal && <LoadingIndicator className="w-5 h-5" />}
-      {!isRunning && !hasTotal && (
-        <Icon
-          className="block h-5 w-5 text-ok fill-text-ok"
-          icon="materialsymbols-solid:check_circle"
-        />
-      )}
+      {/*{!isRunning && !hasTotal && (*/}
+      {/*  <Icon*/}
+      {/*    className="block h-5 w-5 text-ok fill-text-ok"*/}
+      {/*    icon="materialsymbols-solid:check_circle"*/}
+      {/*  />*/}
+      {/*)}*/}
       {hasTotal && (
         <div className="flex w-full justify-end">
           <ProgressBarGroup className="flex-grow">
