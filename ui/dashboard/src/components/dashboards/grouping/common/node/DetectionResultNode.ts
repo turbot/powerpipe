@@ -50,16 +50,21 @@ class DetectionResultNode implements DetectionNode {
   }
 
   get severity_summary(): DetectionSeveritySummary {
-    const summary = {};
+    const summary: DetectionSeveritySummary = {};
     if (this._result.detection.severity) {
       summary[this._result.detection.severity] =
         this._result?.rows?.length || 0;
+    } else {
+      summary["none"] = 0;
     }
     return summary;
   }
 
   get summary(): DetectionSummary {
-    return { total: this._result?.rows?.length || 0 };
+    return {
+      total: this._result?.rows?.length || 0,
+      error: this._result.error ? 1 : 0,
+    };
   }
 
   get status(): CheckNodeStatus {

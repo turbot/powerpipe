@@ -1,54 +1,22 @@
-import Icon from "@powerpipe/components/Icon";
 import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
-import { CheckNodeStatus, DetectionSummary } from "../common";
+import {
+  CheckNodeStatus,
+  DetectionSeveritySummary,
+  DetectionSummary,
+} from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-
-type ProgressBarGroupProps = {
-  children: JSX.Element | JSX.Element[];
-  className?: string;
-};
-
-type ProgressBarProps = {
-  className?: string;
-  percent: number;
-};
+import {
+  ProgressBar,
+  ProgressBarGroup,
+  ProgressBarGroupTotal,
+} from "@powerpipe/components/dashboards/grouping/CheckSummaryChart";
 
 type DetectionSummaryChartProps = {
   status: CheckNodeStatus;
   summary: DetectionSummary;
+  severitySummary: DetectionSeveritySummary;
   firstChildSummaries: DetectionSummary[];
-};
-
-const getWidth = (x, y) => {
-  const percent = (x / (x + y)) * 100;
-  return percent >= 0.5 ? Math.round(percent) : 1;
-};
-
-const ProgressBarGroup = ({ children, className }: ProgressBarGroupProps) => (
-  <div
-    className={classNames(
-      "flex h-3 items-center justify-end space-x-2",
-      className,
-    )}
-  >
-    {children}
-  </div>
-);
-
-const ProgressBar = ({ className, percent }: ProgressBarProps) => {
-  if (!percent) {
-    return null;
-  }
-
-  return (
-    <div
-      className={classNames("h-3", className)}
-      aria-valuenow={percent}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      style={{ display: "inline-block", width: `${percent}%` }}
-    />
-  );
+  hasSeverityResults: boolean;
 };
 
 export const getDetectionSummaryChartPercent = (value, total) => {
@@ -60,69 +28,154 @@ export const getDetectionSummaryChartPercent = (value, total) => {
   return Math.max(rounded, 3);
 };
 
+const getSummaryTitle = (
+  summary: DetectionSummary,
+  severitySummary: DetectionSeveritySummary,
+): string => {
+  const titleParts: string[] = [];
+  if (summary.error) {
+    titleParts.push(`Error: ${summary.error.toLocaleString()}`);
+  }
+  if (severitySummary.critical) {
+    titleParts.push(`Critical: ${severitySummary.critical.toLocaleString()}`);
+  }
+  if (severitySummary.high) {
+    titleParts.push(`High: ${severitySummary.high.toLocaleString()}`);
+  }
+  if (severitySummary.medium) {
+    titleParts.push(`Medium: ${severitySummary.medium.toLocaleString()}`);
+  }
+  if (severitySummary.low) {
+    titleParts.push(`Low: ${severitySummary.low.toLocaleString()}`);
+  }
+  if (severitySummary.none) {
+    titleParts.push(`None: ${severitySummary.none.toLocaleString()}`);
+  }
+  if (titleParts.length === 0) {
+    return "";
+  }
+  return titleParts.join(`
+`);
+};
+
 const DetectionSummaryChart = ({
   status,
   summary,
+  severitySummary,
   firstChildSummaries,
+  hasSeverityResults,
 }: DetectionSummaryChartProps) => {
-  let maxAlerts = 0;
-  let maxNonAlerts = 0;
+  let maxFirstChildTotal = 0;
 
   // Calculate max alerts
   for (const firstChildSummary of firstChildSummaries) {
     const currentMaxAlerts = firstChildSummary.total;
-    if (currentMaxAlerts > maxAlerts) {
-      maxAlerts = currentMaxAlerts;
+    if (currentMaxAlerts > maxFirstChildTotal) {
+      maxFirstChildTotal = currentMaxAlerts;
     }
   }
 
-  // Calculate width for progress bar
-  let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
+  // const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
+  // const summaryTotalDigits = summary.total.toString().length;
 
-  const isRunning = status === "running";
+  let isRunning = status === "running";
   const hasTotal = summary.total > 0;
 
   return (
-    <div className="flex items-center space-x-2 justify-end">
-      {isRunning && !hasTotal && (
-        <div className="flex items-center justify-end">
-          <LoadingIndicator className="w-5 h-5 mr-2" />
-        </div>
-      )}
-
-      {hasTotal ? (
-        <div
-          className="my-auto px-0"
-          style={{
-            width: `${alertsWidth}%`,
-            display: isRunning ? "flex" : "block",
-          }}
-        >
-          <ProgressBarGroup className="flex-grow">
+    <div
+      className="flex items-center justify-end space-x-3"
+      title={getSummaryTitle(summary, severitySummary)}
+    >
+      {isRunning && !hasTotal && <LoadingIndicator className="w-5 h-5" />}
+      {/*{!isRunning && !hasTotal && (*/}
+      {/*  <Icon*/}
+      {/*    className="block h-5 w-5 text-ok fill-text-ok"*/}
+      {/*    icon="materialsymbols-solid:check_circle"*/}
+      {/*  />*/}
+      {/*)}*/}
+      {hasTotal && (
+        <div className="flex w-full">
+          <ProgressBarGroup className="flex-grow justify-end">
+            <ProgressBar
+              className={classNames(
+                "border",
+                hasSeverityResults ? "border-severity" : "border-alert",
+                isRunning
+                  ? hasSeverityResults
+                    ? "summary-chart-severity-medium-animate"
+                    : "summary-chart-severity-critical-animate"
+                  : null,
+                !isRunning ? (hasSeverityResults ? null : "bg-alert") : null,
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.none,
+                maxFirstChildTotal,
+              )}
+              // percent={30}
+            />
             <ProgressBar
               className={classNames(
                 "border border-alert",
-                isRunning ? "summary-chart-alarm-animate" : "bg-alert",
+                isRunning ? "summary-chart-error-animate" : null,
               )}
               percent={getDetectionSummaryChartPercent(
-                summary.total,
-                maxAlerts,
+                summary.error,
+                maxFirstChildTotal,
               )}
+              // percent={30}
+            />
+            <ProgressBar
+              className={classNames(
+                "border border-alert",
+                isRunning
+                  ? "summary-chart-severity-critical-animate"
+                  : "bg-alert",
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.critical,
+                maxFirstChildTotal,
+              )}
+              // percent={30}
+            />
+            <ProgressBar
+              className={classNames(
+                "border border-orange",
+                isRunning ? "summary-chart-severity-high-animate" : "bg-orange",
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.high,
+                maxFirstChildTotal,
+              )}
+              // percent={40}
+            />
+            <ProgressBar
+              className={classNames(
+                "border border-severity",
+                isRunning
+                  ? "summary-chart-severity-medium-animate"
+                  : "bg-severity",
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.medium,
+                maxFirstChildTotal,
+              )}
+              // percent={20}
+            />
+            <ProgressBar
+              className={classNames(
+                "border border-info",
+                isRunning ? "summary-chart-severity-low-animate" : "bg-info",
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.low,
+                maxFirstChildTotal,
+              )}
+              // percent={10}
             />
           </ProgressBarGroup>
         </div>
-      ) : (
-        !isRunning && (
-          <div className="flex justify-end w-full pr-4">
-            <Icon
-              className="h-6 w-6 text-ok fill-text-ok"
-              icon="materialsymbols-solid:check_circle"
-            />
-          </div>
-        )
       )}
-
-      <span className="text-sm font-semibold">{summary.total}</span>
+      <ProgressBarGroupTotal total={summary.total} />
     </div>
   );
 };

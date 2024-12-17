@@ -308,8 +308,13 @@ const recordChildResults = (
 };
 
 const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
-  const { firstChildSummaries, dispatch, groupingConfig, nodeStates } =
-    useDetectionGrouping();
+  const {
+    firstChildSummaries,
+    hasSeverityResults,
+    dispatch,
+    groupingConfig,
+    nodeStates,
+  } = useDetectionGrouping();
   const {
     enabled: panelControlsEnabled,
     panelControls,
@@ -482,7 +487,9 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                 <DetectionSummaryChart
                   status={node.status}
                   summary={node.summary}
+                  severitySummary={node.severity_summary}
                   firstChildSummaries={firstChildSummaries}
+                  hasSeverityResults={hasSeverityResults}
                 />
               </div>
               {/* <div>{node.summary.total}</div> */}

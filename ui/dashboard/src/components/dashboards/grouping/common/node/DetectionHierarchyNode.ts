@@ -50,16 +50,18 @@ class DetectionHierarchyNode implements DetectionNode {
   get summary(): DetectionSummary {
     const summary = {
       total: 0,
+      error: 0,
     };
     for (const child of this._children) {
       const nestedSummary = child.summary;
       summary.total += nestedSummary.total;
+      summary.error += nestedSummary.error;
     }
     return summary;
   }
 
   get severity_summary(): DetectionSeveritySummary {
-    const summary = {};
+    const summary: DetectionSeveritySummary = {};
     for (const child of this._children) {
       for (const [severity, count] of Object.entries(child.severity_summary)) {
         if (!summary[severity]) {

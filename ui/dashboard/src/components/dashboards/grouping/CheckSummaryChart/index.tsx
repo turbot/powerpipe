@@ -1,9 +1,10 @@
 import IntegerDisplay from "../../../IntegerDisplay";
 import { CheckNodeStatus, CheckSummary } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
+import { ReactNode } from "react";
 
 type ProgressBarGroupProps = {
-  children: JSX.Element | JSX.Element[];
+  children: ReactNode;
   className?: string;
 };
 
@@ -38,7 +39,7 @@ const getWidth = (x, y) => {
   return percent >= 0.5 ? Math.round(percent) : 1;
 };
 
-const ProgressBarGroupTotal = ({
+export const ProgressBarGroupTotal = ({
   className,
   total,
 }: ProgressBarGroupTotalProps) => (
@@ -105,13 +106,16 @@ const NonAlertProgressBarGroupTotal = ({
   );
 };
 
-const ProgressBarGroup = ({ children, className }: ProgressBarGroupProps) => (
+export const ProgressBarGroup = ({
+  children,
+  className,
+}: ProgressBarGroupProps) => (
   <div className={classNames("flex h-3 items-center", className)}>
     {children}
   </div>
 );
 
-const ProgressBar = ({ className, percent }: ProgressBarProps) => {
+export const ProgressBar = ({ className, percent }: ProgressBarProps) => {
   if (!percent) {
     return null;
   }
@@ -171,54 +175,6 @@ const CheckSummaryChart = ({
 
   return (
     <div className="flex items-center" title={getSummaryTitle(summary)}>
-      {/*<ProgressBar*/}
-      {/*  className={classNames(*/}
-      {/*    "border border-alert",*/}
-      {/*    error > 0 ? "rounded-l-sm" : null,*/}
-      {/*    skip === 0 && info === 0 && ok === 0 && alarm === 0 && error > 0*/}
-      {/*      ? "rounded-r-sm"*/}
-      {/*      : null*/}
-      {/*  )}*/}
-      {/*  percent={error}*/}
-      {/*/>*/}
-      {/*<ProgressBar*/}
-      {/*  className={classNames(*/}
-      {/*    "bg-alert border border-alert",*/}
-      {/*    error === 0 && alarm > 0 ? "rounded-l-sm" : null,*/}
-      {/*    skip === 0 && info === 0 && ok === 0 && alarm > 0*/}
-      {/*      ? "rounded-r-sm"*/}
-      {/*      : null*/}
-      {/*  )}*/}
-      {/*  percent={alarm}*/}
-      {/*/>*/}
-      {/*<ProgressBar*/}
-      {/*  className={classNames(*/}
-      {/*    "bg-ok border border-ok",*/}
-      {/*    error === 0 && alarm === 0 && ok > 0 ? "rounded-l-sm" : null,*/}
-      {/*    skip === 0 && info === 0 && ok > 0 ? "rounded-r-sm" : null*/}
-      {/*  )}*/}
-      {/*  percent={ok}*/}
-      {/*/>*/}
-      {/*<ProgressBar*/}
-      {/*  className={classNames(*/}
-      {/*    "bg-info border border-info",*/}
-      {/*    error === 0 && alarm === 0 && ok === 0 && info > 0*/}
-      {/*      ? "rounded-l-sm"*/}
-      {/*      : null,*/}
-      {/*    skip === 0 && info > 0 ? "rounded-r-sm" : null*/}
-      {/*  )}*/}
-      {/*  percent={info}*/}
-      {/*/>*/}
-      {/*<ProgressBar*/}
-      {/*  className={classNames(*/}
-      {/*    "bg-skip border border-skip",*/}
-      {/*    error === 0 && alarm === 0 && ok === 0 && info === 0 && error > 0*/}
-      {/*      ? "rounded-l-sm"*/}
-      {/*      : null,*/}
-      {/*    skip > 0 ? "rounded-r-sm" : null*/}
-      {/*  )}*/}
-      {/*  percent={skip}*/}
-      {/*/>*/}
       <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
         <ProgressBarGroup className="flex-row-reverse">
           <ProgressBar

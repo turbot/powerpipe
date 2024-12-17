@@ -114,7 +114,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         properties: {
           loading:
             totalSummary.total === 0 && props.grouping.status === "running",
-          label: "Total Detections",
+          label: "Total",
           value: totalSummary.total,
           icon:
             totalSummary.total > 0

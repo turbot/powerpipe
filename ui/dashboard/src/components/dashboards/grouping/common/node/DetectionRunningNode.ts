@@ -1,10 +1,10 @@
 import {
-  GroupingNodeType,
   DetectionNode,
   DetectionNodeStatus,
   DetectionResult,
   DetectionSeveritySummary,
   DetectionSummary,
+  GroupingNodeType,
 } from "../index";
 
 class DetectionRunningNode implements DetectionNode {
@@ -30,19 +30,22 @@ class DetectionRunningNode implements DetectionNode {
     return "running";
   }
 
-  get severity_summary(): DetectionSeveritySummary {
-    // Bubble up the node's severity - always zero though as we have no results
-    const summary = {};
-    if (this._result.detection.severity) {
-      summary[this._result.detection.severity] = 0;
-    }
-    return summary;
-  }
-
   get summary(): DetectionSummary {
     return {
       total: 0,
+      error: 0,
     };
+  }
+
+  get severity_summary(): DetectionSeveritySummary {
+    // Bubble up the node's severity - always zero though as we have no results
+    const summary: DetectionSeveritySummary = {};
+    if (this._result.detection.severity) {
+      summary[this._result.detection.severity] = 0;
+    } else {
+      summary["none"] = 0;
+    }
+    return summary;
   }
 
   get status(): DetectionNodeStatus {
