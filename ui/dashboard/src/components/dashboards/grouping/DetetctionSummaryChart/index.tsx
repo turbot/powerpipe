@@ -50,7 +50,7 @@ const DetectionSummaryChart = ({
   const hasTotal = summary.total > 0;
 
   return (
-    <div className="flex items-center justify-end">
+    <div className="flex items-center justify-end space-x-3">
       {isRunning && !hasTotal && <LoadingIndicator className="w-5 h-5" />}
       {/*{!isRunning && !hasTotal && (*/}
       {/*  <Icon*/}
@@ -112,7 +112,7 @@ const DetectionSummaryChart = ({
           </ProgressBarGroup>
         </div>
       )}
-      <ProgressBarGroupTotal className="ml-2" total={summary.total} />
+      <ProgressBarGroupTotal total={summary.total} />
     </div>
   );
 };
