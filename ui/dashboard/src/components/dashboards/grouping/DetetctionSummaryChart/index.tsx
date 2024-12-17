@@ -16,6 +16,7 @@ type DetectionSummaryChartProps = {
   summary: DetectionSummary;
   severitySummary: DetectionSeveritySummary;
   firstChildSummaries: DetectionSummary[];
+  hasSeverityResults: boolean;
 };
 
 export const getDetectionSummaryChartPercent = (value, total) => {
@@ -62,6 +63,7 @@ const DetectionSummaryChart = ({
   summary,
   severitySummary,
   firstChildSummaries,
+  hasSeverityResults,
 }: DetectionSummaryChartProps) => {
   let maxFirstChildTotal = 0;
 
@@ -72,8 +74,6 @@ const DetectionSummaryChart = ({
       maxFirstChildTotal = currentMaxAlerts;
     }
   }
-
-  console.log({ total: summary.total, error: summary.error });
 
   // const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
   // const summaryTotalDigits = summary.total.toString().length;
@@ -96,6 +96,23 @@ const DetectionSummaryChart = ({
       {hasTotal && (
         <div className="flex w-full">
           <ProgressBarGroup className="flex-grow justify-end">
+            <ProgressBar
+              className={classNames(
+                "border",
+                hasSeverityResults ? "border-severity" : "border-alert",
+                isRunning
+                  ? hasSeverityResults
+                    ? "summary-chart-severity-medium-animate"
+                    : "summary-chart-severity-critical-animate"
+                  : null,
+                !isRunning ? (hasSeverityResults ? null : "bg-alert") : null,
+              )}
+              percent={getDetectionSummaryChartPercent(
+                severitySummary.none,
+                maxFirstChildTotal,
+              )}
+              // percent={30}
+            />
             <ProgressBar
               className={classNames(
                 "border border-alert",
