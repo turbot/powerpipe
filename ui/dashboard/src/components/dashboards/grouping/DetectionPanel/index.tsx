@@ -482,6 +482,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                 <DetectionSummaryChart
                   status={node.status}
                   summary={node.summary}
+                  severitySummary={node.severity_summary}
                   firstChildSummaries={firstChildSummaries}
                 />
               </div>

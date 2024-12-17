@@ -74,11 +74,12 @@ export type CheckSeveritySummary =
 
 export type DetectionSeverity = "none" | "low" | "medium" | "high" | "critical";
 
-export type DetectionSeveritySummary =
-  | {}
-  | {
-      [key in DetectionSeverity]: number;
-    };
+export type DetectionSeveritySummary = {
+  low: number;
+  medium: number;
+  high: number;
+  critical: number;
+};
 
 export type CheckSummary = {
   alarm: number;
