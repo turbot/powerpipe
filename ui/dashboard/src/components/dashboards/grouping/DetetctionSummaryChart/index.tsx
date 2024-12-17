@@ -43,8 +43,8 @@ const DetectionSummaryChart = ({
     }
   }
 
-  const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
-  const summaryTotalDigits = summary.total.toString().length;
+  // const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
+  // const summaryTotalDigits = summary.total.toString().length;
 
   let isRunning = status === "running";
   const hasTotal = summary.total > 0;
