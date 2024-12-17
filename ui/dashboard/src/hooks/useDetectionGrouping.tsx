@@ -60,11 +60,12 @@ export type CheckGroupFilterValues = {
 };
 
 type ICheckGroupingContext = {
-  benchmark: DetectionBenchmarkType | null;
+  benchmark: DetectionBenchmarkType | {} | null;
   definition: PanelDefinition;
   grouping: DetectionNodeType | null;
   groupingConfig: DetectionDisplayGroup[];
   firstChildSummaries: DetectionSummary[];
+  hasSeverityResults: boolean;
   nodeStates: CheckGroupNodeStates;
   filterValues: CheckGroupFilterValues;
   dispatch(action: CheckGroupingAction): void;
@@ -80,7 +81,20 @@ const GroupingActions: IActions = {
 
 const checkGroupingActions = Object.values(GroupingActions);
 
-const GroupingContext = createContext<ICheckGroupingContext | null>(null);
+const GroupingContext = createContext<ICheckGroupingContext | null>({
+  benchmark: null,
+  definition: null,
+  grouping: null,
+  groupingConfig: [],
+  firstChildSummaries: [],
+  hasSeverityResults: false,
+  nodeStates: {},
+  filterValues: {
+    detection_tag: { key: {}, value: {} },
+    dimension: { key: {}, value: {} },
+  },
+  dispatch: () => {},
+});
 
 const addBenchmarkTrunkNode = (
   benchmark_trunk: DetectionBenchmarkType[],
@@ -663,7 +677,7 @@ const useGroupingInternal = (
     };
 
     if (!definition || skip || !panelsMap) {
-      return [null, null, null, [], {}, filterValues];
+      return [null, null, null, [], false, {}, filterValues];
     }
 
     // @ts-ignore
@@ -725,8 +739,17 @@ const useGroupingInternal = (
     const results = new DetectionRootNode(result);
 
     const firstChildSummaries: DetectionSummary[] = [];
+    let hasSeverityResults: Boolean = false;
     for (const child of results.children) {
       firstChildSummaries.push(child.summary);
+      if (
+        child.severity_summary.critical !== undefined ||
+        child.severity_summary.high !== undefined ||
+        child.severity_summary.medium !== undefined ||
+        child.severity_summary.low !== undefined
+      ) {
+        hasSeverityResults = true;
+      }
     }
 
     return [
@@ -734,6 +757,7 @@ const useGroupingInternal = (
       { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
+      hasSeverityResults,
       detectionNodeStates,
       filterValues,
     ] as const;
@@ -754,6 +778,7 @@ const GroupingProvider = ({
     panelDefinition,
     grouping,
     firstChildSummaries,
+    hasSeverityResults,
     tempNodeStates,
     filterValues,
   ] = useGroupingInternal(definition, panelsMap, groupingConfig);
@@ -786,6 +811,7 @@ const GroupingProvider = ({
         definition: panelDefinition,
         dispatch,
         firstChildSummaries,
+        hasSeverityResults,
         grouping,
         groupingConfig,
         nodeStates,

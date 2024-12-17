@@ -7,9 +7,11 @@
   --color-alert: 218 30 40; /*#DA1E28*/
   --color-alert-animate: rgba(218, 30, 40, 0.8); /*#DA1E28*/
   --color-alert-inverse: theme("colors.white");
-  --color-orange: #ff832b;
+  --color-orange: 255 131 43; /*#FF832B*/
+  --color-orange-animate: rgba(255, 131, 43, 0.8); /*#FF832B*/
   --color-orange-inverse: theme("colors.white");
-  --color-severity: #c9a00c;
+  --color-severity: 201 160 12; /*#C9A00C*/
+  --color-severity-animate: rgba(201, 160, 12, 0.8); /*#C9A00C*/
   --color-ok: 25 128 56; /*#198038*/
   --color-ok-animate: rgba(25, 128, 56, 0.8); /*#198038*/
   --color-ok-inverse: theme("colors.white");
@@ -61,9 +63,11 @@
   --color-alert: 248 55 65; /*#F83741*/
   --color-alert-animate: rgba(248, 55, 65, 0.8); /*#F83741*/
   --color-alert-inverse: theme("colors.white");
-  --color-orange: #ff832b;
+  --color-orange: 255 131 43; /*#FF832B*/
+  --color-orange-animate: rgba(255, 131, 43, 0.8); /*#FF832B*/
   --color-orange-inverse: theme("colors.white");
-  --color-severity: #bd960b;
+  --color-severity: 189 150 11; /*#BD960B*/
+  --color-severity-animate: rgba(189, 150, 11, 0.8); /*#BD960B*/
   --color-ok: 36 161 72; /*#24a148*/
   --color-ok-animate: rgba(36, 161, 72, 0.8); /*#24a148*/
   --color-ok-inverse: theme("colors.white");
@@ -163,13 +167,38 @@
   animation: barberpole 10s linear infinite;
 }
 
-.summary-chart-alarm-animate {
+.summary-chart-alarm-animate,
+.summary-chart-severity-critical-animate {
   background-image: repeating-linear-gradient(
     -45deg,
     var(--color-alert-animate),
     var(--color-alert-animate) 0.5rem,
     rgb(var(--color-alert)) 0.5rem,
     rgb(var(--color-alert)) 1.25rem
+  );
+  background-size: 200% 200%;
+  animation: barberpole 10s linear infinite;
+}
+
+.summary-chart-severity-high-animate {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-orange-animate),
+    var(--color-orange-animate) 0.5rem,
+    rgb(var(--color-orange)) 0.5rem,
+    rgb(var(--color-orange)) 1.25rem
+  );
+  background-size: 200% 200%;
+  animation: barberpole 10s linear infinite;
+}
+
+.summary-chart-severity-medium-animate {
+  background-image: repeating-linear-gradient(
+    -45deg,
+    var(--color-severity-animate),
+    var(--color-severity-animate) 0.5rem,
+    rgb(var(--color-severity)) 0.5rem,
+    rgb(var(--color-severity)) 1.25rem
   );
   background-size: 200% 200%;
   animation: barberpole 10s linear infinite;
@@ -187,7 +216,8 @@
   animation: barberpole 10s linear infinite;
 }
 
-.summary-chart-info-animate {
+.summary-chart-info-animate,
+.summary-chart-severity-low-animate {
   background-image: repeating-linear-gradient(
     -45deg,
     var(--color-info-animate),
