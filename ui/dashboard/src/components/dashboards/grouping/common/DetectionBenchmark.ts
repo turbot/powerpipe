@@ -4,11 +4,11 @@ import {
   AddDetectionResultsAction,
   DetectionNode,
   DetectionNodeStatus,
-  GroupingNodeType,
   DetectionResult,
   DetectionRun,
   DetectionSeveritySummary,
   DetectionSummary,
+  GroupingNodeType,
 } from "@powerpipe/components/dashboards/grouping/common";
 import { DashboardLayoutNode, PanelsMap } from "@powerpipe/types";
 import {
@@ -162,20 +162,62 @@ class DetectionBenchmark implements DetectionNode {
   get summary(): DetectionSummary {
     const summary = {
       total: 0,
+      error: 0,
     };
     for (const benchmark of this._benchmarks) {
       const nestedSummary = benchmark.summary;
       summary.total += nestedSummary.total;
+      summary.error += nestedSummary.error;
     }
     for (const detection of this._detections) {
       const nestedSummary = detection.summary;
       summary.total += nestedSummary.total;
+      summary.error += nestedSummary.error;
     }
     return summary;
   }
 
   get severity_summary(): DetectionSeveritySummary {
-    return {};
+    const summary: DetectionSeveritySummary = {};
+    for (const benchmark of this._benchmarks) {
+      const nestedSummary = benchmark.severity_summary;
+      if ("low" in nestedSummary) {
+        summary.low = summary.low || 0;
+        summary.low += nestedSummary.low || 0;
+      }
+      if ("medium" in nestedSummary) {
+        summary.medium = summary.medium || 0;
+        summary.medium += nestedSummary.medium || 0;
+      }
+      if ("high" in nestedSummary) {
+        summary.high = summary.high || 0;
+        summary.high += nestedSummary.high || 0;
+      }
+      if ("critical" in nestedSummary) {
+        summary.critical = summary.critical || 0;
+        summary.critical += nestedSummary.critical || 0;
+      }
+    }
+    for (const detection of this._detections) {
+      const nestedSummary = detection.severity_summary;
+      if ("low" in nestedSummary) {
+        summary.low = summary.low || 0;
+        summary.low += nestedSummary.low || 0;
+      }
+      if ("medium" in nestedSummary) {
+        summary.medium = summary.medium || 0;
+        summary.medium += nestedSummary.medium || 0;
+      }
+      if ("high" in nestedSummary) {
+        summary.high = summary.high || 0;
+        summary.high += nestedSummary.high || 0;
+      }
+      if ("critical" in nestedSummary) {
+        summary.critical = summary.critical || 0;
+        summary.critical += nestedSummary.critical || 0;
+      }
+    }
+    return summary;
   }
 
   get status(): DetectionNodeStatus {

@@ -27,6 +27,36 @@ export const getDetectionSummaryChartPercent = (value, total) => {
   return Math.max(rounded, 3);
 };
 
+const getSummaryTitle = (
+  summary: DetectionSummary,
+  severitySummary: DetectionSeveritySummary,
+): string => {
+  const titleParts: string[] = [];
+  if (summary.error) {
+    titleParts.push(`Error: ${summary.error.toLocaleString()}`);
+  }
+  if (severitySummary.critical) {
+    titleParts.push(`Critical: ${severitySummary.critical.toLocaleString()}`);
+  }
+  if (severitySummary.high) {
+    titleParts.push(`High: ${severitySummary.high.toLocaleString()}`);
+  }
+  if (severitySummary.medium) {
+    titleParts.push(`Medium: ${severitySummary.medium.toLocaleString()}`);
+  }
+  if (severitySummary.low) {
+    titleParts.push(`Low: ${severitySummary.low.toLocaleString()}`);
+  }
+  if (severitySummary.none) {
+    titleParts.push(`None: ${severitySummary.none.toLocaleString()}`);
+  }
+  if (titleParts.length === 0) {
+    return "";
+  }
+  return titleParts.join(`
+`);
+};
+
 const DetectionSummaryChart = ({
   status,
   summary,
@@ -43,6 +73,8 @@ const DetectionSummaryChart = ({
     }
   }
 
+  console.log({ total: summary.total, error: summary.error });
+
   // const maxFirstChildTotalDigits = maxFirstChildTotal.toString().length;
   // const summaryTotalDigits = summary.total.toString().length;
 
@@ -50,7 +82,10 @@ const DetectionSummaryChart = ({
   const hasTotal = summary.total > 0;
 
   return (
-    <div className="flex items-center justify-end space-x-3">
+    <div
+      className="flex items-center justify-end space-x-3"
+      title={getSummaryTitle(summary, severitySummary)}
+    >
       {isRunning && !hasTotal && <LoadingIndicator className="w-5 h-5" />}
       {/*{!isRunning && !hasTotal && (*/}
       {/*  <Icon*/}
@@ -59,8 +94,19 @@ const DetectionSummaryChart = ({
       {/*  />*/}
       {/*)}*/}
       {hasTotal && (
-        <div className="flex w-full justify-end">
-          <ProgressBarGroup className="flex-grow">
+        <div className="flex w-full">
+          <ProgressBarGroup className="flex-grow justify-end">
+            <ProgressBar
+              className={classNames(
+                "border border-alert",
+                isRunning ? "summary-chart-error-animate" : null,
+              )}
+              percent={getDetectionSummaryChartPercent(
+                summary.error,
+                maxFirstChildTotal,
+              )}
+              // percent={30}
+            />
             <ProgressBar
               className={classNames(
                 "border border-alert",

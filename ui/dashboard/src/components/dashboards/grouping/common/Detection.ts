@@ -65,6 +65,7 @@ class Detection implements DetectionNode {
     this._results = this._build_check_results(data);
     this._summary = summary || {
       total: this.results?.length || 0,
+      error: !!error ? 1 : 0,
     };
     this._tags = tags || {};
     this._status = status;
@@ -114,7 +115,12 @@ class Detection implements DetectionNode {
   }
 
   get severity_summary(): DetectionSeveritySummary {
-    return {};
+    // Bubble up the node's severity - always zero though as we have no results
+    const summary: DetectionSeveritySummary = {};
+    if (this._severity) {
+      summary[this._severity] = 0;
+    }
+    return summary;
   }
 
   get type(): GroupingNodeType {
@@ -122,7 +128,7 @@ class Detection implements DetectionNode {
   }
 
   get summary(): DetectionSummary {
-    return { total: this._results?.length || 0 }; // this._summary;
+    return { total: this._results?.length || 0, error: this._error ? 1 : 0 }; // this._summary;
   }
 
   get error(): string | undefined {

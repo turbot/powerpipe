@@ -75,10 +75,11 @@ export type CheckSeveritySummary =
 export type DetectionSeverity = "none" | "low" | "medium" | "high" | "critical";
 
 export type DetectionSeveritySummary = {
-  low: number;
-  medium: number;
-  high: number;
-  critical: number;
+  none?: number;
+  low?: number;
+  medium?: number;
+  high?: number;
+  critical?: number;
 };
 
 export type CheckSummary = {
@@ -91,6 +92,7 @@ export type CheckSummary = {
 
 export type DetectionSummary = {
   total: number;
+  error: number;
 };
 
 export type CheckDynamicValueMap = {
