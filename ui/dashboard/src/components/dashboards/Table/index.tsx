@@ -40,6 +40,7 @@ import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
@@ -738,7 +739,7 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
 };
 
 const TableViewVirtualizedRows = ({
-  panelName,
+  panel,
   data,
   columns,
   columnVisibility,
@@ -747,7 +748,7 @@ const TableViewVirtualizedRows = ({
   context = "",
 }) => {
   const { filters, addFilter, removeFilter } = useTableFilters(
-    panelName,
+    panel.name,
     context,
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
@@ -763,7 +764,10 @@ const TableViewVirtualizedRows = ({
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const { customControls, setCustomControls } = usePanelControls();
+  const { selectSidePanel } = useDashboardPanelDetail();
+
+  const { customControls, setCustomControls, setShowPanelControls } =
+    usePanelControls();
 
   const [showColumnSettingsModal, setShowColumnSettingsModal] = useState(false);
 
@@ -939,6 +943,15 @@ const TableViewVirtualizedRows = ({
                           virtualRow.start - index * virtualRow.size
                         }px)`,
                       }}
+                      onClick={() => {
+                        selectSidePanel({
+                          panel,
+                          context: {
+                            rowIndex: index,
+                          },
+                        });
+                        setShowPanelControls(false);
+                      }}
                     >
                       {row.getVisibleCells().map((cell) => {
                         return (
@@ -980,7 +993,7 @@ const TableViewVirtualizedRows = ({
         </div>
       </div>
       <TableSettings
-        name={panelName}
+        name={panel.name}
         table={table}
         show={showColumnSettingsModal}
         onClose={async () => setShowColumnSettingsModal(false)}
@@ -1010,7 +1023,7 @@ const TableViewWrapper = (props: TableProps) => {
 
   return props.data ? (
     <TableViewVirtualizedRows
-      panelName={props.name}
+      panel={props}
       data={rowData}
       columns={columns} // Use filtered columns for the table
       columnVisibility={columnVisibility}

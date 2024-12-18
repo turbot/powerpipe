@@ -79,12 +79,12 @@ const CopyToClipboard = ({
     <>
       {!copySuccess && (
         <CopyToClipboardIcon
-          className={classNames("h-6 w-6 cursor-pointer", className)}
+          className={classNames("h-5 w-5 cursor-pointer", className)}
           onClick={handleCopy}
         />
       )}
       {copySuccess && (
-        <CopyToClipboardSuccessIcon className="h-6 w-6 text-ok" />
+        <CopyToClipboardSuccessIcon className="h-5 w-5 text-ok" />
       )}
     </>
   );

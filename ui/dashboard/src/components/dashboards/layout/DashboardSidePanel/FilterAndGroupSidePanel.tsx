@@ -1,19 +1,12 @@
 import FilterConfig from "@powerpipe/components/dashboards/grouping/FilterConfig";
 import GroupingConfig from "@powerpipe/components/dashboards/grouping/GroupingConfig";
 import Icon from "@powerpipe/components/Icon";
-import {
-  SidePanelInfo,
-  useDashboardPanelDetail,
-} from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
-const FilterAndGroupSidePanel = ({
-  sidePanel,
-}: {
-  sidePanel: SidePanelInfo;
-}) => {
+const FilterAndGroupSidePanel = ({ panelName }: { panelName: string }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
   return (
-    <div className="h-full bg-dashboard-panel divide-y divide-divide print:hidden overflow-y-auto">
+    <>
       <div className="flex items-center justify-between p-4">
         <h3>Filter & Group</h3>
         <Icon
@@ -25,13 +18,13 @@ const FilterAndGroupSidePanel = ({
       </div>
       <div className="p-4 space-y-3">
         <span className="font-semibold">Filter</span>
-        <FilterConfig panelName={sidePanel.name} />
+        <FilterConfig panelName={panelName} />
       </div>
       <div className="p-4 space-y-3">
         <span className="font-semibold">Group</span>
-        <GroupingConfig panelName={sidePanel.name} />
+        <GroupingConfig panelName={panelName} />
       </div>
-    </div>
+    </>
   );
 };
 

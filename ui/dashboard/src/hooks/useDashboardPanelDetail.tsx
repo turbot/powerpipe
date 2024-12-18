@@ -12,9 +12,7 @@ import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 
 export interface SidePanelInfo {
-  name: string;
-  title?: string;
-  viewType: "group_and_filter" | "table_row";
+  panel: PanelDefinition;
   context?: any;
 }
 
