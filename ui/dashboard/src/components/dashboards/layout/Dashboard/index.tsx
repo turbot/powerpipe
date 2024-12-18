@@ -49,10 +49,15 @@ const SplitPaneWrapper = ({
       <SplitPane
         className="flex flex-col-reverse md:flex-row w-full h-full overflow-y-hidden"
         split="vertical"
-        defaultSize={sidePanel?.panel?.panel_type === "table" ? "75%" : "60%"}
+        // defaultSize={sidePanel?.panel?.panel_type === "table" ? "75%" : "60%"}
+        minSize={sidePanel?.panel?.panel_type === "table" ? 300 : 500}
+        primary="second"
       >
         {dashboard}
-        <DashboardSidePanel sidePanel={sidePanel} />
+        <DashboardSidePanel
+          key={sidePanel?.panel?.panel_type}
+          sidePanel={sidePanel}
+        />
       </SplitPane>
     </div>
   );

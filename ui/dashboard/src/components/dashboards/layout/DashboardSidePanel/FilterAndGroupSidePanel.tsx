@@ -7,13 +7,13 @@ const FilterAndGroupSidePanel = ({ panelName }: { panelName: string }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
   return (
     <>
-      <div className="flex items-center justify-between p-4">
+      <div className="flex items-center justify-between p-4 min-w-[500px]">
         <h3>Filter & Group</h3>
         <Icon
           className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
           icon="close"
           onClick={closeSidePanel}
-          title="Close customize view"
+          title="Close"
         />
       </div>
       <div className="p-4 space-y-3">

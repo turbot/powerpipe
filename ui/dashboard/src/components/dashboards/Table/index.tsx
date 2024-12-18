@@ -138,6 +138,7 @@ const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
 };
 
 type CellValueProps = {
+  panel: PanelDefinition;
   column: TableColumnInfo;
   rowIndex: number;
   rowTemplateData: RowRenderResult[];
@@ -155,6 +156,7 @@ type CellValueProps = {
 };
 
 const CellValue = ({
+  panel,
   column,
   rowIndex,
   rowTemplateData,
@@ -460,6 +462,8 @@ const CellValue = ({
         <CellControls
           referenceElement={referenceElement}
           column={column}
+          rowIndex={rowIndex}
+          panel={panel}
           value={value}
           context={context}
           addFilter={addFilter}
@@ -471,25 +475,18 @@ const CellValue = ({
 
 const CellControls = ({
   referenceElement,
+  panel,
+  rowIndex,
   column,
   value,
   context,
   addFilter,
 }) => {
+  const { selectSidePanel } = useDashboardPanelDetail();
+  const { setShowPanelControls } = usePanelControls();
   const [popperElement, setPopperElement] = useState(null);
-  // Need to define memoized / stable modifiers else the usePopper hook will infinitely re-render
-  // const noFlip = useMemo(() => ({ name: "flip", enabled: false }), []);
-  const offset = useMemo(() => {
-    return {
-      name: "offset",
-      options: {
-        offset: [4, 1],
-      },
-    };
-  }, []);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [offset],
-    placement: "right-end",
+    placement: "bottom-start",
   });
 
   return (
@@ -503,20 +500,42 @@ const CellControls = ({
               style={{ ...styles.popper }}
               {...attributes.popper}
             >
-              <div className="flex border border-black-scale-3 rounded-md divide-x divide-divide">
+              <div className="flex items-center space-x-1">
                 <CellControl
-                  icon="add_circle"
+                  icon="content_copy"
+                  title="Copy value"
+                  onClick={() =>
+                    addFilter("equal", column.name, value, context)
+                  }
+                />
+                <CellControl
+                  icon="filter_alt"
                   title="Filter by this value"
                   onClick={() =>
                     addFilter("equal", column.name, value, context)
                   }
                 />
                 <CellControl
-                  icon="do_not_disturb_on"
+                  // className="h-4 w-4"
+                  icon="close"
                   title="Exclude value from results"
                   onClick={() =>
                     addFilter("not_equal", column.name, value, context)
                   }
+                />
+                <CellControl
+                  icon="split_scene"
+                  title="View row"
+                  onClick={() => {
+                    selectSidePanel({
+                      panel,
+                      context: {
+                        requestedColumnName: column.name,
+                        rowIndex,
+                      },
+                    });
+                    setShowPanelControls(false);
+                  }}
                 />
               </div>
             </div>
@@ -533,7 +552,7 @@ const CellControl = ({ icon, title, onClick }) => {
   return (
     <div
       onClick={onClick}
-      className="px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground hover:bg-dashboard"
+      className="cursor-pointer text-table-head hover:text-foreground"
       title={title}
     >
       <Icon className="h-4 w-4" icon={icon} />
@@ -764,10 +783,7 @@ const TableViewVirtualizedRows = ({
     getSortedRowModel: getSortedRowModel(),
   });
 
-  const { selectSidePanel } = useDashboardPanelDetail();
-
-  const { customControls, setCustomControls, setShowPanelControls } =
-    usePanelControls();
+  const { customControls, setCustomControls } = usePanelControls();
 
   const [showColumnSettingsModal, setShowColumnSettingsModal] = useState(false);
 
@@ -844,7 +860,7 @@ const TableViewVirtualizedRows = ({
                     className="w-4 h-4"
                     icon={
                       filter.operator === "equal"
-                        ? "add_circle"
+                        ? "filter_alt"
                         : "do_not_disturb_on"
                     }
                   />
@@ -883,7 +899,7 @@ const TableViewVirtualizedRows = ({
                           colSpan={header.colSpan}
                           scope="col"
                           className={classNames(
-                            "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                            "py-3 text-left font-normal tracking-wider whitespace-nowrap pl-4",
                           )}
                           //style={{ width: header.getSize() }}
                         >
@@ -925,7 +941,7 @@ const TableViewVirtualizedRows = ({
                 {rows.length === 0 && (
                   <tr>
                     <td
-                      className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                      className="px-4 py-4 align-top content-center italic whitespace-nowrap"
                       colSpan={columns.length}
                     >
                       No results
@@ -943,22 +959,13 @@ const TableViewVirtualizedRows = ({
                           virtualRow.start - index * virtualRow.size
                         }px)`,
                       }}
-                      onClick={() => {
-                        selectSidePanel({
-                          panel,
-                          context: {
-                            rowIndex: index,
-                          },
-                        });
-                        setShowPanelControls(false);
-                      }}
                     >
                       {row.getVisibleCells().map((cell) => {
                         return (
                           <td
                             key={cell.id}
                             className={classNames(
-                              "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
+                              "px-4 py-4 align-top content-center max-w-[500px] overflow-x-hidden",
                               isNumericCol(cell.column.columnDef.data_type)
                                 ? "text-right"
                                 : "",
@@ -972,6 +979,7 @@ const TableViewVirtualizedRows = ({
                             {/*  cell.getContext(),*/}
                             {/*)}*/}
                             <CellValue
+                              panel={panel}
                               column={cell.column.columnDef}
                               rowIndex={index}
                               rowTemplateData={rowTemplateData}
@@ -1116,7 +1124,7 @@ const LineView = (props: TableProps) => {
               }
               return (
                 <div key={`${col.name}-${rowIndex}`}>
-                  <span className="block text-sm text-table-head truncate">
+                  <span className="block text-table-head truncate">
                     {col.title}
                   </span>
                   <span
@@ -1126,6 +1134,7 @@ const LineView = (props: TableProps) => {
                     )}
                   >
                     <MemoCellValue
+                      panel={props}
                       column={col}
                       rowIndex={rowIndex}
                       rowTemplateData={rowTemplateData}

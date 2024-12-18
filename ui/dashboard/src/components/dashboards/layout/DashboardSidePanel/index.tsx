@@ -12,6 +12,7 @@ const DashboardSidePanel = ({ sidePanel }: { sidePanel: SidePanelInfo }) => (
     {sidePanel.panel.panel_type === "table" && (
       <TableRowSidePanel
         data={sidePanel.panel.data}
+        requestedColumnName={sidePanel.context.requestedColumnName}
         rowIndex={sidePanel.context.rowIndex}
       />
     )}

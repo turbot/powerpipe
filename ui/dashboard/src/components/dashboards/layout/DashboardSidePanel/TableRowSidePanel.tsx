@@ -6,7 +6,7 @@ import {
 } from "@powerpipe/components/dashboards/common";
 import { parseDate } from "@powerpipe/utils/date";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import SearchInput from "@powerpipe/components/SearchInput";
 import Icon from "@powerpipe/components/Icon";
 
@@ -110,9 +110,11 @@ const TableRowItem = ({ dataType, name, value }) => {
 
 const TableRowSidePanel = ({
   data,
+  requestedColumnName,
   rowIndex,
 }: {
   data: LeafNodeData | undefined;
+  requestedColumnName?: string;
   rowIndex: number | undefined;
 }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
@@ -138,6 +140,7 @@ const TableRowSidePanel = ({
     const searchParts = search.trim().toLowerCase().split(" ");
     const filtered: { column: LeafNodeDataColumn; value: any }[] = [];
     for (const item of orderedRow) {
+      const dataType = item.column.data_type.toLowerCase();
       if (
         searchParts.every((searchPart) => {
           if (item.column.name.toLowerCase().indexOf(searchPart) >= 0) {
@@ -145,16 +148,16 @@ const TableRowSidePanel = ({
           } else if (search === "null" && item.value === null) {
             return true;
           } else if (
-            item.column.data_type !== "jsonb" &&
-            item.value &&
-            item.value.toString().toLowerCase().indexOf(searchPart) >= 0
-          ) {
-            return true;
-          }
-          if (
-            item.column.data_type === "jsonb" &&
+            (dataType === "jsonb" ||
+              dataType === "varchar[]" ||
+              dataType.startsWith("struct")) &&
             item.value &&
             JSON.stringify(item.value).toLowerCase().indexOf(searchPart) >= 0
+          ) {
+            return true;
+          } else if (
+            item.value &&
+            item.value.toString().toLowerCase().indexOf(searchPart) >= 0
           ) {
             return true;
           } else {
@@ -168,35 +171,48 @@ const TableRowSidePanel = ({
     return filtered;
   }, [orderedRow, search]);
 
+  useEffect(() => {
+    if (!requestedColumnName) {
+      return;
+    }
+
+    const element = document.getElementById(requestedColumnName);
+    if (element) {
+      element.scrollIntoView();
+    }
+  }, [requestedColumnName]);
+
   return (
-    <div className="flex flex-col overflow-auto w-full lg:w-[36rem] pt-3">
-      <div className="flex items-center justify-between px-4">
-        <h3>View Table Row</h3>
+    <>
+      <div className="flex items-center justify-between p-4 min-w-[300px]">
+        <h3>Row</h3>
         <Icon
           className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
           icon="close"
           onClick={closeSidePanel}
-          title="Close customize view"
+          title="Close"
         />
       </div>
-      <div className="px-4 pt-3">
-        <SearchInput
-          placeholder="Search row"
-          setValue={setSearch}
-          value={search}
-        />
-      </div>
-      <div className="flex-1 overflow-auto divide-y divide-divide space-y-3">
-        {filteredObj.map((item) => (
-          <TableRowItem
-            key={item.column.name}
-            dataType={item.column.data_type}
-            name={item.column.name}
-            value={item.value}
+      <div className="flex flex-col w-full lg:w-[36rem] pt-3">
+        <div className="px-4 pt-3">
+          <SearchInput
+            placeholder="Search row"
+            setValue={setSearch}
+            value={search}
           />
-        ))}
+        </div>
+        <div className="flex-1 overflow-auto divide-y divide-divide space-y-3">
+          {filteredObj.map((item) => (
+            <TableRowItem
+              key={item.column.name}
+              dataType={item.column.data_type}
+              name={item.column.name}
+              value={item.value}
+            />
+          ))}
+        </div>
       </div>
-    </div>
+    </>
   );
 };
 
