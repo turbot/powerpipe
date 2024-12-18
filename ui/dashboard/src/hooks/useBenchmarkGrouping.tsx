@@ -76,7 +76,6 @@ type ICheckGroupingContext = {
 };
 
 const GroupingActions: IActions = {
-  COLLAPSE_ALL_NODES: "collapse_all_nodes",
   COLLAPSE_NODE: "collapse_node",
   EXPAND_ALL_NODES: "expand_all_nodes",
   EXPAND_NODE: "expand_node",
@@ -520,19 +519,6 @@ const getCheckResultNode = (checkResult: CheckResult) => {
 
 const reducer = (state: CheckGroupNodeStates, action) => {
   switch (action.type) {
-    case GroupingActions.COLLAPSE_ALL_NODES: {
-      const newNodes = {};
-      for (const [name, node] of Object.entries(state)) {
-        newNodes[name] = {
-          ...node,
-          expanded: false,
-        };
-      }
-      return {
-        ...state,
-        nodes: newNodes,
-      };
-    }
     case GroupingActions.COLLAPSE_NODE:
       return {
         ...state,
