@@ -72,8 +72,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         component: <CustomizeViewSummary panelName={props.definition.name} />,
         action: async () =>
           selectSidePanel({
-            name: props.definition.name,
-            viewType: "group_and_filter",
+            panel: props.definition,
           }),
       },
       {
