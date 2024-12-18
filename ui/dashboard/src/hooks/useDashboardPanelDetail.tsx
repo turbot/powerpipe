@@ -11,14 +11,21 @@ import { LeafNodeData } from "@powerpipe/components/dashboards/common";
 import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 
+export interface SidePanelInfo {
+  name: string;
+  title?: string;
+  viewType: "group_and_filter" | "table_row";
+  context?: any;
+}
+
 interface IDashboardPanelDetailContext {
   selectedPanel: PanelDefinition | null;
   selectPanel: (panelName: PanelDefinition | null, data?: LeafNodeData) => void;
   closePanel: () => void;
   panelOverrideData: LeafNodeData | null;
-  selectedFilterAndGroupPanel: string | null;
-  selectFilterAndGroupPanel: (panelName: string | null) => void;
-  closeFilterAndGroupPanel: () => void;
+  selectedSidePanel: SidePanelInfo | null;
+  selectSidePanel: (SidePanelInfo: SidePanelInfo | null) => void;
+  closeSidePanel: () => void;
 }
 
 interface DashboardPanelDetailProviderProps {
@@ -34,8 +41,8 @@ export const DashboardPanelDetailProvider = ({
   const [selectedPanel, setSelectedPanel] = useState<PanelDefinition | null>(
     null,
   );
-  const [selectedFilterAndGroupPanel, setSelectedFilterAndGroupPanel] =
-    useState<string | null>(null);
+  const [selectedSidePanel, setSelectedSidePanel] =
+    useState<SidePanelInfo | null>(null);
   const [panelOverrideData, setPanelOverrideData] =
     useState<LeafNodeData | null>(null);
 
@@ -74,10 +81,10 @@ export const DashboardPanelDetailProvider = ({
         selectPanel,
         closePanel,
         panelOverrideData,
-        selectedFilterAndGroupPanel,
-        selectFilterAndGroupPanel: (panelName: string | null) =>
-          setSelectedFilterAndGroupPanel(panelName),
-        closeFilterAndGroupPanel: () => setSelectedFilterAndGroupPanel(null),
+        selectedSidePanel,
+        selectSidePanel: (sidePanelInfo: SidePanelInfo | null) =>
+          setSelectedSidePanel(sidePanelInfo),
+        closeSidePanel: () => setSelectedSidePanel(null),
       }}
     >
       <GlobalHotKeys

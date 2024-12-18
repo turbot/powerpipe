@@ -62,8 +62,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
-  const { selectFilterAndGroupPanel, selectedPanel } =
-    useDashboardPanelDetail();
+  const { selectSidePanel, selectedPanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -71,7 +70,11 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () => selectFilterAndGroupPanel(props.definition.name),
+        action: async () =>
+          selectSidePanel({
+            name: props.definition.name,
+            viewType: "group_and_filter",
+          }),
       },
       {
         key: "download-data",

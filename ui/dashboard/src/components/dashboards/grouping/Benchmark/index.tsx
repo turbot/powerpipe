@@ -76,7 +76,7 @@ const Benchmark = (props: InnerCheckProps) => {
     setPanelData,
     setShowPanelControls,
   } = usePanelControls();
-  const { selectFilterAndGroupPanel } = useDashboardPanelDetail();
+  const { selectSidePanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -84,7 +84,11 @@ const Benchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () => selectFilterAndGroupPanel(props.definition.name),
+        action: async () =>
+          selectSidePanel({
+            name: props.definition.name,
+            viewType: "group_and_filter",
+          }),
       },
     ]);
   }, [props.definition.name, setCustomControls]);
