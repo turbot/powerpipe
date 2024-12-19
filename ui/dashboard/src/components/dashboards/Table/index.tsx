@@ -46,6 +46,8 @@ import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import useCopyToClipboard from "@powerpipe/hooks/useCopyToClipboard";
+import { AsyncNoop } from "@powerpipe/types/func";
 
 const ExternalLink = getComponent("external_link");
 
@@ -488,6 +490,7 @@ const CellControls = ({
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
     placement: "bottom-start",
   });
+  const { copy, copySuccess } = useCopyToClipboard();
 
   return (
     <>
@@ -502,11 +505,14 @@ const CellControls = ({
             >
               <div className="flex items-center space-x-1">
                 <CellControl
-                  icon="content_copy"
-                  title="Copy value"
-                  onClick={() =>
-                    addFilter("equal", column.name, value, context)
+                  iconClassName={copySuccess ? "text-ok" : undefined}
+                  icon={
+                    copySuccess
+                      ? "materialsymbols-solid:content_copy"
+                      : "content_copy"
                   }
+                  title="Copy value"
+                  onClick={!copySuccess ? async () => copy(value) : undefined}
                 />
                 <CellControl
                   icon="filter_alt"
@@ -548,14 +554,27 @@ const CellControls = ({
   );
 };
 
-const CellControl = ({ icon, title, onClick }) => {
+const CellControl = ({
+  iconClassName,
+  icon,
+  title,
+  onClick,
+}: {
+  iconClassName?: string;
+  icon: string;
+  title: string;
+  onClick: AsyncNoop | undefined;
+}) => {
   return (
     <div
       onClick={onClick}
-      className="cursor-pointer text-table-head hover:text-foreground"
+      className={classNames(
+        "text-table-head hover:text-foreground",
+        onClick ? "cursor-pointer" : null,
+      )}
       title={title}
     >
-      <Icon className="h-4 w-4" icon={icon} />
+      <Icon className={classNames(iconClassName, "h-4 w-4")} icon={icon} />
     </div>
   );
 };
@@ -637,7 +656,9 @@ const useTableFilters = (panelName: string, context?: string) => {
       value: any,
       context?: string,
     ) => {
-      const index = urlFilters.expressions?.findIndex(
+      const newUrlFilters = { ...urlFilters };
+      const expressions = [...(newUrlFilters.expressions || [])];
+      const index = expressions.findIndex(
         (e) =>
           e.type === "dimension" &&
           e.key === key &&
@@ -646,11 +667,8 @@ const useTableFilters = (panelName: string, context?: string) => {
       );
       let newFilters =
         index !== undefined && index > -1
-          ? [
-              ...urlFilters.expressions?.slice(0, index),
-              ...urlFilters.expressions?.slice(index + 1),
-            ]
-          : urlFilters.expressions || [];
+          ? [...expressions.slice(0, index), ...expressions.slice(index + 1)]
+          : expressions || [];
       if (
         newFilters.length === 1 &&
         newFilters[0].operator === "equal" &&
@@ -676,10 +694,10 @@ const useTableFilters = (panelName: string, context?: string) => {
           context,
         });
       }
-      urlFilters.expressions = newFilters;
+      newUrlFilters.expressions = newFilters;
       const newPanelFilters = {
         ...allFilters,
-        [panelName]: urlFilters,
+        [panelName]: newUrlFilters,
       };
       searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
@@ -689,28 +707,26 @@ const useTableFilters = (panelName: string, context?: string) => {
 
   const removeFilter = useCallback(
     (key: string, value: any, context: string) => {
-      const index = urlFilters.expressions?.findIndex(
+      const newUrlFilters = { ...urlFilters };
+      let expressions = [...(newUrlFilters.expressions || [])];
+      const index = expressions.findIndex(
         (e) =>
           e.type === "dimension" &&
           e.key === key &&
           e.value === value &&
           e.context === context,
       );
-      const newFilters =
+      let newFilters =
         index !== undefined
-          ? [
-              ...urlFilters.expressions?.slice(0, index),
-              ...urlFilters.expressions?.slice(index + 1),
-            ]
-          : urlFilters.expressions || [];
+          ? [...expressions.slice(0, index), ...expressions.slice(index + 1)]
+          : expressions;
       if (newFilters.length === 0) {
-        urlFilters.expressions = [{ operator: "equal" }];
-      } else {
-        urlFilters.expressions = newFilters;
+        newFilters = [{ operator: "equal" }];
       }
+      newUrlFilters.expressions = newFilters;
       const newPanelFilters = {
         ...allFilters,
-        [panelName]: urlFilters,
+        [panelName]: newUrlFilters,
       };
       searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
@@ -849,7 +865,7 @@ const TableViewVirtualizedRows = ({
     <>
       <div className="flex flex-col w-full overflow-hidden">
         {filterEnabled && !!filters.length && (
-          <div className="flex flex-wrap gap-2 w-full p-4 justify-between">
+          <div className="flex flex-wrap gap-2 w-full p-4">
             {filters.map((filter) => {
               return (
                 <div
@@ -861,7 +877,7 @@ const TableViewVirtualizedRows = ({
                     icon={
                       filter.operator === "equal"
                         ? "filter_alt"
-                        : "do_not_disturb_on"
+                        : "filter_alt_off"
                     }
                   />
                   <span>{`${filter.key}: ${filter.value}`}</span>
