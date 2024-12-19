@@ -1,12 +1,10 @@
 import Children from "../Children";
 import DashboardProgress from "./DashboardProgress";
-import DashboardSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel";
+import DashboardSidePanel from "../DashboardSidePanel";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
-import React, { ReactNode } from "react";
 import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
-import SplitPane from "react-split-pane";
 import usePageTitle from "@powerpipe/hooks/usePageTitle";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
 import {
@@ -15,10 +13,7 @@ import {
   DashboardDefinition,
 } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import {
-  SidePanelInfo,
-  useDashboardPanelDetail,
-} from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
@@ -31,36 +26,6 @@ type DashboardProps = {
 
 type DashboardWrapperProps = {
   showPanelControls?: boolean;
-};
-
-const SplitPaneWrapper = ({
-  dashboard,
-  sidePanel,
-}: {
-  dashboard: ReactNode;
-  sidePanel: SidePanelInfo | null;
-}) => {
-  if (!sidePanel) {
-    return dashboard;
-  }
-
-  return (
-    <div className="relative h-full">
-      <SplitPane
-        className="flex flex-col-reverse md:flex-row w-full h-full overflow-y-hidden"
-        split="vertical"
-        // defaultSize={sidePanel?.panel?.panel_type === "table" ? "75%" : "60%"}
-        minSize={sidePanel?.panel?.panel_type === "table" ? 300 : 500}
-        primary="second"
-      >
-        {dashboard}
-        <DashboardSidePanel
-          key={sidePanel?.panel?.panel_type}
-          sidePanel={sidePanel}
-        />
-      </SplitPane>
-    </div>
-  );
 };
 
 const Dashboard = ({
@@ -85,29 +50,24 @@ const Dashboard = ({
       />
     </Grid>
   );
-  const renderDashboard = (
-    <>
-      {isRoot ? (
-        <div className="flex flex-col flex-1 h-full overflow-y-hidden">
-          <DashboardProgress />
-          {dataMode === DashboardDataModeCLISnapshot && (
-            <div className="p-4">
-              <SnapshotHeader />
-            </div>
-          )}
-          <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
-        </div>
-      ) : (
-        <div className="w-full">{grid}</div>
-      )}
-    </>
-  );
   return (
     <DashboardControlsProvider>
-      <SplitPaneWrapper
-        dashboard={renderDashboard}
-        sidePanel={selectedSidePanel}
-      />
+      {dataMode === DashboardDataModeCLISnapshot && (
+        <div className="p-4">
+          <SnapshotHeader />
+        </div>
+      )}
+      <div className="flex flex-col-reverse md:flex-row w-full h-full overflow-y-hidden">
+        {isRoot ? (
+          <div className="flex flex-col flex-1 h-full overflow-y-hidden">
+            <DashboardProgress />
+            <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
+          </div>
+        ) : (
+          <div className="w-full">{grid}</div>
+        )}
+        <DashboardSidePanel sidePanel={selectedSidePanel} />
+      </div>
     </DashboardControlsProvider>
   );
 };

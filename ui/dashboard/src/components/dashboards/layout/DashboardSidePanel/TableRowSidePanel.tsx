@@ -1,5 +1,8 @@
 import CodeBlock from "@powerpipe/components/CodeBlock";
-import CopyToClipboard from "@powerpipe/components/CopyToClipboard";
+import Icon from "@powerpipe/components/Icon";
+import SearchInput from "@powerpipe/components/SearchInput";
+import useCopyToClipboard from "@powerpipe/hooks/useCopyToClipboard";
+import { classNames } from "@powerpipe/utils/styles";
 import {
   LeafNodeData,
   LeafNodeDataColumn,
@@ -7,8 +10,6 @@ import {
 import { parseDate } from "@powerpipe/utils/date";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useEffect, useMemo, useState } from "react";
-import SearchInput from "@powerpipe/components/SearchInput";
-import Icon from "@powerpipe/components/Icon";
 
 const getNumericValue = (value) => {
   if (
@@ -46,17 +47,25 @@ const renderValue = (name: string, dataType: string, value: any) => {
   switch (dataType.toLowerCase()) {
     case "text":
     case "varchar":
-      return <CodeBlock language="yaml">{value}</CodeBlock>;
+      return (
+        <CodeBlock copyToClipboard={false} language="yaml">
+          {value}
+        </CodeBlock>
+      );
     case "timestamptz":
       return (
-        <CodeBlock language="yaml">
+        <CodeBlock copyToClipboard={false} language="yaml">
           {parseDate(value)?.format() || ""}
         </CodeBlock>
       );
     case "jsonb":
     case "varchar[]":
       return (
-        <CodeBlock language="json" style={{ fontSize: "12px" }}>
+        <CodeBlock
+          copyToClipboard={false}
+          language="json"
+          style={{ fontSize: "12px" }}
+        >
           {JSON.stringify(value, null, 2)}
         </CodeBlock>
       );
@@ -64,38 +73,56 @@ const renderValue = (name: string, dataType: string, value: any) => {
     case "bigint": {
       if (name === "timestamp") {
         return (
-          <CodeBlock language="yaml">
+          <CodeBlock copyToClipboard={false} language="yaml">
             {parseDate(value)?.format() || ""}
           </CodeBlock>
         );
       }
-      return <CodeBlock language="json">{getNumericValue(value)}</CodeBlock>;
+      return (
+        <CodeBlock copyToClipboard={false} language="json">
+          {getNumericValue(value)}
+        </CodeBlock>
+      );
     }
     default:
       return (
-        <CodeBlock language="json">{JSON.stringify(value, null, 2)}</CodeBlock>
+        <CodeBlock copyToClipboard={false} language="json">
+          {JSON.stringify(value, null, 2)}
+        </CodeBlock>
       );
   }
 };
 
 const TableRowItem = ({ dataType, name, value }) => {
-  const [showOptions, setShowOptions] = useState(false);
+  const [showCopy, setShowCopy] = useState(false);
+  const { copy, copySuccess } = useCopyToClipboard();
   return (
     <div
       key={name}
       id={name}
-      className="p-4 space-y-1"
-      onMouseEnter={() => setShowOptions(true)}
-      onMouseLeave={() => setShowOptions(false)}
+      className={classNames(
+        "p-4 space-y-1",
+        !copySuccess ? "cursor-pointer" : null,
+      )}
+      onClick={
+        !copySuccess ? () => copy(JSON.stringify(value, null, 2)) : undefined
+      }
+      onMouseEnter={() => setShowCopy(true)}
+      onMouseLeave={() => setShowCopy(false)}
     >
-      <div className="flex icon-spacer items-center text-sm">
+      <div className="flex space-x-1 items-center">
         <span className="block font-light tracking-wider text-table-head">
           {name}
         </span>
-        {showOptions && (
-          <>
-            <CopyToClipboard data={JSON.stringify(value, null, 2)} />
-          </>
+        {showCopy && (
+          <Icon
+            icon={
+              copySuccess
+                ? "materialsymbols-solid:content_copy"
+                : "content_copy"
+            }
+            className={classNames("h-5 w-5", copySuccess ? "text-ok" : null)}
+          />
         )}
       </div>
       <div>
@@ -183,8 +210,8 @@ const TableRowSidePanel = ({
   }, [requestedColumnName]);
 
   return (
-    <>
-      <div className="flex items-center justify-between p-4 min-w-[300px]">
+    <div className="min-w-[300px] max-w-[400px]">
+      <div className="flex items-center justify-between p-4">
         <h3>Row</h3>
         <Icon
           className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
@@ -212,7 +239,7 @@ const TableRowSidePanel = ({
           ))}
         </div>
       </div>
-    </>
+    </div>
   );
 };
 

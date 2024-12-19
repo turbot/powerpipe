@@ -1,16 +1,13 @@
 import copy from "copy-to-clipboard";
 import { classNames } from "@powerpipe/utils/styles";
 import {
-  CopyToClipboardIcon,
-  CopyToClipboardSuccessIcon,
-} from "@powerpipe/constants/icons";
-import {
   createContext,
   useCallback,
   useContext,
   useEffect,
   useState,
 } from "react";
+import Icon from "@powerpipe/components/Icon";
 
 type ICopyToClipboardContext = {
   doCopy: boolean;
@@ -78,13 +75,17 @@ const CopyToClipboard = ({
   return (
     <>
       {!copySuccess && (
-        <CopyToClipboardIcon
+        <Icon
+          icon="content_copy"
           className={classNames("h-5 w-5 cursor-pointer", className)}
-          onClick={handleCopy}
+          onClick={(e) => handleCopy(e)}
         />
       )}
       {copySuccess && (
-        <CopyToClipboardSuccessIcon className="h-5 w-5 text-ok" />
+        <Icon
+          icon="materialsymbols-solid:content_copy"
+          className={classNames("h-5 w-5 text-ok", className)}
+        />
       )}
     </>
   );
