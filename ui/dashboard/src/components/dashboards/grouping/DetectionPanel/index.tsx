@@ -140,7 +140,6 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
             panelsMap[result.detection.name]?.properties?.display_columns || [],
         }}
         filterEnabled
-        context={result.detection.name}
       />
     </div>
   );

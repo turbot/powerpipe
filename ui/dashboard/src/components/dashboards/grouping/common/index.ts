@@ -243,7 +243,6 @@ export type Filter = {
   key?: string;
   value?: string | string[];
   title?: string;
-  context?: string;
   expressions?: Filter[];
 };
 
