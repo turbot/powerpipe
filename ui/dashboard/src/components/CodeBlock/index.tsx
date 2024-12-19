@@ -2,6 +2,7 @@ import CopyToClipboard, { CopyToClipboardProvider } from "../CopyToClipboard";
 import hcl from "react-syntax-highlighter/dist/esm/languages/prism/hcl";
 import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
 import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
 import { classNames } from "@powerpipe/utils/styles";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
@@ -15,11 +16,12 @@ import {
 SyntaxHighlighter.registerLanguage("hcl", hcl);
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("sql", sql);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
 
 type CodeBlockProps = {
   children: string;
   copyToClipboard?: boolean;
-  language?: "hcl" | "json" | "sql";
+  language?: "hcl" | "json" | "sql" | "yaml";
   style?: any;
 };
 

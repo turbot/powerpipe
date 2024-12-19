@@ -76,7 +76,7 @@ const Benchmark = (props: InnerCheckProps) => {
     setPanelData,
     setShowPanelControls,
   } = usePanelControls();
-  const { selectFilterAndGroupPanel } = useDashboardPanelDetail();
+  const { selectSidePanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -84,7 +84,10 @@ const Benchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () => selectFilterAndGroupPanel(props.definition.name),
+        action: async () =>
+          selectSidePanel({
+            panel: props.definition,
+          }),
       },
     ]);
   }, [props.definition.name, setCustomControls]);
@@ -367,15 +370,23 @@ const Inner = ({ withTitle }) => {
   }
 };
 
-type BenchmarkProps = PanelDefinition & {
+type BenchmarkProps = {
+  definition: PanelDefinition;
+  benchmarkChildren?: PanelDefinition[] | undefined;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const BenchmarkWrapper = (props: BenchmarkProps) => {
   return (
-    <GroupingProvider definition={props}>
-      <PanelControlsProvider definition={props} enabled={props.showControls}>
+    <GroupingProvider
+      definition={props.definition}
+      benchmarkChildren={props.benchmarkChildren}
+    >
+      <PanelControlsProvider
+        definition={props.definition}
+        enabled={props.showControls}
+      >
         <Inner withTitle={props.withTitle} />
       </PanelControlsProvider>
     </GroupingProvider>

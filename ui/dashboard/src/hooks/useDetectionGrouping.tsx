@@ -35,6 +35,7 @@ import {
   PanelDefinition,
   PanelsMap,
 } from "@powerpipe/types";
+import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { LeafNodeDataRow } from "@powerpipe/components/dashboards/common";
 import { useDashboardState } from "./useDashboardState";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
@@ -72,7 +73,6 @@ type ICheckGroupingContext = {
 };
 
 const GroupingActions: IActions = {
-  COLLAPSE_ALL_NODES: "collapse_all_nodes",
   COLLAPSE_NODE: "collapse_node",
   EXPAND_ALL_NODES: "expand_all_nodes",
   EXPAND_NODE: "expand_node",
@@ -438,19 +438,6 @@ const getDetectionResultNode = (detectionResult: DetectionResult) => {
 
 const reducer = (state: CheckGroupNodeStates, action) => {
   switch (action.type) {
-    case GroupingActions.COLLAPSE_ALL_NODES: {
-      const newNodes = {};
-      for (const [name, node] of Object.entries(state)) {
-        newNodes[name] = {
-          ...node,
-          expanded: false,
-        };
-      }
-      return {
-        ...state,
-        nodes: newNodes,
-      };
-    }
     case GroupingActions.COLLAPSE_NODE:
       return {
         ...state,
@@ -488,6 +475,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
 type DetectionGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
+  benchmarkChildren: PanelDefinition[] | undefined;
 };
 
 function recordFilterValues(
@@ -586,74 +574,93 @@ function recordFilterValues(
 
 const includeResult = (
   result: DetectionResult,
-  filterConfig: Filter,
+  panel: PanelDefinition,
+  allFilters: KeyValuePairs<Filter>,
 ): boolean => {
-  if (
-    !filterConfig ||
-    !filterConfig.expressions ||
-    filterConfig.expressions.length === 0
-  ) {
+  // If no filters, include this
+  if (Object.keys(allFilters).length === 0) {
     return true;
   }
-  let matches: boolean[] = [];
-  for (const filter of filterConfig.expressions) {
-    if (!filter.type) {
-      continue;
-    }
 
-    switch (filter.type) {
-      case "benchmark": {
-        let matchesTrunk = false;
-        for (const benchmark of result.benchmark_trunk || []) {
-          const match = applyFilter(filter, benchmark.name);
-          if (match) {
-            matchesTrunk = true;
-            break;
-          }
-        }
-        matches.push(matchesTrunk);
-        break;
+  const filterForRootPanel = allFilters[panel.name];
+  const filterForDetection = allFilters[result.detection.name];
+
+  // If no filters for the parent panel, or this panel, include
+  if (!filterForRootPanel && !filterForDetection) {
+    return true;
+  }
+
+  let matches: boolean[] = [];
+  for (const filter of [filterForRootPanel, filterForDetection].filter(
+    (f) => !!f && !!f.expressions?.length,
+  )) {
+    for (const expression of filter.expressions || []) {
+      if (!expression.type) {
+        continue;
       }
-      case "detection": {
-        matches.push(applyFilter(filter, result.detection.name));
-        break;
-      }
-      case "dimension": {
-        let newRows: LeafNodeDataRow[] = [];
-        if (filter.context && result.detection.name !== filter.context) {
-          newRows = result.rows || [];
-        } else {
-          let includeRow = false;
-          for (const row of result.rows || []) {
-            includeRow =
-              filter.key in row && applyFilter(filter, row[filter.key]);
-            if (includeRow) {
-              newRows.push(row);
-            } else {
+
+      switch (expression.type) {
+        case "benchmark": {
+          let matchesTrunk = false;
+          for (const benchmark of result.benchmark_trunk || []) {
+            const match = applyFilter(expression, benchmark.name);
+            if (match) {
+              matchesTrunk = true;
+              break;
             }
           }
+          matches.push(matchesTrunk);
+          break;
         }
-        result.rows = newRows;
-        matches.push(true);
-        break;
-      }
-      case "detection_tag": {
-        let matchesTags = false;
-        for (const [tagKey, tagValue] of Object.entries(result.tags || {})) {
-          if (filter.key === tagKey && applyFilter(filter, tagValue)) {
-            matchesTags = true;
-            break;
+        case "detection": {
+          matches.push(applyFilter(expression, result.detection.name));
+          break;
+        }
+        case "dimension": {
+          let newRows: LeafNodeDataRow[] = [];
+          if (
+            expression.context &&
+            result.detection.name !== expression.context
+          ) {
+            newRows = result.rows || [];
+          } else {
+            let includeRow = false;
+            for (const row of result.rows || []) {
+              includeRow =
+                !!expression.key &&
+                expression.key in row &&
+                applyFilter(expression, row[expression.key]);
+              if (includeRow) {
+                newRows.push(row);
+              } else {
+              }
+            }
           }
+          result.rows = newRows;
+          matches.push(true);
+          break;
         }
-        matches.push(matchesTags);
-        break;
+        case "detection_tag": {
+          let matchesTags = false;
+          for (const [tagKey, tagValue] of Object.entries(result.tags || {})) {
+            if (
+              expression.key === tagKey &&
+              applyFilter(expression, tagValue)
+            ) {
+              matchesTags = true;
+              break;
+            }
+          }
+          matches.push(matchesTags);
+          break;
+        }
+        case "severity": {
+          matches.push(applyFilter(expression, result.severity || ""));
+          break;
+        }
+        default:
+          matches.push(true);
       }
-      case "severity": {
-        matches.push(applyFilter(filter, result.severity || ""));
-        break;
-      }
-      default:
-        matches.push(true);
     }
   }
   return matches.every((m) => m);
@@ -661,11 +668,12 @@ const includeResult = (
 
 const useGroupingInternal = (
   definition: PanelDefinition | null,
+  benchmarkChildren: PanelDefinition[] | undefined,
   panelsMap: PanelsMap | undefined,
   groupingConfig: DetectionDisplayGroup[],
   skip = false,
 ) => {
-  const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
+  const { allFilters } = useFilterConfig(definition?.name);
 
   return useMemo(() => {
     const filterValues = {
@@ -681,24 +689,23 @@ const useGroupingInternal = (
     }
 
     // @ts-ignore
-    const nestedDetectionBenchmarks = definition.children?.filter(
+    const nestedDetectionBenchmarks = benchmarkChildren?.filter(
       (child) => child.panel_type === "benchmark",
     );
     const nestedDetections =
       definition.panel_type === "detection"
         ? [definition]
         : // @ts-ignore
-          definition.children?.filter(
+          benchmarkChildren?.filter(
             (child) => child.panel_type === "detection",
           );
 
-    const rootBenchmarkPanel = panelsMap[definition.name];
     const b = new DetectionBenchmarkType(
       "0",
-      rootBenchmarkPanel.name,
-      rootBenchmarkPanel.title,
-      rootBenchmarkPanel.description,
-      rootBenchmarkPanel.documentation,
+      definition.name,
+      definition.title,
+      definition.description,
+      definition.documentation,
       nestedDetectionBenchmarks,
       nestedDetections,
       panelsMap,
@@ -716,7 +723,7 @@ const useGroupingInternal = (
       recordFilterValues(filterValues, detectionResult);
 
       // See if the result needs to be filtered
-      if (!includeResult(detectionResult, checkFilterConfig)) {
+      if (!includeResult(detectionResult, definition, allFilters)) {
         return;
       }
 
@@ -754,19 +761,19 @@ const useGroupingInternal = (
 
     return [
       b,
-      { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
       hasSeverityResults,
       detectionNodeStates,
       filterValues,
     ] as const;
-  }, [checkFilterConfig, definition, groupingConfig, panelsMap, skip]);
+  }, [allFilters, definition, groupingConfig, panelsMap, skip]);
 };
 
 const GroupingProvider = ({
   children,
   definition,
+  benchmarkChildren,
 }: DetectionGroupingProviderProps) => {
   const { panelsMap } = useDashboardState();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
@@ -775,21 +782,26 @@ const GroupingProvider = ({
 
   const [
     benchmark,
-    panelDefinition,
     grouping,
     firstChildSummaries,
     hasSeverityResults,
     tempNodeStates,
     filterValues,
-  ] = useGroupingInternal(definition, panelsMap, groupingConfig);
+  ] = useGroupingInternal(
+    definition,
+    benchmarkChildren,
+    panelsMap,
+    groupingConfig,
+  );
 
   const previousGroupings = usePrevious({ groupingConfig });
 
   useEffect(() => {
     if (
-      previousGroupings &&
-      JSON.stringify(previousGroupings.groupingConfig) ===
-        JSON.stringify(groupingConfig)
+      !previousGroupings ||
+      (!!previousGroupings &&
+        JSON.stringify(previousGroupings.groupingConfig) ===
+          JSON.stringify(groupingConfig))
     ) {
       return;
     }
@@ -807,8 +819,7 @@ const GroupingProvider = ({
     <GroupingContext.Provider
       value={{
         benchmark,
-        // @ts-ignore
-        definition: panelDefinition,
+        definition,
         dispatch,
         firstChildSummaries,
         hasSeverityResults,

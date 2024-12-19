@@ -40,11 +40,14 @@ import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import useCopyToClipboard from "@powerpipe/hooks/useCopyToClipboard";
+import { AsyncNoop } from "@powerpipe/types/func";
 
 const ExternalLink = getComponent("external_link");
 
@@ -137,6 +140,7 @@ const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
 };
 
 type CellValueProps = {
+  panel: PanelDefinition;
   column: TableColumnInfo;
   rowIndex: number;
   rowTemplateData: RowRenderResult[];
@@ -154,6 +158,7 @@ type CellValueProps = {
 };
 
 const CellValue = ({
+  panel,
   column,
   rowIndex,
   rowTemplateData,
@@ -459,6 +464,8 @@ const CellValue = ({
         <CellControls
           referenceElement={referenceElement}
           column={column}
+          rowIndex={rowIndex}
+          panel={panel}
           value={value}
           context={context}
           addFilter={addFilter}
@@ -470,26 +477,20 @@ const CellValue = ({
 
 const CellControls = ({
   referenceElement,
+  panel,
+  rowIndex,
   column,
   value,
   context,
   addFilter,
 }) => {
+  const { selectSidePanel } = useDashboardPanelDetail();
+  const { setShowPanelControls } = usePanelControls();
   const [popperElement, setPopperElement] = useState(null);
-  // Need to define memoized / stable modifiers else the usePopper hook will infinitely re-render
-  // const noFlip = useMemo(() => ({ name: "flip", enabled: false }), []);
-  const offset = useMemo(() => {
-    return {
-      name: "offset",
-      options: {
-        offset: [4, 1],
-      },
-    };
-  }, []);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
-    modifiers: [offset],
-    placement: "right-end",
+    placement: "bottom-start",
   });
+  const { copy, copySuccess } = useCopyToClipboard();
 
   return (
     <>
@@ -502,20 +503,45 @@ const CellControls = ({
               style={{ ...styles.popper }}
               {...attributes.popper}
             >
-              <div className="flex border border-black-scale-3 rounded-md divide-x divide-divide">
+              <div className="flex items-center space-x-1">
                 <CellControl
-                  icon="add_circle"
+                  iconClassName={copySuccess ? "text-ok" : undefined}
+                  icon={
+                    copySuccess
+                      ? "materialsymbols-solid:content_copy"
+                      : "content_copy"
+                  }
+                  title="Copy value"
+                  onClick={!copySuccess ? async () => copy(value) : undefined}
+                />
+                <CellControl
+                  icon="filter_alt"
                   title="Filter by this value"
                   onClick={() =>
                     addFilter("equal", column.name, value, context)
                   }
                 />
                 <CellControl
-                  icon="do_not_disturb_on"
+                  // className="h-4 w-4"
+                  icon="close"
                   title="Exclude value from results"
                   onClick={() =>
                     addFilter("not_equal", column.name, value, context)
                   }
+                />
+                <CellControl
+                  icon="split_scene"
+                  title="View row"
+                  onClick={() => {
+                    selectSidePanel({
+                      panel,
+                      context: {
+                        requestedColumnName: column.name,
+                        rowIndex,
+                      },
+                    });
+                    setShowPanelControls(false);
+                  }}
                 />
               </div>
             </div>
@@ -528,14 +554,27 @@ const CellControls = ({
   );
 };
 
-const CellControl = ({ icon, title, onClick }) => {
+const CellControl = ({
+  iconClassName,
+  icon,
+  title,
+  onClick,
+}: {
+  iconClassName?: string;
+  icon: string;
+  title: string;
+  onClick: AsyncNoop | undefined;
+}) => {
   return (
     <div
       onClick={onClick}
-      className="px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground hover:bg-dashboard"
+      className={classNames(
+        "text-table-head hover:text-foreground",
+        onClick ? "cursor-pointer" : null,
+      )}
       title={title}
     >
-      <Icon className="h-4 w-4" icon={icon} />
+      <Icon className={classNames(iconClassName, "h-4 w-4")} icon={icon} />
     </div>
   );
 };
@@ -617,7 +656,9 @@ const useTableFilters = (panelName: string, context?: string) => {
       value: any,
       context?: string,
     ) => {
-      const index = urlFilters.expressions?.findIndex(
+      const newUrlFilters = { ...urlFilters };
+      const expressions = [...(newUrlFilters.expressions || [])];
+      const index = expressions.findIndex(
         (e) =>
           e.type === "dimension" &&
           e.key === key &&
@@ -626,11 +667,8 @@ const useTableFilters = (panelName: string, context?: string) => {
       );
       let newFilters =
         index !== undefined && index > -1
-          ? [
-              ...urlFilters.expressions?.slice(0, index),
-              ...urlFilters.expressions?.slice(index + 1),
-            ]
-          : urlFilters.expressions || [];
+          ? [...expressions.slice(0, index), ...expressions.slice(index + 1)]
+          : expressions || [];
       if (
         newFilters.length === 1 &&
         newFilters[0].operator === "equal" &&
@@ -656,10 +694,10 @@ const useTableFilters = (panelName: string, context?: string) => {
           context,
         });
       }
-      urlFilters.expressions = newFilters;
+      newUrlFilters.expressions = newFilters;
       const newPanelFilters = {
         ...allFilters,
-        [panelName]: urlFilters,
+        [panelName]: newUrlFilters,
       };
       searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
@@ -669,28 +707,26 @@ const useTableFilters = (panelName: string, context?: string) => {
 
   const removeFilter = useCallback(
     (key: string, value: any, context: string) => {
-      const index = urlFilters.expressions?.findIndex(
+      const newUrlFilters = { ...urlFilters };
+      let expressions = [...(newUrlFilters.expressions || [])];
+      const index = expressions.findIndex(
         (e) =>
           e.type === "dimension" &&
           e.key === key &&
           e.value === value &&
           e.context === context,
       );
-      const newFilters =
+      let newFilters =
         index !== undefined
-          ? [
-              ...urlFilters.expressions?.slice(0, index),
-              ...urlFilters.expressions?.slice(index + 1),
-            ]
-          : urlFilters.expressions || [];
+          ? [...expressions.slice(0, index), ...expressions.slice(index + 1)]
+          : expressions;
       if (newFilters.length === 0) {
-        urlFilters.expressions = [{ operator: "equal" }];
-      } else {
-        urlFilters.expressions = newFilters;
+        newFilters = [{ operator: "equal" }];
       }
+      newUrlFilters.expressions = newFilters;
       const newPanelFilters = {
         ...allFilters,
-        [panelName]: urlFilters,
+        [panelName]: newUrlFilters,
       };
       searchParams.set("where", JSON.stringify(newPanelFilters));
       setSearchParams(searchParams);
@@ -738,7 +774,7 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
 };
 
 const TableViewVirtualizedRows = ({
-  panelName,
+  panel,
   data,
   columns,
   columnVisibility,
@@ -747,7 +783,7 @@ const TableViewVirtualizedRows = ({
   context = "",
 }) => {
   const { filters, addFilter, removeFilter } = useTableFilters(
-    panelName,
+    panel.name,
     context,
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
@@ -829,7 +865,7 @@ const TableViewVirtualizedRows = ({
     <>
       <div className="flex flex-col w-full overflow-hidden">
         {filterEnabled && !!filters.length && (
-          <div className="flex flex-wrap gap-2 w-full p-4 justify-between">
+          <div className="flex flex-wrap gap-2 w-full p-4">
             {filters.map((filter) => {
               return (
                 <div
@@ -840,8 +876,8 @@ const TableViewVirtualizedRows = ({
                     className="w-4 h-4"
                     icon={
                       filter.operator === "equal"
-                        ? "add_circle"
-                        : "do_not_disturb_on"
+                        ? "filter_alt"
+                        : "filter_alt_off"
                     }
                   />
                   <span>{`${filter.key}: ${filter.value}`}</span>
@@ -879,7 +915,7 @@ const TableViewVirtualizedRows = ({
                           colSpan={header.colSpan}
                           scope="col"
                           className={classNames(
-                            "py-3 text-left text-sm font-normal tracking-wider whitespace-nowrap pl-4",
+                            "py-3 text-left font-normal tracking-wider whitespace-nowrap pl-4",
                           )}
                           //style={{ width: header.getSize() }}
                         >
@@ -921,7 +957,7 @@ const TableViewVirtualizedRows = ({
                 {rows.length === 0 && (
                   <tr>
                     <td
-                      className="px-4 py-4 align-top content-center text-sm italic whitespace-nowrap"
+                      className="px-4 py-4 align-top content-center italic whitespace-nowrap"
                       colSpan={columns.length}
                     >
                       No results
@@ -945,7 +981,7 @@ const TableViewVirtualizedRows = ({
                           <td
                             key={cell.id}
                             className={classNames(
-                              "px-4 py-4 align-top content-center text-sm max-w-[500px] overflow-x-hidden",
+                              "px-4 py-4 align-top content-center max-w-[500px] overflow-x-hidden",
                               isNumericCol(cell.column.columnDef.data_type)
                                 ? "text-right"
                                 : "",
@@ -959,6 +995,7 @@ const TableViewVirtualizedRows = ({
                             {/*  cell.getContext(),*/}
                             {/*)}*/}
                             <CellValue
+                              panel={panel}
                               column={cell.column.columnDef}
                               rowIndex={index}
                               rowTemplateData={rowTemplateData}
@@ -980,7 +1017,7 @@ const TableViewVirtualizedRows = ({
         </div>
       </div>
       <TableSettings
-        name={panelName}
+        name={panel.name}
         table={table}
         show={showColumnSettingsModal}
         onClose={async () => setShowColumnSettingsModal(false)}
@@ -1010,7 +1047,7 @@ const TableViewWrapper = (props: TableProps) => {
 
   return props.data ? (
     <TableViewVirtualizedRows
-      panelName={props.name}
+      panel={props}
       data={rowData}
       columns={columns} // Use filtered columns for the table
       columnVisibility={columnVisibility}
@@ -1103,7 +1140,7 @@ const LineView = (props: TableProps) => {
               }
               return (
                 <div key={`${col.name}-${rowIndex}`}>
-                  <span className="block text-sm text-table-head truncate">
+                  <span className="block text-table-head truncate">
                     {col.title}
                   </span>
                   <span
@@ -1113,6 +1150,7 @@ const LineView = (props: TableProps) => {
                     )}
                   >
                     <MemoCellValue
+                      panel={props}
                       column={col}
                       rowIndex={rowIndex}
                       rowTemplateData={rowTemplateData}

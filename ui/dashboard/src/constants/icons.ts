@@ -4,7 +4,6 @@ import {
   BackwardIcon as BackwardIconOutline,
   ChevronDownIcon as ChevronDownIconOutline,
   ChevronUpIcon as ChevronUpIconOutline,
-  ClipboardDocumentListIcon as ClipboardDocumentListIconOutline,
   MagnifyingGlassIcon as MagnifyingGlassIconOutline,
   MinusIcon as MinusIconOutline,
   PlusIcon as PlusIconOutline,
@@ -16,7 +15,6 @@ import {
   CheckCircleIcon as CheckCircleIconSolid,
   ChevronDownIcon as ChevronDownIconSolid,
   ChevronUpIcon as ChevronUpIconSolid,
-  ClipboardDocumentCheckIcon as ClipboardDocumentCheckIconSolid,
   ExclamationCircleIcon as ExclamationCircleIconSolid,
   InformationCircleIcon as InformationCircleIconSolid,
   NoSymbolIcon as NoSymbolIconSolid,
@@ -26,8 +24,6 @@ import {
 // General
 export const ClearIcon = XMarkIconOutline;
 export const CloseIcon = XMarkIconOutline;
-export const CopyToClipboardIcon = ClipboardDocumentListIconOutline;
-export const CopyToClipboardSuccessIcon = ClipboardDocumentCheckIconSolid;
 export const ErrorIcon = ExclamationCircleIconSolid;
 export const SearchIcon = MagnifyingGlassIconOutline;
 export const SubmitIcon = ArrowDownOnSquareIconOutline;
