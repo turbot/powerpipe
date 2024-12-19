@@ -193,7 +193,7 @@ const TableRowSidePanel = ({
           title="Close"
         />
       </div>
-      <div className="flex flex-col w-full lg:w-[36rem] pt-3">
+      <div className="flex flex-col w-full pt-3">
         <div className="px-4 pt-3">
           <SearchInput
             placeholder="Search row"
