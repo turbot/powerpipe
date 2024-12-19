@@ -52,12 +52,15 @@ const renderValue = (name: string, dataType: string, value: any) => {
           {value}
         </CodeBlock>
       );
+    case "date":
+    case "timestamp":
     case "timestamptz":
       return (
         <CodeBlock copyToClipboard={false} language="yaml">
           {parseDate(value)?.format() || ""}
         </CodeBlock>
       );
+    case "json":
     case "jsonb":
     case "varchar[]":
       return (
