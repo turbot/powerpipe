@@ -474,6 +474,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
 type DetectionGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
+  benchmarkChildren: PanelDefinition[] | undefined;
 };
 
 function recordFilterValues(
@@ -647,6 +648,7 @@ const includeResult = (
 
 const useGroupingInternal = (
   definition: PanelDefinition | null,
+  benchmarkChildren: PanelDefinition[] | undefined,
   panelsMap: PanelsMap | undefined,
   groupingConfig: DetectionDisplayGroup[],
   skip = false,
@@ -667,24 +669,23 @@ const useGroupingInternal = (
     }
 
     // @ts-ignore
-    const nestedDetectionBenchmarks = definition.children?.filter(
+    const nestedDetectionBenchmarks = benchmarkChildren?.filter(
       (child) => child.panel_type === "benchmark",
     );
     const nestedDetections =
       definition.panel_type === "detection"
         ? [definition]
         : // @ts-ignore
-          definition.children?.filter(
+          benchmarkChildren?.filter(
             (child) => child.panel_type === "detection",
           );
 
-    const rootBenchmarkPanel = panelsMap[definition.name];
     const b = new DetectionBenchmarkType(
       "0",
-      rootBenchmarkPanel.name,
-      rootBenchmarkPanel.title,
-      rootBenchmarkPanel.description,
-      rootBenchmarkPanel.documentation,
+      definition.name,
+      definition.title,
+      definition.description,
+      definition.documentation,
       nestedDetectionBenchmarks,
       nestedDetections,
       panelsMap,
@@ -740,7 +741,6 @@ const useGroupingInternal = (
 
     return [
       b,
-      { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
       hasSeverityResults,
@@ -753,6 +753,7 @@ const useGroupingInternal = (
 const GroupingProvider = ({
   children,
   definition,
+  benchmarkChildren,
 }: DetectionGroupingProviderProps) => {
   const { panelsMap } = useDashboardState();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
@@ -761,13 +762,17 @@ const GroupingProvider = ({
 
   const [
     benchmark,
-    panelDefinition,
     grouping,
     firstChildSummaries,
     hasSeverityResults,
     tempNodeStates,
     filterValues,
-  ] = useGroupingInternal(definition, panelsMap, groupingConfig);
+  ] = useGroupingInternal(
+    definition,
+    benchmarkChildren,
+    panelsMap,
+    groupingConfig,
+  );
 
   const previousGroupings = usePrevious({ groupingConfig });
 
@@ -794,8 +799,7 @@ const GroupingProvider = ({
     <GroupingContext.Provider
       value={{
         benchmark,
-        // @ts-ignore
-        definition: panelDefinition,
+        definition,
         dispatch,
         firstChildSummaries,
         hasSeverityResults,

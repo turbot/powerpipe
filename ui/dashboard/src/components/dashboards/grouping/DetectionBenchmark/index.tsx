@@ -397,15 +397,23 @@ const Inner = ({ showControls, withTitle }) => {
   }
 };
 
-type DetectionBenchmarkWrapperProps = PanelDefinition & {
+type DetectionBenchmarkWrapperProps = {
+  definition: PanelDefinition;
+  benchmarkChildren?: PanelDefinition[] | undefined;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
-    <GroupingProvider definition={props}>
-      <PanelControlsProvider definition={props} enabled={props.showControls}>
+    <GroupingProvider
+      definition={props.definition}
+      benchmarkChildren={props.benchmarkChildren}
+    >
+      <PanelControlsProvider
+        definition={props.definition}
+        enabled={props.showControls}
+      >
         <Inner showControls={props.showControls} withTitle={props.withTitle} />
       </PanelControlsProvider>
     </GroupingProvider>
