@@ -56,7 +56,7 @@ export const DashboardExecutionProvider = ({
   const selectedDashboardRef = useRef<string | null>(
     selectedDashboard?.full_name || null,
   );
-  const { selectPanel } = useDashboardPanelDetail();
+  const { selectPanel, closeSidePanel } = useDashboardPanelDetail();
   const { eventHandler } = useDashboardWebSocketEventHandler(
     dispatch,
     eventHooks,
@@ -70,6 +70,15 @@ export const DashboardExecutionProvider = ({
     useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
 
+  useEffect(() => {
+    if (
+      !!selectedDashboardRef.current &&
+      selectedDashboardRef.current !== dashboard_name
+    ) {
+      closeSidePanel();
+    }
+  }, [dashboard_name]);
+
   const clearDashboard = () => {
     // Clear any existing executions
     sendMessage({
@@ -79,6 +88,8 @@ export const DashboardExecutionProvider = ({
       `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
       { replace: true },
     );
+    setLastChangedInput(null);
+    closeSidePanel();
     dispatch({
       type: DashboardActions.CLEAR_DASHBOARD,
     });
@@ -89,7 +100,7 @@ export const DashboardExecutionProvider = ({
       return;
     }
     clearDashboard();
-  }, [pathname, searchPathPrefix]);
+  }, [dispatch, pathname, searchPathPrefix]);
 
   const loadSnapshot = useCallback(
     (
