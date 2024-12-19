@@ -169,6 +169,7 @@ const CellValue = ({
   isScrolling = false,
   context = "",
 }: CellValueProps) => {
+  const baseClasses = "px-4 py-4";
   const { searchPathPrefix } = useDashboardSearchPath();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -228,49 +229,49 @@ const CellValue = ({
     switch (value) {
       case "alarm":
         cellContent = (
-          <span title="Status = Alarm">
+          <span className={baseClasses} title="Status = Alarm">
             <AlarmIcon className="text-alert w-5 h-5" />
           </span>
         );
         break;
       case "error":
         cellContent = (
-          <span title="Status = Error">
+          <span className={baseClasses} title="Status = Error">
             <AlarmIcon className="text-alert w-5 h-5" />
           </span>
         );
         break;
       case "ok":
         cellContent = (
-          <span title="Status = OK">
+          <span className={baseClasses} title="Status = OK">
             <OKIcon className="text-ok w-5 h-5" />
           </span>
         );
         break;
       case "info":
         cellContent = (
-          <span title="Status = Info">
+          <span className={baseClasses} title="Status = Info">
             <InfoIcon className="text-info w-5 h-5" />
           </span>
         );
         break;
       case "skip":
         cellContent = (
-          <span title="Status = Skipped">
+          <span className={baseClasses} title="Status = Skipped">
             <SkipIcon className="text-skip w-5 h-5" />
           </span>
         );
         break;
       default:
         cellContent = (
-          <span title="Status = Unknown">
+          <span className={baseClasses} title="Status = Unknown">
             <UnknownIcon className="text-foreground-light w-5 h-5" />
           </span>
         );
     }
   } else if (dataType === "control_dimensions") {
     cellContent = (
-      <div className="space-x-2">
+      <div className={classNames(baseClasses, "space-x-2")}>
         {(value || []).map((dimension) => (
           <ControlDimension
             key={dimension.key}
@@ -284,14 +285,17 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
+        className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=${value.toString()}` : undefined}
       >
         <>{value.toString()}</>
       </ExternalLink>
     ) : (
       <span
-        className={classNames(value ? null : "text-foreground-light")}
+        className={classNames(
+          baseClasses,
+          value ? null : "text-foreground-light",
+        )}
         title={showTitle ? `${column.title}=${value.toString()}` : undefined}
       >
         <>{value.toString()}</>
@@ -306,13 +310,16 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
+        className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=${asJsonString}` : undefined}
       >
         <>{asJsonString}</>
       </ExternalLink>
     ) : (
-      <span title={showTitle ? `${column.title}=${asJsonString}` : undefined}>
+      <span
+        className={baseClasses}
+        title={showTitle ? `${column.title}=${asJsonString}` : undefined}
+      >
         {asJsonString}
       </span>
     );
@@ -320,7 +327,7 @@ const CellValue = ({
     if (!!value.match && value.match("^https?://")) {
       cellContent = (
         <ExternalLink
-          className="link-highlight tabular-nums"
+          className={classNames(baseClasses, "link-highlight tabular-nums")}
           to={value}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
@@ -333,7 +340,7 @@ const CellValue = ({
     if (mdMatch) {
       cellContent = (
         <ExternalLink
-          className="tabular-nums"
+          className={classNames(baseClasses, "tabular-nums")}
           to={mdMatch[2]}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
@@ -344,14 +351,14 @@ const CellValue = ({
       cellContent = href ? (
         <ExternalLink
           to={href}
-          className="link-highlight tabular-nums"
+          className={classNames(baseClasses, "link-highlight tabular-nums")}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
           {value}
         </ExternalLink>
       ) : (
         <span
-          className="tabular-nums"
+          className={classNames(baseClasses, "tabular-nums")}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
           {value}
@@ -362,14 +369,14 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {formatDate(value)}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames(baseClasses, "tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {formatDate(value)}
@@ -379,14 +386,14 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {parseDate(value)?.format()}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames(baseClasses, "tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {parseDate(value)?.format()}
@@ -396,14 +403,14 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames(baseClasses, "tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
@@ -413,14 +420,14 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value.toLocaleString()}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames(baseClasses, "tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value.toLocaleString()}
@@ -431,14 +438,14 @@ const CellValue = ({
     cellContent = href ? (
       <ExternalLink
         to={href}
-        className="link-highlight tabular-nums"
+        className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
       </ExternalLink>
     ) : (
       <span
-        className="tabular-nums"
+        className={classNames(baseClasses, "tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
         {value}
@@ -447,7 +454,10 @@ const CellValue = ({
   }
 
   return error ? (
-    <span className="flex items-center space-x-2" title={error}>
+    <span
+      className={classNames(baseClasses, "flex items-center space-x-2")}
+      title={error}
+    >
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
   ) : isScrolling || !filterEnabled || !addFilter ? (
@@ -487,7 +497,16 @@ const CellControls = ({
   const { selectSidePanel } = useDashboardPanelDetail();
   const { setShowPanelControls } = usePanelControls();
   const [popperElement, setPopperElement] = useState(null);
+  const offset = useMemo(() => {
+    return {
+      name: "offset",
+      options: {
+        offset: [14, -1],
+      },
+    };
+  }, []);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [offset],
     placement: "bottom-start",
   });
   const { copy, copySuccess } = useCopyToClipboard();
@@ -981,7 +1000,7 @@ const TableViewVirtualizedRows = ({
                           <td
                             key={cell.id}
                             className={classNames(
-                              "px-4 py-4 align-top content-center max-w-[500px] overflow-x-hidden",
+                              "align-top content-center max-w-[500px] overflow-x-hidden",
                               isNumericCol(cell.column.columnDef.data_type)
                                 ? "text-right"
                                 : "",
