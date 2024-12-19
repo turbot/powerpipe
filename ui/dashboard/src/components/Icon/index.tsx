@@ -4,7 +4,7 @@ import useDashboardIcons from "@powerpipe/hooks/useDashboardIcons";
 type IconProps = {
   className?: string;
   icon: string;
-  onClick?: () => void;
+  onClick?: (e: any) => void;
   style?: any;
   title?: string;
 };

@@ -1,6 +1,6 @@
 import Children from "../Children";
-import DashboardControls from "./DashboardControls";
 import DashboardProgress from "./DashboardProgress";
+import DashboardSidePanel from "../DashboardSidePanel";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
@@ -37,7 +37,7 @@ const Dashboard = ({
     components: { SnapshotHeader },
     dataMode,
   } = useDashboardState();
-  const { selectedFilterAndGroupPanel } = useDashboardPanelDetail();
+  const { selectedSidePanel } = useDashboardPanelDetail();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
       {isRoot && !definition.artificial && (
@@ -66,7 +66,7 @@ const Dashboard = ({
         ) : (
           <div className="w-full">{grid}</div>
         )}
-        <DashboardControls panelName={selectedFilterAndGroupPanel} />
+        <DashboardSidePanel sidePanel={selectedSidePanel} />
       </div>
     </DashboardControlsProvider>
   );

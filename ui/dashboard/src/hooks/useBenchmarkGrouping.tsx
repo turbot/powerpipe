@@ -76,7 +76,6 @@ type ICheckGroupingContext = {
 };
 
 const GroupingActions: IActions = {
-  COLLAPSE_ALL_NODES: "collapse_all_nodes",
   COLLAPSE_NODE: "collapse_node",
   EXPAND_ALL_NODES: "expand_all_nodes",
   EXPAND_NODE: "expand_node",
@@ -520,19 +519,6 @@ const getCheckResultNode = (checkResult: CheckResult) => {
 
 const reducer = (state: CheckGroupNodeStates, action) => {
   switch (action.type) {
-    case GroupingActions.COLLAPSE_ALL_NODES: {
-      const newNodes = {};
-      for (const [name, node] of Object.entries(state)) {
-        newNodes[name] = {
-          ...node,
-          expanded: false,
-        };
-      }
-      return {
-        ...state,
-        nodes: newNodes,
-      };
-    }
     case GroupingActions.COLLAPSE_NODE:
       return {
         ...state,
@@ -570,6 +556,7 @@ const reducer = (state: CheckGroupNodeStates, action) => {
 type CheckGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
+  benchmarkChildren?: PanelDefinition[] | undefined;
 };
 
 function recordFilterValues(
@@ -763,6 +750,7 @@ const includeResult = (result: CheckResult, filterConfig: Filter): boolean => {
 
 const useGroupingInternal = (
   definition: PanelDefinition | null,
+  benchmarkChildren: PanelDefinition[] | undefined,
   panelsMap: PanelsMap | undefined,
   groupingConfig: CheckDisplayGroup[],
   skip = false,
@@ -786,24 +774,21 @@ const useGroupingInternal = (
     }
 
     // @ts-ignore
-    const nestedBenchmarks = definition.children?.filter(
+    const nestedBenchmarks = benchmarkChildren?.filter(
       (child) => child.panel_type === "benchmark",
     );
     const nestedControls =
       definition.panel_type === "control"
         ? [definition]
         : // @ts-ignore
-          definition.children?.filter(
-            (child) => child.panel_type === "control",
-          );
+          benchmarkChildren?.filter((child) => child.panel_type === "control");
 
-    const rootBenchmarkPanel = panelsMap[definition.name];
     const b = new BenchmarkType(
       "0",
-      rootBenchmarkPanel.name,
-      rootBenchmarkPanel.title,
-      rootBenchmarkPanel.description,
-      rootBenchmarkPanel.documentation,
+      definition.name,
+      definition.title,
+      definition.description,
+      definition.documentation,
       nestedBenchmarks,
       nestedControls,
       panelsMap,
@@ -850,7 +835,6 @@ const useGroupingInternal = (
 
     return [
       b,
-      { ...rootBenchmarkPanel, children: definition.children },
       results,
       firstChildSummaries,
       checkNodeStates,
@@ -862,6 +846,7 @@ const useGroupingInternal = (
 const GroupingProvider = ({
   children,
   definition,
+  benchmarkChildren,
 }: CheckGroupingProviderProps) => {
   const { panelsMap } = useDashboardState();
   const { setContext: setDashboardControlsContext } = useDashboardControls();
@@ -870,12 +855,16 @@ const GroupingProvider = ({
 
   const [
     benchmark,
-    panelDefinition,
     grouping,
     firstChildSummaries,
     tempNodeStates,
     filterValues,
-  ] = useGroupingInternal(definition, panelsMap, groupingConfig);
+  ] = useGroupingInternal(
+    definition,
+    benchmarkChildren,
+    panelsMap,
+    groupingConfig,
+  );
 
   const previousGroupings = usePrevious({ groupingConfig });
 
@@ -902,8 +891,7 @@ const GroupingProvider = ({
     <GroupingContext.Provider
       value={{
         benchmark,
-        // @ts-ignore
-        definition: panelDefinition,
+        definition,
         dispatch,
         firstChildSummaries,
         grouping,

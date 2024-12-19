@@ -29,7 +29,8 @@ const Child = ({
         const DetectionBenchmark = getComponent("detection_benchmark");
         return (
           <DetectionBenchmark
-            {...(layoutDefinition as PanelDefinition)}
+            definition={panelDefinition}
+            benchmarkChildren={layoutDefinition.children}
             showControls={showPanelControls}
           />
         );
@@ -37,7 +38,8 @@ const Child = ({
         const Benchmark = getComponent("benchmark");
         return (
           <Benchmark
-            {...(layoutDefinition as PanelDefinition)}
+            definition={panelDefinition}
+            benchmarkChildren={layoutDefinition.children}
             showControls={showPanelControls}
           />
         );
@@ -46,7 +48,7 @@ const Child = ({
       const Benchmark = getComponent("benchmark");
       return (
         <Benchmark
-          {...(layoutDefinition as PanelDefinition)}
+          definition={panelDefinition}
           showControls={showPanelControls}
         />
       );
@@ -54,7 +56,7 @@ const Child = ({
       const DetectionBenchmark = getComponent("detection_benchmark");
       return (
         <DetectionBenchmark
-          {...(layoutDefinition as PanelDefinition)}
+          definition={panelDefinition}
           showControls={showPanelControls}
         />
       );

@@ -62,8 +62,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
-  const { selectFilterAndGroupPanel, selectedPanel } =
-    useDashboardPanelDetail();
+  const { selectSidePanel, selectedPanel } = useDashboardPanelDetail();
 
   useEffect(() => {
     setCustomControls([
@@ -71,7 +70,10 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         key: "filter-and-group",
         title: "Filter & Group",
         component: <CustomizeViewSummary panelName={props.definition.name} />,
-        action: async () => selectFilterAndGroupPanel(props.definition.name),
+        action: async () =>
+          selectSidePanel({
+            panel: props.definition,
+          }),
       },
       {
         key: "download-data",
@@ -395,15 +397,23 @@ const Inner = ({ showControls, withTitle }) => {
   }
 };
 
-type DetectionBenchmarkWrapperProps = PanelDefinition & {
+type DetectionBenchmarkWrapperProps = {
+  definition: PanelDefinition;
+  benchmarkChildren?: PanelDefinition[] | undefined;
   showControls: boolean;
   withTitle: boolean;
 };
 
 const DetectionBenchmarkWrapper = (props: DetectionBenchmarkWrapperProps) => {
   return (
-    <GroupingProvider definition={props}>
-      <PanelControlsProvider definition={props} enabled={props.showControls}>
+    <GroupingProvider
+      definition={props.definition}
+      benchmarkChildren={props.benchmarkChildren}
+    >
+      <PanelControlsProvider
+        definition={props.definition}
+        enabled={props.showControls}
+      >
         <Inner showControls={props.showControls} withTitle={props.withTitle} />
       </PanelControlsProvider>
     </GroupingProvider>
