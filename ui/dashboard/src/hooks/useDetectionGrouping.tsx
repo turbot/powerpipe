@@ -618,22 +618,14 @@ const includeResult = (
         }
         case "dimension": {
           let newRows: LeafNodeDataRow[] = [];
-          if (
-            expression.context &&
-            result.detection.name !== expression.context
-          ) {
-            newRows = result.rows || [];
-          } else {
-            let includeRow = false;
-            for (const row of result.rows || []) {
-              includeRow =
-                !!expression.key &&
-                expression.key in row &&
-                applyFilter(expression, row[expression.key]);
-              if (includeRow) {
-                newRows.push(row);
-              } else {
-              }
+          let includeRow = false;
+          for (const row of result.rows || []) {
+            includeRow =
+              !!expression.key &&
+              expression.key in row &&
+              applyFilter(expression, row[expression.key]);
+            if (includeRow) {
+              newRows.push(row);
             }
           }
           result.rows = newRows;

@@ -343,7 +343,6 @@ const BenchmarkTableView = ({
         panel_type="table"
         data={benchmarkDataTable}
         filterEnabled
-        context={definition.name}
       />
     </Panel>
   );

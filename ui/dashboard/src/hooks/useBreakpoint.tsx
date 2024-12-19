@@ -1,6 +1,13 @@
 import React from "react";
 import useWindowSize from "./useWindowSize";
-import { useCallback, useEffect, useState } from "react";
+import {
+  createContext,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from "react";
 
 type IBreakpointContext = {
   currentBreakpoint: string | null;
@@ -9,7 +16,7 @@ type IBreakpointContext = {
   width: number;
 };
 
-const BreakpointContext = React.createContext<IBreakpointContext | null>(null);
+const BreakpointContext = createContext<IBreakpointContext | null>(null);
 
 const smBreakpoint = 640;
 const mdBreakpoint = 768;
@@ -116,7 +123,7 @@ const checkMinBreakpoint = (
   return false;
 };
 
-const BreakpointProvider = ({ children }: { children: React.ReactNode }) => {
+const BreakpointProvider = ({ children }: { children: ReactNode }) => {
   const [width] = useWindowSize();
   const [currentBreakpoint, setCurrentBreakpoint] = useState(
     getBreakpoint(width),
@@ -148,7 +155,7 @@ const BreakpointProvider = ({ children }: { children: React.ReactNode }) => {
 };
 
 const useBreakpoint = () => {
-  const context = React.useContext(BreakpointContext);
+  const context = useContext(BreakpointContext);
   if (context === undefined) {
     throw new Error("useBreakpoint must be used within a BreakpointContext");
   }

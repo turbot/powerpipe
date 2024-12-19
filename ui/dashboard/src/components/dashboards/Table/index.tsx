@@ -150,11 +150,9 @@ type CellValueProps = {
     operator: "equal" | "not_equal",
     key: string,
     value: any,
-    context?: string,
   ) => void;
   filterEnabled?: boolean;
   isScrolling?: boolean;
-  context?: string;
 };
 
 const CellValue = ({
@@ -167,7 +165,6 @@ const CellValue = ({
   showTitle = false,
   filterEnabled = false,
   isScrolling = false,
-  context = "",
 }: CellValueProps) => {
   const baseClasses = "px-4 py-4";
   const { searchPathPrefix } = useDashboardSearchPath();
@@ -477,7 +474,6 @@ const CellValue = ({
           rowIndex={rowIndex}
           panel={panel}
           value={value}
-          context={context}
           addFilter={addFilter}
         />
       )}
@@ -491,7 +487,6 @@ const CellControls = ({
   rowIndex,
   column,
   value,
-  context,
   addFilter,
 }) => {
   const { selectSidePanel } = useDashboardPanelDetail();
@@ -536,22 +531,18 @@ const CellControls = ({
                 <CellControl
                   icon="filter_alt"
                   title="Filter by this value"
-                  onClick={() =>
-                    addFilter("equal", column.name, value, context)
-                  }
+                  onClick={() => addFilter("equal", column.name, value)}
                 />
                 <CellControl
                   // className="h-4 w-4"
                   icon="close"
                   title="Exclude value from results"
-                  onClick={() =>
-                    addFilter("not_equal", column.name, value, context)
-                  }
+                  onClick={() => addFilter("not_equal", column.name, value)}
                 />
                 <CellControl
                   icon="split_scene"
                   title="View row"
-                  onClick={() => {
+                  onClick={async () => {
                     selectSidePanel({
                       panel,
                       context: {
@@ -623,10 +614,9 @@ export type TableProps = PanelDefinition &
     display_type?: TableType;
     properties?: TableProperties;
     filterEnabled?: boolean;
-    context?: string;
   };
 
-const useTableFilters = (panelName: string, context?: string) => {
+const useTableFilters = (panelName: string) => {
   const { allFilters, filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
@@ -636,7 +626,6 @@ const useTableFilters = (panelName: string, context?: string) => {
     if (
       expression.operator === "equal" &&
       expression.type === "dimension" &&
-      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -644,7 +633,6 @@ const useTableFilters = (panelName: string, context?: string) => {
     } else if (
       expression.operator === "not_equal" &&
       expression.type === "dimension" &&
-      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -652,7 +640,6 @@ const useTableFilters = (panelName: string, context?: string) => {
     } else if (
       expression.operator === "in" &&
       expression.type === "dimension" &&
-      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -660,7 +647,6 @@ const useTableFilters = (panelName: string, context?: string) => {
     } else if (
       expression.operator === "not_in" &&
       expression.type === "dimension" &&
-      expression.context === context &&
       !!expression.key &&
       !!expression.value
     ) {
@@ -669,20 +655,11 @@ const useTableFilters = (panelName: string, context?: string) => {
   }
 
   const addFilter = useCallback(
-    (
-      operator: "equal" | "not_equal",
-      key: string,
-      value: any,
-      context?: string,
-    ) => {
+    (operator: "equal" | "not_equal", key: string, value: any) => {
       const newUrlFilters = { ...urlFilters };
       const expressions = [...(newUrlFilters.expressions || [])];
       const index = expressions.findIndex(
-        (e) =>
-          e.type === "dimension" &&
-          e.key === key &&
-          e.value === value &&
-          e.context === context,
+        (e) => e.type === "dimension" && e.key === key && e.value === value,
       );
       let newFilters =
         index !== undefined && index > -1
@@ -700,7 +677,6 @@ const useTableFilters = (panelName: string, context?: string) => {
             type: "dimension",
             key,
             title: value,
-            context,
           },
         ];
       } else {
@@ -710,7 +686,6 @@ const useTableFilters = (panelName: string, context?: string) => {
           type: "dimension",
           key,
           title: value,
-          context,
         });
       }
       newUrlFilters.expressions = newFilters;
@@ -725,15 +700,11 @@ const useTableFilters = (panelName: string, context?: string) => {
   );
 
   const removeFilter = useCallback(
-    (key: string, value: any, context: string) => {
+    (key: string, value: any) => {
       const newUrlFilters = { ...urlFilters };
       let expressions = [...(newUrlFilters.expressions || [])];
       const index = expressions.findIndex(
-        (e) =>
-          e.type === "dimension" &&
-          e.key === key &&
-          e.value === value &&
-          e.context === context,
+        (e) => e.type === "dimension" && e.key === key && e.value === value,
       );
       let newFilters =
         index !== undefined
@@ -799,12 +770,8 @@ const TableViewVirtualizedRows = ({
   columnVisibility,
   hasTopBorder = false,
   filterEnabled = false,
-  context = "",
 }) => {
-  const { filters, addFilter, removeFilter } = useTableFilters(
-    panel.name,
-    context,
-  );
+  const { filters, addFilter, removeFilter } = useTableFilters(panel.name);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
@@ -901,9 +868,7 @@ const TableViewVirtualizedRows = ({
                   />
                   <span>{`${filter.key}: ${filter.value}`}</span>
                   <span
-                    onClick={() =>
-                      removeFilter(filter.key, filter.value, filter.context)
-                    }
+                    onClick={() => removeFilter(filter.key, filter.value)}
                     className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
                   >
                     <Icon className="w-4 h-4" icon="close" />
@@ -1009,10 +974,6 @@ const TableViewVirtualizedRows = ({
                                 : "whitespace-nowrap",
                             )}
                           >
-                            {/*{flexRender(*/}
-                            {/*  cell.column.columnDef.cell,*/}
-                            {/*  cell.getContext(),*/}
-                            {/*)}*/}
                             <CellValue
                               panel={panel}
                               column={cell.column.columnDef}
@@ -1022,7 +983,6 @@ const TableViewVirtualizedRows = ({
                               filterEnabled={filterEnabled}
                               isScrolling={isScrolling}
                               addFilter={addFilter}
-                              context={context}
                             />
                           </td>
                         );
@@ -1072,7 +1032,6 @@ const TableViewWrapper = (props: TableProps) => {
       columnVisibility={columnVisibility}
       hasTopBorder={!!props.title}
       filterEnabled={props.filterEnabled}
-      context={props.context}
     />
   ) : null;
 };
