@@ -167,6 +167,7 @@ export const DashboardExecutionProvider = ({
       setLastChangedInput(null);
       return;
     } else if (!dashboardFullName) {
+      setLastChangedInput(null);
       return;
     }
 
