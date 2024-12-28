@@ -6,6 +6,7 @@ import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
 import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
 import usePageTitle from "@powerpipe/hooks/usePageTitle";
+import { classNames } from "@powerpipe/utils/styles";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
 import {
   DashboardDataModeCLISnapshot,
@@ -14,10 +15,11 @@ import {
 } from "@powerpipe/types";
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { registerComponent } from "@powerpipe/components/dashboards";
+import { useBreakpoint } from "@powerpipe/hooks/useBreakpoint";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import { classNames } from "@powerpipe/utils/styles";
+import { v4 as uuid } from "uuid";
 
 type DashboardProps = {
   definition: DashboardDefinition;
@@ -46,6 +48,9 @@ const VerticalSplitPane = ({
   maxRightPanelSize,
   onChange,
 }: SplitPaneProps) => {
+  const { minBreakpoint } = useBreakpoint();
+  const isDesktop = minBreakpoint("md");
+  const [_, setRenderId] = useState(uuid());
   const [size, setSize] = useState(defaultRightPanelSize);
   const isDragging = useRef(false);
   const paneRef = useRef<HTMLDivElement | null>(null);
@@ -64,6 +69,7 @@ const VerticalSplitPane = ({
   const handleMouseUp = () => {
     if (isDragging.current) {
       isDragging.current = false; // Stop dragging
+      setRenderId(uuid());
       document.removeEventListener("mousemove", handleMouseMove);
       document.removeEventListener("mouseup", handleMouseUp);
     }
@@ -71,6 +77,7 @@ const VerticalSplitPane = ({
 
   const handleMouseDown = () => {
     isDragging.current = true;
+    setRenderId(uuid());
     document.addEventListener("mousemove", handleMouseMove);
     document.addEventListener("mouseup", handleMouseUp);
   };
@@ -91,17 +98,22 @@ const VerticalSplitPane = ({
       )}
     >
       {children[0]}
-      {children[1] && (
+      {!isDesktop && children[1]}
+      {isDesktop && children[1] && (
         <div
-          className="cursor-col-resize w-[2px] bg-divide"
+          className={classNames(
+            "border cursor-col-resize w-[3px]",
+            isDragging.current
+              ? " border-black-scale-4 bg-black-scale-4"
+              : " border-dashboard bg-divide",
+          )}
           onMouseDown={handleMouseDown}
         />
       )}
-      {children[1] && (
+      {isDesktop && children[1] && (
         <div
           style={{
             flex: `0 0 ${size}px`,
-            overflow: "hidden",
           }}
         >
           {children[1]}
