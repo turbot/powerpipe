@@ -113,7 +113,7 @@ const VerticalSplitPane = ({
       {isDesktop && children[1] && (
         <div
           style={{
-            flex: `0 0 ${size}px`,
+            width: `${size}px`,
           }}
         >
           {children[1]}
