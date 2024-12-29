@@ -128,12 +128,10 @@ const TableRowItem = ({ dataType, name, value }) => {
           />
         )}
       </div>
-      <div>
-        {value === null && (
-          <span className="text-foreground-lightest font-mono">null</span>
-        )}
-        {value !== null && renderValue(name, dataType, value)}
-      </div>
+      {value === null && (
+        <span className="text-foreground-lightest font-mono">null</span>
+      )}
+      {value !== null && renderValue(name, dataType, value)}
     </div>
   );
 };
@@ -213,7 +211,7 @@ const TableRowSidePanel = ({
   }, [requestedColumnName]);
 
   return (
-    <div className="min-w-[300px] max-w-[400px]">
+    <div className="min-w-[300px] max-w-[800px]">
       <div className="flex items-center justify-between p-4">
         <h3>Row</h3>
         <Icon
@@ -223,7 +221,7 @@ const TableRowSidePanel = ({
           title="Close"
         />
       </div>
-      <div className="flex flex-col w-full pt-3">
+      <div className="flex flex-col w-full">
         <div className="px-4 pt-3">
           <SearchInput
             placeholder="Search row"

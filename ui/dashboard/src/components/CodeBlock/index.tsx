@@ -79,7 +79,8 @@ const CodeBlock = ({
       {({ setDoCopy }) => (
         <div
           className={classNames(
-            "relative p-1",
+            "p-1",
+            showCopyIcon ? "relative" : null,
             copyToClipboard ? "cursor-pointer" : null,
             copyToClipboard && showCopyIcon ? "bg-black-scale-1" : null,
           )}
