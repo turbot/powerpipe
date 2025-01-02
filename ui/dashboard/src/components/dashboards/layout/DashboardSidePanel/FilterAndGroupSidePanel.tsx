@@ -16,13 +16,15 @@ const FilterAndGroupSidePanel = ({ panelName }: { panelName: string }) => {
           title="Close"
         />
       </div>
-      <div className="p-4 space-y-3">
-        <span className="font-semibold">Filter</span>
-        <FilterConfig panelName={panelName} />
-      </div>
-      <div className="p-4 space-y-3">
-        <span className="font-semibold">Group</span>
-        <GroupingConfig panelName={panelName} />
+      <div className="w-full max-h-full border-t border-divide overflow-y-scroll">
+        <div className="p-4 space-y-3">
+          <span className="font-semibold">Filter</span>
+          <FilterConfig panelName={panelName} />
+        </div>
+        <div className="p-4 space-y-3">
+          <span className="font-semibold">Group</span>
+          <GroupingConfig panelName={panelName} />
+        </div>
       </div>
     </>
   );

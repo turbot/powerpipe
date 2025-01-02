@@ -4,7 +4,6 @@ import DashboardSidePanel from "../DashboardSidePanel";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
-import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
 import usePageTitle from "@powerpipe/hooks/usePageTitle";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
@@ -55,6 +54,10 @@ const VerticalSplitPane = ({
   const isDragging = useRef(false);
   const paneRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    setSize(() => defaultRightPanelSize);
+  }, [defaultRightPanelSize]);
+
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging.current || !paneRef.current) return;
 
@@ -104,8 +107,8 @@ const VerticalSplitPane = ({
           className={classNames(
             "border cursor-col-resize w-[3px]",
             isDragging.current
-              ? " border-black-scale-4 bg-black-scale-4"
-              : " border-dashboard bg-divide",
+              ? "border-black-scale-4 bg-black-scale-4"
+              : "border-dashboard bg-divide",
           )}
           onMouseDown={handleMouseDown}
         />
@@ -154,13 +157,13 @@ const Dashboard = ({
         </div>
       )}
       <VerticalSplitPane
-        defaultRightPanelSize={selectedRightPanelType === "table" ? 400 : 500}
-        minRightPanelSize={selectedRightPanelType === "table" ? 300 : 500}
+        defaultRightPanelSize={selectedRightPanelType === "table" ? 400 : 600}
+        minRightPanelSize={selectedRightPanelType === "table" ? 300 : 400}
         maxRightPanelSize={selectedRightPanelType === "table" ? 800 : 1000}
       >
         <Fragment key={definition.name}>
           {isRoot ? (
-            <div className="flex flex-col flex-1 h-full overflow-y-hidden">
+            <div className="flex flex-col overflow-y-hidden">
               <DashboardProgress />
               <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
             </div>
@@ -206,14 +209,11 @@ const DashboardWrapper = ({
   }
 
   return (
-    <>
-      <Dashboard
-        definition={dashboard}
-        showPanelControls={showPanelControls}
-        withPadding={true}
-      />
-      <SnapshotRenderComplete />
-    </>
+    <Dashboard
+      definition={dashboard}
+      showPanelControls={showPanelControls}
+      withPadding={true}
+    />
   );
 };
 
