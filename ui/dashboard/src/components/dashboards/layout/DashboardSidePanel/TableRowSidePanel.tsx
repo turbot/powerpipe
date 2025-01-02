@@ -9,7 +9,7 @@ import {
 } from "@powerpipe/components/dashboards/common";
 import { parseDate } from "@powerpipe/utils/date";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 const getNumericValue = (value) => {
   if (
@@ -147,6 +147,7 @@ const TableRowSidePanel = ({
 }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
   const [search, setSearch] = useState("");
+  const scrollableRef = useRef<HTMLDivElement>(null);
 
   // if (!data || !data.columns || !data.rows || rowIndex === undefined) {
   //   return null;
@@ -200,45 +201,53 @@ const TableRowSidePanel = ({
   }, [orderedRow, search]);
 
   useEffect(() => {
-    if (!requestedColumnName) {
+    if (!requestedColumnName || !scrollableRef.current) {
       return;
     }
 
+    // Get the element to scroll to
     const element = document.getElementById(requestedColumnName);
-    if (element) {
-      element.scrollIntoView();
+    if (element && scrollableRef.current) {
+      // Calculate the offset of the element relative to the scrollable container
+      const container = scrollableRef.current;
+
+      // Scroll the container to the element
+      container.scrollTop = element.offsetTop - container.offsetTop;
     }
-  }, [requestedColumnName]);
+  }, [rowIndex, requestedColumnName]);
 
   return (
-    <div className="min-w-[300px] max-w-[800px]">
-      <div className="flex items-center justify-between p-4">
-        <h3>Row</h3>
-        <Icon
-          className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
-          icon="close"
-          onClick={closeSidePanel}
-          title="Close"
-        />
-      </div>
-      <div className="flex flex-col w-full">
-        <div className="px-4 pt-3">
+    <div className="h-full md:min-w-[300px] md:max-w-[800px]">
+      <div className="flex flex-col">
+        <div className="flex items-center justify-between p-4">
+          <h3>Row</h3>
+          <Icon
+            className="w-5 h-5 text-foreground cursor-pointer hover:text-foreground-light shrink-0"
+            icon="close"
+            onClick={closeSidePanel}
+            title="Close"
+          />
+        </div>
+        <div className="px-4">
           <SearchInput
             placeholder="Search row"
             setValue={setSearch}
             value={search}
           />
         </div>
-        <div className="flex-1 overflow-auto divide-y divide-divide space-y-3">
-          {filteredObj.map((item) => (
-            <TableRowItem
-              key={item.column.name}
-              dataType={item.column.data_type}
-              name={item.column.name}
-              value={item.value}
-            />
-          ))}
-        </div>
+      </div>
+      <div
+        ref={scrollableRef}
+        className="flex-1 h-full max-h-full overflow-y-auto divide-y divide-divide"
+      >
+        {filteredObj.map((item) => (
+          <TableRowItem
+            key={item.column.name}
+            dataType={item.column.data_type}
+            name={item.column.name}
+            value={item.value}
+          />
+        ))}
       </div>
     </div>
   );

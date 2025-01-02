@@ -240,7 +240,7 @@ const FilterOperatorSelect = ({
 
   return (
     <Select
-      className={classNames("basic-single", className)}
+      className={classNames("basic-single min-w-[75px]", className)}
       classNamePrefix="select"
       components={{
         // @ts-ignore

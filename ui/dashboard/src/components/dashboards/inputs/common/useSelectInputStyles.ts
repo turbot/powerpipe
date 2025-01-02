@@ -58,7 +58,7 @@ const useSelectInputStyles = () => {
         boxShadow: "none",
         marginTop: 0,
         marginBottom: 0,
-        maxWidth: "300px",
+        maxWidth: "400px",
       };
     },
     menuList: (provided) => {
