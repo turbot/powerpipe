@@ -16,7 +16,7 @@ const FilterAndGroupSidePanel = ({ panelName }: { panelName: string }) => {
           title="Close"
         />
       </div>
-      <div className="w-full max-h-full overflow-y-scroll">
+      <div className="w-full max-h-full border-t border-divide overflow-y-scroll">
         <div className="p-4 space-y-3">
           <span className="font-semibold">Filter</span>
           <FilterConfig panelName={panelName} />

@@ -65,8 +65,6 @@ const VerticalSplitPane = ({
     let newSize = rect.right - e.clientX;
     newSize = Math.max(minRightPanelSize, Math.min(newSize, maxRightPanelSize));
 
-    console.log("newSize", newSize);
-
     setSize(newSize);
     if (onChange) onChange(newSize);
   };
