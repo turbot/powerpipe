@@ -54,6 +54,10 @@ const VerticalSplitPane = ({
   const isDragging = useRef(false);
   const paneRef = useRef<HTMLDivElement | null>(null);
 
+  useEffect(() => {
+    setSize(() => defaultRightPanelSize);
+  }, [defaultRightPanelSize]);
+
   const handleMouseMove = (e: MouseEvent) => {
     if (!isDragging.current || !paneRef.current) return;
 
@@ -156,7 +160,7 @@ const Dashboard = ({
       )}
       <VerticalSplitPane
         defaultRightPanelSize={selectedRightPanelType === "table" ? 400 : 500}
-        minRightPanelSize={selectedRightPanelType === "table" ? 300 : 500}
+        minRightPanelSize={selectedRightPanelType === "table" ? 300 : 400}
         maxRightPanelSize={selectedRightPanelType === "table" ? 800 : 1000}
       >
         <Fragment key={definition.name}>

@@ -217,7 +217,7 @@ const TableRowSidePanel = ({
   }, [rowIndex, requestedColumnName]);
 
   return (
-    <div className="h-full min-w-[300px] max-w-[800px]">
+    <div className="h-full md:min-w-[300px] md:max-w-[800px]">
       <div className="flex flex-col">
         <div className="flex items-center justify-between p-4">
           <h3>Row</h3>
