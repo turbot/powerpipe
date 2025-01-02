@@ -4,7 +4,6 @@ import DashboardSidePanel from "../DashboardSidePanel";
 import DashboardTitle from "@powerpipe/components/dashboards/titles/DashboardTitle";
 import Grid from "../Grid";
 import PanelDetail from "../PanelDetail";
-import SnapshotRenderComplete from "@powerpipe/components/snapshot/SnapshotRenderComplete";
 import usePageTitle from "@powerpipe/hooks/usePageTitle";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
@@ -206,14 +205,11 @@ const DashboardWrapper = ({
   }
 
   return (
-    <>
-      <Dashboard
-        definition={dashboard}
-        showPanelControls={showPanelControls}
-        withPadding={true}
-      />
-      <SnapshotRenderComplete />
-    </>
+    <Dashboard
+      definition={dashboard}
+      showPanelControls={showPanelControls}
+      withPadding={true}
+    />
   );
 };
 
