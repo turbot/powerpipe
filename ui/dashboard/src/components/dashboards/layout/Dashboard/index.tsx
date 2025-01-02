@@ -61,6 +61,8 @@ const VerticalSplitPane = ({
     let newSize = rect.right - e.clientX;
     newSize = Math.max(minRightPanelSize, Math.min(newSize, maxRightPanelSize));
 
+    console.log("newSize", newSize);
+
     setSize(newSize);
     if (onChange) onChange(newSize);
   };
@@ -103,8 +105,8 @@ const VerticalSplitPane = ({
           className={classNames(
             "border cursor-col-resize w-[3px]",
             isDragging.current
-              ? " border-black-scale-4 bg-black-scale-4"
-              : " border-dashboard bg-divide",
+              ? "border-black-scale-4 bg-black-scale-4"
+              : "border-dashboard bg-divide",
           )}
           onMouseDown={handleMouseDown}
         />
@@ -159,7 +161,7 @@ const Dashboard = ({
       >
         <Fragment key={definition.name}>
           {isRoot ? (
-            <div className="flex flex-col flex-1 h-full overflow-y-hidden">
+            <div className="flex flex-col overflow-y-hidden">
               <DashboardProgress />
               <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
             </div>
