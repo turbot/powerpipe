@@ -124,7 +124,7 @@ const TableRowItem = ({ dataType, name, value }) => {
                 ? "materialsymbols-solid:content_copy"
                 : "content_copy"
             }
-            className={classNames("h-5 w-5", copySuccess ? "text-ok" : null)}
+            className="h-5 w-5"
           />
         )}
       </div>
