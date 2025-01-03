@@ -228,15 +228,31 @@ const Benchmark = (props: InnerCheckProps) => {
             const statusFilter = expressions?.find(
               (expr) => expr.type === "status",
             );
-            const severityType = name.split(".")[name.split(".").length - 1];
-            if (statusFilter && statusFilter.operator === "equal") {
-              return severityType === statusFilter.value;
-            } else if (statusFilter && statusFilter.operator === "not_equal") {
-              return severityType !== statusFilter.value;
-            } else if (statusFilter && statusFilter.operator === "in") {
-              return statusFilter.value?.includes(severityType);
-            } else if (statusFilter && statusFilter.operator === "not_in") {
-              return !statusFilter.value?.includes(severityType);
+            const statusType = name.split(".")[name.split(".").length - 1];
+            if (
+              statusType !== "severity" &&
+              statusFilter &&
+              statusFilter.operator === "equal"
+            ) {
+              return statusType === statusFilter.value;
+            } else if (
+              statusType !== "severity" &&
+              statusFilter &&
+              statusFilter.operator === "not_equal"
+            ) {
+              return statusType !== statusFilter.value;
+            } else if (
+              statusType !== "severity" &&
+              statusFilter &&
+              statusFilter.operator === "in"
+            ) {
+              return statusFilter.value?.includes(statusType);
+            } else if (
+              statusType !== "severity" &&
+              statusFilter &&
+              statusFilter.operator === "not_in"
+            ) {
+              return !statusFilter.value?.includes(statusType);
             }
             return true;
           })
@@ -259,7 +275,11 @@ const Benchmark = (props: InnerCheckProps) => {
                 <FilterCardWrapper
                   cardName={summaryCard.name}
                   panelName={props.definition.name}
-                  dimension="status"
+                  dimension={
+                    summaryCard.display_type === "severity"
+                      ? "severity"
+                      : "status"
+                  }
                   expressions={expressions}
                 >
                   <Card {...cardProps} />

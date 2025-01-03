@@ -103,16 +103,6 @@ const validateFilter = (filter: Filter): boolean => {
   return false;
 };
 
-const isValidFilterTypeForPanel = (
-  type: string,
-  panelType: DashboardPanelType,
-) => {
-  return !(
-    type === "status" &&
-    (panelType === "benchmark" || panelType === "detection")
-  );
-};
-
 const FilterTypeSelect = ({
   className,
   filter,
@@ -156,13 +146,12 @@ const FilterTypeSelect = ({
 
     return allFilters.filter((t) => {
       return (
-        (t.value === type ||
-          t.value === "dimension" ||
-          t.value === "control_tag" ||
-          t.value === "detection_tag" ||
-          // @ts-ignore
-          !existingTypes.includes(t?.value)) &&
-        isValidFilterTypeForPanel(t.value, panelType)
+        t.value === type ||
+        t.value === "dimension" ||
+        t.value === "control_tag" ||
+        t.value === "detection_tag" ||
+        // @ts-ignore
+        !existingTypes.includes(t?.value)
       );
     });
   }, [allFilters, filter, panelType, type]);

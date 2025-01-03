@@ -285,7 +285,7 @@ export const summaryCardFilterPath = ({
   pathname,
   search,
   dimension,
-  metric,
+  metrics,
 }: {
   allFilters: KeyValuePairs<Filter>;
   expressions: Filter[] | undefined;
@@ -293,7 +293,7 @@ export const summaryCardFilterPath = ({
   pathname: string;
   search: string;
   dimension: string;
-  metric: string;
+  metrics: string[];
 }) => {
   const expressionHasFilter = !!expressions?.find(
     (expr) => expr.type === dimension,
@@ -329,8 +329,8 @@ export const summaryCardFilterPath = ({
         ?.filter((expr) => !!expr.type)
         .concat({
           type: dimension,
-          value: metric,
-          operator: "equal",
+          value: metrics,
+          operator: "in",
         }),
     } as Filter;
     if (validateFilter(newFilter)) {
