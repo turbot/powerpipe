@@ -101,8 +101,8 @@ const VerticalSplitPane = ({
       )}
     >
       {children[0]}
-      {!isDesktop && children[1]}
-      {isDesktop && children[1] && (
+      {!isDesktop && !!children[1] && children[1]}
+      {isDesktop && !!children[1] && (
         <div
           className={classNames(
             "border cursor-col-resize w-[3px]",
@@ -113,7 +113,7 @@ const VerticalSplitPane = ({
           onMouseDown={handleMouseDown}
         />
       )}
-      {isDesktop && children[1] && (
+      {isDesktop && !!children[1] && (
         <div
           style={{
             width: `${size}px`,
@@ -163,7 +163,7 @@ const Dashboard = ({
       >
         <Fragment key={definition.name}>
           {isRoot ? (
-            <div className="flex flex-col overflow-y-hidden">
+            <div className="flex flex-col flex-1 h-full overflow-y-hidden">
               <DashboardProgress />
               <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
             </div>
@@ -173,7 +173,7 @@ const Dashboard = ({
         </Fragment>
         {selectedSidePanel && (
           <DashboardSidePanel
-            key={selectedSidePanel?.panel?.panel_type}
+            key={selectedRightPanelType}
             sidePanel={selectedSidePanel}
           />
         )}
