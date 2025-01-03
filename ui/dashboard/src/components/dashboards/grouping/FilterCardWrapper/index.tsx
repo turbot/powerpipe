@@ -22,20 +22,25 @@ const FilterCard = ({
   const { allFilters } = useFilterConfig();
   const { pathname, search } = useLocation();
 
-  const getSeverityCardMetric = () => {
+  const getSeverityCardMetrics = () => {
     const parts = cardName.split(".");
+
+    if (dimension === "severity" && parts[parts.length - 1] === "severity") {
+      return ["critical", "high"];
+    }
+
     const type = parts[parts.length - 2];
 
     if (type !== dimension) {
       return null;
     }
 
-    return parts[parts.length - 1];
+    return [parts[parts.length - 1]];
   };
 
-  const metric = getSeverityCardMetric();
+  const metrics = getSeverityCardMetrics();
 
-  if (!metric) {
+  if (!metrics) {
     return <>{children}</>;
   }
 
@@ -49,7 +54,7 @@ const FilterCard = ({
         pathname,
         search,
         dimension,
-        metric,
+        metrics,
       })}
     >
       {children}
