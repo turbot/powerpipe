@@ -1,10 +1,8 @@
-import Modal from "@powerpipe/components/Modal";
 import SearchInput from "@powerpipe/components/SearchInput";
 import sortBy from "lodash/sortBy";
 import useTableConfig from "@powerpipe/hooks/useTableConfig";
-import { AsyncNoop } from "@powerpipe/types/func";
 import { classNames } from "@powerpipe/utils/styles";
-import { Column, Table } from "@tanstack/react-table";
+import { Column, RowData } from "@tanstack/react-table";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useEffect, useMemo, useState } from "react";
 
@@ -12,24 +10,23 @@ type TableSettingsColumnsViewType = "all" | "visible" | "hidden";
 
 const TableSettingsColumns = ({
   name,
-  table,
+  leafColumns,
 }: {
   name: string;
-  table: Table<KeyValuePairs>;
+  leafColumns: Column<RowData, RowData>[];
 }) => {
   const { update } = useTableConfig(name);
   const [search, setSearch] = useState("");
   const [view, setView] = useState<TableSettingsColumnsViewType>("all");
-  const { allLeafColumns, columnMap } = useMemo(() => {
-    const allLeafColumns = table.getAllLeafColumns();
+  const { columnMap } = useMemo(() => {
     const columnMap: KeyValuePairs<{
       column: Column<KeyValuePairs>;
       index: number;
-    }> = allLeafColumns.reduce((acc, column, currentIndex) => {
+    }> = leafColumns.reduce((acc, column, currentIndex) => {
       acc[column.id] = { column, index: currentIndex };
       return acc;
     }, {});
-    return { allLeafColumns, columnMap };
+    return { leafColumns, columnMap };
   }, []);
   const [columnVisibility, setColumnVisibility] = useState<
     {
@@ -37,7 +34,7 @@ const TableSettingsColumns = ({
       visible: boolean;
     }[]
   >(
-    allLeafColumns.map((column) => ({
+    leafColumns.map((column) => ({
       id: column.id,
       visible: column.getIsVisible(),
     })),
@@ -127,7 +124,7 @@ const TableSettingsColumns = ({
         <ViewSelector label="visible" view={view} setView={setView} />
         <ViewSelector label="hidden" view={view} setView={setView} />
       </div>
-      <div className="max-h-64 overflow-x-auto pl-px">
+      <div className="overflow-x-auto pl-px">
         {filteredColumns.map((column) => (
           <ColumnRender key={column.id} column={column} />
         ))}
@@ -139,24 +136,12 @@ const TableSettingsColumns = ({
 
 const TableSettings = ({
   name,
-  table,
-  show,
-  onClose,
+  leafColumns,
 }: {
   name: string;
-  table: Table<KeyValuePairs>;
-  show: boolean;
-  onClose: AsyncNoop;
+  leafColumns: Column<RowData, RowData>[];
 }) => {
-  if (!show) {
-    return null;
-  }
-
-  return (
-    <Modal allowClickAway onClose={onClose} title="Select table columns">
-      <TableSettingsColumns name={name} table={table} />
-    </Modal>
-  );
+  return <TableSettingsColumns name={name} leafColumns={leafColumns} />;
 };
 
 export default TableSettings;
