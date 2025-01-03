@@ -16,7 +16,10 @@ const Container = ({ definition }) => {
   return (
     <Grid name={definition.name} width={definition.width}>
       {showTitle && <ContainerTitle title={definition.title} />}
-      <Children children={definition?.children || []} parentType="container" />
+      <Children
+        childPanels={definition?.children || []}
+        parentType="container"
+      />
     </Grid>
   );
 };
