@@ -75,9 +75,9 @@ const TitlePart = ({ part, searchPathPrefix }) => {
     urlSearch.set(
       "input.detection_range",
       JSON.stringify({
-        from: dayjs().subtract(1, "day").utc(),
+        from: dayjs().subtract(7, "day").utc(),
         to: null,
-        relative: "1d",
+        relative: "7d",
       }),
     );
   }
@@ -106,9 +106,9 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
     urlSearch.set(
       "input.detection_range",
       JSON.stringify({
-        from: dayjs().subtract(1, "day").utc(),
+        from: dayjs().subtract(7, "day").utc(),
         to: null,
-        relative: "1d",
+        relative: "7d",
       }),
     );
   }
