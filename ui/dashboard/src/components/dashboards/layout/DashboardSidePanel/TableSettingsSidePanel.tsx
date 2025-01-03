@@ -8,7 +8,7 @@ const TableSettingsSidePanel = ({
   leafColumns,
 }: {
   panelName: string;
-  leafColumns: Column<RowData, RowData>[];
+  leafColumns: Column<RowData>[];
 }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
   return (
