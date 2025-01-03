@@ -13,7 +13,7 @@ const TableSettingsColumns = ({
   leafColumns,
 }: {
   name: string;
-  leafColumns: Column<RowData, RowData>[];
+  leafColumns: Column<RowData>[];
 }) => {
   const { update } = useTableConfig(name);
   const [search, setSearch] = useState("");
@@ -139,7 +139,7 @@ const TableSettings = ({
   leafColumns,
 }: {
   name: string;
-  leafColumns: Column<RowData, RowData>[];
+  leafColumns: Column<RowData>[];
 }) => {
   return <TableSettingsColumns name={name} leafColumns={leafColumns} />;
 };
