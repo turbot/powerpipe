@@ -16594,7 +16594,7 @@ __metadata:
     tailwindcss: "npm:3.4.11"
     typescript: "npm:4.5.5"
     use-deep-compare-effect: "npm:1.8.1"
-    uuid: "npm:10.0.0"
+    uuid: "npm:11.0.4"
     vm-browserify: "npm:1.1.2"
     web-vitals: "npm:4.2.4"
   languageName: unknown
@@ -20190,12 +20190,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:10.0.0":
-  version: 10.0.0
-  resolution: "uuid@npm:10.0.0"
+"uuid@npm:11.0.4":
+  version: 11.0.4
+  resolution: "uuid@npm:11.0.4"
   bin:
-    uuid: dist/bin/uuid
-  checksum: 10c0/eab18c27fe4ab9fb9709a5d5f40119b45f2ec8314f8d4cf12ce27e4c6f4ffa4a6321dc7db6c515068fa373c075b49691ba969f0010bf37f44c37ca40cd6bf7fe
+    uuid: dist/esm/bin/uuid
+  checksum: 10c0/3c13591c4dedaa3741f925e284df5974e3d6e0b1cb0f6f75f98c36f9c01d2a414350364fd067613ef600a21c6973dab0506530d4f499ff878f32a06f84569ead
   languageName: node
   linkType: hard
 
