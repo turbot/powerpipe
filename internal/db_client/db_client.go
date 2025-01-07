@@ -42,7 +42,7 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.B
 		}
 	}()
 
-	// process options - searhc path may have been passed in
+	// process options - search path may have been passed in
 	config := backend.NewBackendConfig(opts)
 	config.MaxOpenConns = MaxDbConnections()
 	// if no search path override passed in as an option, use the viper config
