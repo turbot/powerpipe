@@ -119,6 +119,15 @@ top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod
 top_level.benchmark.bm_version_dependency_mod_2,Benchmark version dependency mod 2,,dependency_2.control.version,,,3.0,3.0,ok,'
 }
 
+@test "install mod from GitLab" {
+  run powerpipe mod install https://gitlab.com/puskar3/powerpipe-mod-test
+  assert_output --partial '
+Installed 1 mod:
+
+local
+└── gitlab.com/puskar3/powerpipe-mod-test@v0.1.0'
+}
+
 function teardown() {
   rm -rf .powerpipe/
   rm -rf .mod.cache.json
