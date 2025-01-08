@@ -325,6 +325,7 @@ const getInitialState = (defaults: any = {}) => {
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
+    rootPathname: defaults.rootPathname || "/",
     selectedDashboard: null,
     snapshot: null,
     execution_id: null,
@@ -339,6 +340,7 @@ type DashboardStateProviderProps = {
   children: ReactNode;
   componentOverrides?: {};
   dataMode: DashboardDataMode;
+  rootPathname: string;
   stateDefaults?: {
     search?: DashboardSearch;
   };
@@ -351,6 +353,7 @@ export const DashboardStateProvider = ({
   breakpointContext,
   componentOverrides = {},
   dataMode,
+  rootPathname,
   stateDefaults,
   versionMismatchCheck,
 }: DashboardStateProviderProps) => {
@@ -363,6 +366,7 @@ export const DashboardStateProvider = ({
     return getInitialState({
       ...stateDefaults,
       dataMode,
+      rootPathname,
       versionMismatchCheck,
     });
   }, []);
