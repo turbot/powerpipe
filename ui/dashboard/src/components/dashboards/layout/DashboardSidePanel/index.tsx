@@ -3,14 +3,16 @@ import TableRowSidePanel from "@powerpipe/components/dashboards/layout/Dashboard
 import TableSettingsSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableSettingsSidePanel";
 import { classNames } from "@powerpipe/utils/styles";
 import { SidePanelInfo } from "@powerpipe/hooks/useDashboardPanelDetail";
-import { useBreakpoint } from "@powerpipe/hooks/useBreakpoint";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const DashboardSidePanel = ({
   sidePanel,
 }: {
   sidePanel: SidePanelInfo | null;
 }) => {
-  const { minBreakpoint } = useBreakpoint();
+  const {
+    breakpointContext: { minBreakpoint },
+  } = useDashboardState();
   const isDesktop = minBreakpoint("md");
 
   if (!sidePanel) {
