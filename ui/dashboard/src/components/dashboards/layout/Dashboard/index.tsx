@@ -135,6 +135,7 @@ const Dashboard = ({
   const {
     components: { SnapshotHeader },
     dataMode,
+    rootPathname,
   } = useDashboardState();
   const { selectedSidePanel } = useDashboardPanelDetail();
   const grid = (
@@ -152,7 +153,7 @@ const Dashboard = ({
   const selectedRightPanelType = selectedSidePanel?.panel?.panel_type;
   return (
     <DashboardControlsProvider>
-      {dataMode === DashboardDataModeCLISnapshot && (
+      {dataMode === DashboardDataModeCLISnapshot && rootPathname === "/" && (
         <div className="p-4">
           <SnapshotHeader />
         </div>
