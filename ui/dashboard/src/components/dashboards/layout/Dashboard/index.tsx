@@ -14,7 +14,6 @@ import {
 } from "@powerpipe/types";
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useBreakpoint } from "@powerpipe/hooks/useBreakpoint";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
@@ -47,7 +46,9 @@ const VerticalSplitPane = ({
   maxRightPanelSize,
   onChange,
 }: SplitPaneProps) => {
-  const { minBreakpoint } = useBreakpoint();
+  const {
+    breakpointContext: { minBreakpoint },
+  } = useDashboardState();
   const isDesktop = minBreakpoint("md");
   const [_, setRenderId] = useState(uuid());
   const [size, setSize] = useState(defaultRightPanelSize);
@@ -96,7 +97,7 @@ const VerticalSplitPane = ({
     <div
       ref={paneRef}
       className={classNames(
-        "flex flex-col-reverse md:flex-row w-full h-full overflow-y-hidden",
+        "flex flex-col-reverse md:flex-row grow overflow-y-hidden",
         isDragging.current ? "select-none" : "",
       )}
     >
