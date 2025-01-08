@@ -98,7 +98,7 @@ const TableSettingsColumns = ({
 
   const ColumnRender = ({ column }) => (
     <label
-      className="flex items-center space-x-2 cursor-pointer"
+      className="flex px-4 items-center space-x-2 cursor-pointer"
       key={column.id}
     >
       <input
@@ -122,13 +122,15 @@ const TableSettingsColumns = ({
   );
 
   return (
-    <div className="space-y-3">
-      <SearchInput
-        placeholder="Search columns..."
-        value={search}
-        setValue={setSearch}
-      />
-      <div className="flex space-x-4">
+    <>
+      <div className="px-4">
+        <SearchInput
+          placeholder="Search row"
+          setValue={setSearch}
+          value={search}
+        />
+      </div>
+      <div className="flex items-center p-4 py-3 space-x-4">
         <ShortcutSelector
           icon="select_all"
           label="Select all"
@@ -140,13 +142,13 @@ const TableSettingsColumns = ({
           action={clearAllColumns}
         />
       </div>
-      <div className="overflow-x-auto pl-px">
+      <div className="flex-1 h-full max-h-full overflow-y-auto">
         {filteredColumns.map((column) => (
           <ColumnRender key={column.id} column={column} />
         ))}
         {!filteredColumns.length && <span>No columns</span>}
       </div>
-    </div>
+    </>
   );
 };
 
