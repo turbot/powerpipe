@@ -4,6 +4,7 @@ import SubmitButton from "@powerpipe/components/forms/SubmitButton";
 import utc from "dayjs/plugin/utc";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
+import { DashboardDataModeLive } from "@powerpipe/types";
 import { DayPicker, getDefaultClassNames } from "react-day-picker";
 import {
   IInput,
@@ -14,6 +15,7 @@ import { Popover, Tab } from "@headlessui/react";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useState } from "react";
 import { usePopper } from "react-popper";
 import "react-day-picker/dist/style.css";
@@ -352,6 +354,7 @@ const CustomDatePicker = ({
 };
 
 const DateRangePicker = (props: InputProps) => {
+  const { dataMode } = useDashboardState();
   const { inputs, updateInput } = useDashboardInputs();
   const [popperElement, setPopperElement] = useState(null);
   const [referenceElement, setReferenceElement] = useState(null);
@@ -546,12 +549,15 @@ const DateRangePicker = (props: InputProps) => {
     }));
   };
 
+  const readOnly = dataMode !== DashboardDataModeLive;
+
   return (
     <div className="flex flex-col">
       <div className="inline-flex space-x-2">
         {presets.map((preset) => {
           const presetClassName = classNames(
-            "py-1.5 px-2.5 rounded-md cursor-pointer border bg-dashboard-panel",
+            "py-1.5 px-2.5 rounded-md border bg-dashboard-panel",
+            readOnly ? null : "cursor-pointer",
             state.relative === preset.value ||
               (!presets.find((p) => p.value === state.relative) &&
                 preset.value === "custom")
@@ -565,6 +571,7 @@ const DateRangePicker = (props: InputProps) => {
                   ref={setReferenceElement}
                   as="div"
                   className={presetClassName}
+                  disabled={readOnly}
                 >
                   {preset.label}
                 </Popover.Button>
@@ -611,7 +618,9 @@ const DateRangePicker = (props: InputProps) => {
           return (
             <div
               key={preset.value}
-              onClick={() => handlePresetChange(preset.value)}
+              onClick={
+                readOnly ? undefined : () => handlePresetChange(preset.value)
+              }
               className={presetClassName}
             >
               {preset.label}
