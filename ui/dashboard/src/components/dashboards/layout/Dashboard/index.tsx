@@ -97,7 +97,7 @@ const VerticalSplitPane = ({
     <div
       ref={paneRef}
       className={classNames(
-        "flex flex-col-reverse md:flex-row grow overflow-y-hidden",
+        "h-full flex flex-col-reverse md:flex-row grow overflow-y-hidden",
         isDragging.current ? "select-none" : "",
       )}
     >
