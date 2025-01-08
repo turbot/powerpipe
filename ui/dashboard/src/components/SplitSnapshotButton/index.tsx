@@ -42,7 +42,8 @@ const useSaveSnapshot = () => {
 
     if (
       !!Object.keys(allFilters).length ||
-      !!Object.keys(allGroupings).length
+      !!Object.keys(allGroupings).length ||
+      !!Object.keys(allTables).length
     ) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
@@ -77,9 +78,13 @@ const useSaveSnapshot = () => {
         }
       }
       withMetadata.metadata = metadata;
-      withMetadata.inputs = inputs;
-      withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
     }
+
+    if (!!Object.keys(inputs).length) {
+      withMetadata.inputs = inputs;
+    }
+
+    withMetadata.schema_version = EXECUTION_SCHEMA_VERSION_20241125;
 
     const blob = new Blob([JSON.stringify(withMetadata)], {
       type: "application/json",
