@@ -19,6 +19,7 @@ type DashboardProviderProps = {
   componentOverrides?: {};
   dataMode?: DashboardDataMode;
   eventHooks?: {};
+  rootPathname?: string;
   socketUrlFactory?: SocketURLFactory;
   stateDefaults?: {
     search?: DashboardSearch;
@@ -34,6 +35,7 @@ const DashboardProvider = ({
   componentOverrides = {},
   dataMode = DashboardDataModeLive,
   eventHooks,
+  rootPathname = "/",
   socketUrlFactory,
   stateDefaults = {},
   versionMismatchCheck = false,
@@ -47,6 +49,7 @@ const DashboardProvider = ({
           breakpointContext={breakpointContext}
           componentOverrides={componentOverrides}
           dataMode={dataMode}
+          rootPathname={rootPathname}
           stateDefaults={stateDefaults}
           versionMismatchCheck={versionMismatchCheck}
         >

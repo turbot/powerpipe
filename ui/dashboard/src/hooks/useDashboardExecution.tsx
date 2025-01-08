@@ -50,6 +50,7 @@ export const DashboardExecutionProvider = ({
     dashboards,
     dataMode,
     dispatch,
+    rootPathname,
     selectedDashboard,
     snapshotFileName,
   } = useDashboardState();
@@ -96,7 +97,7 @@ export const DashboardExecutionProvider = ({
   };
 
   useEffect(() => {
-    if (pathname !== "/") {
+    if (pathname !== rootPathname) {
       return;
     }
     clearDashboard();

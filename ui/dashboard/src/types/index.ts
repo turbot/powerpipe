@@ -40,6 +40,8 @@ export type IDashboardContext = {
 
   components: ComponentsMap;
 
+  rootPathname: string;
+
   progress: number;
   state: DashboardRunState;
 
@@ -64,8 +66,6 @@ export type IThemeContext = {
 export const DashboardDataModeLive = "live";
 export const DashboardDataModeCLISnapshot = "cli_snapshot";
 export const DashboardDataModeCloudSnapshot = "cloud_snapshot";
-
-export type DashboardCliMode = "powerpipe" | "steampipe";
 
 export type DashboardDataMode = "live" | "cli_snapshot" | "cloud_snapshot";
 
