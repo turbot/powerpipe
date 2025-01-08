@@ -1,3 +1,4 @@
+import path from "path";
 import useDashboardWebSocket, {
   SocketActions,
 } from "@powerpipe/hooks/useDashboardWebSocket";
@@ -152,7 +153,10 @@ export const DashboardExecutionProvider = ({
 
       // Navigate to the snapshot page
       navigate(
-        `/snapshot/${snapshotFileName}${snapshotSearchParamsString ? `?${snapshotSearchParamsString}` : ""}`,
+        path.join(
+          rootPathname,
+          `/snapshot/${snapshotFileName}${snapshotSearchParamsString ? `?${snapshotSearchParamsString}` : ""}`,
+        ),
       );
 
       dispatch({
@@ -161,7 +165,7 @@ export const DashboardExecutionProvider = ({
         snapshotFileName,
       });
     },
-    [dispatch, navigate, sendMessage],
+    [dispatch, rootPathname, navigate, sendMessage],
   );
 
   const executeDashboard = (dashboardFullName: string | null | undefined) => {
