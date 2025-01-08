@@ -19,6 +19,7 @@ import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useParams } from "react-router-dom";
+import { Noop } from "@powerpipe/types/func";
 
 type DashboardListSection = {
   title: string;
@@ -29,10 +30,16 @@ type AvailableDashboardWithMod = AvailableDashboard & {
   mod?: ModServerMetadata;
 };
 
-type DashboardTagProps = {
+type DashboardTagWrapperProps = {
   tagKey: string;
   tagValue: string;
   searchValue?: string;
+};
+
+type DashboardTagProps = {
+  tagKey: string;
+  tagValue: string;
+  onClick?: Noop;
 };
 
 type SectionProps = {
@@ -42,27 +49,39 @@ type SectionProps = {
   searchPathPrefix: string[];
 };
 
-const DashboardTag = ({ tagKey, tagValue, searchValue }: DashboardTagProps) => {
+const DashboardTagWrapper = ({
+  tagKey,
+  tagValue,
+  searchValue,
+}: DashboardTagWrapperProps) => {
   const { updateSearchValue } = useDashboardSearch();
+  const handleClick = () => {
+    const existingSearch = searchValue ? searchValue.trim() : "";
+    const searchWithTag = existingSearch
+      ? existingSearch.indexOf(tagValue) < 0
+        ? `${existingSearch} ${tagValue}`
+        : existingSearch
+      : tagValue;
+    updateSearchValue(searchWithTag);
+  };
   return (
-    <span
-      className={classNames("rounded-md text-xs cursor-pointer")}
-      onClick={() => {
-        const existingSearch = searchValue ? searchValue.trim() : "";
-        const searchWithTag = existingSearch
-          ? existingSearch.indexOf(tagValue) < 0
-            ? `${existingSearch} ${tagValue}`
-            : existingSearch
-          : tagValue;
-        updateSearchValue(searchWithTag);
-      }}
-      style={{ color: stringToColor(tagValue) }}
-      title={`${tagKey} = ${tagValue}`}
-    >
-      {tagValue}
-    </span>
+    <DashboardTag tagKey={tagKey} tagValue={tagValue} onClick={handleClick} />
   );
 };
+
+const DashboardTag = ({ tagKey, tagValue, onClick }: DashboardTagProps) => (
+  <span
+    className={classNames(
+      "rounded-md text-xs",
+      onClick ? "cursor-pointer" : null,
+    )}
+    onClick={onClick}
+    style={{ color: stringToColor(tagValue) }}
+    title={`${tagKey} = ${tagValue}`}
+  >
+    {tagValue}
+  </span>
+);
 
 const TitlePart = ({ part, searchPathPrefix }) => {
   const ExternalLink = getComponent("external_link");
@@ -185,7 +204,7 @@ const Section = ({
                 return null;
               }
               return (
-                <DashboardTag
+                <DashboardTagWrapper
                   key={key}
                   tagKey={key}
                   tagValue={value}
