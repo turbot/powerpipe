@@ -14,12 +14,12 @@ import { classNames } from "@powerpipe/utils/styles";
 import { default as lodashGroupBy } from "lodash/groupBy";
 import { Fragment, useEffect, useState } from "react";
 import { getComponent } from "../dashboards";
+import { Noop } from "@powerpipe/types/func";
 import { stringToColor } from "@powerpipe/utils/color";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useParams } from "react-router-dom";
-import { Noop } from "@powerpipe/types/func";
 
 type DashboardListSection = {
   title: string;
