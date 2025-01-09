@@ -17,6 +17,10 @@ import {
   SortAscendingIcon,
   SortDescendingIcon,
 } from "@powerpipe/constants/icons";
+import {
+  applyFilter,
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
 import { AsyncNoop } from "@powerpipe/types/func";
 import {
   BasePrimitiveProps,
@@ -26,14 +30,16 @@ import {
   LeafNodeDataRow,
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import { createPortal } from "react-dom";
-import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import {
+  ColumnFilter,
   flexRender,
   getCoreRowModel,
+  getFilteredRowModel,
   getSortedRowModel,
+  Row,
   useReactTable,
 } from "@tanstack/react-table";
+import { createPortal } from "react-dom";
 import { formatDate, parseDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
@@ -63,11 +69,14 @@ type TableColumnInfo = {
   wrap: TableColumnWrap;
   href_template?: string;
   sortType?: any;
+  filterFn?: (row: Row<any>, columnId: string, filterValue: any) => boolean;
 };
 
 const getColumns = (
   cols: LeafNodeDataColumn[],
-  properties?: TableProperties,
+  properties: TableProperties,
+  filters: Filter[],
+  isDetectionTable: boolean,
 ): {
   columns: TableColumnInfo[];
   columnVisibility: {
@@ -81,6 +90,16 @@ const getColumns = (
   const columnVisibility: {
     [key: string]: boolean;
   } = {};
+  const filtersByColumn: KeyValuePairs<Filter[]> = {};
+  if (!isDetectionTable) {
+    for (const filter of filters) {
+      if (filter.key && !(filter.key in filtersByColumn)) {
+        filtersByColumn[filter.key] = [];
+      }
+      filtersByColumn[filter.key].push(filter);
+    }
+  }
+
   const columns: TableColumnInfo[] = cols.map((col) => {
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
@@ -117,6 +136,19 @@ const getColumns = (
       data_type: col.data_type,
       wrap: colWrap,
       sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
+      filterFn: (row: Row<any>, columnId: string) => {
+        const filtersForColumn = filtersByColumn[columnId];
+        if (!filtersForColumn.length) {
+          return true;
+        }
+        for (const filter of filtersForColumn) {
+          const match = applyFilter(filter, row.original[filter.key]);
+          if (!match) {
+            return false;
+          }
+        }
+        return true;
+      },
     };
     if (colHref) {
       colInfo.href_template = colHref;
@@ -150,7 +182,6 @@ type CellValueProps = {
     key: string,
     value: any,
   ) => void;
-  filterEnabled?: boolean;
   isScrolling?: boolean;
 };
 
@@ -162,7 +193,6 @@ const CellValue = ({
   value,
   addFilter,
   showTitle = false,
-  filterEnabled = false,
   isScrolling = false,
 }: CellValueProps) => {
   const baseClasses = "px-4 py-4";
@@ -456,7 +486,7 @@ const CellValue = ({
     >
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
-  ) : isScrolling || !filterEnabled || !addFilter ? (
+  ) : isScrolling || !addFilter ? (
     cellContent
   ) : (
     <div
@@ -613,46 +643,50 @@ export type TableProps = PanelDefinition &
   ExecutablePrimitiveProps & {
     display_type?: TableType;
     properties?: TableProperties;
-    filterEnabled?: boolean;
+    isDetectionTable?: boolean;
   };
 
 const useTableFilters = (panelName: string) => {
   const { allFilters, filter: urlFilters } = useFilterConfig(panelName);
   const [searchParams, setSearchParams] = useSearchParams();
   const expressions = urlFilters.expressions;
-  const filters: Filter[] = [];
+  const filters: Filter[] = useMemo(() => {
+    const filters: Filter[] = [];
 
-  for (const expression of expressions || []) {
-    if (
-      expression.operator === "equal" &&
-      expression.type === "dimension" &&
-      !!expression.key &&
-      !!expression.value
-    ) {
-      filters.push(expression);
-    } else if (
-      expression.operator === "not_equal" &&
-      expression.type === "dimension" &&
-      !!expression.key &&
-      !!expression.value
-    ) {
-      filters.push(expression);
-    } else if (
-      expression.operator === "in" &&
-      expression.type === "dimension" &&
-      !!expression.key &&
-      !!expression.value
-    ) {
-      filters.push(expression);
-    } else if (
-      expression.operator === "not_in" &&
-      expression.type === "dimension" &&
-      !!expression.key &&
-      !!expression.value
-    ) {
-      filters.push(expression);
+    for (const expression of expressions || []) {
+      if (
+        expression.operator === "equal" &&
+        expression.type === "dimension" &&
+        !!expression.key &&
+        !!expression.value
+      ) {
+        filters.push(expression);
+      } else if (
+        expression.operator === "not_equal" &&
+        expression.type === "dimension" &&
+        !!expression.key &&
+        !!expression.value
+      ) {
+        filters.push(expression);
+      } else if (
+        expression.operator === "in" &&
+        expression.type === "dimension" &&
+        !!expression.key &&
+        !!expression.value
+      ) {
+        filters.push(expression);
+      } else if (
+        expression.operator === "not_in" &&
+        expression.type === "dimension" &&
+        !!expression.key &&
+        !!expression.value
+      ) {
+        filters.push(expression);
+      }
     }
-  }
+
+    return filters;
+  }, [expressions]);
 
   const addFilter = useCallback(
     (operator: "equal" | "not_equal", key: string, value: any) => {
@@ -763,26 +797,57 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
   return isScrolling.current;
 };
 
-const TableViewVirtualizedRows = ({
-  panel,
-  data,
-  columns,
-  columnVisibility,
-  hasTopBorder = false,
-  filterEnabled = false,
-}) => {
+const TableViewVirtualizedRows = (props: TableProps) => {
   const { selectSidePanel } = useDashboardPanelDetail();
-  const { filters, addFilter, removeFilter } = useTableFilters(panel.name);
+  const { filters, addFilter, removeFilter } = useTableFilters(props.name);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
   const isScrolling = useDisableHoverOnScroll(parentRef.current);
 
+  const {
+    table: { display_columns },
+  } = useTableConfig(props.name);
+
+  const columnFilters = useMemo(() => {
+    if (props.isDetectionTable) {
+      return [] as ColumnFilter[];
+    }
+    if (!filters.length) {
+      return [] as ColumnFilter[];
+    }
+    return filters.map((filter) => ({
+      id: filter.key,
+      value: filter.value,
+    })) as ColumnFilter[];
+  }, [filters, props.isDetectionTable]);
+
+  const { columns, columnVisibility } = useMemo(
+    () =>
+      getColumns(
+        props.data ? props.data.columns : [],
+        {
+          ...props.properties,
+          display_columns,
+        },
+        filters,
+        !!props.isDetectionTable,
+      ),
+    [props.data, props.properties, display_columns],
+  );
+
+  const data = useMemo(
+    () => getData(columns, props.data ? props.data.rows : []),
+    [columns, props.data],
+  );
+
   const table = useReactTable<KeyValuePairs>({
     data,
     columns,
     initialState: { columnVisibility },
+    state: { columnFilters },
     getCoreRowModel: getCoreRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
     getSortedRowModel: getSortedRowModel(),
   });
 
@@ -803,7 +868,7 @@ const TableViewVirtualizedRows = ({
         icon: "add_column_right",
         action: async () => {
           selectSidePanel({
-            panel,
+            props,
             context: {
               mode: "settings",
               leafColumns: table.getAllLeafColumns(),
@@ -854,7 +919,7 @@ const TableViewVirtualizedRows = ({
 
   return (
     <div className="flex flex-col w-full overflow-hidden">
-      {filterEnabled && !!filters.length && (
+      {!!filters.length && (
         <div className="flex flex-wrap gap-2 w-full p-4">
           {filters.map((filter) => {
             return (
@@ -890,7 +955,7 @@ const TableViewVirtualizedRows = ({
           <table
             className={classNames(
               "w-full divide-y divide-table-divide",
-              hasTopBorder ? "border-t border-divide" : null,
+              !!props.title ? "border-t border-divide" : null,
             )}
           >
             <thead className="text-table-head border-b border-divide">
@@ -976,12 +1041,11 @@ const TableViewVirtualizedRows = ({
                           )}
                         >
                           <CellValue
-                            panel={panel}
+                            panel={props}
                             column={cell.column.columnDef}
                             rowIndex={index}
                             rowTemplateData={rowTemplateData}
                             value={cell.getValue()}
-                            filterEnabled={filterEnabled}
                             isScrolling={isScrolling}
                             addFilter={addFilter}
                           />
@@ -997,37 +1061,6 @@ const TableViewVirtualizedRows = ({
       </div>
     </div>
   );
-};
-
-// TODO retain full width on mobile, no padding
-const TableViewWrapper = (props: TableProps) => {
-  const {
-    table: { display_columns },
-  } = useTableConfig(props.name);
-
-  const { columns, columnVisibility } = useMemo(
-    () =>
-      getColumns(props.data ? props.data.columns : [], {
-        ...props.properties,
-        display_columns,
-      }),
-    [props.data, props.properties, display_columns],
-  );
-  const rowData = useMemo(
-    () => getData(columns, props.data ? props.data.rows : []),
-    [columns, props.data],
-  );
-
-  return props.data ? (
-    <TableViewVirtualizedRows
-      panel={props}
-      data={rowData}
-      columns={columns} // Use filtered columns for the table
-      columnVisibility={columnVisibility}
-      hasTopBorder={!!props.title}
-      filterEnabled={props.filterEnabled}
-    />
-  ) : null;
 };
 
 const LineView = (props: TableProps) => {
@@ -1144,7 +1177,7 @@ const Table = (props: TableProps) => {
   if (props.display_type === "line") {
     return <LineView {...props} />;
   }
-  return <TableViewWrapper {...props} />;
+  return <TableViewVirtualizedRows {...props} />;
 };
 
 registerComponent("table", Table);
