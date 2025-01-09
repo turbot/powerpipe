@@ -36,7 +36,7 @@ import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetai
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
-type BenchmarkTableViewProps = {
+type DetectionBenchmarkTableViewProps = {
   benchmark: DetectionBenchmarkType;
   definition: PanelDefinition;
 };
@@ -316,10 +316,10 @@ const DetectionTree = (props: DetectionBenchmarkTreeProps) => {
   return <DetectionGrouping node={props.properties.grouping} />;
 };
 
-const BenchmarkTableView = ({
+const DetectionBenchmarkTableView = ({
   benchmark,
   definition,
-}: BenchmarkTableViewProps) => {
+}: DetectionBenchmarkTableViewProps) => {
   const benchmarkDataTable = useMemo(
     () => benchmark.get_data_table(),
     [benchmark],
@@ -375,7 +375,12 @@ const Inner = ({ showControls, withTitle }) => {
     );
     // @ts-ignore
   } else if (definition.display_type === "table") {
-    return <BenchmarkTableView benchmark={benchmark} definition={definition} />;
+    return (
+      <DetectionBenchmarkTableView
+        benchmark={benchmark}
+        definition={definition}
+      />
+    );
   } else {
     return (
       <Panel
