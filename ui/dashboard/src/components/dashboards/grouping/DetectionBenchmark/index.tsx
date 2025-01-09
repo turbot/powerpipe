@@ -342,7 +342,7 @@ const DetectionBenchmarkTableView = ({
         name={`${definition.name}.table`}
         panel_type="table"
         data={benchmarkDataTable}
-        filterEnabled
+        isDetectionTable
       />
     </Panel>
   );

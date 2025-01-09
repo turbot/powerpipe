@@ -139,7 +139,7 @@ const DetectionResultRow = ({ result }: DetectionResultRowProps) => {
           display_columns:
             panelsMap[result.detection.name]?.properties?.display_columns || [],
         }}
-        filterEnabled
+        isDetectionTable
       />
     </div>
   );
