@@ -346,25 +346,31 @@ export const summaryCardFilterPath = ({
   }
 };
 
-export const applyFilter = (filter: Filter, value: string) => {
+const isEqual = (a: any, b: any, isJson: boolean) => {
+  return isJson ? JSON.stringify(a) === JSON.stringify(b) : a === b;
+};
+
+export const applyFilter = (
+  filter: Filter,
+  value: any,
+  isJson: boolean = false,
+) => {
   // Perform operation based on the filter operator
   switch (filter.operator) {
     case "equal":
-      // Ensure filter value is a string and compare directly
-      return value === filter.value;
-
+      return isEqual(value, filter.value, isJson);
     case "not_equal":
-      // Ensure filter value is a string and compare directly
-      return value !== filter.value;
-
+      return !isEqual(value, filter.value, isJson);
     case "in":
-      // Ensure filter value is an array and check if value exists in the array
-      return Array.isArray(filter.value) && filter.value.includes(value);
-
+      return (
+        Array.isArray(filter.value) &&
+        filter.value.some((v) => isEqual(value, filter.value, isJson))
+      );
     case "not_in":
-      // Ensure filter value is an array and check if value does NOT exist in the array
-      return Array.isArray(filter.value) && !filter.value.includes(value);
-
+      return (
+        Array.isArray(filter.value) &&
+        !filter.value.some((v) => isEqual(value, filter.value, isJson))
+      );
     default:
       // If an unknown operator is provided, return false
       return false;
