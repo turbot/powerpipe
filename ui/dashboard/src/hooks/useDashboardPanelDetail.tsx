@@ -22,7 +22,7 @@ interface IDashboardPanelDetailContext {
   closePanel: () => void;
   panelOverrideData: LeafNodeData | null;
   selectedSidePanel: SidePanelInfo | null;
-  selectSidePanel: (SidePanelInfo: SidePanelInfo | null) => void;
+  selectSidePanel: (sidePanelInfo: SidePanelInfo | null) => void;
   closeSidePanel: () => void;
 }
 

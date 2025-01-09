@@ -90,17 +90,11 @@ const getColumns = (
   const columnVisibility: {
     [key: string]: boolean;
   } = {};
-  const filtersByColumn: KeyValuePairs<Filter[]> = {};
-  if (!isDetectionTable) {
-    for (const filter of filters) {
-      if (filter.key && !(filter.key in filtersByColumn)) {
-        filtersByColumn[filter.key] = [];
-      }
-      filtersByColumn[filter.key].push(filter);
-    }
-  }
+
+  const columnLookup: KeyValuePairs<LeafNodeDataColumn> = {};
 
   const columns: TableColumnInfo[] = cols.map((col) => {
+    columnLookup[col.name] = col;
     let colHref: string | null = null;
     let colWrap: TableColumnWrap = "none";
     if (properties?.columns?.[col.original_name || col.name]) {
@@ -115,6 +109,16 @@ const getColumns = (
       }
       if (c.href) {
         colHref = c.href;
+      }
+    }
+
+    const filtersByColumn: KeyValuePairs<Filter[]> = {};
+    if (!isDetectionTable) {
+      for (const filter of filters) {
+        if (filter.key && !(filter.key in filtersByColumn)) {
+          filtersByColumn[filter.key] = [];
+        }
+        filtersByColumn[filter.key].push(filter);
       }
     }
 
@@ -136,13 +140,22 @@ const getColumns = (
       data_type: col.data_type,
       wrap: colWrap,
       sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
+      // Generic filter function that will apply all filters for a column
       filterFn: (row: Row<any>, columnId: string) => {
         const filtersForColumn = filtersByColumn[columnId];
         if (!filtersForColumn.length) {
           return true;
         }
+        const columnInfo = columnLookup[columnId];
         for (const filter of filtersForColumn) {
-          const match = applyFilter(filter, row.original[filter.key]);
+          const value = row.original[filter.key];
+          const match = applyFilter(
+            filter,
+            value,
+            columnInfo.data_type === "jsonb" ||
+              columnInfo.data_type === "varchar[]" ||
+              isObject(value),
+          );
           if (!match) {
             return false;
           }
@@ -868,7 +881,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
         icon: "add_column_right",
         action: async () => {
           selectSidePanel({
-            props,
+            panel: props,
             context: {
               mode: "settings",
               leafColumns: table.getAllLeafColumns(),
@@ -935,7 +948,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                       : "filter_alt_off"
                   }
                 />
-                <span>{`${filter.key}: ${filter.value}`}</span>
+                <span>{`${filter.key}: ${isObject(filter.value) ? JSON.stringify(filter.value) : filter.value}`}</span>
                 <span
                   onClick={() => removeFilter(filter.key, filter.value)}
                   className="cursor-pointer text-black-scale-6 hover:text-black-scale-8 focus:outline-none"
@@ -1184,4 +1197,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableViewWrapper };
+export { TableViewVirtualizedRows as TableViewWrapper };

@@ -6,6 +6,7 @@ import DetectionErrorNode from "@powerpipe/components/dashboards/grouping/common
 import DetectionKeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionKeyValuePairNode";
 import DetectionRootNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRootNode";
 import DetectionRunningNode from "@powerpipe/components/dashboards/grouping/common/node/DetectionRunningNode";
+import isObject from "lodash/isObject";
 import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import usePrevious from "./usePrevious";
@@ -36,7 +37,10 @@ import {
   PanelsMap,
 } from "@powerpipe/types";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import { LeafNodeDataRow } from "@powerpipe/components/dashboards/common";
+import {
+  LeafNodeDataColumn,
+  LeafNodeDataRow,
+} from "@powerpipe/components/dashboards/common";
 import { useDashboardState } from "./useDashboardState";
 import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
@@ -590,6 +594,8 @@ const includeResult = (
     return true;
   }
 
+  const columnLookup: KeyValuePairs<LeafNodeDataColumn> = {};
+
   let matches: boolean[] = [];
   for (const filter of [filterForRootPanel, filterForDetection].filter(
     (f) => !!f && !!f.expressions?.length,
@@ -619,11 +625,30 @@ const includeResult = (
         case "dimension": {
           let newRows: LeafNodeDataRow[] = [];
           let includeRow = false;
+          let column: LeafNodeDataColumn | undefined;
+          if (!(expression.key in columnLookup)) {
+            column = result?.columns?.find((c) => c.name === expression.key);
+            if (!column) {
+              matches.push(false);
+              break;
+            }
+            columnLookup[expression.key] = column;
+          } else {
+            column = columnLookup[expression.key];
+          }
+
           for (const row of result.rows || []) {
+            const rowValue = row[expression.key];
             includeRow =
               !!expression.key &&
               expression.key in row &&
-              applyFilter(expression, row[expression.key]);
+              applyFilter(
+                expression,
+                rowValue,
+                column.data_type === "jsonb" ||
+                  column.data_type === "varchar[]" ||
+                  isObject(rowValue),
+              );
             if (includeRow) {
               newRows.push(row);
             }
