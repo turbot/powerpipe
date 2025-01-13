@@ -1,6 +1,7 @@
 import Error from "../Error";
 import gfm from "remark-gfm"; // Support for strikethrough, tables, tasklists and URLs
 import ReactMarkdown from "react-markdown";
+import rehypeExternalLinks from "rehype-external-links";
 import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
@@ -47,6 +48,14 @@ const Markdown = ({ value }) => {
   const panelClasses = isLong ? getLongPanelClasses() : getShortPanelClasses();
   const proseHeadings =
     "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:mt-1 p-4";
+  const markdown = (
+    <ReactMarkdown
+      rehypePlugins={[[rehypeExternalLinks, { target: "_blank" }]]}
+      remarkPlugins={[gfm]}
+    >
+      {value}
+    </ReactMarkdown>
+  );
 
   return (
     <>
@@ -58,14 +67,14 @@ const Markdown = ({ value }) => {
               proseHeadings,
             )}
           >
-            <ReactMarkdown remarkPlugins={[gfm]}>{value}</ReactMarkdown>
+            {markdown}
           </div>
         </div>
       ) : (
         <article
           className={classNames(panelClasses, "break-keep", proseHeadings)}
         >
-          <ReactMarkdown remarkPlugins={[gfm]}>{value}</ReactMarkdown>
+          {markdown}
         </article>
       )}
     </>

@@ -9098,11 +9098,11 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:11.16.2":
-  version: 11.16.2
-  resolution: "framer-motion@npm:11.16.2"
+"framer-motion@npm:11.17.0":
+  version: 11.17.0
+  resolution: "framer-motion@npm:11.17.0"
   dependencies:
-    motion-dom: "npm:^11.16.1"
+    motion-dom: "npm:^11.16.4"
     motion-utils: "npm:^11.16.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
@@ -9116,7 +9116,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/0d1c658e630cdd4dab3658be911596b0e48c12f4565373a345af53dcd7cf2cc38db3b8b53a7977ee438d5e9f248e7f5c1f1b35e90e4e1492cab00abf462c13f4
+  checksum: 10c0/2d56715afe85a2e922a2b174de4f29a0d2b9f973dd9b3cc7b6cc93d45bf1b8ea744f187e2c47ca468f8619c2c8c462db0c2879f3b16f452487a67f381f19e1c0
   languageName: node
   linkType: hard
 
@@ -9580,6 +9580,15 @@ __metadata:
   dependencies:
     function-bind: "npm:^1.1.2"
   checksum: 10c0/3769d434703b8ac66b209a4cca0737519925bbdb61dd887f93a16372b14694c63ff4e797686d87c90f08168e81082248b9b028bad60d4da9e0d1148766f56eb9
+  languageName: node
+  linkType: hard
+
+"hast-util-is-element@npm:^3.0.0":
+  version: 3.0.0
+  resolution: "hast-util-is-element@npm:3.0.0"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+  checksum: 10c0/f5361e4c9859c587ca8eb0d8343492f3077ccaa0f58a44cd09f35d5038f94d65152288dcd0c19336ef2c9491ec4d4e45fde2176b05293437021570aa0bc3613b
   languageName: node
   linkType: hard
 
@@ -10096,6 +10105,13 @@ __metadata:
   version: 2.2.0
   resolution: "ipaddr.js@npm:2.2.0"
   checksum: 10c0/e4ee875dc1bd92ac9d27e06cfd87cdb63ca786ff9fd7718f1d4f7a8ef27db6e5d516128f52d2c560408cbb75796ac2f83ead669e73507c86282d45f84c5abbb6
+  languageName: node
+  linkType: hard
+
+"is-absolute-url@npm:^4.0.0":
+  version: 4.0.1
+  resolution: "is-absolute-url@npm:4.0.1"
+  checksum: 10c0/6f8f603945bd9f2c6031758bbc12352fc647bd5d807cad10d96cc6300fd0e15240cc091521a61db767e4ec0bacff257b4f1015fd5249c147bbb4a4497356c72e
   languageName: node
   linkType: hard
 
@@ -12898,12 +12914,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^11.16.1":
-  version: 11.16.1
-  resolution: "motion-dom@npm:11.16.1"
+"motion-dom@npm:^11.16.4":
+  version: 11.16.4
+  resolution: "motion-dom@npm:11.16.4"
   dependencies:
     motion-utils: "npm:^11.16.0"
-  checksum: 10c0/196f4597ec0dc1f48d4bd5417b30f238274d38a043588c70ccb22687f7f91cc8817b09f71b8f5609d440dd02539be6a7d75d6881afc42b181f877a0a76e4aa6a
+  checksum: 10c0/66de6d40aef59d3004aaf17e39c7c2d2c679306207fdb28c73917d6a05e8c962747fea53d2e516c25d994109d38e127943a759fed18a0fadfc2572a3335fc0d2
   languageName: node
   linkType: hard
 
@@ -14706,7 +14722,7 @@ __metadata:
     echarts-for-react: "npm:3.0.2"
     echarts-gl: "npm:2.0.9"
     file-saver: "npm:2.0.5"
-    framer-motion: "npm:11.16.2"
+    framer-motion: "npm:11.17.0"
     fs-extra: "npm:11.2.0"
     if-node-version: "npm:1.1.1"
     jq-wasm: "npm:0.0.9"
@@ -14733,6 +14749,7 @@ __metadata:
     react-time-picker: "npm:7.0.0"
     react-use-websocket: "npm:4.11.1"
     reactflow: "npm:11.11.4"
+    rehype-external-links: "npm:3.0.0"
     remark-gfm: "npm:4.0.0"
     semver: "npm:7.6.3"
     source-map-explorer: "npm:2.5.3"
@@ -14743,7 +14760,7 @@ __metadata:
     tailwindcss: "npm:3.4.17"
     typescript: "npm:4.5.5"
     use-deep-compare-effect: "npm:1.8.1"
-    uuid: "npm:11.0.4"
+    uuid: "npm:11.0.5"
     vm-browserify: "npm:1.1.2"
     web-vitals: "npm:4.2.4"
   languageName: unknown
@@ -15724,6 +15741,20 @@ __metadata:
   bin:
     regjsparser: bin/parser
   checksum: 10c0/764e762de1b26a0cf48b45728fc1b2087f9c55bd4cea858cce28e4d5544c237f3f2dd6d40e2c41b80068e9cb92cc7d731a4285bc1f27d6ebc227792c70e4af1b
+  languageName: node
+  linkType: hard
+
+"rehype-external-links@npm:3.0.0":
+  version: 3.0.0
+  resolution: "rehype-external-links@npm:3.0.0"
+  dependencies:
+    "@types/hast": "npm:^3.0.0"
+    "@ungap/structured-clone": "npm:^1.0.0"
+    hast-util-is-element: "npm:^3.0.0"
+    is-absolute-url: "npm:^4.0.0"
+    space-separated-tokens: "npm:^2.0.0"
+    unist-util-visit: "npm:^5.0.0"
+  checksum: 10c0/486b5db73d8fe72611d62b4eb0b56ec71025ea32bba764ad54473f714ca627be75e057ac29243763f85a77c3810f31727ce3e03c975b3803c1c98643d038e9ae
   languageName: node
   linkType: hard
 
@@ -18140,12 +18171,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"uuid@npm:11.0.4":
-  version: 11.0.4
-  resolution: "uuid@npm:11.0.4"
+"uuid@npm:11.0.5":
+  version: 11.0.5
+  resolution: "uuid@npm:11.0.5"
   bin:
     uuid: dist/esm/bin/uuid
-  checksum: 10c0/3c13591c4dedaa3741f925e284df5974e3d6e0b1cb0f6f75f98c36f9c01d2a414350364fd067613ef600a21c6973dab0506530d4f499ff878f32a06f84569ead
+  checksum: 10c0/6f59f0c605e02c14515401084ca124b9cb462b4dcac866916a49862bcf831874508a308588c23a7718269226ad11a92da29b39d761ad2b86e736623e3a33b6e7
   languageName: node
   linkType: hard
 
