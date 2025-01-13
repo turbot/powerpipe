@@ -184,7 +184,7 @@ const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
 };
 
 type CellValueProps = {
-  panel: PanelDefinition;
+  panel: TableProps;
   column: TableColumnInfo;
   rowIndex: number;
   rowTemplateData: RowRenderResult[];
@@ -216,6 +216,10 @@ const CellValue = ({
   const [showCellControls, setShowCellControls] = useState<boolean>(false);
 
   useEffect(() => {
+    if (panel.isDetectionTable) {
+      return;
+    }
+
     const renderedTemplateObj = rowTemplateData[rowIndex];
 
     if (!renderedTemplateObj) {
@@ -241,7 +245,24 @@ const CellValue = ({
       setHref(null);
       setError(renderedTemplateForColumn.error);
     }
-  }, [column, rowIndex, rowTemplateData, searchPathPrefix]);
+  }, [
+    panel.isDetectionTable,
+    column,
+    rowIndex,
+    rowTemplateData,
+    searchPathPrefix,
+  ]);
+
+  useEffect(() => {
+    if (!panel.isDetectionTable || value === undefined || value === null) {
+      return;
+    }
+    const isLink = /(http(s?)):\/\//i.test(value);
+    if (!isLink) {
+      return;
+    }
+    setHref(value);
+  }, [panel.isDetectionTable, value]);
 
   let cellContent;
   if (value === null || value === undefined) {
