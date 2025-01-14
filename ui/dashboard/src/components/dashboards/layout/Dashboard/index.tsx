@@ -159,7 +159,7 @@ const Dashboard = ({
         </div>
       )}
       <VerticalSplitPane
-        defaultRightPanelSize={selectedRightPanelType === "table" ? 400 : 600}
+        defaultRightPanelSize={selectedRightPanelType === "table" ? 520 : 600}
         minRightPanelSize={selectedRightPanelType === "table" ? 300 : 400}
         maxRightPanelSize={selectedRightPanelType === "table" ? 800 : 1000}
       >

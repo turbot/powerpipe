@@ -54,12 +54,7 @@ type FilterValueSelectProps = {
   index: number;
   item: Filter;
   type: FilterType;
-  onChange: (
-    // value:
-    //   | { value: string; title?: string }
-    //   | { value: string; title?: string }[],
-    value: string | string[],
-  ) => void;
+  onChange: (value: string | string[]) => void;
   value: string | string[] | undefined;
 };
 
@@ -111,7 +106,6 @@ const FilterTypeSelect = ({
   dynamicKey,
   onChange,
 }: FilterTypeSelectProps) => {
-  // const [currentType, setCurrentType] = useState<FilterType>(type);
   const { context: filterValues } = useDashboardControls();
 
   const allFilters = useMemo(
@@ -263,20 +257,6 @@ const FilterValueSelect = ({
   value,
   onChange,
 }: FilterValueSelectProps) => {
-  // const [currentValue, setCurrentValue] = useState<
-  //   | {
-  //       value: any;
-  //       title?: string;
-  //     }
-  //   | {
-  //       value: any;
-  //       title?: string;
-  //     }[]
-  // >(
-  //   item.operator === "in" || item.operator === "not_in"
-  //     ? []
-  //     : { value, title: item.title },
-  // );
   const { context: filterValues } = useDashboardControls();
   const values = useMemo(() => {
     if (!type) {
@@ -368,20 +348,10 @@ const FilterValueSelect = ({
                 value: any;
                 title?: string;
               }>) || []
-            ).map((t) => {
-              // return {
-              //   value: (t as SelectOption).value,
-              //   title: (t as SelectOption).label as string,
-              // };
-              return t.value;
-            }),
+            ).map((t) => t.value),
           );
           return;
         }
-        // onChange({
-        //   value: (t as SelectOption).value,
-        //   title: (t as SelectOption).label as string,
-        // });
         onChange(
           (
             t as SingleValue<{

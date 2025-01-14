@@ -1,4 +1,5 @@
 import FilterAndGroupSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/FilterAndGroupSidePanel";
+import TableFilterSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableFilterSidePanel";
 import TableRowSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableRowSidePanel";
 import TableSettingsSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableSettingsSidePanel";
 import { classNames } from "@powerpipe/utils/styles";
@@ -31,6 +32,10 @@ const DashboardSidePanel = ({
         sidePanel.panel.panel_type === "detection") && (
         <FilterAndGroupSidePanel panelName={sidePanel.panel.name} />
       )}
+      {sidePanel.panel.panel_type === "table" &&
+        sidePanel.context.mode === "filter" && (
+          <TableFilterSidePanel panelName={sidePanel.panel.name} />
+        )}{" "}
       {sidePanel.panel.panel_type === "table" &&
         sidePanel.context.mode === "row" && (
           <TableRowSidePanel
