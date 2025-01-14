@@ -364,12 +364,12 @@ export const applyFilter = (
     case "in":
       return (
         Array.isArray(filter.value) &&
-        filter.value.some((v) => isEqual(value, filter.value, isJson))
+        filter.value.some((v) => isEqual(value, v, isJson))
       );
     case "not_in":
       return (
         Array.isArray(filter.value) &&
-        !filter.value.some((v) => isEqual(value, filter.value, isJson))
+        !filter.value.some((v) => isEqual(value, v, isJson))
       );
     default:
       // If an unknown operator is provided, return false
