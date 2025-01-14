@@ -892,7 +892,8 @@ const TableViewVirtualizedRows = (props: TableProps) => {
       (c) => c.key === "table-select-columns",
     );
     const tableFilter = customControls.find((c) => c.key === "table-filter");
-    if (tableColumnChooser && tableFilter) {
+    // All tables have a column chooser, but only non-detection tables have a filter
+    if (tableColumnChooser && (props.isDetectionTable || tableFilter)) {
       return;
     }
     setCustomControls([
