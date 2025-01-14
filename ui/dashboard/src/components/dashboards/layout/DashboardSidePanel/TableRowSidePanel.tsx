@@ -2,6 +2,7 @@ import CodeBlock from "@powerpipe/components/CodeBlock";
 import Icon from "@powerpipe/components/Icon";
 import SearchInput from "@powerpipe/components/SearchInput";
 import useCopyToClipboard from "@powerpipe/hooks/useCopyToClipboard";
+import { CheckResultRowStatusIcon } from "@powerpipe/components/dashboards/grouping/CheckPanel";
 import { classNames } from "@powerpipe/utils/styles";
 import {
   LeafNodeData,
@@ -45,6 +46,8 @@ const getNumericValue = (value) => {
 
 const renderValue = (name: string, dataType: string, value: any) => {
   switch (dataType.toLowerCase()) {
+    case "control_status":
+      return <CheckResultRowStatusIcon status={value} />;
     case "text":
     case "varchar":
       return (
@@ -153,7 +156,7 @@ const TableRowSidePanel = ({
   //   return null;
   // }
 
-  const { columns } = data;
+  const { columns } = data || {};
   const row = data.rows[rowIndex];
 
   const orderedRow: { column: LeafNodeDataColumn; value: any }[] = [];
@@ -252,5 +255,7 @@ const TableRowSidePanel = ({
     </div>
   );
 };
+
+export { TableRowItem };
 
 export default TableRowSidePanel;
