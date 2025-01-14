@@ -186,7 +186,7 @@ const CheckControls = ({
               <div className="flex items-center space-x-1">
                 <CellControl
                   icon="split_scene"
-                  title="View control"
+                  title="View controls"
                   onClick={async () => {
                     selectSidePanel({
                       panel: {
