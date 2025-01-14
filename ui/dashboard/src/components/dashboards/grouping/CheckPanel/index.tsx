@@ -17,10 +17,7 @@ import {
   SkipIcon,
   UnknownIcon,
 } from "@powerpipe/constants/icons";
-import {
-  GroupingActions,
-  useBenchmarkGrouping,
-} from "@powerpipe/hooks/useBenchmarkGrouping";
+import { CellControl } from "@powerpipe/components/dashboards/Table";
 import {
   CheckNode,
   CheckResult,
@@ -28,7 +25,16 @@ import {
   CheckSeveritySummary,
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import { useMemo } from "react";
+import { createPortal } from "react-dom";
+import {
+  GroupingActions,
+  useBenchmarkGrouping,
+} from "@powerpipe/hooks/useBenchmarkGrouping";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useMemo, useState } from "react";
+import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
+import { usePopper } from "react-popper";
 
 type CheckChildrenProps = {
   depth: number;
@@ -143,16 +149,90 @@ const getCheckResultRowIconTitle = (status: CheckResultStatus) => {
   }
 };
 
-const CheckResultRow = ({ result }: CheckResultRowProps) => {
+const CheckControls = ({
+  referenceElement,
+  result,
+}: {
+  referenceElement: any;
+  result: CheckResult;
+}) => {
+  const { selectSidePanel } = useDashboardPanelDetail();
+  const { setShowPanelControls } = usePanelControls();
+  const [popperElement, setPopperElement] = useState(null);
+  const offset = useMemo(() => {
+    return {
+      name: "offset",
+      options: {
+        offset: [-1, -15],
+      },
+    };
+  }, []);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    modifiers: [offset],
+    placement: "bottom-start",
+  });
+
   return (
-    <div className="flex bg-dashboard-panel print:bg-white p-4 last:rounded-b-md space-x-4">
+    <>
+      {createPortal(
+        <ThemeProvider>
+          <ThemeWrapper>
+            <div
+              // @ts-ignore
+              ref={setPopperElement}
+              style={{ ...styles.popper }}
+              {...attributes.popper}
+            >
+              <div className="flex items-center space-x-1">
+                <CellControl
+                  icon="split_scene"
+                  title="View control"
+                  onClick={async () => {
+                    selectSidePanel({
+                      panel: {
+                        name: result.control.name,
+                        panel_type: "control",
+                      },
+                      context: {
+                        result,
+                      },
+                    });
+                    setShowPanelControls(false);
+                  }}
+                />
+              </div>
+            </div>
+          </ThemeWrapper>
+        </ThemeProvider>,
+        // @ts-ignore as this element definitely exists
+        document.getElementById("portals"),
+      )}
+    </>
+  );
+};
+
+const CheckResultRow = ({ result }: CheckResultRowProps) => {
+  const [referenceElement, setReferenceElement] = useState();
+  const [showCellControls, setShowCellControls] = useState(false);
+  return (
+    <div
+      // ref={setReferenceElement}
+      className="flex bg-dashboard-panel print:bg-white last:rounded-b-md space-x-4"
+      // onMouseEnter={() => setShowCellControls(true)}
+      // onMouseLeave={() => setShowCellControls(false)}
+    >
       <div
-        className="flex-shrink-0"
+        className="flex-shrink-0 p-4 pr-0"
         title={getCheckResultRowIconTitle(result.status)}
       >
         <CheckResultRowStatusIcon status={result.status} />
       </div>
-      <div className="flex flex-col md:flex-row flex-grow">
+      <div
+        ref={setReferenceElement}
+        className="flex flex-col md:flex-row flex-grow p-4 pl-0"
+        onMouseEnter={() => setShowCellControls(true)}
+        onMouseLeave={() => setShowCellControls(false)}
+      >
         <div className="md:flex-grow leading-4 mt-px">{result.reason}</div>
         <div className="flex space-x-2 mt-2 md:mt-px md:text-right">
           {(result.dimensions || []).map((dimension) => (
@@ -163,6 +243,9 @@ const CheckResultRow = ({ result }: CheckResultRowProps) => {
             />
           ))}
         </div>
+        {showCellControls && (
+          <CheckControls referenceElement={referenceElement} result={result} />
+        )}
       </div>
     </div>
   );
@@ -409,5 +492,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
     </>
   );
 };
+
+export { CheckResultRowStatusIcon };
 
 export default CheckPanel;

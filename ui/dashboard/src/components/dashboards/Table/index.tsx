@@ -213,7 +213,7 @@ const CellValue = ({
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [referenceElement, setReferenceElement] = useState();
-  const [showCellControls, setShowCellControls] = useState<boolean>(false);
+  const [showCellControls, setShowCellControls] = useState(false);
 
   useEffect(() => {
     if (panel.isDetectionTable) {
@@ -1235,4 +1235,4 @@ registerComponent("table", Table);
 
 export default Table;
 
-export { TableViewVirtualizedRows as TableViewWrapper };
+export { CellControl, TableViewVirtualizedRows as TableViewWrapper };

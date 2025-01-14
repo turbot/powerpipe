@@ -1,3 +1,4 @@
+import ControlSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/ControlSidePanel";
 import FilterAndGroupSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/FilterAndGroupSidePanel";
 import TableFilterSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableFilterSidePanel";
 import TableRowSidePanel from "@powerpipe/components/dashboards/layout/DashboardSidePanel/TableRowSidePanel";
@@ -28,7 +29,6 @@ const DashboardSidePanel = ({
       )}
     >
       {(sidePanel.panel.panel_type === "benchmark" ||
-        sidePanel.panel.panel_type === "control" ||
         sidePanel.panel.panel_type === "detection") && (
         <FilterAndGroupSidePanel panelName={sidePanel.panel.name} />
       )}
@@ -36,6 +36,9 @@ const DashboardSidePanel = ({
         sidePanel.context.mode === "filter" && (
           <TableFilterSidePanel panelName={sidePanel.panel.name} />
         )}{" "}
+      {sidePanel.panel.panel_type === "control" && (
+        <ControlSidePanel result={sidePanel.context.result} />
+      )}
       {sidePanel.panel.panel_type === "table" &&
         sidePanel.context.mode === "row" && (
           <TableRowSidePanel
