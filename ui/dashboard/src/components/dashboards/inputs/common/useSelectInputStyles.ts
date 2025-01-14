@@ -50,6 +50,34 @@ const useSelectInputStyles = () => {
         color: foreground,
       };
     },
+    multiValue: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueContainer: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueRemove: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueLabel: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
     menu: (provided) => {
       return {
         ...provided,
