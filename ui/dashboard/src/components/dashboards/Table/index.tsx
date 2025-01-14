@@ -269,17 +269,17 @@ const CellValue = ({
     return href ? (
       <ExternalLink
         to={href}
-        className="link-highlight"
+        className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=null` : undefined}
       >
-        <>null</>
+        null
       </ExternalLink>
     ) : (
       <span
-        className="text-foreground-lightest"
+        className={classNames(baseClasses, "text-foreground-lightest")}
         title={showTitle ? `${column.title}=null` : undefined}
       >
-        <>null</>
+        null
       </span>
     );
   }
@@ -891,11 +891,28 @@ const TableViewVirtualizedRows = (props: TableProps) => {
     const tableColumnChooser = customControls.find(
       (c) => c.key === "table-select-columns",
     );
-    if (tableColumnChooser) {
+    const tableFilter = customControls.find((c) => c.key === "table-filter");
+    if (tableColumnChooser && tableFilter) {
       return;
     }
     setCustomControls([
       ...customControls,
+      ...(!props.isDetectionTable
+        ? [
+            {
+              key: "table-filter",
+              title: "Filter",
+              icon: "filter_alt",
+              action: async () =>
+                selectSidePanel({
+                  panel: props,
+                  context: {
+                    mode: "filter",
+                  },
+                }),
+            },
+          ]
+        : []),
       {
         key: "table-select-columns",
         title: "Select table columns",
@@ -911,7 +928,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
         },
       },
     ]);
-  }, [customControls, setCustomControls]);
+  }, [props.isDetectionTable, customControls, setCustomControls]);
 
   const { rows } = table.getRowModel();
 
