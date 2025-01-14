@@ -123,6 +123,16 @@ const useOpenSnapshot = () => {
         });
       }
     };
+
+    // Max 500 MB size
+    if (!files[0] || files[0].size > 500 * 1000 * 1000) {
+      dispatch({
+        type: DashboardActions.WORKSPACE_ERROR,
+        error: "Snapshot exceeds the maximum supported size of 500 MB.",
+      });
+      return;
+    }
+
     fr.readAsText(files[0]);
   };
 };
