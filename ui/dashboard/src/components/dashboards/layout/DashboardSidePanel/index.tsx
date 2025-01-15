@@ -29,32 +29,33 @@ const DashboardSidePanel = ({
       )}
     >
       {(sidePanel.panel.panel_type === "table" ||
-        sidePanel.panel.display_type === "table") &&
-        sidePanel.context.mode === "row" && (
-          <TableRowSidePanel
-            data={sidePanel.panel.data}
-            requestedColumnName={sidePanel.context.requestedColumnName}
-            rowIndex={sidePanel.context.rowIndex}
-          />
-        )}
+        sidePanel.panel.display_type === "table") && (
+        <>
+          {sidePanel.context.mode === "filter" && (
+            <TableFilterSidePanel panelName={sidePanel.panel.name} />
+          )}
+          {sidePanel.context.mode === "row" && (
+            <TableRowSidePanel
+              data={sidePanel.panel.data}
+              requestedColumnName={sidePanel.context.requestedColumnName}
+              rowIndex={sidePanel.context.rowIndex}
+            />
+          )}
+          {sidePanel.context.mode === "settings" && (
+            <TableSettingsSidePanel
+              panelName={sidePanel.panel.name}
+              leafColumns={sidePanel.context.leafColumns}
+            />
+          )}
+        </>
+      )}
       {(sidePanel.panel.panel_type === "benchmark" ||
         sidePanel.panel.panel_type === "detection") && (
         <FilterAndGroupSidePanel panelName={sidePanel.panel.name} />
       )}
-      {sidePanel.panel.panel_type === "table" &&
-        sidePanel.context.mode === "filter" && (
-          <TableFilterSidePanel panelName={sidePanel.panel.name} />
-        )}{" "}
       {sidePanel.panel.panel_type === "control" && (
         <ControlSidePanel result={sidePanel.context.result} />
       )}
-      {sidePanel.panel.panel_type === "table" &&
-        sidePanel.context.mode === "settings" && (
-          <TableSettingsSidePanel
-            panelName={sidePanel.panel.name}
-            leafColumns={sidePanel.context.leafColumns}
-          />
-        )}
     </div>
   );
 };
