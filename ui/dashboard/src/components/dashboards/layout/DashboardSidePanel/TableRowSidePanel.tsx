@@ -251,6 +251,19 @@ const TableRowSidePanel = ({
             value={item.value}
           />
         ))}
+        {!filteredObj.length && (
+          <div className="p-4">
+            <span>No results.</span>
+            {search && (
+              <>
+                {" "}
+                <span className="link-highlight" onClick={() => setSearch("")}>
+                  Clear
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
