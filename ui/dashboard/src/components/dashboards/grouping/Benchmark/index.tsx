@@ -33,6 +33,7 @@ import {
 } from "@powerpipe/hooks/usePanelControls";
 import { PanelDefinition } from "@powerpipe/types";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
@@ -76,6 +77,7 @@ const Benchmark = (props: InnerCheckProps) => {
     setPanelData,
     setShowPanelControls,
   } = usePanelControls();
+  const { overlayVisible } = useDashboardState();
   const { selectSidePanel } = useDashboardPanelDetail();
 
   useEffect(() => {
@@ -213,7 +215,7 @@ const Benchmark = (props: InnerCheckProps) => {
         <DashboardTitle
           title={props.definition.title}
           controls={
-            showPanelControls ? (
+            showPanelControls && !overlayVisible ? (
               <PanelControls
                 referenceElement={referenceElement}
                 controls={benchmarkControls}

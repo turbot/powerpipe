@@ -22,6 +22,8 @@ export type IDashboardContext = {
 
   error: any;
 
+  overlayVisible: boolean;
+
   panelsLog: PanelsLog;
   panelsMap: PanelsMap;
 
@@ -129,6 +131,7 @@ export const DashboardActions: IActions = {
   LOAD_SNAPSHOT: "load_snapshot",
   SELECT_DASHBOARD: "select_dashboard",
   SET_DASHBOARD: "set_dashboard",
+  SET_OVERLAY_VISIBLE: "set_overlay_visible",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",

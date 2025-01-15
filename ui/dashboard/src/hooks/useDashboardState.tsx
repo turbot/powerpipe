@@ -302,6 +302,8 @@ const reducer = (state: IDashboardContext, action) => {
       };
     case DashboardActions.SET_SNAPSHOT_METADATA_LOADED:
       return { ...state, snapshot_metadata_loaded: true };
+    case DashboardActions.SET_OVERLAY_VISIBLE:
+      return { ...state, overlayVisible: action.value };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
     default:
@@ -325,6 +327,7 @@ const getInitialState = (defaults: any = {}) => {
     panelsMap: {},
     dashboard: null,
     dashboardsMetadata: {},
+    overlayVisible: false,
     rootPathname: defaults.rootPathname || "/",
     selectedDashboard: null,
     snapshot: null,

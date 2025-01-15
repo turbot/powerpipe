@@ -1,14 +1,7 @@
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
-import { ReactNode } from "react";
 
-const CustomizeViewSummary = ({
-  panelName,
-  title = "Filter & Group",
-}: {
-  panelName: string;
-  title: ReactNode;
-}) => {
+const CustomizeViewSummary = ({ panelName }: { panelName: string }) => {
   const { filter: filterConfig } = useFilterConfig(panelName);
 
   const filterCount = filterConfig?.expressions?.length
@@ -17,7 +10,7 @@ const CustomizeViewSummary = ({
 
   return (
     <span>
-      {title}
+      Filter & Group
       {!!filterCount ? ": On" : null}
     </span>
   );

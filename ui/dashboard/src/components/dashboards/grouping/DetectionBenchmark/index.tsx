@@ -33,6 +33,7 @@ import { PanelDefinition } from "@powerpipe/types";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { TableViewWrapper as Table } from "@powerpipe/components/dashboards/Table";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
 import { Width } from "@powerpipe/components/dashboards/common";
 
@@ -59,6 +60,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
   const [showBenchmarkControls, setShowBenchmarkControls] = useState(false);
   const { panelControls: benchmarkControls, setCustomControls } =
     usePanelControls();
+  const { overlayVisible } = useDashboardState();
   const { download, processing } = useDownloadDetectionBenchmarkData(
     props.benchmark,
   );
@@ -218,7 +220,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
         <DashboardTitle
           title={props.definition.title}
           controls={
-            showBenchmarkControls ? (
+            showBenchmarkControls && !overlayVisible ? (
               <PanelControls
                 referenceElement={referenceElement}
                 controls={benchmarkControls}

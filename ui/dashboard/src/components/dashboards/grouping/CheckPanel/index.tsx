@@ -26,12 +26,14 @@ import {
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
+import { DashboardActions } from "@powerpipe/types";
 import {
   GroupingActions,
   useBenchmarkGrouping,
 } from "@powerpipe/hooks/useBenchmarkGrouping";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo, useState } from "react";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
@@ -374,6 +376,7 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
     : false;
+  const { dispatch: dispatchDashboardState } = useDashboardState();
 
   const [child_nodes, error_nodes, empty_nodes, result_nodes, can_be_expanded] =
     useMemo(() => {
@@ -455,7 +458,21 @@ const CheckPanel = ({ depth, node }: CheckPanelProps) => {
                   ) : null}
                   {node.title}
                 </h3>
-                <DocumentationView documentation={node.documentation} />
+                <DocumentationView
+                  documentation={node.documentation}
+                  onOpen={() => {
+                    dispatchDashboardState({
+                      type: DashboardActions.SET_OVERLAY_VISIBLE,
+                      value: true,
+                    });
+                  }}
+                  onClose={() => {
+                    dispatchDashboardState({
+                      type: DashboardActions.SET_OVERLAY_VISIBLE,
+                      value: false,
+                    });
+                  }}
+                />
                 <CheckPanelSeverity severity_summary={node.severity_summary} />
               </div>
               <div className="flex-shrink-0 w-40 md:w-72 lg:w-96">
