@@ -3,13 +3,38 @@ import { createPortal } from "react-dom";
 import { Markdown } from "@powerpipe/components/dashboards/Text";
 import { Popover } from "@headlessui/react";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { usePopper } from "react-popper";
+
+const Documentation = ({
+  documentation,
+  onOpen,
+  onClose,
+}: {
+  documentation: string;
+  onOpen: () => void;
+  onClose: () => void;
+}) => {
+  useEffect(() => {
+    onOpen();
+    return onClose;
+  }, []);
+
+  return (
+    <div className="border border-dashboard rounded-md bg-dashboard-panel mt-1 p-3 space-y-3 min-w-60 max-w-xl max-h-96 overflow-y-auto">
+      <Markdown value={documentation} />
+    </div>
+  );
+};
 
 const DocumentationView = ({
   documentation,
+  onOpen,
+  onClose,
 }: {
   documentation: string | undefined;
+  onOpen: () => void;
+  onClose: () => void;
 }) => {
   const [popperElement, setPopperElement] = useState(null);
   const [referenceElement, setReferenceElement] = useState(null);
@@ -51,9 +76,11 @@ const DocumentationView = ({
                 {...attributes.popper}
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="border border-dashboard rounded-md bg-dashboard-panel mt-1 p-3 space-y-3 min-w-60 max-w-xl max-h-96 overflow-y-auto">
-                  <Markdown value={documentation} />
-                </div>
+                <Documentation
+                  documentation={documentation}
+                  onOpen={onOpen}
+                  onClose={onClose}
+                />
               </div>
             </ThemeWrapper>
           </ThemeProvider>,

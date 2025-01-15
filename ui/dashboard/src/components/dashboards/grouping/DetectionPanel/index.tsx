@@ -22,6 +22,7 @@ import {
   DetectionResult,
   DetectionSeveritySummary,
 } from "@powerpipe/components/dashboards/grouping/common";
+import { DashboardActions } from "@powerpipe/types";
 import {
   GroupingActions,
   useDetectionGrouping,
@@ -321,6 +322,8 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
     setCustomControls,
     setShowPanelControls,
   } = usePanelControls();
+  const { dispatch: dispatchDashboardState, overlayVisible } =
+    useDashboardState();
   const [referenceElement, setReferenceElement] = useState(null);
   const expanded = nodeStates[node.name]
     ? nodeStates[node.name].expanded
@@ -454,7 +457,7 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
               : null
           }
         >
-          {showPanelControls && (
+          {showPanelControls && !overlayVisible && (
             <PanelControls
               referenceElement={referenceElement}
               controls={panelControls}
@@ -476,7 +479,21 @@ const DetectionPanel = ({ depth, node }: DetectionPanelProps) => {
                   ) : null}
                   {node.title}
                 </h3>
-                <DocumentationView documentation={node.documentation} />
+                <DocumentationView
+                  documentation={node.documentation}
+                  onOpen={() => {
+                    dispatchDashboardState({
+                      type: DashboardActions.SET_OVERLAY_VISIBLE,
+                      value: true,
+                    });
+                  }}
+                  onClose={() => {
+                    dispatchDashboardState({
+                      type: DashboardActions.SET_OVERLAY_VISIBLE,
+                      value: false,
+                    });
+                  }}
+                />
                 <DetectionPanelSeverity
                   severity_summary={node.severity_summary}
                 />
