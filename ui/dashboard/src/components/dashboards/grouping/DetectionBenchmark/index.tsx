@@ -234,7 +234,7 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
           properties={{
             name: "detection_range",
             unqualified_name: "input.detection_range",
-            type: "text",
+            type: "date_range",
           }}
         />
       </Grid>
