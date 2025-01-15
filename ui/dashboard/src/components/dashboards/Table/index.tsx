@@ -1095,7 +1095,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                           <CellValue
                             panel={props}
                             column={cell.column.columnDef}
-                            rowIndex={index}
+                            rowIndex={virtualRow.index}
                             rowTemplateData={rowTemplateData}
                             value={cell.getValue()}
                             isScrolling={isScrolling}
