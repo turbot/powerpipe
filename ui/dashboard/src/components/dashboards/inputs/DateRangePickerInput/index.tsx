@@ -386,25 +386,25 @@ const DateRangePicker = (props: InputProps) => {
         return {
           from: parsed.from
             ? dayjs(parsed.from)
-            : fallback.subtract(1, "day").utc(),
+            : fallback.subtract(7, "day").utc(),
           to: parsed.to ? dayjs(parsed.to) : null,
-          relative: parsed.relative || "1d",
+          relative: parsed.relative || "7d",
         };
       } catch (err) {
         console.error("Parse error", err);
         const now = dayjs();
         return {
-          from: now.subtract(1, "day").utc(),
+          from: now.subtract(7, "day").utc(),
           to: null,
-          relative: "1d",
+          relative: "7d",
         };
       }
     } else {
       const now = dayjs();
       return {
-        from: now.subtract(1, "day").utc(),
+        from: now.subtract(7, "day").utc(),
         to: null,
-        relative: "1d",
+        relative: "7d",
       };
     }
   });
@@ -416,9 +416,9 @@ const DateRangePicker = (props: InputProps) => {
     updateInput(
       props.name,
       JSON.stringify({
-        from: dayjs().subtract(1, "day").utc(),
+        from: dayjs().subtract(7, "day").utc(),
         to: null,
-        relative: "1d",
+        relative: "7d",
       }),
       !!stateValue,
     );
