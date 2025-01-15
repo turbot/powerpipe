@@ -7,11 +7,7 @@ import PanelDetail from "../PanelDetail";
 import usePageTitle from "@powerpipe/hooks/usePageTitle";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardControlsProvider } from "./DashboardControlsProvider";
-import {
-  DashboardDataModeCLISnapshot,
-  DashboardDataModeLive,
-  DashboardDefinition,
-} from "@powerpipe/types";
+import { DashboardDataModeLive, DashboardDefinition } from "@powerpipe/types";
 import { Fragment, ReactNode, useEffect, useRef, useState } from "react";
 import { registerComponent } from "@powerpipe/components/dashboards";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
@@ -134,12 +130,11 @@ const Dashboard = ({
 }: DashboardProps) => {
   const {
     components: { SnapshotHeader },
-    dataMode,
-    rootPathname,
   } = useDashboardState();
   const { selectedSidePanel } = useDashboardPanelDetail();
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
+      <SnapshotHeader />
       {isRoot && !definition.artificial && (
         <DashboardTitle title={definition.title} />
       )}
@@ -153,11 +148,6 @@ const Dashboard = ({
   const selectedRightPanelType = selectedSidePanel?.panel?.panel_type;
   return (
     <DashboardControlsProvider>
-      {dataMode === DashboardDataModeCLISnapshot && rootPathname === "/" && (
-        <div className="p-4">
-          <SnapshotHeader />
-        </div>
-      )}
       <VerticalSplitPane
         defaultRightPanelSize={selectedRightPanelType === "table" ? 520 : 600}
         minRightPanelSize={selectedRightPanelType === "table" ? 300 : 400}
