@@ -125,7 +125,7 @@ const TableSettingsColumns = ({
     <>
       <div className="px-4">
         <SearchInput
-          placeholder="Search row"
+          placeholder="Search columns…"
           setValue={setSearch}
           value={search}
         />
