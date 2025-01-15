@@ -23,7 +23,7 @@ const DashboardSearch = () => {
     <div className="w-full sm:w-56 md:w-72 lg:w-96">
       <SearchInput
         disabled={!metadata || !availableDashboardsLoaded}
-        placeholder={minBreakpoint("sm") ? "Search dashboards..." : "Search..."}
+        placeholder={minBreakpoint("sm") ? "Search dashboards…" : "Search…"}
         value={innerValue}
         setValue={setInnerValue}
       />

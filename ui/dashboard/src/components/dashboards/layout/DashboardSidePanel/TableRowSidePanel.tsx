@@ -233,7 +233,7 @@ const TableRowSidePanel = ({
         </div>
         <div className="px-4">
           <SearchInput
-            placeholder="Search row"
+            placeholder="Search row…"
             setValue={setSearch}
             value={search}
           />

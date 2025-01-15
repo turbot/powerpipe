@@ -271,7 +271,7 @@ const Card = (props: CardProps) => {
         <div className="grow mt-0.5 min-w-0">
           <dt>
             <p className="text-lg truncate" title={state.label || undefined}>
-              {state.loading ? "Loading..." : state.label}
+              {state.loading ? "Loading…" : state.label}
             </p>
           </dt>
           <dd className="font-semibold text-3xl mt-1 mb-1">
