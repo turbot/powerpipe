@@ -146,7 +146,19 @@ const TableSettingsColumns = ({
         {filteredColumns.map((column) => (
           <ColumnRender key={column.id} column={column} />
         ))}
-        {!filteredColumns.length && <span>No columns</span>}
+        {!filteredColumns.length && (
+          <div className="px-4">
+            <span>No columns.</span>
+            {search && (
+              <>
+                {" "}
+                <span className="link-highlight" onClick={() => setSearch("")}>
+                  Clear
+                </span>
+              </>
+            )}
+          </div>
+        )}
       </div>
     </>
   );
