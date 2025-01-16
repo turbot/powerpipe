@@ -187,8 +187,7 @@ type CellValueProps = {
   panel: TableProps;
   column: TableColumnInfo;
   originalRowIndex: number;
-  rowTemplateIndex: number;
-  rowTemplateData: RowRenderResult[];
+  renderedTemplateObj: RowRenderResult;
   value: any;
   showTitle?: boolean;
   addFilter?: (
@@ -203,8 +202,7 @@ const CellValue = ({
   panel,
   column,
   originalRowIndex,
-  rowTemplateIndex,
-  rowTemplateData,
+  renderedTemplateObj,
   value,
   addFilter,
   showTitle = false,
@@ -212,8 +210,10 @@ const CellValue = ({
 }: CellValueProps) => {
   const baseClasses = "px-4 py-4";
   const { searchPathPrefix } = useDashboardSearchPath();
-  const [href, setHref] = useState<string | null>(null);
-  const [error, setError] = useState<string | null>(null);
+  const [renderState, setRenderState] = useState<{
+    href: string | null;
+    error: string | null;
+  }>({ href: null, error: null });
   const [referenceElement, setReferenceElement] = useState();
   const [showCellControls, setShowCellControls] = useState(false);
 
@@ -222,18 +222,14 @@ const CellValue = ({
       return;
     }
 
-    const renderedTemplateObj = rowTemplateData[rowTemplateIndex];
-
     if (!renderedTemplateObj) {
-      setHref(() => null);
-      setError(() => null);
+      setRenderState({ href: null, error: null });
       return;
     }
     const renderedTemplateForColumn = renderedTemplateObj[column.name];
 
     if (!renderedTemplateForColumn) {
-      setHref(null);
-      setError(null);
+      setRenderState({ href: null, error: null });
       return;
     }
     if (renderedTemplateForColumn.result) {
@@ -241,19 +237,11 @@ const CellValue = ({
         renderedTemplateForColumn.result,
         searchPathPrefix,
       );
-      setHref(withSearchPathPrefix);
-      setError(null);
+      setRenderState({ href: withSearchPathPrefix, error: null });
     } else if (renderedTemplateForColumn.error) {
-      setHref(null);
-      setError(renderedTemplateForColumn.error);
+      setRenderState({ href: null, error: renderedTemplateForColumn.error });
     }
-  }, [
-    panel.isDetectionTable,
-    column,
-    rowTemplateIndex,
-    rowTemplateData,
-    searchPathPrefix,
-  ]);
+  }, [panel.isDetectionTable, column, renderedTemplateObj, searchPathPrefix]);
 
   useEffect(() => {
     if (!panel.isDetectionTable || value === undefined || value === null) {
@@ -263,14 +251,14 @@ const CellValue = ({
     if (!isLink) {
       return;
     }
-    setHref(value);
+    setRenderState({ href: value, error: null });
   }, [panel.isDetectionTable, value]);
 
   let cellContent;
   if (value === null || value === undefined) {
-    return href ? (
+    return renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=null` : undefined}
       >
@@ -344,9 +332,9 @@ const CellValue = ({
       </div>
     );
   } else if (dataType === "bool" || dataType === "boolean") {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=${value.toString()}` : undefined}
       >
@@ -369,9 +357,9 @@ const CellValue = ({
     isObject(value)
   ) {
     const asJsonString = JSON.stringify(value, null, 2);
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight")}
         title={showTitle ? `${column.title}=${asJsonString}` : undefined}
       >
@@ -410,9 +398,9 @@ const CellValue = ({
         </ExternalLink>
       );
     } else {
-      cellContent = href ? (
+      cellContent = renderState.href ? (
         <ExternalLink
-          to={href}
+          to={renderState.href}
           className={classNames(baseClasses, "link-highlight tabular-nums")}
           title={showTitle ? `${column.title}=${value}` : undefined}
         >
@@ -428,9 +416,9 @@ const CellValue = ({
       );
     }
   } else if (dataType === "date") {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
@@ -445,9 +433,9 @@ const CellValue = ({
       </span>
     );
   } else if (column.name === "timestamp" && dataType === "bigint") {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
@@ -462,9 +450,9 @@ const CellValue = ({
       </span>
     );
   } else if (dataType === "timestamp" || dataType === "timestamptz") {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
@@ -479,9 +467,9 @@ const CellValue = ({
       </span>
     );
   } else if (isNumericCol(dataType)) {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
@@ -497,9 +485,9 @@ const CellValue = ({
     );
   }
   if (!cellContent) {
-    cellContent = href ? (
+    cellContent = renderState.href ? (
       <ExternalLink
-        to={href}
+        to={renderState.href}
         className={classNames(baseClasses, "link-highlight tabular-nums")}
         title={showTitle ? `${column.title}=${value}` : undefined}
       >
@@ -515,10 +503,10 @@ const CellValue = ({
     );
   }
 
-  return error ? (
+  return renderState.error ? (
     <span
       className={classNames(baseClasses, "flex items-center space-x-2")}
-      title={error}
+      title={renderState.error}
     >
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
@@ -1105,8 +1093,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                             panel={props}
                             column={cell.column.columnDef}
                             originalRowIndex={row.index}
-                            rowTemplateIndex={renderIndex}
-                            rowTemplateData={rowTemplateData}
+                            renderedTemplateObj={rowTemplateData[renderIndex]}
                             value={cell.getValue()}
                             isScrolling={isScrolling}
                             addFilter={addFilter}
@@ -1220,8 +1207,7 @@ const LineView = (props: TableProps) => {
                       panel={props}
                       column={col}
                       originalRowIndex={rowIndex}
-                      rowTemplateIndex={rowIndex}
-                      rowTemplateData={rowTemplateData}
+                      renderedTemplateObj={rowTemplateData[rowIndex]}
                       value={row[col.name]}
                       showTitle
                     />
