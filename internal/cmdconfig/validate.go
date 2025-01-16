@@ -74,7 +74,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 		return err
 	}
 
-	// TODO K this is probably broken as we do not really use database arg
+	// TODO KAI this is probably broken as we do not really use database arg
 	// if workspace-database or snapshot-location are a cloud workspace handle, cloud token must be set
 	requireCloudToken := steampipeconfig.IsPipesWorkspaceIdentifier(viper.GetString(constants.ArgDatabase)) ||
 		steampipeconfig.IsPipesWorkspaceIdentifier(viper.GetString(constants.ArgSnapshotLocation))

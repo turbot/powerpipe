@@ -202,7 +202,6 @@ func (r *ControlRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-// GetRows
 func (r *ControlRun) GetRows() ResultRows {
 	return r.Rows
 }

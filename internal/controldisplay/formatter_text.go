@@ -18,7 +18,7 @@ type TextFormatter struct {
 }
 
 func (tf TextFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	// TODO K switch between control and detection
+	// TODO KAI switch between control and detection
 	renderer := NewDetectionTableRenderer(tree)
 	widthConstraint := utils.NewRangeConstraint(renderer.MinimumWidth(), MaxColumns)
 	renderedText := renderer.Render(widthConstraint.Constrain(GetMaxCols()))

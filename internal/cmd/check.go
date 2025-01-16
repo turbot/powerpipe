@@ -3,7 +3,6 @@ package cmd
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"os"
 	"strings"
@@ -25,6 +24,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/display"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -38,6 +38,7 @@ var checkOutputMode = localconstants.CheckOutputModeText
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 	typeName := resources.GenericTypeToBlockType[T]()
 	argsSupported := cobra.ExactArgs(1)
+	// TODO KAI
 	//if typeName == "benchmark" {
 	//	argsSupported = cobra.MinimumNArgs(1)
 	//}
@@ -112,7 +113,7 @@ func checkCmdShort(typeName string) string {
 func checkCmdLong(typeName string) string {
 	return fmt.Sprintf(`Execute one or more %ss.
 
-You may specify one or more %ss to run, separated by a space.`, typeName, typeName)
+You may specify one or more benchmarks to run, separated by a space.`, typeName)
 }
 
 // exitCode=0 no runtime errors, no control alarms or errors
@@ -387,6 +388,7 @@ func shouldPrintCheckTiming() bool {
 }
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
+	// TODO KAI
 	//reader, err := formatter.Format(ctx, executionTree)
 	//if err != nil {
 	//	return err

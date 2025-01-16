@@ -3,16 +3,16 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/controlstatus"
-	"github.com/turbot/powerpipe/internal/workspace"
 
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/pipes"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
@@ -63,6 +63,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	}
 	return res, nil
 }
+
 func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DetectionBenchmarkDisplayTree, error) {
 	// Step 1: Create the execution tree
 	tree, err := newDisplayExecutionTree(snapshot, w, targets...)

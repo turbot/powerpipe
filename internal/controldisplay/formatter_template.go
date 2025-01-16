@@ -39,7 +39,7 @@ func NewTemplateFormatter(input *OutputTemplate) (*TemplateFormatter, error) {
 }
 
 func (tf TemplateFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	// TODO K FIX ME
+	// TODO KAI FIX ME
 	/*	reader, writer := io.Pipe()
 		go func() {
 			workingDirectory, err := os.Getwd()

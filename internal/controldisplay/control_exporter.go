@@ -3,6 +3,7 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -28,6 +29,8 @@ func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceD
 	exportCtx := context.WithValue(ctx, contextKeyFormatterPurpose, formatterPurposeExport)
 
 	// input must be control execution tree
+	// TODO KAI used to be
+	// tree, ok := input.(*controlexecute.ExecutionTree)
 	tree, ok := input.(*dashboardexecute.DetectionBenchmarkDisplayTree)
 	if !ok {
 		return fmt.Errorf("ControlExporter input must be *controlexecute.ExecutionTree")

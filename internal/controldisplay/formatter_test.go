@@ -2,7 +2,6 @@ package controldisplay
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"os"
 	"testing"
@@ -10,6 +9,7 @@ import (
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 // testFormatter is an implementation of the Formatter interface
