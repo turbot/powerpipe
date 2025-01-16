@@ -186,7 +186,8 @@ const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
 type CellValueProps = {
   panel: TableProps;
   column: TableColumnInfo;
-  rowIndex: number;
+  originalRowIndex: number;
+  rowTemplateIndex: number;
   rowTemplateData: RowRenderResult[];
   value: any;
   showTitle?: boolean;
@@ -201,7 +202,8 @@ type CellValueProps = {
 const CellValue = ({
   panel,
   column,
-  rowIndex,
+  originalRowIndex,
+  rowTemplateIndex,
   rowTemplateData,
   value,
   addFilter,
@@ -220,7 +222,7 @@ const CellValue = ({
       return;
     }
 
-    const renderedTemplateObj = rowTemplateData[rowIndex];
+    const renderedTemplateObj = rowTemplateData[rowTemplateIndex];
 
     if (!renderedTemplateObj) {
       setHref(() => null);
@@ -248,7 +250,7 @@ const CellValue = ({
   }, [
     panel.isDetectionTable,
     column,
-    rowIndex,
+    rowTemplateIndex,
     rowTemplateData,
     searchPathPrefix,
   ]);
@@ -534,7 +536,7 @@ const CellValue = ({
         <CellControls
           referenceElement={referenceElement}
           column={column}
-          rowIndex={rowIndex}
+          rowIndex={originalRowIndex}
           panel={panel}
           value={value}
           addFilter={addFilter}
@@ -1073,7 +1075,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                   </td>
                 </tr>
               )}
-              {virtualizer.getVirtualItems().map((virtualRow, index) => {
+              {virtualizer.getVirtualItems().map((virtualRow, renderIndex) => {
                 const row = rows[virtualRow.index];
                 return (
                   <tr
@@ -1081,7 +1083,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                     style={{
                       height: `${virtualRow.size}px`,
                       transform: `translateY(${
-                        virtualRow.start - index * virtualRow.size
+                        virtualRow.start - renderIndex * virtualRow.size
                       }px)`,
                     }}
                   >
@@ -1102,7 +1104,8 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                           <CellValue
                             panel={props}
                             column={cell.column.columnDef}
-                            rowIndex={row.index}
+                            originalRowIndex={row.index}
+                            rowTemplateIndex={renderIndex}
                             rowTemplateData={rowTemplateData}
                             value={cell.getValue()}
                             isScrolling={isScrolling}
@@ -1216,7 +1219,8 @@ const LineView = (props: TableProps) => {
                     <MemoCellValue
                       panel={props}
                       column={col}
-                      rowIndex={rowIndex}
+                      originalRowIndex={rowIndex}
+                      rowTemplateIndex={rowIndex}
                       rowTemplateData={rowTemplateData}
                       value={row[col.name]}
                       showTitle
