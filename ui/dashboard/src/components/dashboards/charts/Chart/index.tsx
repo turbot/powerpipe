@@ -176,12 +176,14 @@ const getCommonBaseOptionsForChartType = (
           position: "top",
           formatter: function (params) {
             if (dataConfig.interval === "hourly") {
-              return `${params.value[2]} logs on ${params.value[0]} at ${params.value[1]}`;
+              return `${params.value[2].toLocaleString()} entries on ${params.value[0]} at ${params.value[1]}`;
             } else {
-              return `${params.value[2]} logs on ${params.value[0]}`;
+              return `${params.value[2].toLocaleString()} entries on ${params.value[0]}`;
             }
           },
+          // backgroundColor: themeColors.backgroundPanel,
           backgroundColor: themeColors.background,
+          // backgroundColor: "rgba(255, 255, 255, 0.9)",
           borderColor: themeColors.dashboardPanel,
           borderWidth: 1,
           textStyle: {
@@ -623,9 +625,14 @@ const getSeriesForChartType = (
           data: dataConfig.heatmapData,
           emphasis: {
             itemStyle: {
-              borderColor: "#fff",
+              borderColor: themeColors.dashboardPanel,
               borderWidth: 1,
             },
+          },
+          itemStyle: {
+            borderRadius: [3, 3, 3, 3],
+            borderWidth: 2, // Add a larger border for padding effect
+            borderColor: themeColors.dashboardPanel, // Border color matches the background
           },
         });
         break;
