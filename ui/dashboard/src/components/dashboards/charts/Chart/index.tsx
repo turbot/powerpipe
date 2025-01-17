@@ -95,7 +95,7 @@ const getThemeColorsWithPointOverrides = (
   }
 };
 
-const getCommonBaseOptions = () => ({
+const getCommonBaseOptions = (themeColors) => ({
   animation: false,
   grid: {
     left: "5%",
@@ -120,7 +120,11 @@ const getCommonBaseOptions = () => ({
   },
   tooltip: {
     appendToBody: true,
+    backgroundColor: themeColors.dashboard,
+    borderColor: themeColors.dashboardPanel,
+    borderWidth: 1,
     textStyle: {
+      color: themeColors.foreground,
       fontSize: 11,
     },
     trigger: "item",
@@ -172,6 +176,9 @@ const getCommonBaseOptionsForChartType = (
   switch (type) {
     case "heatmap": {
       return {
+        grid: {
+          top: "17%",
+        },
         tooltip: {
           position: "top",
           formatter: function (params) {
@@ -181,29 +188,51 @@ const getCommonBaseOptionsForChartType = (
               return `${params.value[2].toLocaleString()} entries on ${params.value[0]}`;
             }
           },
-          // backgroundColor: themeColors.backgroundPanel,
-          backgroundColor: themeColors.background,
-          // backgroundColor: "rgba(255, 255, 255, 0.9)",
-          borderColor: themeColors.dashboardPanel,
-          borderWidth: 1,
+        },
+        visualMap: {
+          type: "piecewise", // Use piecewise for custom range-color mapping
+          show: true, // Display the legend at the top
+          orient: "horizontal", // Horizontal layout for the legend
+          top: 10, // Position the legend at the top
+          left: "center",
+          min: 0,
+          max: dataConfig.maxValue,
           textStyle: {
             color: themeColors.foreground,
           },
-        },
-        visualMap: {
-          show: false,
-          min: 0,
-          max: dataConfig.maxValue,
-          inRange: {
-            color: [
-              "#ffffff",
-              "#dae2fa",
-              "#b6c5f6",
-              "#91a7f1",
-              "#6d8aed",
-              "#486de8",
-            ],
-          },
+          pieces: [
+            { value: 0, color: themeColors.foregroundLightest, label: "0" },
+            {
+              min: 1,
+              max: Math.floor(dataConfig.maxValue * 0.2) - 1,
+              color: "#dae2fa",
+              label: `1-${(Math.floor(dataConfig.maxValue * 0.2) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.2),
+              max: Math.floor(dataConfig.maxValue * 0.4) - 1,
+              color: "#b6c5f6",
+              label: `${Math.floor(dataConfig.maxValue * 0.2).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.4) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.4),
+              max: Math.floor(dataConfig.maxValue * 0.6) - 1,
+              color: "#91a7f1",
+              label: `${Math.floor(dataConfig.maxValue * 0.4).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.6) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.6),
+              max: Math.floor(dataConfig.maxValue * 0.8) - 1,
+              color: "#6d8aed",
+              label: `${Math.floor(dataConfig.maxValue * 0.6).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.8) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.8),
+              max: dataConfig.maxValue,
+              color: "#486de8",
+              label: `${Math.floor(dataConfig.maxValue * 0.8).toLocaleString()}-${dataConfig.maxValue.toLocaleString()}`,
+            },
+          ],
         },
         xAxis: {
           type: "category",
@@ -826,8 +855,6 @@ const getDataConfigForChartType = (
         });
       }
 
-      console.log({ interval, heatmapData, xAxisData, yAxisData, maxValue });
-
       return { interval, heatmapData, xAxisData, yAxisData, maxValue };
     }
     default:
@@ -855,7 +882,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     dataConfig,
   );
   const config = merge(
-    getCommonBaseOptions(),
+    getCommonBaseOptions(themeColors),
     getCommonBaseOptionsForChartType(
       props.display_type || "column",
       props.width,
