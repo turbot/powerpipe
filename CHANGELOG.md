@@ -1,3 +1,10 @@
+## v1.1.0 [2024-01-20]
+_Whats new_
+- Add support for installing mods from GitLab repositories. ([#656](https://github.com/turbot/powerpipe/issues/656))
+
+_Dependencies_
+- Upgrade `crypto`, `net` and `go-git` packages to remediate critical and high vulnerabilities.
+
 ## v1.0.1 [2024-11-21]
 _Whats new_
 - Update uploaded Pipes snapshot URL to include `/powerpipe`. ([#577](https://github.com/turbot/powerpipe/issues/577))
