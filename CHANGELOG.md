@@ -1,4 +1,4 @@
-## v1.1.0 [2024-01-20]
+## v1.1.0 [2025-01-20]
 _Whats new_
 - Add support for installing mods from GitLab repositories. ([#656](https://github.com/turbot/powerpipe/issues/656))
 
