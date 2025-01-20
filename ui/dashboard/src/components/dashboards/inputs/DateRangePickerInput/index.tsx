@@ -270,7 +270,7 @@ const CustomDatePicker = ({
                     <label>Start date</label>
                     <input
                       type="date"
-                      value={tempState.from.format("YYYY-MM-DD")}
+                      defaultValue={tempState.from.format("YYYY-MM-DD")}
                       onChange={(e) =>
                         setTempState({
                           ...tempState,
@@ -285,7 +285,7 @@ const CustomDatePicker = ({
                     <label>Start time</label>
                     <input
                       type="time"
-                      value={tempState.from.format("HH:mm:ss")}
+                      defaultValue={tempState.from.format("HH:mm:ss")}
                       step="1"
                       onChange={(e) => {
                         setTempState({
@@ -305,7 +305,9 @@ const CustomDatePicker = ({
                     <label>End date</label>
                     <input
                       type="date"
-                      value={tempState.to?.format("YYYY-MM-DD") || undefined}
+                      defaultValue={
+                        tempState.to?.format("YYYY-MM-DD") || undefined
+                      }
                       onChange={(e) =>
                         setTempState({
                           ...tempState,
@@ -320,7 +322,7 @@ const CustomDatePicker = ({
                     <label>End time</label>
                     <input
                       type="time"
-                      value={
+                      defaultValue={
                         tempState.to
                           ? tempState.to.format("HH:mm:ss")
                           : `00:00:00`
