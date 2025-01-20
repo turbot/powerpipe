@@ -88,6 +88,7 @@ export type ChartType =
   | "bar"
   | "column"
   | "donut"
+  | "heatmap"
   | "line"
   | "pie"
   | "table";
