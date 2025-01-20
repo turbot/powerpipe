@@ -21,7 +21,7 @@ import {
   applyFilter,
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
-import { AsyncNoop } from "@powerpipe/types/func";
+import { AsyncNoop, Noop } from "@powerpipe/types/func";
 import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
@@ -45,6 +45,7 @@ import { getComponent, registerComponent } from "../index";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
@@ -196,6 +197,7 @@ type CellValueProps = {
     value: any,
   ) => void;
   isScrolling?: boolean;
+  onRowSelected?: Noop;
 };
 
 const CellValue = ({
@@ -207,6 +209,7 @@ const CellValue = ({
   addFilter,
   showTitle = false,
   isScrolling = false,
+  onRowSelected = noop,
 }: CellValueProps) => {
   const baseClasses = "px-4 py-4";
   const { searchPathPrefix } = useDashboardSearchPath();
@@ -528,6 +531,7 @@ const CellValue = ({
           panel={panel}
           value={value}
           addFilter={addFilter}
+          onRowSelected={onRowSelected}
         />
       )}
     </div>
@@ -541,6 +545,7 @@ const CellControls = ({
   column,
   value,
   addFilter,
+  onRowSelected,
 }) => {
   const { selectSidePanel } = useDashboardPanelDetail();
   const { setShowPanelControls } = usePanelControls();
@@ -605,6 +610,7 @@ const CellControls = ({
                       },
                     });
                     setShowPanelControls(false);
+                    onRowSelected();
                   }}
                 />
               </div>
@@ -822,9 +828,10 @@ const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
 };
 
 const TableViewVirtualizedRows = (props: TableProps) => {
-  const { selectSidePanel } = useDashboardPanelDetail();
+  const { selectSidePanel, selectedSidePanel } = useDashboardPanelDetail();
   const { filters, addFilter, removeFilter } = useTableFilters(props.name);
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
+  const [highlightedRowIndex, setHighlightedRowIndex] = useState(-1);
   const [rowTemplateData, setRowTemplateData] = useState<RowRenderResult[]>([]);
   const parentRef = useRef<HTMLDivElement>(null);
   const isScrolling = useDisableHoverOnScroll(parentRef.current);
@@ -876,6 +883,13 @@ const TableViewVirtualizedRows = (props: TableProps) => {
   });
 
   const { customControls, setCustomControls } = usePanelControls();
+
+  useEffect(() => {
+    if (selectedSidePanel?.context?.mode === "row") {
+      return;
+    }
+    setHighlightedRowIndex(() => -1);
+  }, [selectedSidePanel]);
 
   useDeepCompareEffect(() => {
     const tableColumnChooser = customControls.find(
@@ -1074,6 +1088,11 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                         virtualRow.start - renderIndex * virtualRow.size
                       }px)`,
                     }}
+                    className={
+                      highlightedRowIndex === renderIndex
+                        ? "bg-black-scale-1"
+                        : ""
+                    }
                   >
                     {row.getVisibleCells().map((cell) => {
                       return (
@@ -1097,6 +1116,9 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                             value={cell.getValue()}
                             isScrolling={isScrolling}
                             addFilter={addFilter}
+                            onRowSelected={() =>
+                              setHighlightedRowIndex(renderIndex)
+                            }
                           />
                         </td>
                       );
