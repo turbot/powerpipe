@@ -16,6 +16,7 @@ import "@powerpipe/components/dashboards/charts/AreaChart";
 import "@powerpipe/components/dashboards/charts/BarChart";
 import "@powerpipe/components/dashboards/charts/ColumnChart";
 import "@powerpipe/components/dashboards/charts/DonutChart";
+import "@powerpipe/components/dashboards/charts/HeatmapChart";
 import "@powerpipe/components/dashboards/charts/LineChart";
 import "@powerpipe/components/dashboards/charts/PieChart";
 import "@powerpipe/components/dashboards/charts/Chart";
