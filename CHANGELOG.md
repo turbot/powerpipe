@@ -1,3 +1,10 @@
+## v1.1.0 [2024-01-20]
+_Whats new_
+- Add support for installing mods from GitLab repositories. ([#656](https://github.com/turbot/powerpipe/issues/656))
+
+_Dependencies_
+- Upgrade `crypto`, `net` and `go-git` packages to remediate critical and high vulnerabilities.
+
 ## v1.0.1 [2024-11-21]
 _Bug fixes_
 - Fix minor spelling issue in query help output. ([#542](https://github.com/turbot/powerpipe/issues/542))
@@ -6,7 +13,7 @@ _Bug fixes_
 ## v1.0.0 [2024-10-22]
 _Whats new_
 - `connection` resource to manage credentials. [Documentation](https://powerpipe.io/docs/reference/config-files/connection).
-- `database` property has been added to [mod](https://powerpipe.io/docs/powerpipe-hcl/mod). 
+- `database` property has been added to [mod](https://powerpipe.io/docs/powerpipe-hcl/mod). A database can be a connection reference, connection string, or Pipes workspace to query.
 
 _Deprecations_
 - Deprecated `database` CLI arg. See [Setting the Database](https://powerpipe.io/docs/run#selecting-a-database) for the new syntax to set the database.
