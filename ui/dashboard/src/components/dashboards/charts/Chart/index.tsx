@@ -822,7 +822,7 @@ const getDataConfigForChartType = (
       const differences = timestamps.slice(1).map((t, i) => t - timestamps[i]);
       const avgDifference =
         differences.reduce((a, b) => a + b, 0) / differences.length;
-      const interval = avgDifference <= 3600000 ? "hourly" : "daily"; // 3600000 ms = 1 hour
+      const interval = avgDifference <= 3600 ? "hourly" : "daily"; // 3600000 ms = 1 hour
 
       // Generate x and y axes based on the inferred interval
       let xAxisData,
