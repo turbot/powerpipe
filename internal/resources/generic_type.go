@@ -23,12 +23,12 @@ func GenericTypeToBlockType[T modconfig.ModTreeItem]() string {
 		resourceType = schema.BlockTypeContainer
 	case *Detection:
 		resourceType = schema.BlockTypeDetection
-	case *DetectionBenchmark:
+	case *DetectionBenchmark, *ControlBenchmark:
 		resourceType = schema.BlockTypeBenchmark
 
 	// TODO KAI CHECK
-	case *ControlBenchmark:
-		resourceType = "control_benchmark"
+	//case *ControlBenchmark:
+	//	resourceType = "control_benchmark"
 
 	case *DashboardFlow:
 		resourceType = schema.BlockTypeFlow
