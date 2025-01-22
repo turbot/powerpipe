@@ -3,12 +3,16 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"os"
 	"text/template"
 
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 // TemplateFormatter implements the 'Formatter' interface and exposes a generic template based output mechanism
@@ -38,52 +42,54 @@ func NewTemplateFormatter(input *OutputTemplate) (*TemplateFormatter, error) {
 	return &TemplateFormatter{exportFormat: input, template: t}, nil
 }
 
-func (tf TemplateFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	// TODO KAI FIX ME
-	/*	reader, writer := io.Pipe()
-		go func() {
-			workingDirectory, err := os.Getwd()
-			if err != nil {
-				writer.CloseWithError(err)
-				return
-			}
-			renderContext := TemplateRenderContext{
-				Constants: TemplateRenderConstants{
-					PowerpipeVersion: app_specific.AppVersion.String(),
-					WorkingDir:       workingDirectory,
-				},
-				Config: TemplateRenderConfig{
-					RenderHeader: viper.GetBool(constants.ArgHeader),
-					Separator:    viper.GetString(constants.ArgSeparator),
-				},
-				Data: tree,
-			}
+func (TemplateFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, fmt.Errorf("TemplateFormatter does not support FormatDetection")
+}
 
-			// overwrite the "render_context" function to return the current render context
-			templateFuncs := templateFuncs(renderContext)
-			templateFuncs["render_context"] = func() TemplateRenderContext { return renderContext }
-
-			t, err := tf.template.Clone()
-			if err != nil {
-				writer.CloseWithError(err)
-				return
-			}
-			t = t.Funcs(templateFuncs)
-
-			if err := t.ExecuteTemplate(writer, "output", renderContext); err != nil {
-				writer.CloseWithError(err)
-			} else {
-				writer.Close()
-			}
-		}()
-
-		// tactical - for json, prettify the output
-		if tf.shouldPrettify() {
-			return utils.PrettifyJsonFromReader(reader)
+func (tf TemplateFormatter) Format(_ context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
+	reader, writer := io.Pipe()
+	go func() {
+		workingDirectory, err := os.Getwd()
+		if err != nil {
+			writer.CloseWithError(err)
+			return
+		}
+		renderContext := TemplateRenderContext{
+			Constants: TemplateRenderConstants{
+				PowerpipeVersion: app_specific.AppVersion.String(),
+				WorkingDir:       workingDirectory,
+			},
+			Config: TemplateRenderConfig{
+				RenderHeader: viper.GetBool(constants.ArgHeader),
+				Separator:    viper.GetString(constants.ArgSeparator),
+			},
+			Data: tree,
 		}
 
-		return reader, nil*/
-	return nil, nil
+		// overwrite the "render_context" function to return the current render context
+		templateFuncs := templateFuncs(renderContext)
+		templateFuncs["render_context"] = func() TemplateRenderContext { return renderContext }
+
+		t, err := tf.template.Clone()
+		if err != nil {
+			writer.CloseWithError(err)
+			return
+		}
+		t = t.Funcs(templateFuncs)
+
+		if err := t.ExecuteTemplate(writer, "output", renderContext); err != nil {
+			writer.CloseWithError(err)
+		} else {
+			writer.Close()
+		}
+	}()
+
+	// tactical - for json, prettify the output
+	if tf.shouldPrettify() {
+		return utils.PrettifyJsonFromReader(reader)
+	}
+
+	return reader, nil
 }
 
 func (tf TemplateFormatter) FileExtension() string {

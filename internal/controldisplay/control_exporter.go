@@ -3,6 +3,8 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/controlexecute"
+	"io"
 
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/export"
@@ -28,19 +30,21 @@ func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceD
 	// whereas display snapshots are indented
 	exportCtx := context.WithValue(ctx, contextKeyFormatterPurpose, formatterPurposeExport)
 
-	// input must be control execution tree
-	// TODO KAI used to be
-	// tree, ok := input.(*controlexecute.ExecutionTree)
-	tree, ok := input.(*dashboardexecute.DetectionBenchmarkDisplayTree)
-	if !ok {
-		return fmt.Errorf("ControlExporter input must be *controlexecute.ExecutionTree")
+	var reader io.Reader
+	var err error
+	switch t := input.(type) {
+	case *dashboardexecute.DetectionBenchmarkDisplayTree:
+		reader, err = e.formatter.FormatDetection(exportCtx, t)
+	case *controlexecute.ExecutionTree:
+		reader, err = e.formatter.Format(exportCtx, t)
+	default:
+		return fmt.Errorf("ControlExporter input must be ExecutionTree or DetectionBenchmarkDisplayTree")
 	}
-	res, err := e.formatter.Format(exportCtx, tree)
 	if err != nil {
 		return err
 	}
 
-	return export.Write(destPath, res)
+	return export.Write(destPath, reader)
 }
 
 func (e *ControlExporter) FileExtension() string {

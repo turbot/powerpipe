@@ -388,18 +388,17 @@ func shouldPrintCheckTiming() bool {
 }
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
-	// TODO KAI
-	//reader, err := formatter.Format(ctx, executionTree)
-	//if err != nil {
-	//	return err
-	//}
-	//_, err = io.Copy(os.Stdout, reader)
-	//return err
-	return nil
+	reader, err := formatter.Format(ctx, executionTree)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(os.Stdout, reader)
+	return err
+
 }
 
 func displayDetectionResults(ctx context.Context, executionTree *dashboardexecute.DetectionBenchmarkDisplayTree, formatter controldisplay.Formatter) error {
-	reader, err := formatter.Format(ctx, executionTree)
+	reader, err := formatter.FormatDetection(ctx, executionTree)
 	if err != nil {
 		return err
 	}

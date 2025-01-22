@@ -2,7 +2,9 @@ package controldisplay
 
 import (
 	"context"
+	"fmt"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"strings"
@@ -14,7 +16,11 @@ type NullFormatter struct {
 	FormatterBase
 }
 
-func (j *NullFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+func (*NullFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, fmt.Errorf("NullFormatter does not support FormatDetection")
+}
+
+func (j *NullFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	return strings.NewReader(""), nil
 }
 

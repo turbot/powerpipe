@@ -380,7 +380,7 @@ func (d *PowerpipeModDecoder) decodeBenchmark(block *hcl.Block, parseCtx *parse.
 		return d.decodeDetectionBenchmark(block, parseCtx)
 	}
 
-	benchmark := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.DetectionBenchmark)
+	benchmark := resources.NewBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.ControlBenchmark)
 
 	diags = parse.DecodeProperty(content, "children", &benchmark.ChildNames, parseCtx.EvalCtx)
 	res.HandleDecodeDiags(diags)

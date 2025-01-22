@@ -3,6 +3,7 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"strings"
@@ -17,9 +18,16 @@ type TextFormatter struct {
 	FormatterBase
 }
 
-func (tf TextFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	// TODO KAI switch between control and detection
+func (tf TextFormatter) FormatDetection(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
 	renderer := NewDetectionTableRenderer(tree)
+	widthConstraint := utils.NewRangeConstraint(renderer.MinimumWidth(), MaxColumns)
+	renderedText := renderer.Render(widthConstraint.Constrain(GetMaxCols()))
+	res := strings.NewReader(fmt.Sprintf("\n%s\n", renderedText))
+	return res, nil
+}
+
+func (tf TextFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
+	renderer := NewTableRenderer(tree)
 	widthConstraint := utils.NewRangeConstraint(renderer.MinimumWidth(), MaxColumns)
 	renderedText := renderer.Render(widthConstraint.Constrain(GetMaxCols()))
 	res := strings.NewReader(fmt.Sprintf("\n%s\n", renderedText))

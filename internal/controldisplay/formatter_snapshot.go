@@ -2,46 +2,52 @@ package controldisplay
 
 import (
 	"context"
+	"fmt"
 	"github.com/turbot/pipe-fittings/constants"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
+	"strings"
 )
 
 type SnapshotFormatter struct {
 	FormatterBase
 }
 
-func (f *SnapshotFormatter) Format(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	// TODO KAI  FIX ME
-	//snapshot, err := executionTreeToSnapshot(tree)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//// determine whether to indent the snapshot
-	//// TACTICAL: check in the context for contextKeyFormatterUse - if this is "export" then DO NOT indent
-	//var indent = true
-	//if formatterPurpose, ok := ctx.Value(contextKeyFormatterPurpose).(string); ok && formatterPurpose == formatterPurposeExport {
-	//	indent = false
-	//}
-	//// strip unwanted fields from the snapshot
-	//snapshotStr, err := snapshot.AsStrippedJson(indent)
-	//if err != nil {
-	//	return nil, err
-	//}
-	//
-	//res := strings.NewReader(fmt.Sprintf("%s\n", string(snapshotStr)))
-	//
-	//return res, nil
-	return nil, nil
+func (*SnapshotFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, fmt.Errorf("SnapshotFormatter does not support FormatDetection")
+}
+
+func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
+	snapshot, err := executionTreeToSnapshot(tree)
+	if err != nil {
+		return nil, err
+	}
+
+	// determine whether to indent the snapshot
+	// TACTICAL: check in the context for contextKeyFormatterUse - if this is "export" then DO NOT indent
+	var indent = true
+	if formatterPurpose, ok := ctx.Value(contextKeyFormatterPurpose).(string); ok && formatterPurpose == formatterPurposeExport {
+		indent = false
+	}
+	// strip unwanted fields from the snapshot
+	snapshotStr, err := snapshot.AsStrippedJson(indent)
+	if err != nil {
+		return nil, err
+	}
+
+	res := strings.NewReader(fmt.Sprintf("%s\n", string(snapshotStr)))
+
+	return res, nil
+
 }
 
 func (f *SnapshotFormatter) FileExtension() string {
 	return localconstants.SnapshotExtension
 }
 
-func (f SnapshotFormatter) Name() string {
+func (f *SnapshotFormatter) Name() string {
 	return constants.OutputFormatSnapshot
 }
 
