@@ -3,13 +3,13 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/controlexecute"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"io"
 	"strings"
 
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 const MaxColumns = 200

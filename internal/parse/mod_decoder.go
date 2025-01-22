@@ -430,7 +430,7 @@ func (d *PowerpipeModDecoder) decodeDetectionBenchmark(block *hcl.Block, parseCt
 	benchmark, ok := resources.NewDetectionBenchmark(block, parseCtx.CurrentMod, parseCtx.DetermineBlockName(block)).(*resources.DetectionBenchmark)
 	if !ok {
 		// coding error
-		panic(fmt.Sprintf("block type %s not convertible to a Benchmark", block.Type))
+		panic(fmt.Sprintf("block type %s not convertible to a DetectionBenchmark", block.Type))
 	}
 	content, diags := block.Body.Content(parse.BenchmarkBlockSchema)
 	res.HandleDecodeDiags(diags)

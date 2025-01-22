@@ -78,7 +78,7 @@ func NewRootBenchmarkDisplay(rootItem modconfig.ModTreeItem) (*DetectionBenchmar
 }
 
 // NewDetectionBenchmarkDisplay creates a result group from a ModTreeItem
-func NewDetectionBenchmarkDisplay(benchmarkRun *BenchmarkRun, parent *DetectionBenchmarkDisplay) (*DetectionBenchmarkDisplay, error) {
+func NewDetectionBenchmarkDisplay(benchmarkRun *DetectionBenchmarkRun, parent *DetectionBenchmarkDisplay) (*DetectionBenchmarkDisplay, error) {
 	group := &DetectionBenchmarkDisplay{
 		GroupId:     benchmarkRun.Name,
 		Title:       benchmarkRun.GetTitle(),
@@ -96,7 +96,7 @@ func NewDetectionBenchmarkDisplay(benchmarkRun *BenchmarkRun, parent *DetectionB
 	//add child groups for children which are benchmarks
 	for _, c := range benchmarkRun.GetChildren() {
 		switch child := c.(type) {
-		case *BenchmarkRun:
+		case *DetectionBenchmarkRun:
 			// create a result group for this item
 			benchmarkGroup, err := NewDetectionBenchmarkDisplay(child, group)
 			if err != nil {

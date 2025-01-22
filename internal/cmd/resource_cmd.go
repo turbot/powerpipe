@@ -128,7 +128,7 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*resources.DashboardImage](withCmdName("image")),
 		resourceCmd[*resources.DashboardTable](withCmdName("table")),
 		resourceCmd[*resources.Detection](withCmdName("detection")),
-		resourceCmd[*resources.ControlBenchmark](withCmdName("benchmark")),
+		resourceCmd[*resources.DetectionBenchmark](withCmdName("detectionbenchmark")),
 		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 

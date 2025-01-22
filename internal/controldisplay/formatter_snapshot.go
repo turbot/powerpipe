@@ -3,12 +3,13 @@ package controldisplay
 import (
 	"context"
 	"fmt"
+	"io"
+	"strings"
+
 	"github.com/turbot/pipe-fittings/constants"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"io"
-	"strings"
 )
 
 type SnapshotFormatter struct {
@@ -40,7 +41,6 @@ func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.Exe
 	res := strings.NewReader(fmt.Sprintf("%s\n", string(snapshotStr)))
 
 	return res, nil
-
 }
 
 func (f *SnapshotFormatter) FileExtension() string {

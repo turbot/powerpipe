@@ -23,7 +23,6 @@ type PowerpipeModResources struct {
 	// the parent mod
 	Mod *modconfig.Mod
 
-	Benchmarks            map[string]*DetectionBenchmark
 	ControlBenchmarks     map[string]*ControlBenchmark
 	Controls              map[string]*Control
 	Dashboards            map[string]*Dashboard
@@ -39,6 +38,7 @@ type PowerpipeModResources struct {
 	DashboardInputs       map[string]map[string]*DashboardInput
 	DashboardTables       map[string]*DashboardTable
 	Detections            map[string]*Detection
+	DetectionBenchmarks   map[string]*DetectionBenchmark
 	DashboardTexts        map[string]*DashboardText
 	DashboardNodes        map[string]*DashboardNode
 	GlobalDashboardInputs map[string]*DashboardInput
@@ -76,7 +76,7 @@ func emptyPowerpipeModResources() *PowerpipeModResources {
 		DashboardInputs:       make(map[string]map[string]*DashboardInput),
 		DashboardTables:       make(map[string]*DashboardTable),
 		Detections:            make(map[string]*Detection),
-		Benchmarks:            make(map[string]*DetectionBenchmark),
+		DetectionBenchmarks:   make(map[string]*DetectionBenchmark),
 		DashboardTexts:        make(map[string]*DashboardText),
 		DashboardNodes:        make(map[string]*DashboardNode),
 		DashboardCategories:   make(map[string]*DashboardCategory),
@@ -359,8 +359,8 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 			return false
 		}
 	}
-	for name, benchmark := range m.Benchmarks {
-		if otherBenchmark, ok := other.Benchmarks[name]; !ok {
+	for name, benchmark := range m.DetectionBenchmarks {
+		if otherBenchmark, ok := other.DetectionBenchmarks[name]; !ok {
 			return false
 		} else if !benchmark.Equals(otherBenchmark) {
 			return false
@@ -383,8 +383,8 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 			return false
 		}
 	}
-	for name := range other.Benchmarks {
-		if _, ok := m.Benchmarks[name]; !ok {
+	for name := range other.DetectionBenchmarks {
+		if _, ok := m.DetectionBenchmarks[name]; !ok {
 			return false
 		}
 	}
@@ -440,7 +440,7 @@ func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResource
 		resource, found = m.ControlBenchmarks[longName]
 		if !found {
 			// TODO HACK if not found, try detection benchmark
-			resource, found = m.Benchmarks[longName]
+			resource, found = m.DetectionBenchmarks[longName]
 		}
 	case schema.BlockTypeControl:
 		resource, found = m.Controls[longName]
@@ -608,7 +608,7 @@ func (m *PowerpipeModResources) Empty() bool {
 		len(m.DashboardInputs)+
 		len(m.DashboardTables)+
 		len(m.Detections)+
-		len(m.Benchmarks)+
+		len(m.DetectionBenchmarks)+
 		len(m.DashboardTexts)+
 		len(m.References) == 0
 }
@@ -719,7 +719,7 @@ func (m *PowerpipeModResources) WalkResources(resourceFunc func(item modconfig.H
 			return err
 		}
 	}
-	for _, r := range m.Benchmarks {
+	for _, r := range m.DetectionBenchmarks {
 		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
 			return err
 		}
@@ -906,11 +906,11 @@ func (m *PowerpipeModResources) AddResource(item modconfig.HclResource) hcl.Diag
 		m.Detections[name] = r
 	case *DetectionBenchmark:
 		name := r.Name()
-		if existing, ok := m.Benchmarks[name]; ok {
+		if existing, ok := m.DetectionBenchmarks[name]; ok {
 			diags = append(diags, modconfig.CheckForDuplicate(existing, item)...)
 			break
 		}
-		m.Benchmarks[name] = r
+		m.DetectionBenchmarks[name] = r
 
 	case *DashboardText:
 		name := r.Name()
@@ -998,8 +998,8 @@ func (m *PowerpipeModResources) AddMaps(sourceMaps ...modconfig.ModResources) {
 		for k, v := range source.Detections {
 			m.Detections[k] = v
 		}
-		for k, v := range source.Benchmarks {
-			m.Benchmarks[k] = v
+		for k, v := range source.DetectionBenchmarks {
+			m.DetectionBenchmarks[k] = v
 		}
 		for k, v := range source.DashboardTexts {
 			m.DashboardTexts[k] = v
@@ -1048,7 +1048,7 @@ func (m *PowerpipeModResources) queryProviderCount() int {
 			len(m.DashboardNodes) +
 			len(m.DashboardTables) +
 			len(m.Detections) +
-			len(m.Benchmarks) +
+			len(m.DetectionBenchmarks) +
 			len(m.GlobalDashboardInputs) +
 			len(m.Queries)
 	return numItems

@@ -43,7 +43,8 @@ func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
 	// get the name of the last sibling which has controls (or is a control)
 	var finalSiblingName string
 	for _, s := range siblings {
-		if b, ok := s.(*resources.DetectionBenchmark); ok {
+		// TODO KAI ALSO DETECTION?
+		if b, ok := s.(*resources.ControlBenchmark); ok {
 			// find the result group for this benchmark and see if it has controls
 			resultGroup := r.resultTree.Root.GetChildGroupByName(b.Name())
 			// if the result group has not controls, we will not find it in the result tree

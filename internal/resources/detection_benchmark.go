@@ -28,7 +28,7 @@ type DetectionBenchmark struct {
 	Base   *DetectionBenchmark `hcl:"base" json:"-"`
 }
 
-// NewWrapperDetectionBenchmark creates a new Benchmark to wrap a detection which we wish to execute
+// NewWrapperDetectionBenchmark creates a new DetectionBenchmark to wrap a detection which we wish to execute
 func NewWrapperDetectionBenchmark(detection *Detection) *DetectionBenchmark {
 	// create a fake block for the wrapper benchmark
 	block := &hcl.Block{

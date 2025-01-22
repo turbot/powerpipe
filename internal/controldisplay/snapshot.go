@@ -118,7 +118,7 @@ func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *wor
 	switch resource := rootRun.(type) {
 	case *dashboardexecute.DetectionRun:
 		root.AddDetection(resource)
-	case *dashboardexecute.BenchmarkRun:
+	case *dashboardexecute.DetectionBenchmarkRun:
 		// create a result group for this item
 		benchmarkGroup, err := dashboardexecute.NewDetectionBenchmarkDisplay(resource, root)
 		if err != nil {

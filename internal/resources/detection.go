@@ -20,15 +20,6 @@ type Detection struct {
 	Severity       *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
 	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty" snapshot:"display_columns"`
 
-	// TODO KAI NEEDED?
-	//Columns map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns"`
-	//
-	//Type       *string  `cty:"type" hcl:"type"  json:"type,omitempty"`
-	//Display    *string  `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
-	//Author     *string  `cty:"author" hcl:"author" json:"author,omitempty"`
-	//References []string `cty:"references" hcl:"references,optional" json:"references,omitempty"`
-	//Tables     []string `cty:"tables" hcl:"tables,optional" json:"tables,omitempty"`
-	//
 	Base *Detection `hcl:"base" json:"-"`
 }
 

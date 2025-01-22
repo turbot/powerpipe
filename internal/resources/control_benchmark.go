@@ -14,7 +14,7 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-// Benchmark is a struct representing the Benchmark resource
+// ControlBenchmark is a struct representing the Benchmark resource
 type ControlBenchmark struct {
 	modconfig.ResourceWithMetadataImpl
 	modconfig.ModTreeItemImpl

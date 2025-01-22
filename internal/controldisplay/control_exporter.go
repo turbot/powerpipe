@@ -3,11 +3,11 @@ package controldisplay
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"io"
 
 	"github.com/turbot/pipe-fittings/contexthelpers"
 	"github.com/turbot/pipe-fittings/export"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 

@@ -317,7 +317,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 		}
 
 		detectionBenchmarkTrunks := make(map[string][][]string)
-		for _, detectionBenchmark := range topLevelResources.Benchmarks {
+		for _, detectionBenchmark := range topLevelResources.DetectionBenchmarks {
 			if detectionBenchmark.IsAnonymous() {
 				continue
 			}
