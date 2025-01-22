@@ -99,7 +99,7 @@ func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeIt
 	switch r := rootResource.(type) {
 	case *resources.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *resources.ControlBenchmark:
+	case *resources.Benchmark:
 		return NewCheckRun(r, e, e)
 	case *resources.Detection:
 		// create a wrapper for the detection

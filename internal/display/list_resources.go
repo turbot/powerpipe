@@ -43,7 +43,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 	// TODO KAI TACTICAL for benchmark list, include detection benchmarks
 	// https://github.com/turbot/powerpipe/issues/609
 	var empty T
-	if _, ok := any(empty).(*resources.DetectionBenchmark); !ok {
+	if _, ok := any(empty).(*resources.Benchmark); !ok {
 		printListResult[T](ctx, cmd, resourceList)
 	} else {
 		// list detcection benchmarks
@@ -85,7 +85,7 @@ func getListResourceFilter[T modconfig.ModTreeItem](w *workspace.Workspace) work
 	var res = workspace.ResourceFilter{}
 
 	var empty T
-	if _, ok := any(empty).(*resources.ControlBenchmark); ok {
+	if _, ok := any(empty).(*resources.Benchmark); ok {
 
 		// if T is benchmark, and if output is pretty or plain, only show top level benchmarks
 		if viper.GetString(constants.ArgOutput) == constants.OutputFormatPretty || viper.GetString(constants.ArgOutput) == constants.OutputFormatPlain {

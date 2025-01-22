@@ -159,7 +159,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	initCtx := statushooks.DisableStatusHooks(ctx)
 
 	// initialise
-	initData := controlinit.NewInitData[T](initCtx, cmd, args)
+	initData := controlinit.NewInitData[T](initCtx, cmd, args...)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.ShowError(ctx, initData.Result.Error)
@@ -174,7 +174,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		if !viper.IsSet(constants.ArgOutput) {
 			viper.Set(constants.ArgOutput, constants.OutputFormatSnapshot)
 		}
-		detectionRunWithInitData[*resources.DetectionBenchmark](cmd, initData.BaseInitData(), args)
+		detectionRunWithInitData[*resources.DetectionBenchmark](cmd, initData, args)
 		return
 	}
 
@@ -230,7 +230,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 }
 
 // exportExecutionTree relies on the fact that the given tree is already executed
-func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData[T], exportArgs []string) error {
+func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData, exportArgs []string) error {
 	statushooks.Show(ctx)
 	defer statushooks.Done(ctx)
 
@@ -252,7 +252,7 @@ func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTr
 }
 
 // executeTree executes and displays the (table) results of an execution
-func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData[T]) error {
+func executeTree(ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData) error {
 	// create a context with check status hooks
 	checkCtx, cancel := createCheckContext(ctx)
 	defer cancel()
@@ -291,7 +291,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) ([]*namedExecutionTree, error) {
+func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()

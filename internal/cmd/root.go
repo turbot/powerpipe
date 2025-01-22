@@ -54,7 +54,7 @@ func rootCommand() *cobra.Command {
 		serverCmd(),
 		modCmd(),
 		loginCmd(),
-		resourceCmd[*resources.ControlBenchmark](),
+		resourceCmd[*resources.Benchmark](),
 		resourceCmd[*resources.DetectionBenchmark](),
 		resourceCmd[*resources.Detection](),
 		resourceCmd[*resources.Control](),

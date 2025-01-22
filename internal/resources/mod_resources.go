@@ -23,7 +23,7 @@ type PowerpipeModResources struct {
 	// the parent mod
 	Mod *modconfig.Mod
 
-	ControlBenchmarks     map[string]*ControlBenchmark
+	ControlBenchmarks     map[string]*Benchmark
 	Controls              map[string]*Control
 	Dashboards            map[string]*Dashboard
 	DashboardCategories   map[string]*DashboardCategory
@@ -63,7 +63,7 @@ func NewModResources(mod *modconfig.Mod, sourceMaps ...modconfig.ModResources) m
 func emptyPowerpipeModResources() *PowerpipeModResources {
 	return &PowerpipeModResources{
 		Controls:              make(map[string]*Control),
-		ControlBenchmarks:     make(map[string]*ControlBenchmark),
+		ControlBenchmarks:     make(map[string]*Benchmark),
 		Dashboards:            make(map[string]*Dashboard),
 		DashboardCards:        make(map[string]*DashboardCard),
 		DashboardCharts:       make(map[string]*DashboardChart),
@@ -772,7 +772,7 @@ func (m *PowerpipeModResources) AddResource(item modconfig.HclResource) hcl.Diag
 		}
 		m.Controls[name] = r
 
-	case *ControlBenchmark:
+	case *Benchmark:
 		name := r.Name()
 		if existing, ok := m.ControlBenchmarks[name]; ok {
 			diags = append(diags, modconfig.CheckForDuplicate(existing, item)...)

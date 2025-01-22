@@ -4,7 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/initialisation"
 	"os"
 	"strings"
 
@@ -22,6 +21,7 @@ import (
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controldisplay"
+	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
@@ -90,8 +90,7 @@ func detectionRun[T DetectionTarget](cmd *cobra.Command, args []string) {
 
 // tactical - to support callint benchmark run and calling either control or dashboard execution flow,
 // we must support calling this from the check command, AFTER the initdata has been fetched
-func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *initialisation.InitData, args []string) {
-
+func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *controlinit.InitData, args []string) {
 	ctx := cmd.Context()
 
 	// there can only be a single arg - cobra will validate
@@ -122,7 +121,7 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 
 	statushooks.SetStatus(ctx, "Initializing…")
 	if initData == nil {
-		initData = initialisation.NewInitData[T](ctx, cmd, detectionName)
+		initData = controlinit.NewInitData[T](ctx, cmd, detectionName)
 	}
 
 	if initData.Result.Error != nil {
@@ -158,11 +157,11 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 	tree, err := controldisplay.SnapshotToExecutionTree(ctx, snap, initData.Workspace, target)
 	error_helpers.FailOnError(err)
 
-	// TODO KAI FIX ME ????????
-	displayDetectionResults(ctx, tree, nil) // initData.OutputFormatter)
+	err = displayDetectionResults(ctx, tree, initData.OutputFormatter)
+	error_helpers.FailOnError(err)
 
 	// display the snapshot result (if needed)
-	displaySnapshot(snap)
+	//displaySnapshot(snap)
 
 	// upload the snapshot (if needed)
 	err = publishSnapshotIfNeeded(ctx, snap)

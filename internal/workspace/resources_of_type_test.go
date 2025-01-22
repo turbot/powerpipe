@@ -31,7 +31,7 @@ func TestFilterWorkspaceResourcesOfType(t *testing.T) {
 
 	var mod = modconfig.NewMod("test_mod", ".", hcl.Range{})
 	mod.Resources = &resources.PowerpipeModResources{
-		ControlBenchmarks: map[string]*resources.ControlBenchmark{},
+		ControlBenchmarks: map[string]*resources.Benchmark{},
 		Controls: map[string]*resources.Control{
 			"control1":  makeControl(mod, "control1", "Control 1", "Control 1 description", "SELECT * FROM table1", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo"}),
 			"control2a": makeControl(mod, "control2a", "Control 2", "Control 2a description", "SELECT id FROM table2", map[string]string{"t1": "val1_foo", "t2": "val2_foo", "t3": "val3_foo_a"}),

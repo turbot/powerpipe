@@ -147,8 +147,8 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 		return queryRunCmd()
 	case *resources.Dashboard:
 		return dashboardRunCmd()
-	case *resources.ControlBenchmark:
-		return checkCmd[*resources.ControlBenchmark]()
+	case *resources.Benchmark:
+		return checkCmd[*resources.Benchmark]()
 	case *resources.DetectionBenchmark:
 		return detectionRunCmd[*resources.DetectionBenchmark]()
 	case *resources.Detection:

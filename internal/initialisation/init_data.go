@@ -86,7 +86,7 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		db_client.DefaultDatabase = w.Mod.GetDatabase()
 	}
 	// if database command line was passed, set default
-	// TODO K will we onl ypass connection strin gin db arg or coutl we pass connection name?
+	// TODO K will we onl ypass connection string in db arg or could we pass connection name?
 	if db := viper.GetString(constants.ArgDatabase); db != "" {
 		db_client.DefaultDatabase = connection.NewConnectionString(db)
 	}
