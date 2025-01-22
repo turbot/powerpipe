@@ -4,14 +4,11 @@ import (
 	"context"
 	"fmt"
 	"github.com/turbot/powerpipe/internal/controlexecute"
-	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
 
 	"github.com/turbot/pipe-fittings/backend"
 	"github.com/turbot/pipe-fittings/connection"
-	"github.com/turbot/pipe-fittings/queryresult"
-	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
@@ -154,7 +151,7 @@ func (r *DetectionRun) Execute(ctx context.Context) {
 		slog.Debug("children complete", "name", r.resource.Name())
 
 		// aggregate our child data
-		r.combineChildData()
+		//r.combineChildData()
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
@@ -206,7 +203,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 		if err.Error() == context.DeadlineExceeded.Error() {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
 		}
-		slog.Debug("DetectionRun query failed", "name", r.resource.Name(), "error", err.Error())
+		slog.Warn("DetectionRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
 	}
 	slog.Debug("DetectionRun complete", "name", r.resource.Name())
@@ -219,32 +216,33 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 	return nil
 }
 
-func (r *DetectionRun) combineChildData() {
-	// we either have children OR a query
-	// if there are no children, do nothing
-	if len(r.children) == 0 {
-		return
-	}
-	// create empty data to populate
-	r.Data = &dashboardtypes.LeafData{}
-	// build map of columns for the schema
-	schemaMap := make(map[string]*queryresult.ColumnDef)
-	for _, c := range r.children {
-		childDetectionRun := c.(*DetectionRun)
-		data := childDetectionRun.Data
-		// if there is no data or this is a 'with', skip
-		if data == nil || childDetectionRun.resource.GetBlockType() == schema.BlockTypeWith {
-			continue
-		}
-		for _, s := range data.Columns {
-			if _, ok := schemaMap[s.Name]; !ok {
-				schemaMap[s.Name] = s
-			}
-		}
-		r.Data.Rows = append(r.Data.Rows, data.Rows...)
-	}
-	r.Data.Columns = maps.Values(schemaMap)
-}
+//
+//func (r *DetectionRun) combineChildData() {
+//	// we either have children OR a query
+//	// if there are no children, do nothing
+//	if len(r.children) == 0 {
+//		return
+//	}
+//	// create empty data to populate
+//	r.Data = &dashboardtypes.LeafData{}
+//	// build map of columns for the schema
+//	schemaMap := make(map[string]*queryresult.ColumnDef)
+//	for _, c := range r.children {
+//		childDetectionRun := c.(*DetectionRun)
+//		data := childDetectionRun.Data
+//		// if there is no data or this is a 'with', skip
+//		if data == nil || childDetectionRun.resource.GetBlockType() == schema.BlockTypeWith {
+//			continue
+//		}
+//		for _, s := range data.Columns {
+//			if _, ok := schemaMap[s.Name]; !ok {
+//				schemaMap[s.Name] = s
+//			}
+//		}
+//		r.Data.Rows = append(r.Data.Rows, data.Rows...)
+//	}
+//	r.Data.Columns = maps.Values(schemaMap)
+//}
 
 func (r *DetectionRun) populateProperties() error {
 	if r.resource == nil {

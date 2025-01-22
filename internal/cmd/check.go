@@ -186,7 +186,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	// now filter the target
 	// get the execution trees
-	trees, err := getExecutionTrees[T](ctx, initData)
+	trees, err := getExecutionTrees(ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// pull out useful properties
@@ -291,7 +291,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
+func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()
@@ -393,7 +393,6 @@ func displayControlResults(ctx context.Context, executionTree *controlexecute.Ex
 	}
 	_, err = io.Copy(os.Stdout, reader)
 	return err
-
 }
 
 func displayDetectionResults(ctx context.Context, executionTree *dashboardexecute.DetectionBenchmarkDisplayTree, formatter controldisplay.Formatter) error {

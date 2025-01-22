@@ -13,7 +13,6 @@ import (
 type DetectionBenchmarkRun struct {
 	DashboardParentImpl
 	BenchmarkType string `json:"benchmark_type"`
-
 	dashboardNode *resources.DetectionBenchmark
 }
 
