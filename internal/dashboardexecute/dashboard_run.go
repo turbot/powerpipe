@@ -136,7 +136,7 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 			if err != nil {
 				return err
 			}
-		case *resources.Benchmark:
+		case *resources.DetectionBenchmark:
 			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
 			if err != nil {
 				return err

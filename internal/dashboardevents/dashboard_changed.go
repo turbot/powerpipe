@@ -33,7 +33,7 @@ type DashboardChanged struct {
 	NewCategories          []*resources.DashboardCategory
 	NewCharts              []*resources.DashboardChart
 	NewDetections          []*resources.Detection
-	NewDetectionBenchmarks []*resources.Benchmark
+	NewDetectionBenchmarks []*resources.DetectionBenchmark
 	NewFlows               []*resources.DashboardFlow
 	NewGraphs              []*resources.DashboardGraph
 	NewHierarchies         []*resources.DashboardHierarchy
@@ -52,7 +52,7 @@ type DashboardChanged struct {
 	DeletedCategories          []*resources.DashboardCategory
 	DeletedCharts              []*resources.DashboardChart
 	DeletedDetections          []*resources.Detection
-	DeletedDetectionBenchmarks []*resources.Benchmark
+	DeletedDetectionBenchmarks []*resources.DetectionBenchmark
 	DeletedFlows               []*resources.DashboardFlow
 	DeletedGraphs              []*resources.DashboardGraph
 	DeletedHierarchies         []*resources.DashboardHierarchy
@@ -411,7 +411,7 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 		if !c.diffsContain(c.ChangedDetections, item) {
 			c.ChangedDetections = append(c.ChangedDetections, diff)
 		}
-	case *resources.Benchmark:
+	case *resources.DetectionBenchmark:
 		if !c.diffsContain(c.ChangedDetectionBenchmarks, item) {
 			c.ChangedDetectionBenchmarks = append(c.ChangedDetectionBenchmarks, diff)
 		}

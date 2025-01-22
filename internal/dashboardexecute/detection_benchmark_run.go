@@ -14,9 +14,7 @@ type BenchmarkRun struct {
 	DashboardParentImpl
 	BenchmarkType string `json:"benchmark_type"`
 
-	// TODO KAI WHICH???
 	dashboardNode *resources.DetectionBenchmark
-	dashboardNode *resources.Benchmark
 }
 
 func (r *BenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -31,14 +29,9 @@ func (r *BenchmarkRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*BenchmarkRun, error) {
+func NewDetectionBenchmarkRun(container *resources.DetectionBenchmark, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*BenchmarkRun, error) {
 	children := container.GetChildren()
 
-	// TODO KAI WHICH
-	r := &DetectionBenchmarkRun{
-		dashboardNode: container,
-		BenchmarkType: "detection",
-	}
 	r := &BenchmarkRun{dashboardNode: container}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
@@ -56,7 +49,7 @@ func NewDetectionBenchmarkRun(container *resources.Benchmark, parent dashboardty
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *resources.Benchmark:
+		case *resources.DetectionBenchmark:
 			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
 			if err != nil {
 				return nil, err

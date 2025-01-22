@@ -4,10 +4,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/controldisplay"
-	"github.com/turbot/powerpipe/internal/controlinit"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/initialisation"
 	"os"
 	"strings"
 
@@ -19,17 +16,20 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
+	"github.com/turbot/powerpipe/internal/controldisplay"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
 
 type DetectionTarget interface {
 	modconfig.ModTreeItem
-	*resources.Benchmark | *resources.Detection
+	*resources.DetectionBenchmark | *resources.Detection
 }
 
 // variable used to assign the output mode flag
@@ -158,7 +158,8 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 	tree, err := controldisplay.SnapshotToExecutionTree(ctx, snap, initData.Workspace, target)
 	error_helpers.FailOnError(err)
 
-	displayDetectionResults(ctx, tree, initData.OutputFormatter)
+	// TODO KAI FIX ME ????????
+	displayDetectionResults(ctx, tree, nil) // initData.OutputFormatter)
 
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)

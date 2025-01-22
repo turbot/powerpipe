@@ -128,7 +128,7 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*resources.DashboardImage](withCmdName("image")),
 		resourceCmd[*resources.DashboardTable](withCmdName("table")),
 		resourceCmd[*resources.Detection](withCmdName("detection")),
-		resourceCmd[*resources.Benchmark](withCmdName("benchmark")),
+		resourceCmd[*resources.DetectionBenchmark](withCmdName("benchmark")),
 		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
@@ -149,8 +149,8 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 		return dashboardRunCmd()
 	case *resources.ControlBenchmark:
 		return checkCmd[*resources.ControlBenchmark]()
-	case *resources.Benchmark:
-		return detectionRunCmd[*resources.Benchmark]()
+	case *resources.DetectionBenchmark:
+		return detectionRunCmd[*resources.DetectionBenchmark]()
 	case *resources.Detection:
 		return detectionRunCmd[*resources.Detection]()
 	case *resources.Control:

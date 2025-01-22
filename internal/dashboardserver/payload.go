@@ -222,13 +222,11 @@ func addBenchmarkChildren(benchmark *resources.ControlBenchmark, recordTrunk boo
 	return children
 }
 
-func addDetectionBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.DetectionBenchmark:
-		case *resources.ControlBenchmark:
-			// TODO WHICH
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName

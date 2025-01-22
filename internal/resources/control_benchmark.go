@@ -218,7 +218,7 @@ func (b *ControlBenchmark) GetShowData() *printers.RowData {
 }
 
 // GetListData implements printers.Listable
-func (b *Benchmark) GetListData() *printers.RowData {
+func (b *ControlBenchmark) GetListData() *printers.RowData {
 	res := b.ModTreeItemImpl.GetListData()
 	// add type
 	res.AddField(printers.NewFieldValue("TYPE", "control"))
