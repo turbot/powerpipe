@@ -154,6 +154,8 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *c
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
 
+	fmt.Println("Snapshot generated")
+
 	tree, err := controldisplay.SnapshotToExecutionTree(ctx, snap, initData.Workspace, target)
 	error_helpers.FailOnError(err)
 

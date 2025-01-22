@@ -89,6 +89,9 @@ func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *wor
 	executionTree := &dashboardexecute.DetectionBenchmarkDisplayTree{
 		LeafRuns: make(map[string]controlexecute.LeafRun),
 	}
+	// TODO remove need for this?
+	// add dimension colour map
+	executionTree.DimensionColorGenerator, _ = controlexecute.NewDimensionColorGenerator(4, 27)
 
 	var resolvedItem modconfig.ModTreeItem
 	// if only one argument is provided, add this as execution root
