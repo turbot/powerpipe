@@ -1,7 +1,7 @@
 import Badge from "@powerpipe/components/Badge";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
-import SearchPathConfig from "../dashboards/SearchPathConfig";
+import SearchPathConfig from "@powerpipe/components/dashboards/SearchPath/SearchPathConfig";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,

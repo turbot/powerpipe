@@ -12,7 +12,6 @@ import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelCo
 import useDownloadDetectionBenchmarkData from "@powerpipe/hooks/useDownloadDetectionBenchmarkData";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
-import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { default as DetectionBenchmarkType } from "../common/DetectionBenchmark";
 import {
   DetectionBenchmarkTreeProps,
@@ -229,17 +228,6 @@ const DetectionBenchmark = (props: InnerCheckProps) => {
           }
         />
       )}
-      <Grid name="temp">
-        <DateRangePicker
-          name="input.detection_range"
-          panel_type="input"
-          properties={{
-            name: "detection_range",
-            unqualified_name: "input.detection_range",
-            type: "date_range",
-          }}
-        />
-      </Grid>
       <Grid name={`${props.definition.name}.container.summary`}>
         {summaryCards
           .filter(({ name }) => {

@@ -1,6 +1,7 @@
 import DashboardSearch from "@powerpipe/components/DashboardSearch";
 import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
-import ManageSearchPathButton from "@powerpipe/components/ManageSearchPathButton";
+import ManageDatetimeRangeButton from "@powerpipe/components/dashboards/DatetimeRange/ManageDatetimeRangeButton";
+import ManageSearchPathButton from "@powerpipe/components/dashboards/SearchPath/ManageSearchPathButton";
 import PowerpipeLogo from "@powerpipe/components/DashboardHeader/PowerpipeLogo";
 import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
@@ -19,6 +20,7 @@ const DashboardHeader = () => {
         <PowerpipeLogo />
         <div className="flex flex-grow items-center space-x-2 md:space-x-4">
           <DashboardSearch />
+          <ManageDatetimeRangeButton />
           <ManageSearchPathButton />
           <DashboardTagGroupSelect />
           <SplitSnapshotButton />

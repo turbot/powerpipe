@@ -9,6 +9,7 @@ import {
   DashboardSearch,
 } from "@powerpipe/types";
 import { DashboardInputsProvider } from "@powerpipe/hooks/useDashboardInputs";
+import { DashboardDatetimeRangeProvider } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { DashboardPanelDetailProvider } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { DashboardSearchPathProvider } from "@powerpipe/hooks/useDashboardSearchPath";
 import { DashboardSearchProvider } from "@powerpipe/hooks/useDashboardSearch";
@@ -127,7 +128,9 @@ export const PanelStoryDecorator = ({
           <DashboardPanelDetailProvider>
             <DashboardInputsProvider>
               <DashboardSearchPathProvider>
-                <Dashboard showPanelControls={false} />
+                <DashboardDatetimeRangeProvider>
+                  <Dashboard showPanelControls={false} />
+                </DashboardDatetimeRangeProvider>
               </DashboardSearchPathProvider>
             </DashboardInputsProvider>
           </DashboardPanelDetailProvider>

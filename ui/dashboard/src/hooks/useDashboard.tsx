@@ -4,6 +4,7 @@ import {
   DashboardSearch,
   SocketURLFactory,
 } from "@powerpipe/types";
+import { DashboardDatetimeRangeProvider } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { DashboardExecutionProvider } from "@powerpipe/hooks/useDashboardExecution";
 import { DashboardInputsProvider } from "@powerpipe/hooks/useDashboardInputs";
 import { DashboardPanelDetailProvider } from "@powerpipe/hooks/useDashboardPanelDetail";
@@ -55,14 +56,16 @@ const DashboardProvider = ({
         >
           <DashboardInputsProvider>
             <DashboardSearchPathProvider>
-              <DashboardPanelDetailProvider>
-                <DashboardExecutionProvider
-                  eventHooks={eventHooks}
-                  socketUrlFactory={socketUrlFactory}
-                >
-                  {children}
-                </DashboardExecutionProvider>
-              </DashboardPanelDetailProvider>
+              <DashboardDatetimeRangeProvider>
+                <DashboardPanelDetailProvider>
+                  <DashboardExecutionProvider
+                    eventHooks={eventHooks}
+                    socketUrlFactory={socketUrlFactory}
+                  >
+                    {children}
+                  </DashboardExecutionProvider>
+                </DashboardPanelDetailProvider>
+              </DashboardDatetimeRangeProvider>
             </DashboardSearchPathProvider>
           </DashboardInputsProvider>
         </DashboardStateProvider>

@@ -1,4 +1,4 @@
-import { createContext, ReactNode, useContext, useMemo } from "react";
+import { createContext, ReactNode, useCallback, useContext } from "react";
 import { DashboardSearch, DashboardSearchGroupByMode } from "@powerpipe/types";
 import { useSearchParams } from "react-router-dom";
 
@@ -22,42 +22,41 @@ export const DashboardSearchProvider = ({
   defaultSearch,
 }: DashboardSearchProviderProps) => {
   const [searchParams, setSearchParams] = useSearchParams();
-  const rawSearch = searchParams.get("search");
-  const rawGroupBy = searchParams.get("group_by");
-  const rawTag = searchParams.get("tag");
-
-  const search = useMemo(() => {
-    return {
-      value: searchParams.get("search") || "",
-      groupBy: {
-        value:
-          (searchParams.get("group_by") as DashboardSearchGroupByMode) ||
-          defaultSearch?.groupBy?.value ||
-          "tag",
-        tag:
-          searchParams.get("tag") || defaultSearch?.groupBy?.tag || "service",
-      },
-    };
-  }, [defaultSearch, rawSearch, rawGroupBy, rawTag]);
-
-  const updateSearchValue = (value: string | undefined) => {
-    if (value) {
-      searchParams.set("search", value);
-    } else {
-      searchParams.delete("search");
-    }
-    setSearchParams(searchParams);
+  const search = {
+    value: searchParams.get("search") || "",
+    groupBy: {
+      value:
+        (searchParams.get("group_by") as DashboardSearchGroupByMode) ||
+        defaultSearch?.groupBy?.value ||
+        "tag",
+      tag: searchParams.get("tag") || defaultSearch?.groupBy?.tag || "service",
+    },
   };
 
-  const updateGroupBy = (value: DashboardSearchGroupByMode, tag?: string) => {
-    searchParams.set("group_by", value);
-    if (tag) {
-      searchParams.set("tag", tag);
-    } else {
-      searchParams.delete("tag");
-    }
-    setSearchParams(searchParams);
-  };
+  const updateSearchValue = useCallback(
+    (value: string | undefined) => {
+      if (value) {
+        searchParams.set("search", value);
+      } else {
+        searchParams.delete("search");
+      }
+      setSearchParams(searchParams);
+    },
+    [searchParams],
+  );
+
+  const updateGroupBy = useCallback(
+    (value: DashboardSearchGroupByMode, tag?: string) => {
+      searchParams.set("group_by", value);
+      if (tag) {
+        searchParams.set("tag", tag);
+      } else {
+        searchParams.delete("tag");
+      }
+      setSearchParams(searchParams);
+    },
+    [searchParams],
+  );
 
   return (
     <DashboardSearchContext.Provider

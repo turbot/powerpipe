@@ -1,6 +1,7 @@
 import sortBy from "lodash/sortBy";
 import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
 import { classNames } from "@powerpipe/utils/styles";
+import { DashboardSearchGroupByMode } from "@powerpipe/types";
 import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
 import { Listbox, Transition } from "@headlessui/react";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
@@ -70,7 +71,9 @@ const DashboardTagGroupSelect = () => {
   return (
     <Listbox
       value={value}
-      onChange={(option) => updateGroupBy(option.groupBy, option.tag)}
+      onChange={(option) =>
+        updateGroupBy(option.groupBy as DashboardSearchGroupByMode, option.tag)
+      }
     >
       {({ open }) => (
         <>

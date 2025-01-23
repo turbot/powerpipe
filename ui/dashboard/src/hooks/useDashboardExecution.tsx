@@ -4,6 +4,7 @@ import useDashboardWebSocket, {
 } from "@powerpipe/hooks/useDashboardWebSocket";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import useDeepCompareEffect from "use-deep-compare-effect";
+import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
 import {
   createContext,
   ReactNode,
@@ -71,6 +72,7 @@ export const DashboardExecutionProvider = ({
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
   const { searchPathPrefix } = useDashboardSearchPath();
+  const { search } = useGlobalContextNavigate();
 
   useEffect(() => {
     if (
@@ -86,10 +88,7 @@ export const DashboardExecutionProvider = ({
     sendMessage({
       action: SocketActions.CLEAR_DASHBOARD,
     });
-    navigate(
-      `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
-      { replace: true },
-    );
+    navigate(`../${search ? `?${search}` : ""}`, { replace: true });
     setLastChangedInput(null);
     closeSidePanel();
     dispatch({
@@ -102,7 +101,7 @@ export const DashboardExecutionProvider = ({
       return;
     }
     clearDashboard();
-  }, [dispatch, pathname, searchPathPrefix]);
+  }, [dispatch, pathname, search]);
 
   const loadSnapshot = useCallback(
     (
@@ -199,10 +198,7 @@ export const DashboardExecutionProvider = ({
         type: DashboardActions.SELECT_DASHBOARD,
         dashboard: null,
       });
-      navigate(
-        `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
-        { replace: true },
-      );
+      navigate(`../${search}`, { replace: true });
       setLastChangedInput(null);
       return;
     }
