@@ -16,7 +16,7 @@ import { registerInputComponent } from "@powerpipe/components/dashboards/inputs"
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { usePopper } from "react-popper";
 import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
@@ -355,9 +355,23 @@ const CustomDatePicker = ({
   );
 };
 
-const DateRangePicker = (props: InputProps) => {
-  const { dataMode } = useDashboardState();
-  const { inputs, updateInput } = useDashboardInputs();
+const DateRangePicker = ({
+  from,
+  to,
+  relative,
+  disabled,
+  onChange,
+}: {
+  from: dayjs.Dayjs;
+  to?: dayjs.Dayjs | null;
+  relative?: string | null;
+  disabled: boolean;
+  onChange: (
+    from: dayjs.Dayjs,
+    to?: dayjs.Dayjs | null,
+    relative?: string | null,
+  ) => void;
+}) => {
   const [popperElement, setPopperElement] = useState(null);
   const [referenceElement, setReferenceElement] = useState(null);
   const { styles, attributes } = usePopper(referenceElement, popperElement, {
@@ -372,74 +386,76 @@ const DateRangePicker = (props: InputProps) => {
     ],
   });
 
-  const stateValue = inputs[props.name];
-
   const [state, setState] = useState<{
     from: dayjs.Dayjs;
     to?: dayjs.Dayjs | null;
     relative?: string | null;
     showCustom?: boolean;
-  }>(() => {
-    const stateValue = inputs[props.name];
-    if (stateValue) {
-      try {
-        const parsed = JSON.parse(stateValue);
-        const fallback = dayjs();
-        return {
-          from: parsed.from
-            ? dayjs(parsed.from)
-            : fallback.subtract(7, "day").utc(),
-          to: parsed.to ? dayjs(parsed.to) : null,
-          relative: parsed.relative || "7d",
-        };
-      } catch (err) {
-        console.error("Parse error", err);
-        const now = dayjs();
-        return {
-          from: now.subtract(7, "day").utc(),
-          to: null,
-          relative: "7d",
-        };
-      }
-    } else {
-      const now = dayjs();
-      return {
-        from: now.subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      };
-    }
-  });
+  }>({ from, to, relative, showCustom: false });
 
-  useEffect(() => {
-    if (stateValue) {
-      return;
-    }
-    updateInput(
-      props.name,
-      JSON.stringify({
-        from: dayjs().subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      }),
-      !!stateValue,
-    );
-  }, [stateValue]);
+  //   return {
+  //     from:
+  //   }
+  //
+  //   if (stateValue) {
+  //     try {
+  //       const parsed = JSON.parse(stateValue);
+  //       return {
+  //         from: parsed.from
+  //           ? dayjs(parsed.from)
+  //           : dayjs.subtract(7, "day").utc(),
+  //         to: parsed.to ? dayjs(parsed.to) : null,
+  //         relative: parsed.relative || "7d",
+  //       };
+  //     } catch (err) {
+  //       console.error("Parse error", err);
+  //       const now = dayjs();
+  //       return {
+  //         from: now.subtract(7, "day").utc(),
+  //         to: null,
+  //         relative: "7d",
+  //       };
+  //     }
+  //   } else {
+  //     const now = dayjs();
+  //     return {
+  //       from: now.subtract(7, "day").utc(),
+  //       to: null,
+  //       relative: "7d",
+  //     };
+  //   }
+  // });
+
+  // useEffect(() => {
+  //   if (stateValue) {
+  //     return;
+  //   }
+  //   updateInput(
+  //     props.name,
+  //     JSON.stringify({
+  //       from: dayjs().subtract(7, "day").utc(),
+  //       to: null,
+  //       relative: "7d",
+  //     }),
+  //     !!stateValue,
+  //   );
+  // }, [stateValue]);
 
   useEffect(() => {
     if (state.showCustom) {
       return;
     }
-    updateInput(
-      props.name,
-      JSON.stringify({
-        from: state.from,
-        to: state.to,
-        relative: state.relative,
-      }),
-      !!stateValue,
-    );
-  }, [state]);
+    onChange(state.from, state.to, state.relative);
+    // updateInput(
+    //   props.name,
+    //   JSON.stringify({
+    //     from: state.from,
+    //     to: state.to,
+    //     relative: state.relative,
+    //   }),
+    //   !!stateValue,
+    // );
+  }, [state.from, state.to, state.relative, state.showCustom]);
 
   const [tempState, setTempState] = useState<{
     from: dayjs.Dayjs;
@@ -551,15 +567,13 @@ const DateRangePicker = (props: InputProps) => {
     }));
   };
 
-  const readOnly = dataMode !== DashboardDataModeLive;
-
   return (
     <div className="flex flex-col">
       <div className="inline-flex space-x-2">
         {presets.map((preset) => {
           const presetClassName = classNames(
             "py-1.5 px-2.5 rounded-md border bg-dashboard-panel",
-            readOnly ? null : "cursor-pointer",
+            disabled ? null : "cursor-pointer",
             state.relative === preset.value ||
               (!presets.find((p) => p.value === state.relative) &&
                 preset.value === "custom")
@@ -573,7 +587,7 @@ const DateRangePicker = (props: InputProps) => {
                   ref={setReferenceElement}
                   as="div"
                   className={presetClassName}
-                  disabled={readOnly}
+                  disabled={disabled}
                 >
                   {preset.label}
                 </Popover.Button>
@@ -621,7 +635,7 @@ const DateRangePicker = (props: InputProps) => {
             <div
               key={preset.value}
               onClick={
-                readOnly ? undefined : () => handlePresetChange(preset.value)
+                disabled ? undefined : () => handlePresetChange(preset.value)
               }
               className={presetClassName}
             >
@@ -634,9 +648,86 @@ const DateRangePicker = (props: InputProps) => {
   );
 };
 
+const DateRangePickerInput = (props: InputProps) => {
+  const { dataMode } = useDashboardState();
+  const { inputs, updateInput } = useDashboardInputs();
+  const stateValue = inputs[props.name];
+
+  const value = useMemo(() => {
+    if (stateValue) {
+      try {
+        const parsed = JSON.parse(stateValue);
+        return {
+          from: parsed.from
+            ? dayjs(parsed.from)
+            : dayjs().subtract(7, "day").utc(),
+          to: parsed.to ? dayjs(parsed.to) : null,
+          relative: parsed.relative || "7d",
+        };
+      } catch (err) {
+        console.error("Parse error", err);
+        const now = dayjs();
+        return {
+          from: now.subtract(7, "day").utc(),
+          to: null,
+          relative: "7d",
+        };
+      }
+    } else {
+      const now = dayjs();
+      return {
+        from: now.subtract(7, "day").utc(),
+        to: null,
+        relative: "7d",
+      };
+    }
+  }, [stateValue]);
+
+  useEffect(() => {
+    if (stateValue) {
+      return;
+    }
+    updateInput(
+      props.name,
+      JSON.stringify({
+        from: dayjs().subtract(7, "day").utc(),
+        to: null,
+        relative: "7d",
+      }),
+      !!stateValue,
+    );
+  }, [stateValue]);
+
+  const onInputChange = (
+    from: dayjs.Dayjs,
+    to?: dayjs.Dayjs | null,
+    relative?: string | null,
+  ) => {
+    updateInput(
+      props.name,
+      JSON.stringify({
+        from,
+        to,
+        relative,
+      }),
+      !!stateValue,
+    );
+  };
+
+  return (
+    <DateRangePicker
+      from={value.from}
+      to={value.to}
+      relative={value.relative}
+      disabled={dataMode !== DashboardDataModeLive}
+      onChange={onInputChange}
+    />
+  );
+};
+
 const definition: IInput = {
   type: "date_range",
-  component: DateRangePicker,
+  component: DateRangePickerInput,
 };
 
 registerInputComponent(definition.type, definition);

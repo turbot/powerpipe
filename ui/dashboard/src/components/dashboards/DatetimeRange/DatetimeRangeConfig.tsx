@@ -1,5 +1,5 @@
 import { DashboardDataModeLive } from "@powerpipe/types";
-import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput/new";
+import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
