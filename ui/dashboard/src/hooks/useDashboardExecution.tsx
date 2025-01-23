@@ -19,6 +19,7 @@ import {
   DashboardDataModeLive,
   DashboardExecutionCompleteEvent,
 } from "@powerpipe/types";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
@@ -71,6 +72,7 @@ export const DashboardExecutionProvider = ({
   );
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
+  const { range } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
   const { search } = useGlobalContextNavigate();
 
@@ -203,38 +205,25 @@ export const DashboardExecutionProvider = ({
       return;
     }
 
-    const { "input.detection_range": detectionRange, ...rest } = inputs || {};
-    let detectionFrom, detectionTo;
-    if (detectionRange) {
-      try {
-        const parsed = JSON.parse(detectionRange);
-        detectionFrom = parsed.from;
-        detectionTo = parsed.to;
-      } catch (err) {
-        console.error("Parse error", err);
-      }
-    }
-
     const dashboardMessage: any = {
       payload: {
         dashboard: {
           full_name: dashboard.full_name,
         },
-        input_values: { inputs: rest },
+        input_values: { inputs },
       },
     };
 
-    if (detectionFrom) {
+    if (range.from) {
       dashboardMessage.payload.input_values.detection_time_ranges =
         dashboardMessage.payload.input_values.detection_time_ranges || {};
       dashboardMessage.payload.input_values.detection_time_ranges.from =
-        detectionFrom;
+        range.from;
     }
-    if (detectionTo) {
+    if (range.to) {
       dashboardMessage.payload.input_values.detection_time_ranges =
         dashboardMessage.payload.input_values.detection_time_ranges || {};
-      dashboardMessage.payload.input_values.detection_time_ranges.to =
-        detectionTo;
+      dashboardMessage.payload.input_values.detection_time_ranges.to = range.to;
     }
 
     if (!!searchPathPrefix.length) {
@@ -275,6 +264,8 @@ export const DashboardExecutionProvider = ({
     dataMode,
     dashboard_name,
     inputs,
+    range.from,
+    range.to,
     searchPathPrefix,
   ]);
 
