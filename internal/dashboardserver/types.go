@@ -169,8 +169,8 @@ type SearchPathMetadata struct {
 }
 
 type DashboardMetadata struct {
-	Database   string              `json:"database"`
-	SearchPath *SearchPathMetadata `json:"search_path"`
+	SupportsSearchPath bool `json:"supports_search_path"`
+	SupportsTimeRange  bool `json:"supports_time_range"`
 }
 
 type DashboardCLIMetadata struct {
