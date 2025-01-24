@@ -13,20 +13,16 @@ const DatetimeRangeConfig = ({ onClose }) => {
     relative?: string | null | undefined,
   ) => {
     if (!from) {
-      console.log("Not set");
       return;
     }
 
     if (range.from === from && range.to === to && range.relative === relative) {
-      console.log("No change");
       return;
     }
 
     setRange({ from, to, relative });
     onClose();
   };
-
-  console.log(range);
 
   return (
     <DatetimeRangePicker

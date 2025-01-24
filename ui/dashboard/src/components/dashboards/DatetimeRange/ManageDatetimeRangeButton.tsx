@@ -40,10 +40,6 @@ const ManageDatetimeRangeButton = () => {
   const { metadata } = useDashboardState();
   const [show, setShow] = useState(false);
 
-  console.log({
-    supports_time_range: metadata?.supports_time_range,
-  });
-
   useEffect(() => {
     setShow(!!metadata?.supports_time_range);
   }, [metadata?.supports_time_range]);

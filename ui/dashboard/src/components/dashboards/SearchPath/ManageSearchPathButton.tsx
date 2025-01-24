@@ -83,10 +83,6 @@ const ManageSearchPathButton = () => {
   const { metadata } = useDashboardState();
   const [show, setShow] = useState(false);
 
-  console.log({
-    supports_search_path: metadata?.supports_search_path,
-  });
-
   useEffect(() => {
     setShow(!!metadata?.supports_search_path);
   }, [metadata?.supports_search_path]);
