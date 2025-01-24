@@ -1,10 +1,11 @@
 import DatetimeRangeConfig from "@powerpipe/components/dashboards/DatetimeRange/DatetimeRangeConfig";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
-import { forwardRef } from "react";
+import { forwardRef, useEffect, useState } from "react";
 import { parseDate } from "@powerpipe/utils/date";
 import { Popover } from "@headlessui/react";
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const PopoverButton = forwardRef((props, ref) => {
   const { range } = useDashboardDatetimeRange();
@@ -36,7 +37,18 @@ const PopoverButton = forwardRef((props, ref) => {
 });
 
 const ManageDatetimeRangeButton = () => {
-  return (
+  const { metadata } = useDashboardState();
+  const [show, setShow] = useState(false);
+
+  console.log({
+    supports_time_range: metadata?.supports_time_range,
+  });
+
+  useEffect(() => {
+    setShow(!!metadata?.supports_time_range);
+  }, [metadata?.supports_time_range]);
+
+  return show ? (
     <Popover className="hidden md:block relative">
       <Popover.Button as={PopoverButton} />
       <Popover.Panel className="absolute left-1/2 z-10 mt-4 flex w-screen max-w-max -translate-x-1/2 px-4">
@@ -47,7 +59,7 @@ const ManageDatetimeRangeButton = () => {
         )}
       </Popover.Panel>
     </Popover>
-  );
+  ) : null;
 };
 
 export default ManageDatetimeRangeButton;

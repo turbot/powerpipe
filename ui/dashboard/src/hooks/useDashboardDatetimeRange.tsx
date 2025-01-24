@@ -7,6 +7,7 @@ import {
 } from "react";
 import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 interface DatetimeRange {
   from: string;
@@ -29,8 +30,10 @@ const DashboardDatetimeRangeContext =
 export const DashboardDatetimeRangeProvider = ({
   children,
 }: DashboardSearchPathProviderProps) => {
+  const { metadata } = useDashboardState();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawDatetimeRange = searchParams.get("datetime_range");
+  const serverSupportsTimeRange = metadata?.supports_time_range;
 
   const datetimeRange = useMemo<DatetimeRange>(() => {
     if (!!rawDatetimeRange) {
@@ -70,7 +73,7 @@ export const DashboardDatetimeRangeProvider = ({
   };
 
   useEffect(() => {
-    if (rawDatetimeRange) {
+    if (!serverSupportsTimeRange || rawDatetimeRange) {
       return;
     }
     initialiseRange({
@@ -79,6 +82,7 @@ export const DashboardDatetimeRangeProvider = ({
       relative: datetimeRange.relative,
     });
   }, [
+    serverSupportsTimeRange,
     rawDatetimeRange,
     datetimeRange.from,
     datetimeRange.to,
