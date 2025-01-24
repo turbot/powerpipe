@@ -37,12 +37,19 @@ const PopoverButton = forwardRef((props, ref) => {
 });
 
 const ManageDatetimeRangeButton = () => {
-  const { metadata } = useDashboardState();
+  const { metadata, dashboard, dashboardsMetadata } = useDashboardState();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    setShow(!!metadata?.supports_time_range);
-  }, [metadata?.supports_time_range]);
+    if (!metadata && !dashboardsMetadata && !dashboard) {
+      return;
+    }
+    if (dashboard && dashboard.name in dashboardsMetadata) {
+      setShow(!!dashboardsMetadata[dashboard.name]?.supports_time_range);
+    } else {
+      setShow(!!metadata?.supports_time_range);
+    }
+  }, [metadata?.supports_time_range, dashboard, dashboardsMetadata]);
 
   return show ? (
     <Popover className="hidden md:block relative">

@@ -80,12 +80,19 @@ const PopoverButton = forwardRef((props, ref) => {
 });
 
 const ManageSearchPathButton = () => {
-  const { metadata } = useDashboardState();
+  const { metadata, dashboard, dashboardsMetadata } = useDashboardState();
   const [show, setShow] = useState(false);
 
   useEffect(() => {
-    setShow(!!metadata?.supports_search_path);
-  }, [metadata?.supports_search_path]);
+    if (!metadata && !dashboardsMetadata && !dashboard) {
+      return;
+    }
+    if (dashboard && dashboard.name in dashboardsMetadata) {
+      setShow(!!dashboardsMetadata[dashboard.name]?.supports_search_path);
+    } else {
+      setShow(!!metadata?.supports_search_path);
+    }
+  }, [metadata?.supports_search_path, dashboard, dashboardsMetadata]);
 
   return show ? (
     <Popover className="hidden md:block relative">
