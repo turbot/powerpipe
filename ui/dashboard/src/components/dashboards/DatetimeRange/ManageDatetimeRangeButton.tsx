@@ -24,7 +24,7 @@ const PopoverButton = forwardRef((props, ref) => {
         {(!range.relative || range.relative === "custom") && (
           <span>
             From: {parseDate(range.from)?.format("")}{" "}
-            {range.to ? <>To: {parseDate(range.to).format("")}</> : ""}
+            {range.to ? <>To: {parseDate(range.to)?.format("")}</> : ""}
           </span>
         )}
         {range.relative && range.relative !== "custom" && (

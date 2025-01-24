@@ -193,9 +193,9 @@ const CustomDatePicker = ({
                 <DayPicker
                   mode="range"
                   selected={{
-                    from: parseDate(tempState.from).toDate(),
+                    from: parseDate(tempState.from)?.toDate(),
                     to: tempState.to
-                      ? parseDate(tempState.to).toDate()
+                      ? parseDate(tempState.to)?.toDate()
                       : undefined,
                   }}
                   onSelect={(selectEvent) => {
@@ -264,7 +264,7 @@ const CustomDatePicker = ({
                     <label>Start date</label>
                     <input
                       type="date"
-                      defaultValue={parseDate(tempState.from).format(
+                      defaultValue={parseDate(tempState.from)?.format(
                         "YYYY-MM-DD",
                       )}
                       onChange={(e) =>
@@ -281,7 +281,7 @@ const CustomDatePicker = ({
                     <label>Start time</label>
                     <input
                       type="time"
-                      defaultValue={parseDate(tempState.from).format(
+                      defaultValue={parseDate(tempState.from)?.format(
                         "HH:mm:ss",
                       )}
                       step="1"
@@ -290,7 +290,7 @@ const CustomDatePicker = ({
                           ...tempState,
                           relative: "custom",
                           from: dayjs(
-                            `${parseDate(tempState.from).format("YYYY-MM-DD")} ${e.target.value}`,
+                            `${parseDate(tempState.from)?.format("YYYY-MM-DD")} ${e.target.value}`,
                           ),
                         });
                       }}
@@ -305,7 +305,7 @@ const CustomDatePicker = ({
                       type="date"
                       defaultValue={
                         tempState.to
-                          ? parseDate(tempState.to).format("YYYY-MM-DD")
+                          ? parseDate(tempState.to)?.format("YYYY-MM-DD")
                           : undefined
                       }
                       onChange={(e) =>
@@ -324,7 +324,7 @@ const CustomDatePicker = ({
                       type="time"
                       defaultValue={
                         tempState.to
-                          ? parseDate(tempState.to).format("HH:mm:ss")
+                          ? parseDate(tempState.to)?.format("HH:mm:ss")
                           : `00:00:00`
                       }
                       step="1"
@@ -336,7 +336,7 @@ const CustomDatePicker = ({
                           ...tempState,
                           relative: "custom",
                           from: dayjs(
-                            `${toTime.format("YYYY-MM-DD")} ${e.target.value}`,
+                            `${toTime?.format("YYYY-MM-DD")} ${e.target.value}`,
                           ),
                         });
                       }}
