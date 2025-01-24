@@ -1,5 +1,5 @@
+import DatetimeRangePicker from "@powerpipe/components/dashboards/DatetimeRange/DatetimeRangePicker";
 import { DashboardDataModeLive } from "@powerpipe/types";
-import { DateRangePicker } from "@powerpipe/components/dashboards/inputs/DateRangePickerInput";
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
@@ -29,7 +29,7 @@ const DatetimeRangeConfig = ({ onClose }) => {
   console.log(range);
 
   return (
-    <DateRangePicker
+    <DatetimeRangePicker
       from={range.from}
       to={range.to}
       relative={range.relative}

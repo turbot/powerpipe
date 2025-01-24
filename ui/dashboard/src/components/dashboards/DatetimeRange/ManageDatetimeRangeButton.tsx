@@ -2,6 +2,7 @@ import DatetimeRangeConfig from "@powerpipe/components/dashboards/DatetimeRange/
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import { forwardRef } from "react";
+import { parseDate } from "@powerpipe/utils/date";
 import { Popover } from "@headlessui/react";
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 
@@ -20,8 +21,15 @@ const PopoverButton = forwardRef((props, ref) => {
           className="inline-block text-foreground-lighter w-5 h-5"
           icon="calendar_month"
         />
-        {!range.relative && <span>{range.to?.format("")}</span>}
-        {range.relative && <span>{range.relative}</span>}
+        {(!range.relative || range.relative === "custom") && (
+          <span>
+            From: {parseDate(range.from)?.format("")}{" "}
+            {range.to ? <>To: {parseDate(range.to).format("")}</> : ""}
+          </span>
+        )}
+        {range.relative && range.relative !== "custom" && (
+          <span>{range.relative}</span>
+        )}
       </>
     </NeutralButton>
   );
