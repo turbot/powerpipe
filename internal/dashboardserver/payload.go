@@ -52,21 +52,28 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 		cliVersion = versionFile.Version
 	}
 
+	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	// populate the backend support flags (supportsSearchPath, supportsTimeRange) from the default database
+	var bs backendSupport
+	bs.setFromDb(defaultDatabase)
+
 	payload := ServerMetadataPayload{
 		Action: "server_metadata",
 		Metadata: ServerMetadata{
 			CLI: DashboardCLIMetadata{
 				Version: cliVersion,
 			},
-			InstalledMods: installedMods,
-			Telemetry:     viper.GetString(constants.ArgTelemetry),
+			InstalledMods:      installedMods,
+			Telemetry:          viper.GetString(constants.ArgTelemetry),
+			SupportsSearchPath: bs.supportsSearchPath,
+			SupportsTimeRange:  bs.supportsTimeRange,
 		},
 	}
 
-	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
-	if err != nil {
-		return nil, err
-	}
 	connectionString, err := defaultDatabase.GetConnectionString()
 	if err != nil {
 		return nil, err
