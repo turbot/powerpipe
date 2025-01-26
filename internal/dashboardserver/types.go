@@ -169,8 +169,8 @@ type SearchPathMetadata struct {
 }
 
 type DashboardMetadata struct {
-	Database   string              `json:"database"`
-	SearchPath *SearchPathMetadata `json:"search_path"`
+	SupportsSearchPath bool `json:"supports_search_path"`
+	SupportsTimeRange  bool `json:"supports_time_range"`
 }
 
 type DashboardCLIMetadata struct {
@@ -178,12 +178,14 @@ type DashboardCLIMetadata struct {
 }
 
 type ServerMetadata struct {
-	Mod           *ModMetadata                   `json:"mod,omitempty"`
-	InstalledMods map[string]*ModMetadata        `json:"installed_mods,omitempty"`
-	CLI           DashboardCLIMetadata           `json:"cli"`
-	Cloud         *steampipeconfig.PipesMetadata `json:"cloud,omitempty"`
-	Telemetry     string                         `json:"telemetry"`
-	SearchPath    *SearchPathMetadata            `json:"search_path"`
+	Mod                *ModMetadata                   `json:"mod,omitempty"`
+	InstalledMods      map[string]*ModMetadata        `json:"installed_mods,omitempty"`
+	CLI                DashboardCLIMetadata           `json:"cli"`
+	Cloud              *steampipeconfig.PipesMetadata `json:"cloud,omitempty"`
+	Telemetry          string                         `json:"telemetry"`
+	SearchPath         *SearchPathMetadata            `json:"search_path"`
+	SupportsSearchPath bool                           `json:"supports_search_path"`
+	SupportsTimeRange  bool                           `json:"supports_time_range"`
 }
 
 type ServerMetadataPayload struct {

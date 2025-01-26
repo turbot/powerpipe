@@ -351,21 +351,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			// TODO KAI verify we are ok to NOT send the cloud metadata here
 			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
-			}
-			_ = session.Write(payload)
-		case "get_dashboard_metadata":
-			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
-			dashboard := s.getResource(request.Payload.Dashboard.FullName)
-			if dashboard == nil {
-				return
-			}
-			payload, err := buildDashboardMetadataPayload(ctx, dashboard, s.workspace)
-			if err != nil {
-				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
@@ -390,6 +378,13 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 				}))
 			}
 			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, opts...)
+
+			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
+			payload, err := buildDashboardMetadataPayload(dashboard)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
+			}
+			_ = session.Write(payload)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
