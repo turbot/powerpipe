@@ -32,23 +32,6 @@ const useGlobalContextNavigate = () => {
   }
 
   return { search: urlSearchParams.toString() };
-
-  // const wrappedNavigate = useCallback(
-  //   (path: string, replace: boolean = false) => {
-  //     const urlSearchParams = new URLSearchParams();
-  //     if (range.to) {
-  //       urlSearchParams.set("datetime_range", JSON.stringify(range));
-  //     }
-  //     if (searchPathPrefix.length) {
-  //       urlSearchParams.set("search_path_prefix", searchPathPrefix.join(","));
-  //     }
-  //     navigate(
-  //       `${path}${urlSearchParams.size ? urlSearchParams.toString() : ""}`,
-  //       { replace },
-  //     );
-  //   },
-  //   [navigate, range, searchPathPrefix],
-  // );
 };
 
 export default useGlobalContextNavigate;

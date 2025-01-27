@@ -9,7 +9,7 @@ import { useEffect, useState } from "react";
 
 // const DateComp
 
-const D = ({
+const Date = ({
   name,
   display_type,
   properties,
@@ -42,8 +42,7 @@ const D = ({
         </label>
       )}
       <input
-        type={display_type === "datetime" ? "datetime-local" : "date"}
-        // type="text"
+        type={display_type === "datetime" ? "datetime-local" : display_type}
         name={name}
         id={name}
         className="flex-1 block bg-dashboard-panel rounded-md border border-black-scale-3 overflow-x-auto text-sm md:text-base disabled:bg-black-scale-1 focus:ring-0"
@@ -56,4 +55,4 @@ const D = ({
   );
 };
 
-export default D;
+export default Date;

@@ -1,4 +1,4 @@
-import D from "@powerpipe/components/dashboards/inputs/D";
+import Date from "@powerpipe/components/dashboards/inputs/Date";
 import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import {
   IInput,
@@ -7,7 +7,7 @@ import {
 
 const DateInput = (props: InputProps) => {
   return (
-    <D name={props.name} display_type="date" properties={props.properties} />
+    <Date name={props.name} display_type="date" properties={props.properties} />
   );
 };
 

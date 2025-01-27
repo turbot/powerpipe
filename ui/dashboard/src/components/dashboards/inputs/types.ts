@@ -37,6 +37,7 @@ export type InputType =
   | "date"
   | "datetime"
   | "date_range"
+  | "datetime_range"
   | "hidden"
   | "multicombo"
   | "multiselect"

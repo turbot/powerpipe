@@ -573,8 +573,11 @@ const DatetimeRangePicker = ({
     }));
   };
 
+  // const backgroudColor = header ? "bg-white" : "bg-dashboard";
+  // const active;
+
   return (
-    <div className="flex rounded-md border border-black-scale-3">
+    <div className="inline-flex rounded-md border border-black-scale-3">
       {presets.map((preset, index) => {
         const presetClassName = classNames(
           "py-1.5 px-2.5 rounded-md",
@@ -585,8 +588,8 @@ const DatetimeRangePicker = ({
           state.relative === preset.value ||
             (!presets.find((p) => p.value === state.relative) &&
               preset.value === "custom")
-            ? "bg-dashboard border-divide"
-            : "text-foreground-light border-dashboard-panel",
+            ? "bg-dashboard"
+            : "bg-dashboard-panel text-foreground-light",
         );
         if (preset.value === "custom") {
           return (

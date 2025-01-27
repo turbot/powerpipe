@@ -10,7 +10,7 @@ import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo } from "react";
 
-const DateRangePickerInput = (props: InputProps) => {
+const DatetimeRangeInput = (props: InputProps) => {
   const { dataMode } = useDashboardState();
   const { inputs, updateInput } = useDashboardInputs();
   const stateValue = inputs[props.name];
@@ -88,8 +88,8 @@ const DateRangePickerInput = (props: InputProps) => {
 };
 
 const definition: IInput = {
-  type: "date_range",
-  component: DateRangePickerInput,
+  type: "datetime_range",
+  component: DatetimeRangeInput,
 };
 
 registerInputComponent(definition.type, definition);
