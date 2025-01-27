@@ -20,9 +20,9 @@ const DashboardHeader = () => {
         <PowerpipeLogo />
         <div className="flex flex-grow items-center space-x-2 md:space-x-4">
           <DashboardSearch />
+          <DashboardTagGroupSelect />
           <ManageDatetimeRangeButton />
           <ManageSearchPathButton />
-          <DashboardTagGroupSelect />
           <SplitSnapshotButton />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
