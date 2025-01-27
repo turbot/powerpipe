@@ -1,4 +1,4 @@
-import SearchPathEditor from "@powerpipe/components/dashboards/SearchPathEditor";
+import SearchPathEditor from "@powerpipe/components/dashboards/SearchPath/SearchPathEditor";
 import { SearchPathMetadata } from "@powerpipe/types";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";

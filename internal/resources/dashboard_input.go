@@ -114,8 +114,11 @@ func (i *DashboardInput) ValidateQuery() hcl.Diagnostics {
 	// inputs with placeholder or options, or text type do not need a query
 	if i.Placeholder != nil ||
 		len(i.Options) > 0 ||
-		typehelpers.SafeString(i.Type) == "text" ||
-		typehelpers.SafeString(i.Type) == "date_range" {
+		typehelpers.SafeString(i.Type) == "date" ||
+		typehelpers.SafeString(i.Type) == "datetime" ||
+		typehelpers.SafeString(i.Type) == "date_range" ||
+		typehelpers.SafeString(i.Type) == "datetime_range" ||
+		typehelpers.SafeString(i.Type) == "text" {
 		return nil
 	}
 

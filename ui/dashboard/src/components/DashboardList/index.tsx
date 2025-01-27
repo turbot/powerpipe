@@ -1,8 +1,8 @@
-import dayjs from "dayjs";
+import CallToActions from "../CallToActions";
 import get from "lodash/get";
 import sortBy from "lodash/sortBy";
-import CallToActions from "../CallToActions";
 import LoadingIndicator from "../dashboards/LoadingIndicator";
+import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
 import {
   AvailableDashboard,
   AvailableDashboardsDictionary,
@@ -17,7 +17,6 @@ import { getComponent } from "../dashboards";
 import { Noop } from "@powerpipe/types/func";
 import { stringToColor } from "@powerpipe/utils/color";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
-import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useParams } from "react-router-dom";
 
@@ -46,7 +45,7 @@ type SectionProps = {
   title: string;
   dashboards: AvailableDashboardWithMod[];
   searchValue: string;
-  searchPathPrefix: string[];
+  globalSearchContext: string;
 };
 
 const DashboardTagWrapper = ({
@@ -83,62 +82,30 @@ const DashboardTag = ({ tagKey, tagValue, onClick }: DashboardTagProps) => (
   </span>
 );
 
-const TitlePart = ({ part, searchPathPrefix }) => {
+const TitlePart = ({ part, globalSearchContext }) => {
   const ExternalLink = getComponent("external_link");
-
-  const urlSearch = new URLSearchParams();
-  if (!!searchPathPrefix.length) {
-    urlSearch.set("search_path_prefix", searchPathPrefix);
-  }
-  if (part.type === "detection" || part.benchmark_type === "detection") {
-    urlSearch.set(
-      "input.detection_range",
-      JSON.stringify({
-        from: dayjs().subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      }),
-    );
-  }
-
-  const search = urlSearch.toString();
 
   return (
     <ExternalLink
       className="link-highlight hover:underline"
       ignoreDataMode
-      to={`/${part.full_name}${!!search ? `?${search}` : ""}`}
+      to={`/${part.full_name}${!!globalSearchContext ? `?${globalSearchContext}` : ""}`}
     >
       {part.title || part.short_name}
     </ExternalLink>
   );
 };
 
-const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
+const BenchmarkTitle = ({ benchmark, searchValue, globalSearchContext }) => {
   const { dashboardsMap } = useDashboardState();
   const ExternalLink = getComponent("external_link");
-  const urlSearch = new URLSearchParams();
-  if (!!searchPathPrefix.length) {
-    urlSearch.set("search_path_prefix", searchPathPrefix);
-  }
-  if (benchmark.benchmark_type === "detection") {
-    urlSearch.set(
-      "input.detection_range",
-      JSON.stringify({
-        from: dayjs().subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      }),
-    );
-  }
 
   if (!searchValue) {
-    const search = urlSearch.toString();
     return (
       <ExternalLink
         className="link-highlight hover:underline"
         ignoreDataMode
-        to={`/${benchmark.full_name}${!!search ? `?${search}` : ""}`}
+        to={`/${benchmark.full_name}${!!globalSearchContext ? `?${globalSearchContext}` : ""}`}
       >
         {benchmark.title || benchmark.short_name}
       </ExternalLink>
@@ -165,7 +132,7 @@ const BenchmarkTitle = ({ benchmark, searchValue, searchPathPrefix }) => {
           {!!index && (
             <span className="px-1 text-sm text-foreground-lighter">{">"}</span>
           )}
-          <TitlePart part={part} searchPathPrefix={searchPathPrefix} />
+          <TitlePart part={part} globalSearchContext={globalSearchContext} />
         </Fragment>
       ))}
     </>
@@ -176,7 +143,7 @@ const Section = ({
   title,
   dashboards,
   searchValue,
-  searchPathPrefix,
+  globalSearchContext,
 }: SectionProps) => {
   return (
     <div className="space-y-2">
@@ -188,13 +155,16 @@ const Section = ({
               dashboard.type === "snapshot" ||
               dashboard.type === "control" ||
               dashboard.type === "detection") && (
-              <TitlePart part={dashboard} searchPathPrefix={searchPathPrefix} />
+              <TitlePart
+                part={dashboard}
+                globalSearchContext={globalSearchContext}
+              />
             )}
             {dashboard.type === "benchmark" && (
               <BenchmarkTitle
                 benchmark={dashboard}
                 searchValue={searchValue}
-                searchPathPrefix={searchPathPrefix}
+                globalSearchContext={globalSearchContext}
               />
             )}
           </div>
@@ -319,7 +289,7 @@ const DashboardList = () => {
     search: { value: searchValue, groupBy: searchGroupBy },
     updateSearchValue,
   } = useDashboardSearch();
-  const { searchPathPrefix } = useDashboardSearchPath();
+  const { search: globalSearchContext } = useGlobalContextNavigate();
   const [unfilteredDashboards, setUnfilteredDashboards] = useState<
     AvailableDashboardWithMod[]
   >([]);
@@ -455,7 +425,7 @@ const DashboardList = () => {
                   title={section.title}
                   dashboards={section.dashboards}
                   searchValue={searchValue}
-                  searchPathPrefix={searchPathPrefix}
+                  globalSearchContext={globalSearchContext}
                 />
               ))}
             </div>
