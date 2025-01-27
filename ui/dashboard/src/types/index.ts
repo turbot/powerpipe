@@ -273,6 +273,8 @@ export type ServerMetadata = {
   cloud?: CloudServerMetadata;
   telemetry: "info" | "none";
   search_path: SearchPathMetadata;
+  supports_search_path: boolean;
+  supports_time_range: boolean;
 };
 
 export type DashboardLayoutNode = {
@@ -368,6 +370,8 @@ export type SearchPathMetadata = {
 export type DashboardMetadata = {
   database?: string | null;
   search_path: SearchPathMetadata;
+  supports_search_path: boolean;
+  supports_time_range: boolean;
 };
 
 export type DashboardsMetadataDictionary = {

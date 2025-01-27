@@ -17,7 +17,16 @@ const DashboardSearch = () => {
     setInnerValue(() => search.value);
   }, [search.value]);
 
-  useDebouncedEffect(() => updateSearchValue(innerValue), 250, [innerValue]);
+  useDebouncedEffect(
+    () => {
+      if (search.value === innerValue) {
+        return;
+      }
+      updateSearchValue(innerValue);
+    },
+    250,
+    [search.value, innerValue, updateSearchValue],
+  );
 
   return (
     <div className="w-full sm:w-56 md:w-72 lg:w-96">

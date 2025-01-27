@@ -154,8 +154,9 @@ const SplitSnapshotButton = () => {
   let actions: KeyValuePairs<SplitSnapshotAction> = {
     open: {
       icon: "folder_open",
-      label: "Open",
-      title: "Open snapshot.",
+      // label: "Open snapshot…",
+      label: "Open…",
+      title: "Open snapshot…",
       action: () => openSnapshotRef.current?.click(),
     },
     save: {

@@ -1,13 +1,13 @@
 import Badge from "@powerpipe/components/Badge";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
-import SearchPathConfig from "../dashboards/SearchPathConfig";
+import SearchPathConfig from "@powerpipe/components/dashboards/SearchPath/SearchPathConfig";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
 } from "@powerpipe/types";
-import { forwardRef, Fragment } from "react";
-import { Popover, Transition } from "@headlessui/react";
+import { forwardRef, useEffect, useState } from "react";
+import { Popover } from "@headlessui/react";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
@@ -80,28 +80,32 @@ const PopoverButton = forwardRef((props, ref) => {
 });
 
 const ManageSearchPathButton = () => {
-  return (
+  const { metadata, dashboard, dashboardsMetadata } = useDashboardState();
+  const [show, setShow] = useState(false);
+
+  useEffect(() => {
+    if (!metadata && !dashboardsMetadata && !dashboard) {
+      return;
+    }
+    if (dashboard && dashboard.name in dashboardsMetadata) {
+      setShow(!!dashboardsMetadata[dashboard.name]?.supports_search_path);
+    } else {
+      setShow(!!metadata?.supports_search_path);
+    }
+  }, [metadata?.supports_search_path, dashboard, dashboardsMetadata]);
+
+  return show ? (
     <Popover className="hidden md:block relative">
       <Popover.Button as={PopoverButton} />
-      <Transition
-        as={Fragment}
-        enter="transition ease-out duration-200"
-        enterFrom="opacity-0 translate-y-1"
-        enterTo="opacity-100 translate-y-0"
-        leave="transition ease-in duration-150"
-        leaveFrom="opacity-100 translate-y-0"
-        leaveTo="opacity-0 translate-y-1"
-      >
-        <Popover.Panel className="absolute left-1/2 z-10 mt-4 flex w-screen max-w-max -translate-x-1/2 px-4">
-          {({ close }) => (
-            <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
-              <SearchPathConfig onClose={close} />
-            </div>
-          )}
-        </Popover.Panel>
-      </Transition>
+      <Popover.Panel className="absolute left-1/2 z-10 mt-4 flex w-screen max-w-max -translate-x-1/2 px-4">
+        {({ close }) => (
+          <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
+            <SearchPathConfig onClose={close} />
+          </div>
+        )}
+      </Popover.Panel>
     </Popover>
-  );
+  ) : null;
 };
 
 export default ManageSearchPathButton;

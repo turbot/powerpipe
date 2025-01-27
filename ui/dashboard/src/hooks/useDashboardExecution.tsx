@@ -4,6 +4,7 @@ import useDashboardWebSocket, {
 } from "@powerpipe/hooks/useDashboardWebSocket";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import useDeepCompareEffect from "use-deep-compare-effect";
+import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
 import {
   createContext,
   ReactNode,
@@ -18,6 +19,7 @@ import {
   DashboardDataModeLive,
   DashboardExecutionCompleteEvent,
 } from "@powerpipe/types";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
@@ -70,7 +72,9 @@ export const DashboardExecutionProvider = ({
   );
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
+  const { range } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
+  const { search } = useGlobalContextNavigate();
 
   useEffect(() => {
     if (
@@ -86,10 +90,7 @@ export const DashboardExecutionProvider = ({
     sendMessage({
       action: SocketActions.CLEAR_DASHBOARD,
     });
-    navigate(
-      `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
-      { replace: true },
-    );
+    navigate(`../${search ? `?${search}` : ""}`, { replace: true });
     setLastChangedInput(null);
     closeSidePanel();
     dispatch({
@@ -102,7 +103,7 @@ export const DashboardExecutionProvider = ({
       return;
     }
     clearDashboard();
-  }, [dispatch, pathname, searchPathPrefix]);
+  }, [dispatch, pathname, search]);
 
   const loadSnapshot = useCallback(
     (
@@ -199,24 +200,9 @@ export const DashboardExecutionProvider = ({
         type: DashboardActions.SELECT_DASHBOARD,
         dashboard: null,
       });
-      navigate(
-        `../${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`,
-        { replace: true },
-      );
+      navigate(`../${search}`, { replace: true });
       setLastChangedInput(null);
       return;
-    }
-
-    const { "input.detection_range": detectionRange, ...rest } = inputs || {};
-    let detectionFrom, detectionTo;
-    if (detectionRange) {
-      try {
-        const parsed = JSON.parse(detectionRange);
-        detectionFrom = parsed.from;
-        detectionTo = parsed.to;
-      } catch (err) {
-        console.error("Parse error", err);
-      }
     }
 
     const dashboardMessage: any = {
@@ -224,21 +210,19 @@ export const DashboardExecutionProvider = ({
         dashboard: {
           full_name: dashboard.full_name,
         },
-        input_values: { inputs: rest },
+        inputs,
       },
     };
 
-    if (detectionFrom) {
-      dashboardMessage.payload.input_values.detection_time_ranges =
-        dashboardMessage.payload.input_values.detection_time_ranges || {};
-      dashboardMessage.payload.input_values.detection_time_ranges.from =
-        detectionFrom;
+    if (range.from) {
+      dashboardMessage.payload.datetime_range =
+        dashboardMessage.payload.datetime_range || {};
+      dashboardMessage.payload.datetime_range.from = range.from;
     }
-    if (detectionTo) {
-      dashboardMessage.payload.input_values.detection_time_ranges =
-        dashboardMessage.payload.input_values.detection_time_ranges || {};
-      dashboardMessage.payload.input_values.detection_time_ranges.to =
-        detectionTo;
+    if (range.to) {
+      dashboardMessage.payload.datetime_range =
+        dashboardMessage.payload.datetime_range || {};
+      dashboardMessage.payload.datetime_range.to = range.to;
     }
 
     if (!!searchPathPrefix.length) {
@@ -279,6 +263,8 @@ export const DashboardExecutionProvider = ({
     dataMode,
     dashboard_name,
     inputs,
+    range.from,
+    range.to,
     searchPathPrefix,
   ]);
 
