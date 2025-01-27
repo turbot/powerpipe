@@ -1,8 +1,4 @@
-<<<<<<<< HEAD:ui/dashboard/src/components/dashboards/grouping/FilterEditor/index.test.ts
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor"; // Replace with the actual module path
-========
-import { validateFilter } from "@powerpipe/components/dashboards/grouping/CheckFilterEditor"; // Replace with the actual module path
->>>>>>>> 17ffa8e (Add support for Detections and DetectionBenchmarks):ui/dashboard/src/components/dashboards/grouping/CheckFilterEditor/index.test.ts
 
 interface TestCase {
   name: string;

@@ -469,29 +469,8 @@ const FilterEditorItem = ({
           onChange={onTypeChange}
         />
       </div>
-<<<<<<<< HEAD:ui/dashboard/src/components/dashboards/grouping/FilterEditor/index.tsx
       <div>
         <FilterOperatorSelect
-========
-      {/* {(item.type === "dimension" || item.type === "control_tag") && (
-        <>
-          <span>=</span>
-          <div className="grow min-w-40 max-w-72">
-            <CheckFilterKeySelect
-              index={index}
-              item={item}
-              filterKey={item.key}
-              type={item.type}
-              update={update}
-            />
-          </div>
-        </>
-      )} */}
-      {item.operator === "equal" && <span>=</span>}
-      {item.operator === "not_equal" && <span>!=</span>}
-      <div className="grow min-w-52 max-w-72">
-        <CheckFilterValueSelect
->>>>>>>> 17ffa8e (Add support for Detections and DetectionBenchmarks):ui/dashboard/src/components/dashboards/grouping/CheckFilterEditor/index.tsx
           index={index}
           operator={innerItem.operator}
           onChange={onOperatorChange}

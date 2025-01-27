@@ -1,25 +1,13 @@
 import {
-<<<<<<<< HEAD:ui/dashboard/src/hooks/useDetectionGroupingConfig.ts
   DetectionDisplayGroupType,
   DetectionDisplayGroup,
-========
-  CheckDisplayGroup,
-  CheckDisplayGroupType,
->>>>>>>> 17ffa8e (Add support for Detections and DetectionBenchmarks):ui/dashboard/src/hooks/useCheckGroupingConfig.ts
 } from "@powerpipe/components/dashboards/grouping/common";
 import { useMemo } from "react";
 import { useSearchParams } from "react-router-dom";
 
 const groupingKeys = [
   "benchmark",
-<<<<<<<< HEAD:ui/dashboard/src/hooks/useDetectionGroupingConfig.ts
   "detection",
-========
-  "control",
-  "control_tag",
-  "detection",
-  "detection_benchmark",
->>>>>>>> 17ffa8e (Add support for Detections and DetectionBenchmarks):ui/dashboard/src/hooks/useCheckGroupingConfig.ts
   "detection_tag",
   "dimension",
   "reason",
