@@ -1,8 +1,10 @@
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useSearchParams } from "react-router-dom";
 
 const useGlobalContextNavigate = () => {
+  const [existingSearchParams] = useSearchParams();
   const { metadata } = useDashboardState();
   const { range } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
@@ -10,15 +12,24 @@ const useGlobalContextNavigate = () => {
   const serverSupportsTimeRange = metadata?.supports_time_range;
 
   const urlSearchParams = new URLSearchParams();
-  if (serverSupportsTimeRange) {
+  if (
+    (metadata && serverSupportsTimeRange) ||
+    existingSearchParams.has("datetime_range")
+  ) {
     urlSearchParams.set("datetime_range", JSON.stringify(range));
-  } else {
+  } else if (metadata) {
     urlSearchParams.delete("datetime_range");
   }
 
-  if (serverSupportsSearchPath && searchPathPrefix.length) {
+  if (
+    (metadata && serverSupportsSearchPath && searchPathPrefix.length) ||
+    existingSearchParams.has("search_path_prefix")
+  ) {
     urlSearchParams.set("search_path_prefix", searchPathPrefix.join(","));
-  } else {
+  } else if (
+    metadata &&
+    (!serverSupportsSearchPath || !searchPathPrefix.length)
+  ) {
     urlSearchParams.delete("search_path_prefix");
   }
 

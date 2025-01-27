@@ -5,15 +5,24 @@ import {
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
 
-const DateInput = (props: InputProps) => {
+// const Foo = () => {
+//   return <>Bar</>;
+// };
+
+const DatetimeInput = (props: InputProps) => {
+  // return <Foo />;
   return (
-    <D name={props.name} display_type="date" properties={props.properties} />
+    <D
+      name={props.name}
+      display_type="datetime"
+      properties={props.properties}
+    />
   );
 };
 
 const definition: IInput = {
-  type: "date",
-  component: DateInput,
+  type: "datetime",
+  component: DatetimeInput,
 };
 
 registerInputComponent(definition.type, definition);

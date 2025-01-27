@@ -447,7 +447,11 @@ const DatetimeRangePicker = ({
     if (state.showCustom) {
       return;
     }
-    onChange(state.from, state.to, state.relative);
+    onChange(
+      state.from.toISOString(),
+      state.to?.toISOString() || null,
+      state.relative,
+    );
     // updateInput(
     //   props.name,
     //   JSON.stringify({
@@ -570,82 +574,83 @@ const DatetimeRangePicker = ({
   };
 
   return (
-    <div className="flex flex-col">
-      <div className="inline-flex space-x-2">
-        {presets.map((preset) => {
-          const presetClassName = classNames(
-            "py-1.5 px-2.5 rounded-md border bg-dashboard-panel",
-            disabled ? null : "cursor-pointer",
-            state.relative === preset.value ||
-              (!presets.find((p) => p.value === state.relative) &&
-                preset.value === "custom")
-              ? "font-bold border-divide"
-              : "text-foreground-light font-light border-dashboard-panel",
-          );
-          if (preset.value === "custom") {
-            return (
-              <Popover key={preset.value} className="relative">
-                <Popover.Button
-                  ref={setReferenceElement}
-                  as="div"
-                  className={presetClassName}
-                  disabled={disabled}
-                >
-                  {preset.label}
-                </Popover.Button>
-                <Popover.Panel className="absolute z-10 pt-px">
-                  {({ close }) =>
-                    createPortal(
-                      <ThemeProvider>
-                        <ThemeWrapper>
-                          <div
-                            // @ts-ignore
-                            ref={setPopperElement}
-                            style={{ ...styles.popper }}
-                            {...attributes.popper}
-                            onClick={(e) => e.stopPropagation()}
-                          >
-                            <CustomDatePicker
-                              duration={duration}
-                              tempState={tempState}
-                              unitOfTime={unitOfTime}
-                              setDuration={setDuration}
-                              setTempState={setTempState}
-                              setUnitOfTime={setUnitOfTime}
-                              onApply={() => {
-                                handleApply();
-                                close();
-                              }}
-                              onCancel={() => {
-                                handleCancel();
-                                close();
-                              }}
-                              onTimeOptionClick={handleTimeOptionClick}
-                            />
-                          </div>
-                        </ThemeWrapper>
-                      </ThemeProvider>,
-                      // @ts-ignore as this element definitely exists
-                      document.getElementById("portals"),
-                    )
-                  }
-                </Popover.Panel>
-              </Popover>
-            );
-          }
+    <div className="flex rounded-md border border-black-scale-3">
+      {presets.map((preset, index) => {
+        const presetClassName = classNames(
+          "py-1.5 px-2.5 rounded-md",
+          state.showCustom ? null : "border border-t-0 border-b-0",
+          index === 0 ? "border-l-0" : null,
+          index === presets.length - 1 ? "border-r-0" : null,
+          disabled ? null : "cursor-pointer",
+          state.relative === preset.value ||
+            (!presets.find((p) => p.value === state.relative) &&
+              preset.value === "custom")
+            ? "bg-dashboard border-divide"
+            : "text-foreground-light border-dashboard-panel",
+        );
+        if (preset.value === "custom") {
           return (
-            <div
-              key={preset.value}
-              onClick={
-                disabled ? undefined : () => handlePresetChange(preset.value)
-              }
-              className={presetClassName}
-            >
-              {preset.label}
-            </div>
+            <Popover key={preset.value} className="relative">
+              <Popover.Button
+                ref={setReferenceElement}
+                as="div"
+                className={presetClassName}
+                disabled={disabled}
+              >
+                {preset.label}
+              </Popover.Button>
+              <Popover.Panel className="absolute z-10 pt-px">
+                {({ close }) =>
+                  createPortal(
+                    <ThemeProvider>
+                      <ThemeWrapper>
+                        <div
+                          // @ts-ignore
+                          ref={setPopperElement}
+                          style={{ ...styles.popper }}
+                          {...attributes.popper}
+                          onClick={(e) => e.stopPropagation()}
+                        >
+                          <CustomDatePicker
+                            duration={duration}
+                            tempState={tempState}
+                            unitOfTime={unitOfTime}
+                            setDuration={setDuration}
+                            setTempState={setTempState}
+                            setUnitOfTime={setUnitOfTime}
+                            onApply={() => {
+                              handleApply();
+                              close();
+                            }}
+                            onCancel={() => {
+                              handleCancel();
+                              close();
+                            }}
+                            onTimeOptionClick={handleTimeOptionClick}
+                          />
+                        </div>
+                      </ThemeWrapper>
+                    </ThemeProvider>,
+                    // @ts-ignore as this element definitely exists
+                    document.getElementById("portals"),
+                  )
+                }
+              </Popover.Panel>
+            </Popover>
           );
-        })}
-      </div>
+        }
+        return (
+          <div
+            key={preset.value}
+            onClick={
+              disabled ? undefined : () => handlePresetChange(preset.value)
+            }
+            className={presetClassName}
+          >
+            {preset.label}
+          </div>
+        );
+      })}
     </div>
   );
 };

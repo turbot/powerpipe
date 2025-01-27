@@ -1,19 +1,19 @@
 import D from "@powerpipe/components/dashboards/inputs/D";
-import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 import {
   IInput,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
+import { registerInputComponent } from "@powerpipe/components/dashboards/inputs";
 
-const DateInput = (props: InputProps) => {
+const TimeInput = (props: InputProps) => {
   return (
-    <D name={props.name} display_type="date" properties={props.properties} />
+    <D name={props.name} display_type="time" properties={props.properties} />
   );
 };
 
 const definition: IInput = {
-  type: "date",
-  component: DateInput,
+  type: "time",
+  component: TimeInput,
 };
 
 registerInputComponent(definition.type, definition);

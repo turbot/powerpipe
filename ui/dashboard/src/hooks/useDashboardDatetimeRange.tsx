@@ -33,6 +33,7 @@ export const DashboardDatetimeRangeProvider = ({
   const { metadata } = useDashboardState();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawDatetimeRange = searchParams.get("datetime_range");
+
   const serverSupportsTimeRange = metadata?.supports_time_range;
 
   const datetimeRange = useMemo<DatetimeRange>(() => {
