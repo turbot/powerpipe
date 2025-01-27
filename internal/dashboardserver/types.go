@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"gopkg.in/olahol/melody.v1"
@@ -115,11 +116,22 @@ type ClientRequestDashboardPayload struct {
 }
 
 type ClientRequestPayload struct {
-	Dashboard        ClientRequestDashboardPayload `json:"dashboard"`
-	InputValues      *dashboardexecute.InputValues `json:"input_values"`
-	ChangedInput     string                        `json:"changed_input"`
-	SearchPath       []string                      `json:"search_path"`
-	SearchPathPrefix []string                      `json:"search_path_prefix"`
+	Dashboard ClientRequestDashboardPayload `json:"dashboard"`
+
+	Inputs             map[string]interface{} `json:"inputs"`
+	DetectionTimeRange utils.TimeRange        `json:"datetime_ranges"`
+
+	ChangedInput     string   `json:"changed_input"`
+	SearchPath       []string `json:"search_path"`
+	SearchPathPrefix []string `json:"search_path_prefix"`
+}
+
+func (p *ClientRequestPayload) InputValues() *dashboardexecute.InputValues {
+	// construct input values from payload
+	return &dashboardexecute.InputValues{
+		Inputs:             p.Inputs,
+		DetectionTimeRange: p.DetectionTimeRange,
+	}
 }
 
 type ClientRequest struct {
