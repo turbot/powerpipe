@@ -119,7 +119,7 @@ type ClientRequestPayload struct {
 	Dashboard ClientRequestDashboardPayload `json:"dashboard"`
 
 	Inputs             map[string]interface{} `json:"inputs"`
-	DetectionTimeRange utils.TimeRange        `json:"detection_time_ranges"`
+	DetectionTimeRange utils.TimeRange        `json:"datetime_ranges"`
 
 	ChangedInput     string   `json:"changed_input"`
 	SearchPath       []string `json:"search_path"`
