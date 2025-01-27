@@ -367,7 +367,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			if dashboard == nil {
 				return
 			}
-			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
+
+			inputValues := request.Payload.InputValues()
+			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, inputValues)
 
 			// was a search path passed into the execute command?
 			var opts []backend.BackendOption
@@ -377,7 +379,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 					SearchPathPrefix: request.Payload.SearchPathPrefix,
 				}))
 			}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, opts...)
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
 
 			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
 			payload, err := buildDashboardMetadataPayload(dashboard)
@@ -388,7 +390,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
-			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues)
+			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues())
 			snap, err := dashboardexecute.Executor.LoadSnapshot(ctx, sessionId, snapshotName, s.workspace)
 			// TACTICAL- handle with error message
 			error_helpers.FailOnError(err)
@@ -400,8 +402,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.writePayloadToSession(sessionId, payload)
 			OutputReady(ctx, fmt.Sprintf("Show snapshot complete: %s", snapshotName))
 		case "input_changed":
-			s.setDashboardInputsForSession(sessionId, request.Payload.InputValues)
-			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, request.Payload.InputValues, request.Payload.ChangedInput)
+			inputValues := request.Payload.InputValues()
+			s.setDashboardInputsForSession(sessionId, inputValues)
+			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, inputValues, request.Payload.ChangedInput)
 		case "clear_dashboard":
 			s.setDashboardInputsForSession(sessionId, nil)
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
