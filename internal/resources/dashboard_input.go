@@ -118,7 +118,8 @@ func (i *DashboardInput) ValidateQuery() hcl.Diagnostics {
 		typehelpers.SafeString(i.Type) == "datetime" ||
 		typehelpers.SafeString(i.Type) == "date_range" ||
 		typehelpers.SafeString(i.Type) == "datetime_range" ||
-		typehelpers.SafeString(i.Type) == "text" {
+		typehelpers.SafeString(i.Type) == "text" ||
+		typehelpers.SafeString(i.Type) == "time" {
 		return nil
 	}
 
