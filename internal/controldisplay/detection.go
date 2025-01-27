@@ -120,21 +120,21 @@ func (r DetectionRenderer) Render() string {
 		}
 
 		// TODO: #graza figure out what we want to show for the line content and set it - for now build a string and just display that
-		var displayText string
+		var displayValues []string
 		for _, displayColumn := range r.run.Resource.DisplayColumns {
+
 			if val, ok := row[displayColumn]; ok {
 				switch v := val.(type) {
 				case time.Time:
-					displayText += fmt.Sprintf("%s ", v.Format("2006-01-02 15:04:05"))
+					displayValues = append(displayValues, v.Format("2006-01-02 15:04:05"))
 				default:
-					displayText += fmt.Sprintf("%v ", v)
+					displayValues = append(displayValues, fmt.Sprintf("%v", v))
 				}
 			}
 		}
-		displayText = strings.TrimSpace(displayText)
 
 		resultRenderer := NewDetectionResultRenderer(
-			displayText,
+			displayValues,
 			dimensions,
 			r.colorGenerator,
 			r.width,

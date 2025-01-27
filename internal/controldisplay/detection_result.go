@@ -2,6 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/spf13/viper"
 
@@ -13,7 +14,7 @@ import (
 // TODO dimensions???
 
 type DetectionResultRenderer struct {
-	displayText    string
+	displayValues  []string
 	rows           []map[string]any
 	colorGenerator *controlexecute.DimensionColorGenerator
 
@@ -25,9 +26,9 @@ type DetectionResultRenderer struct {
 	dimensions []controlexecute.Dimension
 }
 
-func NewDetectionResultRenderer(displayText string, dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *DetectionResultRenderer {
+func NewDetectionResultRenderer(displayValues []string, dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *DetectionResultRenderer {
 	return &DetectionResultRenderer{
-		displayText:    displayText,
+		displayValues:  displayValues,
 		dimensions:     dimensions,
 		colorGenerator: colorGenerator,
 		width:          width,
@@ -44,6 +45,14 @@ func (r DetectionResultRenderer) Render() string {
 	// figure out how much width we have available for the  dimensions, allowing the minimum for the reason
 	availableWidth := r.width - indentWidth
 
+	// divide availableWidth by the number of displayValues and round down
+	// this will give us the width of each displayValue need to take into account one space between each displayValue
+	displayValueWidth := int(math.Floor(float64(availableWidth)/float64(len(r.displayValues)))) - 1
+	var displayValueString string
+	for _, v := range r.displayValues {
+		displayValueString += fmt.Sprintf("%-*s ", displayValueWidth, helpers.TruncateString(v, displayValueWidth))
+	}
+
 	// for now give this all to reason
 	//availableDimensionWidth := availableWidth
 	//var dimensionsString string
@@ -54,12 +63,10 @@ func (r DetectionResultRenderer) Render() string {
 	//	availableWidth -= dimensionWidth
 	//}
 
-	availableWidth = availableWidth - len(r.displayText)
-
 	// is there any room for a spacer
 	// spacerString := NewSpacerRenderer(availableWidth).Render()
 
 	// now put these all together
-	str := fmt.Sprintf("%s%s", formattedIndent, r.displayText)
+	str := fmt.Sprintf("%s%s", formattedIndent, displayValueString)
 	return str
 }
