@@ -12,25 +12,23 @@ const useGlobalContextNavigate = () => {
   const serverSupportsTimeRange = metadata?.supports_time_range;
 
   const urlSearchParams = new URLSearchParams();
-  if (
-    (metadata && serverSupportsTimeRange) ||
-    existingSearchParams.has("datetime_range")
-  ) {
+  if (metadata && serverSupportsTimeRange) {
     urlSearchParams.set("datetime_range", JSON.stringify(range));
-  } else if (metadata) {
+  } else if (metadata && !serverSupportsTimeRange) {
     urlSearchParams.delete("datetime_range");
+  } else if (existingSearchParams.has("datetime_range")) {
+    urlSearchParams.set("datetime_range", JSON.stringify(range));
   }
 
-  if (
-    (metadata && serverSupportsSearchPath && searchPathPrefix.length) ||
-    existingSearchParams.has("search_path_prefix")
-  ) {
+  if (metadata && serverSupportsSearchPath && searchPathPrefix.length) {
     urlSearchParams.set("search_path_prefix", searchPathPrefix.join(","));
   } else if (
     metadata &&
     (!serverSupportsSearchPath || !searchPathPrefix.length)
   ) {
     urlSearchParams.delete("search_path_prefix");
+  } else if (existingSearchParams.has("search_path_prefix")) {
+    urlSearchParams.set("search_path_prefix", searchPathPrefix.join(","));
   }
 
   return { search: urlSearchParams.toString() };

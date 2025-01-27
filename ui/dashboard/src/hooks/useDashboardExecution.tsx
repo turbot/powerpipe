@@ -210,20 +210,19 @@ export const DashboardExecutionProvider = ({
         dashboard: {
           full_name: dashboard.full_name,
         },
-        input_values: { inputs },
+        inputs,
       },
     };
 
     if (range.from) {
-      dashboardMessage.payload.input_values.detection_time_ranges =
-        dashboardMessage.payload.input_values.detection_time_ranges || {};
-      dashboardMessage.payload.input_values.detection_time_ranges.from =
-        range.from;
+      dashboardMessage.payload.datetime_range =
+        dashboardMessage.payload.datetime_range || {};
+      dashboardMessage.payload.datetime_range.from = range.from;
     }
     if (range.to) {
-      dashboardMessage.payload.input_values.detection_time_ranges =
-        dashboardMessage.payload.input_values.detection_time_ranges || {};
-      dashboardMessage.payload.input_values.detection_time_ranges.to = range.to;
+      dashboardMessage.payload.datetime_range =
+        dashboardMessage.payload.datetime_range || {};
+      dashboardMessage.payload.datetime_range.to = range.to;
     }
 
     if (!!searchPathPrefix.length) {
