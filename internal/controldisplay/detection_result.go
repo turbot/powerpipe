@@ -4,6 +4,7 @@ import (
 	"fmt"
 
 	"github.com/spf13/viper"
+
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
@@ -12,6 +13,7 @@ import (
 // TODO dimensions???
 
 type DetectionResultRenderer struct {
+	displayText    string
 	rows           []map[string]any
 	colorGenerator *controlexecute.DimensionColorGenerator
 
@@ -23,8 +25,9 @@ type DetectionResultRenderer struct {
 	dimensions []controlexecute.Dimension
 }
 
-func NewDetectionResultRenderer(dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *DetectionResultRenderer {
+func NewDetectionResultRenderer(displayText string, dimensions []controlexecute.Dimension, colorGenerator *controlexecute.DimensionColorGenerator, width int, indent string) *DetectionResultRenderer {
 	return &DetectionResultRenderer{
+		displayText:    displayText,
 		dimensions:     dimensions,
 		colorGenerator: colorGenerator,
 		width:          width,
@@ -42,19 +45,21 @@ func (r DetectionResultRenderer) Render() string {
 	availableWidth := r.width - indentWidth
 
 	// for now give this all to reason
-	availableDimensionWidth := availableWidth
-	var dimensionsString string
-	var dimensionWidth int
-	if availableDimensionWidth > 0 {
-		dimensionsString = NewDimensionsRenderer(r.dimensions, r.colorGenerator, availableDimensionWidth).Render()
-		dimensionWidth = helpers.PrintableLength(dimensionsString)
-		availableWidth -= dimensionWidth
-	}
+	//availableDimensionWidth := availableWidth
+	//var dimensionsString string
+	//var dimensionWidth int
+	//if availableDimensionWidth > 0 {
+	//	dimensionsString = NewDimensionsRenderer(r.dimensions, r.colorGenerator, availableDimensionWidth).Render()
+	//	dimensionWidth = helpers.PrintableLength(dimensionsString)
+	//	availableWidth -= dimensionWidth
+	//}
+
+	availableWidth = availableWidth - len(r.displayText)
 
 	// is there any room for a spacer
-	spacerString := NewSpacerRenderer(availableWidth).Render()
+	// spacerString := NewSpacerRenderer(availableWidth).Render()
 
 	// now put these all together
-	str := fmt.Sprintf("%s%s%s", formattedIndent, spacerString, dimensionsString)
+	str := fmt.Sprintf("%s%s", formattedIndent, r.displayText)
 	return str
 }

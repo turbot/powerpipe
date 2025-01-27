@@ -2,10 +2,13 @@ package controldisplay
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"strings"
+	"time"
+
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 
 	"github.com/spf13/viper"
+
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
@@ -113,8 +116,25 @@ func (r DetectionRenderer) Render() string {
 				SqlType: c.DataType,
 				Value:   typehelpers.ToString(row[c.Name]),
 			}
+
 		}
+
+		// TODO: #graza figure out what we want to show for the line content and set it - for now build a string and just display that
+		var displayText string
+		for _, displayColumn := range r.run.Resource.DisplayColumns {
+			if val, ok := row[displayColumn]; ok {
+				switch v := val.(type) {
+				case time.Time:
+					displayText += fmt.Sprintf("%s ", v.Format("2006-01-02 15:04:05"))
+				default:
+					displayText += fmt.Sprintf("%v ", v)
+				}
+			}
+		}
+		displayText = strings.TrimSpace(displayText)
+
 		resultRenderer := NewDetectionResultRenderer(
+			displayText,
 			dimensions,
 			r.colorGenerator,
 			r.width,
