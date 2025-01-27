@@ -2,10 +2,12 @@ package controldisplay
 
 import (
 	"fmt"
+	"log/slog"
+
 	"github.com/spf13/viper"
+
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/constants"
-	"log/slog"
 )
 
 type DetectionGroupHeadingRenderer struct {
@@ -41,7 +43,10 @@ func (r DetectionGroupHeadingRenderer) Render() string {
 	// for a dry run we do not display the counters or graph
 	var severityString, counterString string
 	if !isDryRun {
-		severityString = NewSeverityRenderer(r.severity).Render()
+		// only display severity if there are any results
+		if r.count > 0 {
+			severityString = NewSeverityRenderer(r.severity).Render()
+		}
 		counterString = NewDetectionCounterRenderer(
 			r.count,
 			DetectionCounterRendererOptions{

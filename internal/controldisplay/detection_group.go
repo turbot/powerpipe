@@ -2,9 +2,10 @@ package controldisplay
 
 import (
 	"fmt"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"log/slog"
 	"strings"
+
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -116,9 +117,11 @@ func (r DetectionGroupRenderer) Render() string {
 		return r.renderRootResultGroup()
 	}
 
+	// TODO: get count from a produced summary
+	count := getRowCount(r.group, 0)
 	groupHeadingRenderer := NewDetectionGroupHeadingRenderer(
 		r.group.Title,
-		r.group.Summary.Count,
+		count, // r.group.Summary.Count,
 		r.width,
 		r.headingIndent())
 

@@ -2,10 +2,12 @@ package controldisplay
 
 import (
 	"fmt"
-	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
+
 	"golang.org/x/text/language"
 	"golang.org/x/text/message"
+
+	"github.com/turbot/go-kit/helpers"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 type DetectionSummaryRenderer struct {
@@ -21,9 +23,12 @@ func NewDetectionSummaryRenderer(resultTree *dashboardexecute.DetectionBenchmark
 }
 
 func (r DetectionSummaryRenderer) Render() string {
+	// TODO: get count from a produced summary
+	count := getRowCount(r.resultTree.Root, 0)
+	//count := r.resultTree.Root.Summary.Count
+
 	// use alarm colour
 	txtColorFunction := ControlColors.StatusColors["alarm"]
-	count := r.resultTree.Root.Summary.Count
 	countString := r.getPrintableNumber(count, txtColorFunction)
 
 	statusStr := fmt.Sprintf("%s ", txtColorFunction("COUNT"))
@@ -38,8 +43,18 @@ func (r DetectionSummaryRenderer) Render() string {
 	)
 }
 
-func (r *DetectionSummaryRenderer) getPrintableNumber(number int, cf colorFunc) string {
+func (r DetectionSummaryRenderer) getPrintableNumber(number int, cf colorFunc) string {
 	p := message.NewPrinter(language.English)
 	s := p.Sprintf("%d", number)
 	return fmt.Sprintf("%s ", cf(s))
+}
+
+func getRowCount(group *dashboardexecute.DetectionBenchmarkDisplay, count int) int {
+	for _, subGroup := range group.Groups {
+		count += getRowCount(subGroup, count)
+	}
+	for _, run := range group.DetectionRuns {
+		count += len(run.Data.Rows)
+	}
+	return count
 }
