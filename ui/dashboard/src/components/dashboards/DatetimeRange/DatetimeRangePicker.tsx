@@ -580,10 +580,13 @@ const DatetimeRangePicker = ({
     <div className="inline-flex rounded-md border border-black-scale-3">
       {presets.map((preset, index) => {
         const presetClassName = classNames(
-          "py-1.5 px-2.5 rounded-md",
+          "py-1.5 px-2.5 rounded-md border-black-scale-3",
           state.showCustom ? null : "border border-t-0 border-b-0",
-          index === 0 ? "border-l-0" : null,
-          index === presets.length - 1 ? "border-r-0" : null,
+          index === 0 ? "border-l-0 border-r-0 rounded-r-none" : null,
+          index > 0 && index < presets.length - 1
+            ? "rounded-l-none rounded-r-none border-r-0"
+            : "",
+          index === presets.length - 1 ? "rounded-l-none border-r-0" : null,
           disabled ? null : "cursor-pointer",
           state.relative === preset.value ||
             (!presets.find((p) => p.value === state.relative) &&
