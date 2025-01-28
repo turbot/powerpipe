@@ -1,6 +1,6 @@
 import { createContext, ReactNode, useCallback, useContext } from "react";
 import {
-  DashboardNestingDisplayMode,
+  DashboardDisplayMode,
   DashboardSearch,
   DashboardSearchGroupByMode,
 } from "@powerpipe/types";
@@ -8,8 +8,8 @@ import { useSearchParams } from "react-router-dom";
 
 interface IDashboardSearchContext {
   search: DashboardSearch;
-  nestedDashboards: DashboardNestingDisplayMode;
-  updateNestedDashboards: (value: DashboardNestingDisplayMode) => void;
+  dashboardsDisplay: DashboardDisplayMode;
+  updateDashboardsDisplay: (value: DashboardDisplayMode) => void;
   updateSearchValue: (value: string | undefined) => void;
   updateGroupBy: (value: DashboardSearchGroupByMode, tag?: string) => void;
 }
@@ -38,8 +38,8 @@ export const DashboardSearchProvider = ({
       tag: searchParams.get("tag") || defaultSearch?.groupBy?.tag || "service",
     },
   };
-  const nestedDashboards = (searchParams.get("nested_dashboards") ||
-    "exclude") as DashboardNestingDisplayMode;
+  const dashboardsDisplay = (searchParams.get("dashboards_display") ||
+    "top_level") as DashboardDisplayMode;
 
   const updateSearchValue = useCallback(
     (value: string | undefined) => {
@@ -66,9 +66,9 @@ export const DashboardSearchProvider = ({
     [searchParams],
   );
 
-  const updateNestedDashboards = useCallback(
-    (value: DashboardNestingDisplayMode) => {
-      searchParams.set("nested_dashboards", value);
+  const updateDashboardsDisplay = useCallback(
+    (value: DashboardDisplayMode) => {
+      searchParams.set("dashboards_display", value);
       setSearchParams(searchParams);
     },
     [searchParams],
@@ -77,9 +77,9 @@ export const DashboardSearchProvider = ({
   return (
     <DashboardSearchContext.Provider
       value={{
-        nestedDashboards,
+        dashboardsDisplay,
         search,
-        updateNestedDashboards,
+        updateDashboardsDisplay,
         updateSearchValue,
         updateGroupBy,
       }}

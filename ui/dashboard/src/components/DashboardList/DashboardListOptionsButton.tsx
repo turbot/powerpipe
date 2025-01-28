@@ -1,4 +1,4 @@
-import DashboardListIncludeNestedSelect from "@powerpipe/components/DashboardListIncludeNestedSelect";
+import DashboardListDisplayModeSelect from "@powerpipe/components/DashboardListDisplayModeSelect";
 import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
@@ -12,28 +12,40 @@ const PopoverButton = forwardRef((props, ref) => {
       ref={ref}
       className="inline-flex items-center space-x-2 h-full"
       //disabled={!enabled}
-      title="View Options"
+      title="Manage display options"
       {...props}
     >
       <Icon
         className="inline-block text-foreground-lighter w-5 h-5"
         icon="dashboard"
       />
-      <span>View Options</span>
+      <span>Display</span>
     </NeutralButton>
   );
 });
 
+const Label = ({ children }) => (
+  <span className="block text-xs uppercase text-foreground-lighter">
+    {children}
+  </span>
+);
+
 const DashboardListOptionsButton = () => {
   return (
-    <Popover className="hidden md:block relative">
+    <Popover className="relative">
       <Popover.Button as={PopoverButton} />
       <Popover.Panel className="absolute left-1/2 z-10 mt-1 flex w-screen max-w-max -translate-x-1/2 px-4">
         {({ close }) => (
-          <div className="w-screen md:w-auto flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5">
-            <div className="flex flex-col divide-y divide-divide">
-              <DashboardTagGroupSelect onClose={close} />
-              <DashboardListIncludeNestedSelect onClose={close} />
+          <div className="max-w-sm flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5">
+            <div className="divide-y divide-divide">
+              <div className="p-3 space-y-2">
+                <Label>Group By</Label>
+                <DashboardTagGroupSelect onClose={close} />
+              </div>
+              <div className="p-3 space-y-2">
+                <Label>Dashboards</Label>
+                <DashboardListDisplayModeSelect onClose={close} />
+              </div>
             </div>
           </div>
         )}

@@ -275,7 +275,7 @@ const DashboardList = ({ showOptions = true }) => {
     metadata,
   } = useDashboardState();
   const {
-    nestedDashboards,
+    dashboardsDisplay,
     search: { value: searchValue, groupBy: searchGroupBy },
     updateSearchValue,
   } = useDashboardSearch();
@@ -343,7 +343,7 @@ const DashboardList = ({ showOptions = true }) => {
           if (d.is_top_level) {
             return true;
           }
-          return nestedDashboards === "include";
+          return dashboardsDisplay === "all";
         }),
       );
       return;
@@ -353,7 +353,7 @@ const DashboardList = ({ showOptions = true }) => {
     const filtered: AvailableDashboard[] = [];
 
     for (const dashboard of unfilteredDashboards) {
-      if (!dashboard.is_top_level && nestedDashboards === "exclude") {
+      if (!dashboard.is_top_level && dashboardsDisplay === "top_level") {
         continue;
       }
       const include = searchAgainstDashboard(dashboard, searchParts);
@@ -368,7 +368,7 @@ const DashboardList = ({ showOptions = true }) => {
   }, [
     availableDashboardsLoaded,
     dashboardsMap,
-    nestedDashboards,
+    dashboardsDisplay,
     unfilteredDashboards,
     metadata,
     searchValue,
@@ -432,7 +432,7 @@ const DashboardList = ({ showOptions = true }) => {
           </div>
         </div>
       </div>
-      <div className="col-span-12 lg:col-span-3 mt-4 lg:mt-2">
+      <div className="col-span-12 lg:col-span-3 mt-4 lg:mt-2 hidden md:block">
         <CallToActions />
       </div>
     </div>
