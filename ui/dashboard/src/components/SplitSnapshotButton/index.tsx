@@ -182,7 +182,7 @@ const SplitSnapshotButton = ({ header = false }) => {
 
   return (
     <>
-      <div className="inline-flex">
+      <div className="hidden md:inline-flex">
         <NeutralButton
           type="button"
           disabled={defaultAction.disabled}

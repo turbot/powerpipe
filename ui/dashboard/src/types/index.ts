@@ -208,7 +208,7 @@ export type DashboardAction = {
 
 export type DashboardSearchGroupByMode = "mod" | "tag";
 
-export type DashboardNestingDisplayMode = "include" | "exclude";
+export type DashboardDisplayMode = "top_level" | "all";
 
 type DashboardSearchGroupBy = {
   value: DashboardSearchGroupByMode;
