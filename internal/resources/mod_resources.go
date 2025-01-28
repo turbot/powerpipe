@@ -23,7 +23,7 @@ type PowerpipeModResources struct {
 	// the parent mod
 	Mod *modconfig.Mod
 
-	Benchmarks            map[string]*Benchmark
+	ControlBenchmarks     map[string]*Benchmark
 	Controls              map[string]*Control
 	Dashboards            map[string]*Dashboard
 	DashboardCategories   map[string]*DashboardCategory
@@ -63,7 +63,7 @@ func NewModResources(mod *modconfig.Mod, sourceMaps ...modconfig.ModResources) m
 func emptyPowerpipeModResources() *PowerpipeModResources {
 	return &PowerpipeModResources{
 		Controls:              make(map[string]*Control),
-		Benchmarks:            make(map[string]*Benchmark),
+		ControlBenchmarks:     make(map[string]*Benchmark),
 		Dashboards:            make(map[string]*Dashboard),
 		DashboardCards:        make(map[string]*DashboardCard),
 		DashboardCharts:       make(map[string]*DashboardChart),
@@ -164,15 +164,15 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 		}
 	}
 
-	for name, benchmark := range m.Benchmarks {
-		if otherBenchmark, ok := other.Benchmarks[name]; !ok {
+	for name, benchmark := range m.ControlBenchmarks {
+		if otherBenchmark, ok := other.ControlBenchmarks[name]; !ok {
 			return false
 		} else if !benchmark.Equals(otherBenchmark) {
 			return false
 		}
 	}
-	for name := range other.Benchmarks {
-		if _, ok := m.Benchmarks[name]; !ok {
+	for name := range other.ControlBenchmarks {
+		if _, ok := m.ControlBenchmarks[name]; !ok {
 			return false
 		}
 	}
@@ -437,7 +437,7 @@ func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResource
 
 	switch parsedName.ItemType {
 	case schema.BlockTypeBenchmark:
-		resource, found = m.Benchmarks[longName]
+		resource, found = m.ControlBenchmarks[longName]
 		if !found {
 			// TODO HACK if not found, try detection benchmark
 			resource, found = m.DetectionBenchmarks[longName]
@@ -592,7 +592,7 @@ func (m *PowerpipeModResources) Empty() bool {
 	return len(m.Mods)+
 		len(m.Queries)+
 		len(m.Controls)+
-		len(m.Benchmarks)+
+		len(m.ControlBenchmarks)+
 		len(m.Variables)+
 		len(m.Dashboards)+
 		len(m.DashboardContainers)+
@@ -637,7 +637,7 @@ func (m *PowerpipeModResources) WalkResources(resourceFunc func(item modconfig.H
 			return err
 		}
 	}
-	for _, r := range m.Benchmarks {
+	for _, r := range m.ControlBenchmarks {
 		if continueWalking, err := resourceFunc(r); err != nil || !continueWalking {
 			return err
 		}
@@ -774,11 +774,11 @@ func (m *PowerpipeModResources) AddResource(item modconfig.HclResource) hcl.Diag
 
 	case *Benchmark:
 		name := r.Name()
-		if existing, ok := m.Benchmarks[name]; ok {
+		if existing, ok := m.ControlBenchmarks[name]; ok {
 			diags = append(diags, modconfig.CheckForDuplicate(existing, item)...)
 			break
 		}
-		m.Benchmarks[name] = r
+		m.ControlBenchmarks[name] = r
 
 	case *Dashboard:
 		name := r.Name()
@@ -950,8 +950,8 @@ func (m *PowerpipeModResources) AddSnapshots(snapshotPaths []string) {
 func (m *PowerpipeModResources) AddMaps(sourceMaps ...modconfig.ModResources) {
 	for _, s := range sourceMaps {
 		source := s.(*PowerpipeModResources)
-		for k, v := range source.Benchmarks {
-			m.Benchmarks[k] = v
+		for k, v := range source.ControlBenchmarks {
+			m.ControlBenchmarks[k] = v
 		}
 		for k, v := range source.Controls {
 			m.Controls[k] = v

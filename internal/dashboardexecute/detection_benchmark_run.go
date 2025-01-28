@@ -10,7 +10,6 @@ import (
 	"github.com/turbot/powerpipe/internal/resources"
 )
 
-// DetectionBenchmarkRun is a struct representing a container run
 type DetectionBenchmarkRun struct {
 	DashboardParentImpl
 	BenchmarkType string `json:"benchmark_type"`
@@ -58,7 +57,7 @@ func NewDetectionBenchmarkRun(container *resources.DetectionBenchmark, parent da
 				return nil, err
 			}
 		case *resources.Detection:
-			childRun, err = NewLeafRun(i, r, executionTree)
+			childRun, err = NewDetectionRun(i, r, executionTree)
 			if err != nil {
 				return nil, err
 			}

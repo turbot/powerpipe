@@ -18,7 +18,7 @@ type Detection struct {
 	// required to allow partial decoding
 	Remain         hcl.Body `hcl:",remain" json:"-"`
 	Severity       *string  `cty:"severity" hcl:"severity"  snapshot:"severity" json:"severity,omitempty"`
-	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" snapshot:"display_columns" json:"display_columns,omitempty"`
+	DisplayColumns []string `cty:"display_columns" hcl:"display_columns,optional" json:"display_columns,omitempty" snapshot:"display_columns"`
 
 	Base *Detection `hcl:"base" json:"-"`
 }
@@ -57,6 +57,11 @@ func (t *Detection) Diff(other *Detection) *modconfig.ModTreeItemDiffs {
 	res.Merge(dashboardLeafNodeDiff(t, other))
 
 	return res
+}
+
+// GetDocumentation implements ModTreeItem
+func (*Detection) GetDocumentation() string {
+	return ""
 }
 
 // CtyValue implements CtyValueProvider

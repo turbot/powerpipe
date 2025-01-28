@@ -107,7 +107,7 @@ func (r ControlRenderer) Render() string {
 	// now render the results (if any)
 	var resultStrings []string
 	for _, row := range r.run.Rows {
-		resultRenderer := NewResultRenderer(
+		resultRenderer := NewControlResultRenderer(
 			row.Status,
 			row.Reason,
 			row.Dimensions,
