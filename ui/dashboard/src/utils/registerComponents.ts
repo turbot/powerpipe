@@ -35,6 +35,7 @@ import "@powerpipe/components/dashboards/hierarchies/Hierarchy";
 
 // Inputs
 import "@powerpipe/components/dashboards/inputs/DateInput";
+import "@powerpipe/components/dashboards/inputs/DateRangeInput";
 import "@powerpipe/components/dashboards/inputs/DatetimeInput";
 import "@powerpipe/components/dashboards/inputs/DatetimeRangeInput";
 import "@powerpipe/components/dashboards/inputs/MultiComboInput";
