@@ -5,29 +5,28 @@ import (
 	"log/slog"
 	"strings"
 
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
+
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/resources"
 )
 
-type GroupRenderer struct {
-	group *controlexecute.ResultGroup
+type DetectionGroupRenderer struct {
+	group *dashboardexecute.DetectionBenchmarkDisplay
 	// screen width
-	width             int
-	maxFailedControls int
-	maxTotalControls  int
-	resultTree        *controlexecute.ExecutionTree
-	lastChild         bool
-	parent            *GroupRenderer
+	width      int
+	resultTree *dashboardexecute.DetectionBenchmarkDisplayTree
+	lastChild  bool
+	parent     *DetectionGroupRenderer
 }
 
-func NewGroupRenderer(group *controlexecute.ResultGroup, parent *GroupRenderer, maxFailedControls, maxTotalControls int, resultTree *controlexecute.ExecutionTree, width int) *GroupRenderer {
-	r := &GroupRenderer{
-		group:             group,
-		parent:            parent,
-		resultTree:        resultTree,
-		maxFailedControls: maxFailedControls,
-		maxTotalControls:  maxTotalControls,
-		width:             width,
+func NewDetectionGroupRenderer(group *dashboardexecute.DetectionBenchmarkDisplay, parent *DetectionGroupRenderer, resultTree *dashboardexecute.DetectionBenchmarkDisplayTree, width int) *DetectionGroupRenderer {
+	r := &DetectionGroupRenderer{
+		group:      group,
+		parent:     parent,
+		resultTree: resultTree,
+
+		width: width,
 	}
 	r.lastChild = r.isLastChild(group)
 	return r
@@ -35,7 +34,7 @@ func NewGroupRenderer(group *controlexecute.ResultGroup, parent *GroupRenderer, 
 
 // are we the last child of our parent?
 // this affects the tree rendering
-func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
+func (r DetectionGroupRenderer) isLastChild(group *dashboardexecute.DetectionBenchmarkDisplay) bool {
 	if group.Parent == nil || group.Parent.GroupItem == nil {
 		return true
 	}
@@ -43,12 +42,11 @@ func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
 	// get the name of the last sibling which has controls (or is a control)
 	var finalSiblingName string
 	for _, s := range siblings {
-		// TODO KAI ALSO DETECTION?
 		if b, ok := s.(*resources.Benchmark); ok {
 			// find the result group for this benchmark and see if it has controls
 			resultGroup := r.resultTree.Root.GetChildGroupByName(b.Name())
 			// if the result group has not controls, we will not find it in the result tree
-			if resultGroup == nil || resultGroup.ControlRunCount() == 0 {
+			if resultGroup == nil || resultGroup.RunCount() == 0 {
 				continue
 			}
 		}
@@ -63,12 +61,12 @@ func (r GroupRenderer) isLastChild(group *controlexecute.ResultGroup) bool {
 
 // the indent for blank lines
 // same as for (not last) children
-func (r GroupRenderer) blankLineIndent() string {
+func (r DetectionGroupRenderer) blankLineIndent() string {
 	return r.childIndent()
 }
 
 // the indent for group heading
-func (r GroupRenderer) headingIndent() string {
+func (r DetectionGroupRenderer) headingIndent() string {
 	// if this is the first displayed node, no indent
 	if r.parent == nil || r.parent.group.GroupId == controlexecute.RootResultGroupName {
 		return ""
@@ -80,24 +78,24 @@ func (r GroupRenderer) headingIndent() string {
 
 // the indent for child groups/controls (which are not the final child)
 // include the tree '|'
-func (r GroupRenderer) childIndent() string {
+func (r DetectionGroupRenderer) childIndent() string {
 	return r.parentIndent() + "| "
 }
 
 // the indent for the FINAL child groups/controls
 // just a space
-func (r GroupRenderer) lastChildIndent() string {
+func (r DetectionGroupRenderer) lastChildIndent() string {
 	return r.parentIndent() + "  "
 }
 
 // the indent for child groups - our parent indent with the group expander "+ "
-func (r GroupRenderer) childGroupIndent() string {
+func (r DetectionGroupRenderer) childGroupIndent() string {
 	return r.parentIndent() + "+ "
 }
 
 // get the indent inherited from our parent
 // - this will depend on whether we are our parents last child
-func (r GroupRenderer) parentIndent() string {
+func (r DetectionGroupRenderer) parentIndent() string {
 	if r.parent == nil || r.parent.group.GroupId == controlexecute.RootResultGroupName {
 		return ""
 	}
@@ -107,10 +105,10 @@ func (r GroupRenderer) parentIndent() string {
 	return r.parent.childIndent()
 }
 
-func (r GroupRenderer) Render() string {
+func (r DetectionGroupRenderer) Render() string {
 	if r.width <= 0 {
 		// this should never happen, since the minimum width is set by the formatter
-		slog.Warn("GroupRenderer.Render unexpected negative width", "width", r.width)
+		slog.Warn("DetectionGroupRenderer.Render unexpected negative width", "width", r.width)
 
 		return ""
 	}
@@ -119,12 +117,11 @@ func (r GroupRenderer) Render() string {
 		return r.renderRootResultGroup()
 	}
 
-	groupHeadingRenderer := NewGroupHeadingRenderer(
+	// TODO: get count from a produced summary
+	count := getRowCount(r.group, 0)
+	groupHeadingRenderer := NewDetectionGroupHeadingRenderer(
 		r.group.Title,
-		r.group.Summary.Status.FailedCount(),
-		r.group.Summary.Status.TotalCount(),
-		r.maxFailedControls,
-		r.maxTotalControls,
+		count, // r.group.Summary.Count,
 		r.width,
 		r.headingIndent())
 
@@ -142,34 +139,34 @@ func (r GroupRenderer) Render() string {
 
 // for root result group, there will either be one or more groups, or one or more control runs
 // there will be no order specified so just loop through them
-func (r GroupRenderer) renderRootResultGroup() string {
-	var resultStrings = make([]string, len(r.group.Groups)+len(r.group.ControlRuns))
+func (r DetectionGroupRenderer) renderRootResultGroup() string {
+	var resultStrings = make([]string, len(r.group.Groups)+len(r.group.DetectionRuns))
 	for i, group := range r.group.Groups {
-		groupRenderer := NewGroupRenderer(group, &r, r.maxFailedControls, r.maxTotalControls, r.resultTree, r.width)
+		groupRenderer := NewDetectionGroupRenderer(group, &r, r.resultTree, r.width)
 		resultStrings[i] = groupRenderer.Render()
 	}
-	for i, run := range r.group.ControlRuns {
-		controlRenderer := NewControlRenderer(run, &r)
+	for i, run := range r.group.DetectionRuns {
+		controlRenderer := NewDetectionRenderer(run, &r)
 		resultStrings[i] = controlRenderer.Render()
 	}
 	return strings.Join(resultStrings, "\n")
 }
 
 // render the children of this group, in the order they are specified in the hcl
-func (r GroupRenderer) renderChildren() []string {
+func (r DetectionGroupRenderer) renderChildren() []string {
 	children := r.group.GroupItem.GetChildren()
 	var childStrings []string
 
 	for _, child := range children {
-		if control, ok := child.(*resources.Control); ok {
+		if detection, ok := child.(*resources.Detection); ok {
 			// get Result group with a matching name
-			if run := r.group.GetControlRunByName(control.Name()); run != nil {
-				controlRenderer := NewControlRenderer(run, &r)
-				childStrings = append(childStrings, controlRenderer.Render())
+			if run := r.group.GetRunByName(detection.Name()); run != nil {
+				detectionRender := NewDetectionRenderer(run, &r)
+				childStrings = append(childStrings, detectionRender.Render())
 			}
 		} else {
 			if childGroup := r.group.GetGroupByName(child.Name()); childGroup != nil {
-				groupRenderer := NewGroupRenderer(childGroup, &r, r.maxFailedControls, r.maxTotalControls, r.resultTree, r.width)
+				groupRenderer := NewDetectionGroupRenderer(childGroup, &r, r.resultTree, r.width)
 				childStrings = append(childStrings, groupRenderer.Render())
 			}
 		}

@@ -18,29 +18,29 @@ import (
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*resources.Benchmark | *resources.Control
+	*resources.Benchmark | *resources.DetectionBenchmark | *resources.Control | *resources.Detection
 }
 
-type InitData[T CheckTarget] struct {
+type InitData struct {
 	initialisation.InitData
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
 }
 
-func (i *InitData[T]) BaseInitData() *initialisation.InitData {
+func (i *InitData) BaseInitData() *initialisation.InitData {
 	return &i.InitData
 }
 
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
+func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ...string) *InitData {
 	statushooks.SetStatus(ctx, "Loading workspace")
 
 	initData := initialisation.NewInitData[T](ctx, cmd, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData[T]{
+	i := &InitData{
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {
@@ -63,7 +63,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		return i
 	}
 	modResources := resources.GetModResources(w.Mod)
-	if len(modResources.Controls)+len(modResources.Benchmarks)+len(modResources.Detections)+len(modResources.DetectionBenchmarks) == 0 {
+	if len(modResources.Controls)+len(modResources.ControlBenchmarks)+len(modResources.DetectionBenchmarks) == 0+len(modResources.Detections) {
 		i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
 	}
 
@@ -98,7 +98,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 	return i
 }
 
-func (i *InitData[T]) setControlFilter() {
+func (i *InitData) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
@@ -113,7 +113,7 @@ func (i *InitData[T]) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData[T]) registerCheckExporters() error {
+func (i *InitData) registerCheckExporters() error {
 	exporters, err := controldisplay.GetExporters()
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 

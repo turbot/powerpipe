@@ -275,7 +275,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range topLevelResources.Benchmarks {
+		for _, benchmark := range topLevelResources.ControlBenchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}

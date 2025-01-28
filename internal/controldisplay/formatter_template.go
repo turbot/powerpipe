@@ -7,12 +7,12 @@ import (
 	"os"
 	"text/template"
 
-	"github.com/turbot/pipe-fittings/app_specific"
-
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 // TemplateFormatter implements the 'Formatter' interface and exposes a generic template based output mechanism
@@ -42,7 +42,11 @@ func NewTemplateFormatter(input *OutputTemplate) (*TemplateFormatter, error) {
 	return &TemplateFormatter{exportFormat: input, template: t}, nil
 }
 
-func (tf TemplateFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
+func (TemplateFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, fmt.Errorf("TemplateFormatter does not support FormatDetection")
+}
+
+func (tf TemplateFormatter) Format(_ context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	reader, writer := io.Pipe()
 	go func() {
 		workingDirectory, err := os.Getwd()

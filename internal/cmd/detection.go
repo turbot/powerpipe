@@ -4,8 +4,6 @@ import (
 	"context"
 	"errors"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"os"
 	"strings"
 
@@ -17,11 +15,14 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/export"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
-	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/controldisplay"
+	"github.com/turbot/powerpipe/internal/controlinit"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
@@ -32,7 +33,7 @@ type DetectionTarget interface {
 }
 
 // variable used to assign the output mode flag
-var detectionOutputMode = localconstants.DetectionOutputModeSnapshotShort
+var detectionOutputMode = localconstants.CheckOutputModeText
 
 func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 	typeName := resources.GenericTypeToBlockType[T]()
@@ -63,9 +64,9 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
 			constants.ArgPull,
 			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
-		AddVarFlag(enumflag.New(&detectionOutputMode, constants.ArgOutput, localconstants.DetectionOutputModeIds, enumflag.EnumCaseInsensitive),
+		AddVarFlag(enumflag.New(&detectionOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DetectionOutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.CheckOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgProgress, true, "Display detection execution progress respected when a detection name argument is passed").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
@@ -89,8 +90,7 @@ func detectionRun[T DetectionTarget](cmd *cobra.Command, args []string) {
 
 // tactical - to support callint benchmark run and calling either control or dashboard execution flow,
 // we must support calling this from the check command, AFTER the initdata has been fetched
-func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *initialisation.InitData, args []string) {
-
+func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *controlinit.InitData, args []string) {
 	ctx := cmd.Context()
 
 	// there can only be a single arg - cobra will validate
@@ -121,8 +121,15 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 
 	statushooks.SetStatus(ctx, "Initializing…")
 	if initData == nil {
-		initData = initialisation.NewInitData[T](ctx, cmd, detectionName)
+		initData = controlinit.NewInitData[T](ctx, cmd, detectionName)
 	}
+
+	if initData.Result.Error != nil {
+		exitCode = constants.ExitCodeInitializationFailed
+		error_helpers.ShowError(ctx, initData.Result.Error)
+		return
+	}
+	defer initData.Cleanup(ctx)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(detectionExporters()...)
@@ -135,10 +142,6 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 
 	statushooks.Done(ctx)
 
-	// shutdown the service on exit
-	defer initData.Cleanup(ctx)
-	error_helpers.FailOnError(initData.Result.Error)
-
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
@@ -150,8 +153,15 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *i
 
 	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
+
+	tree, err := controldisplay.SnapshotToExecutionTree(ctx, snap, initData.Workspace, target)
+	error_helpers.FailOnError(err)
+
+	err = displayDetectionResults(ctx, tree, initData.OutputFormatter)
+	error_helpers.FailOnError(err)
+
 	// display the snapshot result (if needed)
-	displaySnapshot(snap)
+	//displaySnapshot(snap)
 
 	// upload the snapshot (if needed)
 	err = publishSnapshotIfNeeded(ctx, snap)

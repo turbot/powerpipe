@@ -10,6 +10,7 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 // testFormatter is an implementation of the Formatter interface
@@ -23,6 +24,9 @@ type testFormatter struct {
 func (b *testFormatter) FileExtension() string { return b.extension }
 func (b *testFormatter) Name() string          { return b.name }
 func (b *testFormatter) Alias() string         { return b.alias }
+func (b *testFormatter) FormatDetection(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, nil
+}
 func (b *testFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	return nil, nil
 }

@@ -24,6 +24,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/display"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -158,7 +159,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	initCtx := statushooks.DisableStatusHooks(ctx)
 
 	// initialise
-	initData := controlinit.NewInitData[T](initCtx, cmd, args)
+	initData := controlinit.NewInitData[T](initCtx, cmd, args...)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.ShowError(ctx, initData.Result.Error)
@@ -173,7 +174,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		if !viper.IsSet(constants.ArgOutput) {
 			viper.Set(constants.ArgOutput, constants.OutputFormatSnapshot)
 		}
-		detectionRunWithInitData[*resources.DetectionBenchmark](cmd, initData.BaseInitData(), args)
+		detectionRunWithInitData[*resources.DetectionBenchmark](cmd, initData, args)
 		return
 	}
 
@@ -185,7 +186,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	// now filter the target
 	// get the execution trees
-	trees, err := getExecutionTrees[T](ctx, initData)
+	trees, err := getExecutionTrees(ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// pull out useful properties
@@ -229,7 +230,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 }
 
 // exportExecutionTree relies on the fact that the given tree is already executed
-func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData[T], exportArgs []string) error {
+func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData, exportArgs []string) error {
 	statushooks.Show(ctx)
 	defer statushooks.Done(ctx)
 
@@ -251,7 +252,7 @@ func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTr
 }
 
 // executeTree executes and displays the (table) results of an execution
-func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData[T]) error {
+func executeTree(ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData) error {
 	// create a context with check status hooks
 	checkCtx, cancel := createCheckContext(ctx)
 	defer cancel()
@@ -290,7 +291,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) ([]*namedExecutionTree, error) {
+func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()
@@ -387,6 +388,15 @@ func shouldPrintCheckTiming() bool {
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(os.Stdout, reader)
+	return err
+}
+
+func displayDetectionResults(ctx context.Context, executionTree *dashboardexecute.DetectionBenchmarkDisplayTree, formatter controldisplay.Formatter) error {
+	reader, err := formatter.FormatDetection(ctx, executionTree)
 	if err != nil {
 		return err
 	}

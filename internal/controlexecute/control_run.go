@@ -25,6 +25,10 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
 
+type LeafRun interface {
+	GetRows() ResultRows
+}
+
 // ControlRun is a struct representing the execution of a control run. It will contain one or more result items (i.e. for one or more resources).
 type ControlRun struct {
 	// properties from control
@@ -196,6 +200,10 @@ func (r *ControlRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 		NodeType: r.NodeType,
 	}
 	return res
+}
+
+func (r *ControlRun) GetRows() ResultRows {
+	return r.Rows
 }
 
 func (r *ControlRun) setError(ctx context.Context, err error) {

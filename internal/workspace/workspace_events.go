@@ -118,8 +118,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.DeletedCharts = append(event.DeletedCharts, prev)
 		}
 	}
-	for name, prev := range prevModResources.Benchmarks {
-		if current, ok := modResources.Benchmarks[name]; ok {
+	for name, prev := range prevModResources.ControlBenchmarks {
+		if current, ok := modResources.ControlBenchmarks[name]; ok {
 			diff := prev.Diff(current)
 			if diff.HasChanges() {
 				event.ChangedBenchmarks = append(event.ChangedBenchmarks, diff)
@@ -283,8 +283,8 @@ func (w *PowerpipeWorkspace) raiseDashboardChangedEvents(ctx context.Context, r,
 			event.NewCharts = append(event.NewCharts, p)
 		}
 	}
-	for name, p := range modResources.Benchmarks {
-		if _, ok := prevModResources.Benchmarks[name]; !ok {
+	for name, p := range modResources.ControlBenchmarks {
+		if _, ok := prevModResources.ControlBenchmarks[name]; !ok {
 			event.NewBenchmarks = append(event.NewBenchmarks, p)
 		}
 	}

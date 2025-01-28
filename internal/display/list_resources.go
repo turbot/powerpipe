@@ -40,7 +40,7 @@ func ListResources[T modconfig.ModTreeItem](cmd *cobra.Command) {
 		return
 	}
 
-	// TODO TACTICAL for benchmark list, include detection benchmarks
+	// TODO K TACTICAL for benchmark list, include detection benchmarks
 	// https://github.com/turbot/powerpipe/issues/609
 	var empty T
 	if _, ok := any(empty).(*resources.Benchmark); !ok {
