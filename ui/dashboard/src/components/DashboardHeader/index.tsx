@@ -1,5 +1,3 @@
-import DashboardSearch from "@powerpipe/components/DashboardSearch";
-import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
 import ManageDatetimeRangeButton from "@powerpipe/components/dashboards/DatetimeRange/ManageDatetimeRangeButton";
 import ManageSearchPathButton from "@powerpipe/components/dashboards/SearchPath/ManageSearchPathButton";
 import PowerpipeLogo from "@powerpipe/components/DashboardHeader/PowerpipeLogo";
@@ -7,9 +5,12 @@ import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "@powerpipe/components/dashboards";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const DashboardHeader = () => {
+  const { selectedDashboard } = useDashboardState();
   const ExternalLink = getComponent("external_link");
+
   return (
     <>
       <div
@@ -18,12 +19,16 @@ const DashboardHeader = () => {
         )}
       >
         <PowerpipeLogo />
-        <div className="flex flex-grow items-center space-x-2 md:space-x-4">
-          <DashboardSearch />
-          <DashboardTagGroupSelect />
+        <div
+          className={classNames(
+            "flex flex-grow items-center space-x-2 md:space-x-4",
+            // Maintain height between dashboard list and dashboard
+            selectedDashboard ? "" : "my-[1.75px]",
+          )}
+        >
           <ManageDatetimeRangeButton />
           <ManageSearchPathButton />
-          <SplitSnapshotButton />
+          <SplitSnapshotButton header />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
           <ExternalLink
