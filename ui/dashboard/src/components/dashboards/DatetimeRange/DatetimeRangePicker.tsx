@@ -14,7 +14,17 @@ import "react-day-picker/dist/style.css";
 import "react-time-picker/dist/TimePicker.css";
 dayjs.extend(utc);
 
-const presets = [
+const datePresets = [
+  { label: "1d", value: "1d" },
+  { label: "7d", value: "7d" },
+  { label: "14d", value: "14d" },
+  { label: "30d", value: "30d" },
+  { label: "60d", value: "60d" },
+  { label: "90d", value: "90d" },
+  { label: "Custom", value: "custom" },
+];
+
+const datetimePresets = [
   { label: "1h", value: "1h" },
   { label: "3h", value: "3h" },
   { label: "6h", value: "6h" },
@@ -35,6 +45,7 @@ const CustomDatePicker = ({
   duration,
   tempState,
   unitOfTime,
+  withTime,
   setDuration,
   setTempState,
   setUnitOfTime,
@@ -50,6 +61,7 @@ const CustomDatePicker = ({
     showCustom?: boolean;
   };
   unitOfTime: string;
+  withTime: boolean;
   setDuration: (duration: number) => void;
   setTempState: (state: {
     from: dayjs.Dayjs;
@@ -80,7 +92,7 @@ const CustomDatePicker = ({
     );
 
   return (
-    <div className="border border-dashboard-panel rounded-md bg-dashboard p-3 space-y-3">
+    <div className="border border-dashboard-panel rounded-md bg-dashboard p-4 space-y-3">
       <Tab.Group
         selectedIndex={tab === "relative" ? 0 : 1}
         onChange={(index) => setTab(index === 0 ? "relative" : "absolute")}
@@ -93,38 +105,42 @@ const CustomDatePicker = ({
           <Tab.Panel>
             {/* Content for Relative Tab */}
             <div className="space-y-3">
-              <div className="space-y-1">
-                <label>Minutes</label>
-                <div className="flex space-x-2">
-                  {timeOptions.minutes.map((min) => (
-                    <div
-                      key={min}
-                      onClick={() => onTimeOptionClick(min, "minute")}
-                      className={presetClasses(
-                        duration === min && unitOfTime === "minute",
-                      )}
-                    >
-                      {min}
+              {withTime && (
+                <>
+                  <div className="space-y-1">
+                    <label>Minutes</label>
+                    <div className="flex space-x-2">
+                      {timeOptions.minutes.map((min) => (
+                        <div
+                          key={min}
+                          onClick={() => onTimeOptionClick(min, "minute")}
+                          className={presetClasses(
+                            duration === min && unitOfTime === "minute",
+                          )}
+                        >
+                          {min}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
-              <div className="space-y-1">
-                <label>Hours</label>
-                <div className="flex space-x-2">
-                  {timeOptions.hours.map((hour) => (
-                    <div
-                      key={hour}
-                      onClick={() => onTimeOptionClick(hour, "hour")}
-                      className={presetClasses(
-                        duration === hour && unitOfTime === "hour",
-                      )}
-                    >
-                      {hour}
+                  </div>
+                  <div className="space-y-1">
+                    <label>Hours</label>
+                    <div className="flex space-x-2">
+                      {timeOptions.hours.map((hour) => (
+                        <div
+                          key={hour}
+                          onClick={() => onTimeOptionClick(hour, "hour")}
+                          className={presetClasses(
+                            duration === hour && unitOfTime === "hour",
+                          )}
+                        >
+                          {hour}
+                        </div>
+                      ))}
                     </div>
-                  ))}
-                </div>
-              </div>
+                  </div>
+                </>
+              )}
               <div className="space-y-1">
                 <label>Days</label>
                 <div className="flex space-x-2">
@@ -170,10 +186,14 @@ const CustomDatePicker = ({
                 <select
                   value={unitOfTime}
                   onChange={(e) => setUnitOfTime(e.target.value)}
-                  className="block p-2 border border-divide rounded-md bg-dashboard"
+                  className="block border border-divide rounded-md bg-dashboard"
                 >
-                  <option value="minute">Minutes</option>
-                  <option value="hour">Hours</option>
+                  {withTime && (
+                    <>
+                      <option value="minute">Minutes</option>
+                      <option value="hour">Hours</option>
+                    </>
+                  )}
                   <option value="day">Days</option>
                   <option value="week">Weeks</option>
                 </select>
@@ -277,26 +297,28 @@ const CustomDatePicker = ({
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
                   </div>
-                  <div>
-                    <label>Start time</label>
-                    <input
-                      type="time"
-                      defaultValue={parseDate(tempState.from)?.format(
-                        "HH:mm:ss",
-                      )}
-                      step="1"
-                      onChange={(e) => {
-                        setTempState({
-                          ...tempState,
-                          relative: "custom",
-                          from: dayjs(
-                            `${parseDate(tempState.from)?.format("YYYY-MM-DD")} ${e.target.value}`,
-                          ),
-                        });
-                      }}
-                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
-                    />
-                  </div>
+                  {withTime && (
+                    <div>
+                      <label>Start time</label>
+                      <input
+                        type="time"
+                        defaultValue={parseDate(tempState.from)?.format(
+                          "HH:mm:ss",
+                        )}
+                        step="1"
+                        onChange={(e) => {
+                          setTempState({
+                            ...tempState,
+                            relative: "custom",
+                            from: dayjs(
+                              `${parseDate(tempState.from)?.format("YYYY-MM-DD")} ${e.target.value}`,
+                            ),
+                          });
+                        }}
+                        className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                      />
+                    </div>
+                  )}
                 </div>
                 <div className="flex-grow space-y-3">
                   <div>
@@ -318,31 +340,33 @@ const CustomDatePicker = ({
                       className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
                     />
                   </div>
-                  <div className="w-full">
-                    <label>End time</label>
-                    <input
-                      type="time"
-                      defaultValue={
-                        tempState.to
-                          ? parseDate(tempState.to)?.format("HH:mm:ss")
-                          : `00:00:00`
-                      }
-                      step="1"
-                      onChange={(e) => {
-                        const toTime = tempState.to
-                          ? parseDate(tempState.to)
-                          : dayjs();
-                        setTempState({
-                          ...tempState,
-                          relative: "custom",
-                          from: dayjs(
-                            `${toTime?.format("YYYY-MM-DD")} ${e.target.value}`,
-                          ),
-                        });
-                      }}
-                      className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
-                    />
-                  </div>
+                  {withTime && (
+                    <div className="w-full">
+                      <label>End time</label>
+                      <input
+                        type="time"
+                        defaultValue={
+                          tempState.to
+                            ? parseDate(tempState.to)?.format("HH:mm:ss")
+                            : `00:00:00`
+                        }
+                        step="1"
+                        onChange={(e) => {
+                          const toTime = tempState.to
+                            ? parseDate(tempState.to)
+                            : dayjs();
+                          setTempState({
+                            ...tempState,
+                            relative: "custom",
+                            from: dayjs(
+                              `${toTime?.format("YYYY-MM-DD")} ${e.target.value}`,
+                            ),
+                          });
+                        }}
+                        className="bg-dashboard-panel text-foreground dark:bg-dashboard dark:text-foreground-light border border-table-border rounded p-2 w-full"
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -362,15 +386,17 @@ const DatetimeRangePicker = ({
   to,
   relative,
   disabled,
+  withTime = true,
   onChange,
 }: {
   from: dayjs.Dayjs;
   to?: dayjs.Dayjs | null;
   relative?: string | null;
   disabled: boolean;
+  withTime: boolean;
   onChange: (
-    from: dayjs.Dayjs,
-    to?: dayjs.Dayjs | null,
+    from: string,
+    to?: string | null,
     relative?: string | null,
   ) => void;
 }) => {
@@ -448,19 +474,12 @@ const DatetimeRangePicker = ({
       return;
     }
     onChange(
-      state.from.toISOString(),
-      state.to?.toISOString() || null,
+      withTime ? state.from.toISOString() : state.from.format("YYYY-MM-DD"),
+      withTime
+        ? state.to?.toISOString() || null
+        : state.to?.format("YYYY-MM-DD") || null,
       state.relative,
     );
-    // updateInput(
-    //   props.name,
-    //   JSON.stringify({
-    //     from: state.from,
-    //     to: state.to,
-    //     relative: state.relative,
-    //   }),
-    //   !!stateValue,
-    // );
   }, [state.from, state.to, state.relative, state.showCustom]);
 
   const [tempState, setTempState] = useState<{
@@ -478,79 +497,37 @@ const DatetimeRangePicker = ({
   const [unitOfTime, setUnitOfTime] = useState("hours");
 
   const handlePresetChange = (preset) => {
-    switch (preset) {
-      case "1h":
-        setDuration(1);
-        setUnitOfTime("hour");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(1, "hour").utc(),
-          to: null,
-          relative: "1h",
-          showCustom: false,
-        }));
-        break;
-      case "3h":
-        setDuration(3);
-        setUnitOfTime("hour");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(3, "hour").utc(),
-          to: null,
-          relative: "3h",
-          showCustom: false,
-        }));
-        break;
-      case "6h":
-        setDuration(6);
-        setUnitOfTime("hour");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(6, "hour").utc(),
-          to: null,
-          relative: "6h",
-          showCustom: false,
-        }));
-        break;
-      case "12h":
-        setDuration(12);
-        setUnitOfTime("hour");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(12, "hour").utc(),
-          to: null,
-          relative: "12h",
-          showCustom: false,
-        }));
-        break;
-      case "1d":
-        setDuration(1);
-        setUnitOfTime("day");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(1, "day").utc(),
-          to: null,
-          relative: "1d",
-          showCustom: false,
-        }));
-        break;
-      case "7d":
-        setDuration(7);
-        setUnitOfTime("day");
-        setState((previous) => ({
-          ...previous,
-          from: dayjs().subtract(7, "day").utc(),
-          to: null,
-          relative: "7d",
-          showCustom: false,
-        }));
-        break;
-      case "custom":
-        setState((previous) => ({
-          ...previous,
-          showCustom: true,
-        }));
+    if (preset === "custom") {
+      setState((previous) => ({
+        ...previous,
+        showCustom: true,
+      }));
+      return;
     }
+
+    const parts = /^(?<duration>\d+)(?<unit>[hd])$/.exec(preset);
+    if (!parts || parts.length !== 3) {
+      return;
+    }
+    const duration = parts[1];
+    const unit = parts[2];
+    let unitString;
+    if (unit === "h") {
+      unitString = "hour";
+    } else if (unit === "d") {
+      unitString = "day";
+    } else {
+      return;
+    }
+    setDuration(Number(duration));
+    setUnitOfTime(unitString);
+    setState((previous) => ({
+      ...previous,
+      from: dayjs().subtract(Number(duration), unitString).utc(),
+      to: null,
+      relative: preset,
+      showCustom: false,
+    }));
   };
 
   const handleApply = () => {
@@ -573,23 +550,24 @@ const DatetimeRangePicker = ({
     }));
   };
 
-  // const backgroudColor = header ? "bg-white" : "bg-dashboard";
-  // const active;
+  const matchingPresets = withTime ? datetimePresets : datePresets;
 
   return (
     <div className="inline-flex rounded-md border border-black-scale-3">
-      {presets.map((preset, index) => {
+      {matchingPresets.map((preset, index) => {
         const presetClassName = classNames(
           "py-1.5 px-2.5 rounded-md border-black-scale-3",
           state.showCustom ? null : "border border-t-0 border-b-0",
           index === 0 ? "border-l-0 border-r-0 rounded-r-none" : null,
-          index > 0 && index < presets.length - 1
+          index > 0 && index < matchingPresets.length - 1
             ? "rounded-l-none rounded-r-none border-r-0"
             : "",
-          index === presets.length - 1 ? "rounded-l-none border-r-0" : null,
+          index === matchingPresets.length - 1
+            ? "rounded-l-none border-r-0"
+            : null,
           disabled ? null : "cursor-pointer",
           state.relative === preset.value ||
-            (!presets.find((p) => p.value === state.relative) &&
+            (!matchingPresets.find((p) => p.value === state.relative) &&
               preset.value === "custom")
             ? "bg-dashboard"
             : "bg-dashboard-panel text-foreground-light",
@@ -621,6 +599,7 @@ const DatetimeRangePicker = ({
                             duration={duration}
                             tempState={tempState}
                             unitOfTime={unitOfTime}
+                            withTime={withTime}
                             setDuration={setDuration}
                             setTempState={setTempState}
                             setUnitOfTime={setUnitOfTime}

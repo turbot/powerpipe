@@ -17,6 +17,7 @@ interface DatetimeRange {
 
 interface IDashboardDatetimeRangeContext {
   range: DatetimeRange;
+  supportsTimeRange: boolean;
   setRange: (range: DatetimeRange) => void;
 }
 
@@ -30,11 +31,14 @@ const DashboardDatetimeRangeContext =
 export const DashboardDatetimeRangeProvider = ({
   children,
 }: DashboardSearchPathProviderProps) => {
-  const { metadata } = useDashboardState();
+  const { metadata, dashboard, dashboardsMetadata } = useDashboardState();
   const [searchParams, setSearchParams] = useSearchParams();
   const rawDatetimeRange = searchParams.get("datetime_range");
 
-  const serverSupportsTimeRange = metadata?.supports_time_range;
+  const serverSupportsTimeRange = !!metadata?.supports_time_range;
+  const dashboardSupportsTimeRange = !!(
+    dashboard && dashboardsMetadata[dashboard.name]?.supports_time_range
+  );
 
   const datetimeRange = useMemo<DatetimeRange>(() => {
     if (!!rawDatetimeRange) {
@@ -74,7 +78,10 @@ export const DashboardDatetimeRangeProvider = ({
   };
 
   useEffect(() => {
-    if (!serverSupportsTimeRange || rawDatetimeRange) {
+    if (
+      (!serverSupportsTimeRange && !dashboardSupportsTimeRange) ||
+      rawDatetimeRange
+    ) {
       return;
     }
     initialiseRange({
@@ -84,6 +91,7 @@ export const DashboardDatetimeRangeProvider = ({
     });
   }, [
     serverSupportsTimeRange,
+    dashboardSupportsTimeRange,
     rawDatetimeRange,
     datetimeRange.from,
     datetimeRange.to,
@@ -92,7 +100,12 @@ export const DashboardDatetimeRangeProvider = ({
 
   return (
     <DashboardDatetimeRangeContext.Provider
-      value={{ range: datetimeRange, setRange }}
+      value={{
+        range: datetimeRange,
+        supportsTimeRange:
+          serverSupportsTimeRange || dashboardSupportsTimeRange,
+        setRange,
+      }}
     >
       {children}
     </DashboardDatetimeRangeContext.Provider>

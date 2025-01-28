@@ -72,8 +72,8 @@ export const DashboardExecutionProvider = ({
   );
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
-  const { range } = useDashboardDatetimeRange();
-  const { searchPathPrefix } = useDashboardSearchPath();
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
+  const { searchPathPrefix, supportsSearchPath } = useDashboardSearchPath();
   const { search } = useGlobalContextNavigate();
 
   useEffect(() => {
@@ -214,18 +214,18 @@ export const DashboardExecutionProvider = ({
       },
     };
 
-    if (range.from) {
+    if (supportsTimeRange && range.from) {
       dashboardMessage.payload.datetime_range =
         dashboardMessage.payload.datetime_range || {};
       dashboardMessage.payload.datetime_range.from = range.from;
     }
-    if (range.to) {
+    if (supportsTimeRange && range.to) {
       dashboardMessage.payload.datetime_range =
         dashboardMessage.payload.datetime_range || {};
       dashboardMessage.payload.datetime_range.to = range.to;
     }
 
-    if (!!searchPathPrefix.length) {
+    if (supportsSearchPath && !!searchPathPrefix.length) {
       dashboardMessage.payload.search_path_prefix = searchPathPrefix;
     }
 
@@ -260,6 +260,8 @@ export const DashboardExecutionProvider = ({
     executeDashboard(dashboard_name);
   }, [
     availableDashboardsLoaded,
+    supportsTimeRange,
+    supportsSearchPath,
     dataMode,
     dashboard_name,
     inputs,
