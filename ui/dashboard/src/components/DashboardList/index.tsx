@@ -279,7 +279,7 @@ const sortDashboardSearchResults = (
   ]);
 };
 
-const DashboardList = () => {
+const DashboardList = ({ showOptions = true }) => {
   const {
     availableDashboardsLoaded,
     components: { DashboardListEmptyCallToAction },
@@ -393,6 +393,13 @@ const DashboardList = () => {
   return (
     <div className="w-full grid grid-cols-12 gap-x-4">
       <div className="col-span-12 lg:col-span-9 space-y-4">
+        {showOptions && (
+          <div className="flex items-center space-x-2 md:space-x-4">
+            <DashboardSearch />
+            <DashboardTagGroupSelect />
+            <SplitSnapshotButton />
+          </div>
+        )}
         <div className="grid grid-cols-6">
           {(!availableDashboardsLoaded || !metadata) && (
             <div className="col-span-6 mt-2 ml-1 text-black-scale-4 flex items-center">
@@ -460,14 +467,7 @@ const DashboardListWrapper = ({
 
   return (
     <div className={classNames(wrapperClassName, "space-y-4")}>
-      {showOptions && (
-        <div className="flex items-center space-x-2 md:space-x-4">
-          <DashboardSearch />
-          <DashboardTagGroupSelect />
-          <SplitSnapshotButton />
-        </div>
-      )}
-      <DashboardList />
+      <DashboardList showOptions={showOptions} />
     </div>
   );
 };
