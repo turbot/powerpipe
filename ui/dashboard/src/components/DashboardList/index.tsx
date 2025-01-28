@@ -1,7 +1,10 @@
 import CallToActions from "../CallToActions";
+import DashboardSearch from "@powerpipe/components/DashboardSearch";
+import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
 import get from "lodash/get";
-import sortBy from "lodash/sortBy";
 import LoadingIndicator from "../dashboards/LoadingIndicator";
+import sortBy from "lodash/sortBy";
+import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
 import {
   AvailableDashboard,
@@ -439,7 +442,10 @@ const DashboardList = () => {
   );
 };
 
-const DashboardListWrapper = ({ wrapperClassName = "" }) => {
+const DashboardListWrapper = ({
+  showOptions = true,
+  wrapperClassName = "",
+}) => {
   const { dashboard_name } = useParams();
   const { search } = useDashboardSearch();
   const { dataMode } = useDashboardState();
@@ -453,7 +459,14 @@ const DashboardListWrapper = ({ wrapperClassName = "" }) => {
   }
 
   return (
-    <div className={wrapperClassName}>
+    <div className={classNames(wrapperClassName, "space-y-4")}>
+      {showOptions && (
+        <div className="flex items-center space-x-2 md:space-x-4">
+          <DashboardSearch />
+          <DashboardTagGroupSelect />
+          <SplitSnapshotButton />
+        </div>
+      )}
       <DashboardList />
     </div>
   );

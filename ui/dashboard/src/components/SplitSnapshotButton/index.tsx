@@ -14,7 +14,7 @@ import {
   tableConfigToSnapshotMetadata,
 } from "@powerpipe/utils/snapshot";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-import { Menu } from "@headlessui/react";
+// import { Menu } from "@headlessui/react";
 import { noop } from "@powerpipe/utils/func";
 import { saveAs } from "file-saver";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
@@ -145,7 +145,7 @@ interface SplitSnapshotAction {
   action: () => void;
 }
 
-const SplitSnapshotButton = () => {
+const SplitSnapshotButton = ({ header = false }) => {
   const { dashboard, selectedDashboard, snapshot } = useDashboardState();
   const openSnapshot = useOpenSnapshot();
   const saveSnapshot = useSaveSnapshot();
@@ -154,8 +154,7 @@ const SplitSnapshotButton = () => {
   let actions: KeyValuePairs<SplitSnapshotAction> = {
     open: {
       icon: "folder_open",
-      // label: "Open snapshot…",
-      label: "Open…",
+      label: "Open snapshot…",
       title: "Open snapshot…",
       action: () => openSnapshotRef.current?.click(),
     },
@@ -168,13 +167,17 @@ const SplitSnapshotButton = () => {
     },
   };
 
-  let defaultAction: SplitSnapshotAction;
-  let otherActions: SplitSnapshotAction[] = [];
+  let defaultAction: SplitSnapshotAction | null = null;
+  // let otherActions: SplitSnapshotAction[] = [];
   if (selectedDashboard) {
     defaultAction = actions.save;
-    otherActions = [actions.open];
-  } else {
+    //otherActions = [actions.open];
+  } else if (!header) {
     defaultAction = actions.open;
+  }
+
+  if (!defaultAction) {
+    return null;
   }
 
   return (
@@ -185,50 +188,50 @@ const SplitSnapshotButton = () => {
           disabled={defaultAction.disabled}
           className={classNames(
             "relative inline-flex items-center space-x-2 focus:z-10",
-            otherActions.length ? "rounded-r-none" : null,
+            // otherActions.length ? "rounded-r-none" : null,
           )}
           onClick={defaultAction.disabled ? noop : defaultAction.action}
         >
           <Icon icon={defaultAction.icon} className="h-5 w-5" />
           <span>{defaultAction.label}</span>
         </NeutralButton>
-        {!!otherActions.length && (
-          <Menu as="div" className="relative -ml-px block">
-            <Menu.Button
-              as={NeutralButton}
-              className="relative flex items-center rounded-l-none h-full focus:z-10 py-2 px-1"
-              size="manual"
-              onClick={noop}
-            >
-              <span className="sr-only">Open options</span>
-              <Icon icon="keyboard_arrow_down" className="h-5 w-5" />
-            </Menu.Button>
-            <Menu.Items className="absolute right-0 z-10 bg-dashboard-panel mt-px min-w-32 origin-top-right rounded-md transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in">
-              <div>
-                {otherActions.map((otherAction, idx) => (
-                  <Menu.Item key={idx}>
-                    <div
-                      className={classNames(
-                        "flex items-center space-x-2 p-2 cursor-pointer hover:bg-black-scale-2",
-                        otherAction.disabled
-                          ? "disabled:bg-dashboard disabled:text-light"
-                          : "cursor-pointer",
-                      )}
-                      onClick={
-                        otherAction.disabled ? undefined : otherAction.action
-                      }
-                    >
-                      <Icon icon={otherAction.icon} className="h-5 w-5" />
-                      <span className="hidden lg:block">
-                        {otherAction.label}
-                      </span>
-                    </div>
-                  </Menu.Item>
-                ))}
-              </div>
-            </Menu.Items>
-          </Menu>
-        )}
+        {/*{!!otherActions.length && (*/}
+        {/*  <Menu as="div" className="relative -ml-px block">*/}
+        {/*    <Menu.Button*/}
+        {/*      as={NeutralButton}*/}
+        {/*      className="relative flex items-center rounded-l-none h-full focus:z-10 py-2 px-1"*/}
+        {/*      size="manual"*/}
+        {/*      onClick={noop}*/}
+        {/*    >*/}
+        {/*      <span className="sr-only">Open options</span>*/}
+        {/*      <Icon icon="keyboard_arrow_down" className="h-5 w-5" />*/}
+        {/*    </Menu.Button>*/}
+        {/*    <Menu.Items className="absolute right-0 z-10 bg-dashboard-panel mt-px min-w-32 origin-top-right rounded-md transition focus:outline-none data-[closed]:scale-95 data-[closed]:transform data-[closed]:opacity-0 data-[enter]:duration-100 data-[leave]:duration-75 data-[enter]:ease-out data-[leave]:ease-in">*/}
+        {/*      <div>*/}
+        {/*        {otherActions.map((otherAction, idx) => (*/}
+        {/*          <Menu.Item key={idx}>*/}
+        {/*            <div*/}
+        {/*              className={classNames(*/}
+        {/*                "flex items-center space-x-2 p-2 cursor-pointer hover:bg-black-scale-2",*/}
+        {/*                otherAction.disabled*/}
+        {/*                  ? "disabled:bg-dashboard disabled:text-light"*/}
+        {/*                  : "cursor-pointer",*/}
+        {/*              )}*/}
+        {/*              onClick={*/}
+        {/*                otherAction.disabled ? undefined : otherAction.action*/}
+        {/*              }*/}
+        {/*            >*/}
+        {/*              <Icon icon={otherAction.icon} className="h-5 w-5" />*/}
+        {/*              <span className="hidden lg:block">*/}
+        {/*                {otherAction.label}*/}
+        {/*              </span>*/}
+        {/*            </div>*/}
+        {/*          </Menu.Item>*/}
+        {/*        ))}*/}
+        {/*      </div>*/}
+        {/*    </Menu.Items>*/}
+        {/*  </Menu>*/}
+        {/*)}*/}
       </div>
       <input
         ref={openSnapshotRef}
