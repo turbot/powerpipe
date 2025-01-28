@@ -1,9 +1,15 @@
 import { createContext, ReactNode, useCallback, useContext } from "react";
-import { DashboardSearch, DashboardSearchGroupByMode } from "@powerpipe/types";
+import {
+  DashboardNestingDisplayMode,
+  DashboardSearch,
+  DashboardSearchGroupByMode,
+} from "@powerpipe/types";
 import { useSearchParams } from "react-router-dom";
 
 interface IDashboardSearchContext {
   search: DashboardSearch;
+  nestedDashboards: DashboardNestingDisplayMode;
+  updateNestedDashboards: (value: DashboardNestingDisplayMode) => void;
   updateSearchValue: (value: string | undefined) => void;
   updateGroupBy: (value: DashboardSearchGroupByMode, tag?: string) => void;
 }
@@ -32,6 +38,8 @@ export const DashboardSearchProvider = ({
       tag: searchParams.get("tag") || defaultSearch?.groupBy?.tag || "service",
     },
   };
+  const nestedDashboards = (searchParams.get("nested_dashboards") ||
+    "exclude") as DashboardNestingDisplayMode;
 
   const updateSearchValue = useCallback(
     (value: string | undefined) => {
@@ -58,9 +66,23 @@ export const DashboardSearchProvider = ({
     [searchParams],
   );
 
+  const updateNestedDashboards = useCallback(
+    (value: DashboardNestingDisplayMode) => {
+      searchParams.set("nested_dashboards", value);
+      setSearchParams(searchParams);
+    },
+    [searchParams],
+  );
+
   return (
     <DashboardSearchContext.Provider
-      value={{ search, updateSearchValue, updateGroupBy }}
+      value={{
+        nestedDashboards,
+        search,
+        updateNestedDashboards,
+        updateSearchValue,
+        updateGroupBy,
+      }}
     >
       {children}
     </DashboardSearchContext.Provider>

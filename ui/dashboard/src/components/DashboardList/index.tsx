@@ -1,6 +1,6 @@
 import CallToActions from "../CallToActions";
+import DashboardListOptionsButton from "@powerpipe/components/DashboardList/DashboardListOptionsButton";
 import DashboardSearch from "@powerpipe/components/DashboardSearch";
-import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
 import get from "lodash/get";
 import LoadingIndicator from "../dashboards/LoadingIndicator";
 import sortBy from "lodash/sortBy";
@@ -99,21 +99,8 @@ const TitlePart = ({ part, globalSearchContext }) => {
   );
 };
 
-const BenchmarkTitle = ({ benchmark, searchValue, globalSearchContext }) => {
+const BenchmarkTitle = ({ benchmark, globalSearchContext }) => {
   const { dashboardsMap } = useDashboardState();
-  const ExternalLink = getComponent("external_link");
-
-  if (!searchValue) {
-    return (
-      <ExternalLink
-        className="link-highlight hover:underline"
-        ignoreDataMode
-        to={`/${benchmark.full_name}${!!globalSearchContext ? `?${globalSearchContext}` : ""}`}
-      >
-        {benchmark.title || benchmark.short_name}
-      </ExternalLink>
-    );
-  }
 
   const parts: AvailableDashboard[] = [];
 
@@ -166,7 +153,6 @@ const Section = ({
             {dashboard.type === "benchmark" && (
               <BenchmarkTitle
                 benchmark={dashboard}
-                searchValue={searchValue}
                 globalSearchContext={globalSearchContext}
               />
             )}
@@ -289,6 +275,7 @@ const DashboardList = ({ showOptions = true }) => {
     metadata,
   } = useDashboardState();
   const {
+    nestedDashboards,
     search: { value: searchValue, groupBy: searchGroupBy },
     updateSearchValue,
   } = useDashboardSearch();
@@ -296,8 +283,6 @@ const DashboardList = ({ showOptions = true }) => {
   const [unfilteredDashboards, setUnfilteredDashboards] = useState<
     AvailableDashboardWithMod[]
   >([]);
-  const [unfilteredTopLevelDashboards, setUnfilteredTopLevelDashboards] =
-    useState<AvailableDashboardWithMod[]>([]);
   const [filteredDashboards, setFilteredDashboards] = useState<
     AvailableDashboardWithMod[]
   >([]);
@@ -310,7 +295,6 @@ const DashboardList = ({ showOptions = true }) => {
     }
 
     const dashboardsWithMod: AvailableDashboardWithMod[] = [];
-    const topLevelDashboardsWithMod: AvailableDashboardWithMod[] = [];
     const newDashboardTagKeys: string[] = [];
     for (const dashboard of dashboards) {
       const dashboardMod = dashboard.mod_full_name;
@@ -329,10 +313,6 @@ const DashboardList = ({ showOptions = true }) => {
       dashboardWithMod.mod = mod;
       dashboardsWithMod.push(dashboardWithMod);
 
-      if (dashboard.is_top_level) {
-        topLevelDashboardsWithMod.push(dashboardWithMod);
-      }
-
       Object.entries(dashboard.tags || {}).forEach(([tagKey]) => {
         if (!newDashboardTagKeys.includes(tagKey)) {
           newDashboardTagKeys.push(tagKey);
@@ -340,7 +320,6 @@ const DashboardList = ({ showOptions = true }) => {
       });
     }
     setUnfilteredDashboards(dashboardsWithMod);
-    setUnfilteredTopLevelDashboards(topLevelDashboardsWithMod);
     dispatch({
       type: DashboardActions.SET_DASHBOARD_TAG_KEYS,
       keys: newDashboardTagKeys,
@@ -359,19 +338,29 @@ const DashboardList = ({ showOptions = true }) => {
       return;
     }
     if (!searchValue) {
-      setFilteredDashboards(() => unfilteredDashboards);
+      setFilteredDashboards(() =>
+        unfilteredDashboards.filter((d) => {
+          if (d.is_top_level) {
+            return true;
+          }
+          return nestedDashboards === "include";
+        }),
+      );
       return;
     }
 
     const searchParts = searchValue.trim().toLowerCase().split(" ");
     const filtered: AvailableDashboard[] = [];
 
-    unfilteredDashboards.forEach((dashboard) => {
+    for (const dashboard of unfilteredDashboards) {
+      if (!dashboard.is_top_level && nestedDashboards === "exclude") {
+        continue;
+      }
       const include = searchAgainstDashboard(dashboard, searchParts);
       if (include) {
         filtered.push(dashboard);
       }
-    });
+    }
 
     setFilteredDashboards(() =>
       sortDashboardSearchResults(filtered, dashboardsMap),
@@ -379,13 +368,14 @@ const DashboardList = ({ showOptions = true }) => {
   }, [
     availableDashboardsLoaded,
     dashboardsMap,
+    nestedDashboards,
     unfilteredDashboards,
     metadata,
     searchValue,
   ]);
 
   const sections = useGroupedDashboards(
-    searchValue ? filteredDashboards : unfilteredTopLevelDashboards,
+    filteredDashboards,
     searchGroupBy,
     metadata,
   );
@@ -396,7 +386,7 @@ const DashboardList = ({ showOptions = true }) => {
         {showOptions && (
           <div className="flex items-center space-x-2 md:space-x-4">
             <DashboardSearch />
-            <DashboardTagGroupSelect />
+            <DashboardListOptionsButton />
             <SplitSnapshotButton />
           </div>
         )}

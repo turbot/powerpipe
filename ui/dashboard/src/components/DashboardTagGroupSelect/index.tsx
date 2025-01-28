@@ -1,14 +1,11 @@
 import sortBy from "lodash/sortBy";
-import { CheckIcon, ChevronUpDownIcon } from "@heroicons/react/24/solid";
-import { classNames } from "@powerpipe/utils/styles";
 import { DashboardSearchGroupByMode } from "@powerpipe/types";
-import { Fragment, useCallback, useEffect, useMemo, useState } from "react";
-import { Listbox, Transition } from "@headlessui/react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useParams } from "react-router-dom";
 
-const DashboardTagGroupSelect = () => {
+const DashboardTagGroupSelect = ({ onClose }) => {
   const { availableDashboardsLoaded } = useDashboardState();
   const { search, updateGroupBy } = useDashboardSearch();
   const { dashboard_name } = useParams();
@@ -32,15 +29,6 @@ const DashboardTagGroupSelect = () => {
         label: "Type",
       },
     ];
-    // for (const dashboardTagKey of dashboardTags.keys) {
-    //   if (!o.find((i) => i.tag === dashboardTagKey)) {
-    //     o.push({
-    //       groupBy: "tag",
-    //       tag: dashboardTagKey,
-    //       label: startCase(dashboardTagKey),
-    //     });
-    //   }
-    // }
     return sortBy(o, ["label"]);
   }, []);
 
@@ -69,73 +57,40 @@ const DashboardTagGroupSelect = () => {
   }
 
   return (
-    <Listbox
-      value={value}
-      onChange={(option) =>
-        updateGroupBy(option.groupBy as DashboardSearchGroupByMode, option.tag)
-      }
-    >
-      {({ open }) => (
-        <>
-          <div className="relative">
-            <Listbox.Button className="relative w-full bg-dashboard-panel border border-table-border rounded-md pl-3 pr-7 md:pr-10 py-2 text-left text-sm md:text-base cursor-pointer focus:ring-1 focus:ring-text-link">
-              {/*@ts-ignore*/}
-              <span className="block truncate">
-                <span className="hidden lg:inline mr-1">Group:</span>
-                {value.label}
-              </span>
-              <span className="absolute inset-y-0 right-0 flex items-center pr-1 md:pr-2 pointer-events-none">
-                <ChevronUpDownIcon
-                  className="h-5 w-5 text-gray-400"
-                  aria-hidden="true"
-                />
-              </span>
-            </Listbox.Button>
-
-            <Transition
-              show={open}
-              as={Fragment}
-              leave="transition ease-in duration-100"
-              leaveFrom="opacity-100"
-              leaveTo="opacity-0"
-            >
-              <Listbox.Options className="absolute z-10 w-32 sm:w-full bg-dashboard-panel shadow-lg max-h-60 rounded-md text-base ring-1 ring-black ring-opacity-5 overflow-auto focus:outline-none sm:text-sm">
-                {options.map((option) => (
-                  <Listbox.Option
-                    key={`${option.groupBy}:${option.tag}`}
-                    // @ts-ignore
-                    className={({ active }) =>
-                      classNames(
-                        active
-                          ? "text-foreground bg-black-scale-1"
-                          : "text-foreground",
-                        "cursor-default select-none relative py-2 pl-8 pr-4",
-                      )
-                    }
-                    value={option}
-                  >
-                    {({ selected }) => (
-                      <>
-                        <span className="block truncate">{option.label}</span>
-                        {selected ? (
-                          <span
-                            className={
-                              "absolute inset-y-0 left-0 flex items-center pl-1.5"
-                            }
-                          >
-                            <CheckIcon className="h-5 w-5" aria-hidden="true" />
-                          </span>
-                        ) : null}
-                      </>
-                    )}
-                  </Listbox.Option>
-                ))}
-              </Listbox.Options>
-            </Transition>
-          </div>
-        </>
-      )}
-    </Listbox>
+    <div className="flex items-center justify-between space-x-2 p-3">
+      <label htmlFor="dashboardsGroupBy">Group by:</label>
+      <select
+        name="dashboardsGroupBy"
+        value={`${value.groupBy}${value.tag ? `:${value.tag}` : ""}`}
+        onChange={(e) => {
+          const option = options.find((o) => {
+            const parts = e.target.value.split(":");
+            if (parts.length === 2) {
+              return o.groupBy === parts[0] && o.tag === parts[1];
+            }
+            return o.groupBy === parts[0];
+          });
+          if (!option) {
+            return;
+          }
+          updateGroupBy(
+            option.groupBy as DashboardSearchGroupByMode,
+            option.tag,
+          );
+          onClose();
+        }}
+        className="block border border-divide rounded-md bg-dashboard"
+      >
+        {options.map((option) => (
+          <option
+            key={`${option.groupBy}:${option.tag}`}
+            value={`${option.groupBy}${option.tag ? `:${option.tag}` : ""}`}
+          >
+            {option.label}
+          </option>
+        ))}
+      </select>
+    </div>
   );
 };
 
