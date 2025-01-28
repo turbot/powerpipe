@@ -15,10 +15,10 @@ import (
 )
 
 type DetectionRenderer struct {
-	run               *dashboardexecute.DetectionRun
-	parent            *DetectionGroupRenderer
-	maxFailedControls int
-	maxTotalControls  int
+	run    *dashboardexecute.DetectionRun
+	parent *DetectionGroupRenderer
+	//maxFailedControls int
+	//maxTotalControls  int
 	// screen width
 	width          int
 	colorGenerator *controlexecute.DimensionColorGenerator

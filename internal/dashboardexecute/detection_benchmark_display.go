@@ -4,7 +4,6 @@ import (
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"sort"
 	"sync"
-	"sync/atomic"
 	"time"
 
 	"github.com/turbot/go-kit/helpers"
@@ -47,8 +46,8 @@ type DetectionBenchmarkDisplay struct {
 	// a list of distinct dimension keys from descendant controls
 	DimensionKeys []string `json:"-"`
 
-	childrenComplete   uint32
-	executionStartTime time.Time
+	//childrenComplete   uint32
+	//executionStartTime time.Time
 	// lock to prevent multiple control_runs updating this
 	updateLock *sync.Mutex
 }
@@ -212,39 +211,40 @@ func (r *DetectionBenchmarkDisplay) AddDetection(detectionRun *DetectionRun) {
 	r.Children = append(r.Children, detectionRun)
 }
 
-func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
-	r.updateLock.Lock()
-	defer r.updateLock.Unlock()
-	r.DimensionKeys = append(r.DimensionKeys, keys...)
-	if r.Parent != nil {
-		r.Parent.addDimensionKeys(keys...)
-	}
-	r.DimensionKeys = helpers.StringSliceDistinct(r.DimensionKeys)
-	sort.Strings(r.DimensionKeys)
-}
+//
+//func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
+//	r.updateLock.Lock()
+//	defer r.updateLock.Unlock()
+//	r.DimensionKeys = append(r.DimensionKeys, keys...)
+//	if r.Parent != nil {
+//		r.Parent.addDimensionKeys(keys...)
+//	}
+//	r.DimensionKeys = helpers.StringSliceDistinct(r.DimensionKeys)
+//	sort.Strings(r.DimensionKeys)
+//}
 
-// onChildDone is a callback that gets called from the children of this result group when they are done
-func (r *DetectionBenchmarkDisplay) onChildDone() {
-	newCount := atomic.AddUint32(&r.childrenComplete, 1)
-	totalCount := uint32(len(r.DetectionRuns) + len(r.Groups)) //nolint:gosec // will not overflow
-	if newCount < totalCount {
-		// all children haven't finished execution yet
-		return
-	}
-
-	// all children are done
-	r.Duration = time.Since(r.executionStartTime)
-	if r.Parent != nil {
-		r.Parent.onChildDone()
-	}
-}
-
-func (r *DetectionBenchmarkDisplay) updateSummary(count int) {
-	r.updateLock.Lock()
-	defer r.updateLock.Unlock()
-
-	r.Summary.Count += count
-	if r.Parent != nil {
-		r.Parent.updateSummary(count)
-	}
-}
+//// onChildDone is a callback that gets called from the children of this result group when they are done
+//func (r *DetectionBenchmarkDisplay) onChildDone() {
+//	newCount := atomic.AddUint32(&r.childrenComplete, 1)
+//	totalCount := uint32(len(r.DetectionRuns) + len(r.Groups)) //nolint:gosec // will not overflow
+//	if newCount < totalCount {
+//		// all children haven't finished execution yet
+//		return
+//	}
+//
+//	// all children are done
+//	r.Duration = time.Since(r.executionStartTime)
+//	if r.Parent != nil {
+//		r.Parent.onChildDone()
+//	}
+//}
+//
+//func (r *DetectionBenchmarkDisplay) updateSummary(count int) {
+//	r.updateLock.Lock()
+//	defer r.updateLock.Unlock()
+//
+//	r.Summary.Count += count
+//	if r.Parent != nil {
+//		r.Parent.updateSummary(count)
+//	}
+//}

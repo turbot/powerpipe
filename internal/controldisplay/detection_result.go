@@ -14,8 +14,8 @@ import (
 // TODO dimensions???
 
 type DetectionResultRenderer struct {
-	displayValues  []string
-	rows           []map[string]any
+	displayValues []string
+	//rows           []map[string]any
 	colorGenerator *controlexecute.DimensionColorGenerator
 
 	// screen width
