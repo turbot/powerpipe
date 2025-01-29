@@ -19,15 +19,7 @@ type DetectionBenchmarkDisplayTree struct {
 	Progress  *controlstatus.ControlProgress    `json:"progress"`
 	// map of dimension property name to property value to color map
 	DimensionColorGenerator *controlexecute.DimensionColorGenerator `json:"-"`
-	// the current session search path
-	//SearchPath []string                      `json:"-"`
 	Workspace *workspace.PowerpipeWorkspace `json:"-"`
-	// TODO K for csv only?
-	// TODO need DetectionRunInstances - we need to replicate the control execution tree
-	// DetectionRunInstances is a list of detection runs for each parent.
-	// DetectionRunInstances []*DetectionRunInstance `json:"-"`
-	// an optional map of control names used to filter the controls which are run
-	//controlNameFilterMap map[string]struct{}
 	// for now just using DetectionRuns
 	DetectionRuns []*DetectionRun `json:"-"`
 }
