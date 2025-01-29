@@ -2,7 +2,7 @@ package resources
 
 import (
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 )
 
 type RuntimeDependency struct {

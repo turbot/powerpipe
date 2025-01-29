@@ -5,8 +5,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/turbot/pipe-fittings/contexthelpers"
-	"github.com/turbot/pipe-fittings/export"
+	"github.com/turbot/pipe-fittings/v2/contexthelpers"
+	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )

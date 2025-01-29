@@ -5,9 +5,9 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 )
 
 func LoadWorkspacePromptingForVariables(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (*PowerpipeWorkspace, error_helpers.ErrorAndWarnings) {

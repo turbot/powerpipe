@@ -1,11 +1,11 @@
 package display
 
 import (
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"slices"
 	"strings"
 
-	"github.com/turbot/pipe-fittings/printers"
+	"github.com/turbot/pipe-fittings/v2/printers"
 )
 
 type PrintableHclResource[T printers.Listable] struct {

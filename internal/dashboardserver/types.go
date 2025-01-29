@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"gopkg.in/olahol/melody.v1"

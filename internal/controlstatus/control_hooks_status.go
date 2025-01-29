@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 // StatusControlHooks is a struct which implements ControlHooks, and displays the control progress as a status message

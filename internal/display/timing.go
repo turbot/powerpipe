@@ -3,7 +3,7 @@ package display
 import (
 	"fmt"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/queryresult"
 	"time"
 )
@@ -27,4 +27,3 @@ func getDurationString(duration time.Duration) string {
 	durationString := duration.String()
 	return durationString
 }
-

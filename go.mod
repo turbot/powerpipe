@@ -2,8 +2,6 @@ module github.com/turbot/powerpipe
 
 go 1.23.2
 
-replace github.com/turbot/pipe-fittings => ../pipe-fittings
-
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/briandowns/spinner v1.23.0 // indirect
@@ -23,7 +21,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v0.10.0-rc.0
-	github.com/turbot/pipe-fittings v1.6.6
+	github.com/turbot/pipe-fittings/v2 v2.0.0-rc.1
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.0
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -207,6 +205,7 @@ require (
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
+	github.com/turbot/pipe-fittings v1.6.0 // indirect
 	github.com/turbot/pipes-sdk-go v0.9.1 // indirect
 	github.com/turbot/steampipe-plugin-code v0.7.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect

@@ -4,10 +4,10 @@ import (
 	"fmt"
 
 	"github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/export"
-	"github.com/turbot/pipe-fittings/filepaths"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/export"
+	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/powerpipe/internal/resources"
 )
 

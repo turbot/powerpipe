@@ -1,13 +1,13 @@
 package workspace
 
 import (
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/resources"
 	"testing"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 func makeControl(mod *modconfig.Mod, name, title, description, sql string, tags map[string]string) *resources.Control {

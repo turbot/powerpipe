@@ -1,7 +1,7 @@
 package workspace
 
 import (
-	"github.com/turbot/pipe-fittings/connection"
+	"github.com/turbot/pipe-fittings/v2/connection"
 )
 
 type LoadPowerpipeWorkspaceOption func(*LoadPowerpipeWorkspaceConfig)

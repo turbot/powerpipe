@@ -3,8 +3,8 @@ package dashboardtypes
 import (
 	"fmt"
 
-	"github.com/turbot/pipe-fittings/queryresult"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 type LeafData struct {

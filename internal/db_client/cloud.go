@@ -2,12 +2,12 @@ package db_client
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/connection"
+	"github.com/turbot/pipe-fittings/v2/connection"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/pipes"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/pipes"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 )
 

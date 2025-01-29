@@ -3,7 +3,7 @@ package parse
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/powerpipe/internal/resources"
 )
 

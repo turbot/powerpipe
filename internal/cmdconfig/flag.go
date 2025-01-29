@@ -2,7 +2,7 @@ package cmdconfig
 
 import (
 	"github.com/spf13/cobra"
-	"github.com/turbot/pipe-fittings/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
 )
 
 // TODO temp until new pipe-fittings release

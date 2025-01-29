@@ -1,12 +1,12 @@
 package resources
 
 import (
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/pipe-fittings/cty_helpers"
-	"github.com/turbot/pipe-fittings/printers"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/cty_helpers"
+	"github.com/turbot/pipe-fittings/v2/printers"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/zclconf/go-cty/cty"
 )
 

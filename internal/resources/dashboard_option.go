@@ -1,6 +1,6 @@
 package resources
 
-import "github.com/turbot/pipe-fittings/utils"
+import "github.com/turbot/pipe-fittings/v2/utils"
 
 // DashboardInputOption is a struct representing dashboard input option
 type DashboardInputOption struct {

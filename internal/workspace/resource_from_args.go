@@ -6,11 +6,11 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/sperr"
-	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/sperr"
+	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	pparse "github.com/turbot/powerpipe/internal/parse"
 	"github.com/turbot/powerpipe/internal/resources"
 )

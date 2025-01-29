@@ -3,7 +3,7 @@ package resources
 import (
 	"fmt"
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 )
 
 // enrich the shell category by fetching from the ModResourcesProvider

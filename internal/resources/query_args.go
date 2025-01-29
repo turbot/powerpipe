@@ -3,13 +3,13 @@ package resources
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"log/slog"
 	"strings"
 
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/printers"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/printers"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 // QueryArgs is a struct which contains the arguments used to invoke a query

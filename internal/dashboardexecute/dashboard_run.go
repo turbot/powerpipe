@@ -6,8 +6,8 @@ import (
 	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 // DbClient wraps over `sql.DB` and gives an interface to the database

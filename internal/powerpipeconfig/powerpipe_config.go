@@ -5,8 +5,8 @@ import (
 	"log/slog"
 	"sync"
 
-	"github.com/turbot/pipe-fittings/app_specific_connection"
-	"github.com/turbot/pipe-fittings/connection"
+	"github.com/turbot/pipe-fittings/v2/app_specific_connection"
+	"github.com/turbot/pipe-fittings/v2/connection"
 )
 
 type PowerpipeConfig struct {

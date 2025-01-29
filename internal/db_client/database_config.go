@@ -2,11 +2,11 @@ package db_client
 
 import (
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/connection"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )

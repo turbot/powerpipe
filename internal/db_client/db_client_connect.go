@@ -2,8 +2,8 @@ package db_client
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 

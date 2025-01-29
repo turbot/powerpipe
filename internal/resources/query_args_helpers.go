@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 // MergeArgs ensures base and runtime args are non nil and merges them into single args

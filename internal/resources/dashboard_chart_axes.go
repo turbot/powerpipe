@@ -1,7 +1,7 @@
 package resources
 
 import (
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 type DashboardChartAxes struct {
