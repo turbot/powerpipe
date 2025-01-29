@@ -393,7 +393,7 @@ const DatetimeRangePicker = ({
   to?: dayjs.Dayjs | null;
   relative?: string | null;
   disabled: boolean;
-  withTime: boolean;
+  withTime?: boolean;
   onChange: (
     from: string,
     to?: string | null,
@@ -420,54 +420,6 @@ const DatetimeRangePicker = ({
     relative?: string | null;
     showCustom?: boolean;
   }>({ from, to, relative, showCustom: false });
-
-  //   return {
-  //     from:
-  //   }
-  //
-  //   if (stateValue) {
-  //     try {
-  //       const parsed = JSON.parse(stateValue);
-  //       return {
-  //         from: parsed.from
-  //           ? dayjs(parsed.from)
-  //           : dayjs.subtract(7, "day").utc(),
-  //         to: parsed.to ? dayjs(parsed.to) : null,
-  //         relative: parsed.relative || "7d",
-  //       };
-  //     } catch (err) {
-  //       console.error("Parse error", err);
-  //       const now = dayjs();
-  //       return {
-  //         from: now.subtract(7, "day").utc(),
-  //         to: null,
-  //         relative: "7d",
-  //       };
-  //     }
-  //   } else {
-  //     const now = dayjs();
-  //     return {
-  //       from: now.subtract(7, "day").utc(),
-  //       to: null,
-  //       relative: "7d",
-  //     };
-  //   }
-  // });
-
-  // useEffect(() => {
-  //   if (stateValue) {
-  //     return;
-  //   }
-  //   updateInput(
-  //     props.name,
-  //     JSON.stringify({
-  //       from: dayjs().subtract(7, "day").utc(),
-  //       to: null,
-  //       relative: "7d",
-  //     }),
-  //     !!stateValue,
-  //   );
-  // }, [stateValue]);
 
   useEffect(() => {
     if (state.showCustom) {
