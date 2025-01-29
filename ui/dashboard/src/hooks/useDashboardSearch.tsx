@@ -38,7 +38,7 @@ export const DashboardSearchProvider = ({
       tag: searchParams.get("tag") || defaultSearch?.groupBy?.tag || "service",
     },
   };
-  const dashboardsDisplay = (searchParams.get("dashboards_display") ||
+  const dashboardsDisplay = (searchParams.get("dashboard_display") ||
     "top_level") as DashboardDisplayMode;
 
   const updateSearchValue = useCallback(
@@ -68,7 +68,7 @@ export const DashboardSearchProvider = ({
 
   const updateDashboardsDisplay = useCallback(
     (value: DashboardDisplayMode) => {
-      searchParams.set("dashboards_display", value);
+      searchParams.set("dashboard_display", value);
       setSearchParams(searchParams);
     },
     [searchParams],
