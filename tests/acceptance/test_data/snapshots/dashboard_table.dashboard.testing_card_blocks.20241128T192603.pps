@@ -1,0 +1,108 @@
+{
+    "schema_version": "20240607",
+    "inputs": {},
+    "variables": {},
+    "start_time": "2024-11-28T19:25:55.998731+05:30",
+    "end_time": "2024-11-28T19:25:56.032481+05:30",
+    "layout": {
+        "name": "dashboard_table.dashboard.testing_card_blocks",
+        "children": [
+            {
+                "name": "dashboard_table.container.dashboard_testing_card_blocks_anonymous_container_0",
+                "children": [
+                    {
+                        "name": "dashboard_table.table.container_dashboard_testing_card_blocks_anonymous_container_0_anonymous_table_0",
+                        "panel_type": "table"
+                    }
+                ],
+                "panel_type": "container"
+            }
+        ],
+        "panel_type": "dashboard"
+    },
+    "panels": {
+        "dashboard_table.container.dashboard_testing_card_blocks_anonymous_container_0": {
+            "dashboard": "dashboard_table.dashboard.testing_card_blocks",
+            "name": "dashboard_table.container.dashboard_testing_card_blocks_anonymous_container_0",
+            "panel_type": "container",
+            "status": "complete"
+        },
+        "dashboard_table.dashboard.testing_card_blocks": {
+            "dashboard": "dashboard_table.dashboard.testing_card_blocks",
+            "name": "dashboard_table.dashboard.testing_card_blocks",
+            "panel_type": "dashboard",
+            "status": "complete",
+            "title": "Testing card blocks"
+        },
+        "dashboard_table.table.container_dashboard_testing_card_blocks_anonymous_container_0_anonymous_table_0": {
+            "dashboard": "dashboard_table.dashboard.testing_card_blocks",
+            "name": "dashboard_table.table.container_dashboard_testing_card_blocks_anonymous_container_0_anonymous_table_0",
+            "panel_type": "table",
+            "status": "complete",
+            "title": "Employee table",
+            "width": 4,
+            "data": {
+                "columns": [
+                    {
+                        "name": "id",
+                        "data_type": "INT4"
+                    },
+                    {
+                        "name": "name",
+                        "data_type": "TEXT"
+                    },
+                    {
+                        "name": "role",
+                        "data_type": "TEXT"
+                    }
+                ],
+                "rows": [
+                    {
+                        "id": 11,
+                        "name": "dwight",
+                        "role": "manager"
+                    },
+                    {
+                        "id": 12,
+                        "name": "jim",
+                        "role": "developer"
+                    },
+                    {
+                        "id": 13,
+                        "name": "pam",
+                        "role": "designer"
+                    }
+                ]
+            },
+            "properties": {
+                "columns": {
+                    "id": {
+                        "name": "id",
+                        "display": "all",
+                        "primary_key": true
+                    },
+                    "name": {
+                        "name": "name",
+                        "display": "all"
+                    }
+                },
+                "name": "container_dashboard_testing_card_blocks_anonymous_container_0_anonymous_table_0"
+            }
+        }
+    },
+    "metadata": {
+        "view": {
+            "group_by": [
+                {
+                    "type": "benchmark"
+                },
+                {
+                    "type": "control"
+                },
+                {
+                    "type": "result"
+                }
+            ]
+        }
+    }
+}
