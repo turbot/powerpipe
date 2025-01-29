@@ -5,9 +5,9 @@ import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "@powerpipe/components/dashboards";
-import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const DashboardHeader = () => {
   const { selectedDashboard } = useDashboardState();
