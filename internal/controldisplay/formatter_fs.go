@@ -50,11 +50,11 @@ func EnsureControlTemplates() error {
 	return nil
 }
 
-// EnsureDetectionTemplates scans the '$STEAMPIPE_INSTALL_DIR/detection/templates' directory and
+// EnsureDetectionTemplates scans the '$STEAMPIPE_INSTALL_DIR/check/detection_templates' directory and
 // copies over the templates defined in the 'templates' package if needed.
 //
 // The name of the folder in the 'templates' package is used to identify
-// templates in '$STEAMPIPE_INSTALL_DIR/detection/templates' - where it is expected
+// templates in '$STEAMPIPE_INSTALL_DIR/check/detection_templates' - where it is expected
 // that a directory with the same name will exist.
 //
 // We re-write the templates, when there is a higher template version
