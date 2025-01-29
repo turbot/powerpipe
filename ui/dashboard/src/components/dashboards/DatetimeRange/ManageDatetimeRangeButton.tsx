@@ -41,7 +41,7 @@ const ManageDatetimeRangeButton = () => {
   return show ? (
     <DatetimeRangePicker
       from={parseDate(range.from)}
-      to={range.to}
+      to={range.to ? parseDate(range.to) : null}
       relative={range.relative}
       disabled={dataMode !== DashboardDataModeLive}
       onChange={handleChange}
