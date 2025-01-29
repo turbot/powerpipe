@@ -65,8 +65,8 @@ var DashboardOutputModeIds = map[DashboardOutputMode][]string{
 type CheckOutputMode enumflag.Flag
 
 const (
-	CheckOutputModeText  CheckOutputMode = iota
-	CheckOutputModeBrief CheckOutputMode = iota
+	CheckOutputModeText CheckOutputMode = iota
+	CheckOutputModeBrief
 	CheckOutputModeCsv
 	CheckOutputModeHTM
 	CheckOutputModeJSON

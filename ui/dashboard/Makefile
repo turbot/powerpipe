@@ -24,7 +24,5 @@ clean:
 	[ ! -e assets/assets.zip ] || rm assets/assets.zip
 	rm -rf build
 
-run-local:
-	yarn install
+run-local: setup-icons
 	yarn start
-

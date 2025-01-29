@@ -41,7 +41,7 @@ type QueryProvider interface {
 	GetQuery() *Query
 	SetArgs(*QueryArgs)
 	SetParams([]*modconfig.ParamDef)
-	GetResolvedQuery(*QueryArgs) (*ResolvedQuery, error)
+	GetResolvedQuery(*QueryArgs) (*modconfig.ResolvedQuery, error)
 	RequiresExecution(QueryProvider) bool
 	ValidateQuery() hcl.Diagnostics
 	MergeParentArgs(QueryProvider, QueryProvider) hcl.Diagnostics

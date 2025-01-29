@@ -1,15 +1,20 @@
-import DashboardSearch from "@powerpipe/components/DashboardSearch";
-import DashboardTagGroupSelect from "@powerpipe/components/DashboardTagGroupSelect";
-import ManageSearchPathButton from "@powerpipe/components/ManageSearchPathButton";
-import OpenSnapshotButton from "@powerpipe/components/OpenSnapshotButton";
+import ManageDatetimeRangeButton from "@powerpipe/components/dashboards/DatetimeRange/ManageDatetimeRangeButton";
+import ManageSearchPathButton from "@powerpipe/components/dashboards/SearchPath/ManageSearchPathButton";
 import PowerpipeLogo from "@powerpipe/components/DashboardHeader/PowerpipeLogo";
-import SaveSnapshotButton from "@powerpipe/components/SaveSnapshotButton";
+import SplitSnapshotButton from "@powerpipe/components/SplitSnapshotButton";
 import ThemeToggle from "@powerpipe/components/ThemeToggle";
 import { classNames } from "@powerpipe/utils/styles";
 import { getComponent } from "@powerpipe/components/dashboards";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 const DashboardHeader = () => {
+  const { selectedDashboard } = useDashboardState();
+  const { supportsTimeRange } = useDashboardDatetimeRange();
+  const { supportsSearchPath } = useDashboardSearchPath();
   const ExternalLink = getComponent("external_link");
+
   return (
     <>
       <div
@@ -18,12 +23,20 @@ const DashboardHeader = () => {
         )}
       >
         <PowerpipeLogo />
-        <div className="flex flex-grow items-center space-x-2 md:space-x-4">
-          <DashboardSearch />
+        <div
+          className={classNames(
+            "flex flex-grow items-center space-x-2 md:space-x-4",
+            // Maintain height between dashboard list and dashboard
+            selectedDashboard
+              ? null
+              : supportsTimeRange && !supportsSearchPath
+                ? "my-[1.75px]"
+                : null,
+          )}
+        >
+          <ManageDatetimeRangeButton />
           <ManageSearchPathButton />
-          <DashboardTagGroupSelect />
-          <SaveSnapshotButton />
-          <OpenSnapshotButton />
+          <SplitSnapshotButton header />
         </div>
         <div className="space-x-2 sm:space-x-4 md:space-x-8 flex items-center justify-end">
           <ExternalLink

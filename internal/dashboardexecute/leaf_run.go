@@ -9,6 +9,7 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/error_helpers"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
@@ -26,12 +27,13 @@ type LeafRun struct {
 
 	Resource resources.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties map[string]any           `json:"properties,omitempty"`
-	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
+	Properties    map[string]any           `json:"properties,omitempty"`
+	Data          *dashboardtypes.LeafData `json:"data,omitempty"`
+	Documentation string                   `json:"documentation,omitempty"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete       func()
-	database         string
+	database         connection.ConnectionStringProvider
 	searchPathConfig backend.SearchPathConfig
 }
 
@@ -89,6 +91,8 @@ func NewLeafRun(resource resources.DashboardLeafNode, parent dashboardtypes.Dash
 
 	// populate the names of any withs we depend on
 	r.setRuntimeDependencies()
+
+	r.Documentation = resource.GetDocumentation()
 
 	if err := r.populateProperties(); err != nil {
 		return nil, err

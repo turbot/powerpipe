@@ -99,7 +99,7 @@ func (q *QueryProviderImpl) RequiresExecution(queryProvider QueryProvider) bool 
 }
 
 // GetResolvedQuery return the SQL and args to run the query
-func (q *QueryProviderImpl) GetResolvedQuery(runtimeArgs *QueryArgs) (*ResolvedQuery, error) {
+func (q *QueryProviderImpl) GetResolvedQuery(runtimeArgs *QueryArgs) (*modconfig.ResolvedQuery, error) {
 	argsArray, err := ResolveArgs(q, runtimeArgs)
 	if err != nil {
 		return nil, fmt.Errorf("failed to resolve args for %s: %s", q.Name(), err.Error())
@@ -110,7 +110,7 @@ func (q *QueryProviderImpl) GetResolvedQuery(runtimeArgs *QueryArgs) (*ResolvedQ
 		return nil, fmt.Errorf("getResolvedQuery faiuled - no sql set for '%s'", q.Name())
 	}
 
-	return &ResolvedQuery{
+	return &modconfig.ResolvedQuery{
 		Name:       q.Name(),
 		ExecuteSQL: sql,
 		RawSQL:     sql,

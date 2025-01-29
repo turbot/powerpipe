@@ -5,7 +5,9 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/utils"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -106,7 +108,7 @@ type InputValuesClearedPayload struct {
 type DashboardClientInfo struct {
 	Session         *melody.Session
 	Dashboard       *string
-	DashboardInputs map[string]interface{}
+	DashboardInputs *dashboardexecute.InputValues
 }
 
 type ClientRequestDashboardPayload struct {
@@ -114,11 +116,22 @@ type ClientRequestDashboardPayload struct {
 }
 
 type ClientRequestPayload struct {
-	Dashboard        ClientRequestDashboardPayload `json:"dashboard"`
-	InputValues      map[string]interface{}        `json:"input_values"`
-	ChangedInput     string                        `json:"changed_input"`
-	SearchPath       []string                      `json:"search_path"`
-	SearchPathPrefix []string                      `json:"search_path_prefix"`
+	Dashboard ClientRequestDashboardPayload `json:"dashboard"`
+
+	Inputs             map[string]interface{} `json:"inputs"`
+	DetectionTimeRange utils.TimeRange        `json:"datetime_range"`
+
+	ChangedInput     string   `json:"changed_input"`
+	SearchPath       []string `json:"search_path"`
+	SearchPathPrefix []string `json:"search_path_prefix"`
+}
+
+func (p *ClientRequestPayload) InputValues() *dashboardexecute.InputValues {
+	// construct input values from payload
+	return &dashboardexecute.InputValues{
+		Inputs:             p.Inputs,
+		DetectionTimeRange: p.DetectionTimeRange,
+	}
 }
 
 type ClientRequest struct {
@@ -136,21 +149,25 @@ type ModAvailableDashboard struct {
 }
 
 type ModAvailableBenchmark struct {
-	Title       string                  `json:"title,omitempty"`
-	FullName    string                  `json:"full_name"`
-	ShortName   string                  `json:"short_name"`
-	Tags        map[string]string       `json:"tags"`
-	IsTopLevel  bool                    `json:"is_top_level"`
-	Children    []ModAvailableBenchmark `json:"children,omitempty"`
-	Trunks      [][]string              `json:"trunks"`
-	ModFullName string                  `json:"mod_full_name"`
+	Title         string                  `json:"title,omitempty"`
+	FullName      string                  `json:"full_name"`
+	ShortName     string                  `json:"short_name"`
+	BenchmarkType string                  `json:"benchmark_type"`
+	Tags          map[string]string       `json:"tags"`
+	IsTopLevel    bool                    `json:"is_top_level"`
+	Children      []ModAvailableBenchmark `json:"children,omitempty"`
+	Trunks        [][]string              `json:"trunks"`
+	ModFullName   string                  `json:"mod_full_name"`
 }
 
+// TODO KAI COORDINATE WITH MIKE
+
 type AvailableDashboardsPayload struct {
-	Action     string                           `json:"action"`
-	Dashboards map[string]ModAvailableDashboard `json:"dashboards"`
-	Benchmarks map[string]ModAvailableBenchmark `json:"benchmarks"`
-	Snapshots  map[string]string                `json:"snapshots"`
+	Action              string                           `json:"action"`
+	Dashboards          map[string]ModAvailableDashboard `json:"dashboards"`
+	Benchmarks          map[string]ModAvailableBenchmark `json:"benchmarks"`
+	DetectionBenchmarks map[string]ModAvailableBenchmark `json:"detection_benchmarks"`
+	Snapshots           map[string]string                `json:"snapshots"`
 }
 
 type ModMetadata struct {
@@ -167,8 +184,8 @@ type SearchPathMetadata struct {
 }
 
 type DashboardMetadata struct {
-	Database   string              `json:"database"`
-	SearchPath *SearchPathMetadata `json:"search_path"`
+	SupportsSearchPath bool `json:"supports_search_path"`
+	SupportsTimeRange  bool `json:"supports_time_range"`
 }
 
 type DashboardCLIMetadata struct {
@@ -176,12 +193,14 @@ type DashboardCLIMetadata struct {
 }
 
 type ServerMetadata struct {
-	Mod           *ModMetadata                   `json:"mod,omitempty"`
-	InstalledMods map[string]*ModMetadata        `json:"installed_mods,omitempty"`
-	CLI           DashboardCLIMetadata           `json:"cli"`
-	Cloud         *steampipeconfig.PipesMetadata `json:"cloud,omitempty"`
-	Telemetry     string                         `json:"telemetry"`
-	SearchPath    *SearchPathMetadata            `json:"search_path"`
+	Mod                *ModMetadata                   `json:"mod,omitempty"`
+	InstalledMods      map[string]*ModMetadata        `json:"installed_mods,omitempty"`
+	CLI                DashboardCLIMetadata           `json:"cli"`
+	Cloud              *steampipeconfig.PipesMetadata `json:"cloud,omitempty"`
+	Telemetry          string                         `json:"telemetry"`
+	SearchPath         *SearchPathMetadata            `json:"search_path"`
+	SupportsSearchPath bool                           `json:"supports_search_path"`
+	SupportsTimeRange  bool                           `json:"supports_time_range"`
 }
 
 type ServerMetadataPayload struct {

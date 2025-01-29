@@ -8,7 +8,7 @@ import {
   EXECUTION_SCHEMA_VERSION_20220929,
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
-  EXECUTION_SCHEMA_VERSION_20240607,
+  EXECUTION_SCHEMA_VERSION_20241125,
 } from "@powerpipe/constants/versions";
 import {
   ExecutionCompleteSchemaMigrator,
@@ -71,7 +71,7 @@ describe("schema", () => {
 
       const expectedEvent = {
         action: inputEvent.action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: inputEvent.execution_id,
         layout: inputEvent.layout,
         panels: expectedPanels,
@@ -156,10 +156,10 @@ describe("schema", () => {
 
       const expectedEvent = {
         action: inputEvent.action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: inputEvent.execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputEvent.layout,
           panels: expectedPanels,
           inputs: inputEvent.inputs,
@@ -232,10 +232,10 @@ describe("schema", () => {
 
       const expectedEvent = {
         action: inputEvent.action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: inputEvent.execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputEvent.snapshot.layout,
           panels: expectedPanels,
           inputs: inputEvent.snapshot.inputs,
@@ -307,10 +307,10 @@ describe("schema", () => {
 
       const expectedEvent = {
         action: inputEvent.action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: inputEvent.execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputEvent.snapshot.layout,
           panels: expectedPanels,
           inputs: inputEvent.snapshot.inputs,
@@ -382,10 +382,10 @@ describe("schema", () => {
 
       const expectedEvent = {
         action: inputEvent.action,
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: inputEvent.execution_id,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputEvent.snapshot.layout,
           panels: expectedPanels,
           inputs: inputEvent.snapshot.inputs,
@@ -402,10 +402,10 @@ describe("schema", () => {
     test("Schema 20240607 to 20240607", () => {
       const inputEvent: DashboardExecutionEventWithSchema = {
         action: "execution_complete",
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         execution_id: "0x140029247e0",
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: {
             name: "aws_insights.dashboard.aws_iam_user_dashboard",
             panel_type: "dashboard",
@@ -524,9 +524,9 @@ describe("schema", () => {
       const expectedEvent = {
         action: DashboardActions.EXECUTION_COMPLETE,
         execution_id: "",
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputSnapshot.layout,
           panels: expectedPanels,
           inputs: inputSnapshot.inputs,
@@ -603,9 +603,9 @@ describe("schema", () => {
       const expectedEvent = {
         action: DashboardActions.EXECUTION_COMPLETE,
         execution_id: "",
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputSnapshot.layout,
           panels: expectedPanels,
           inputs: inputSnapshot.inputs,
@@ -664,9 +664,9 @@ describe("schema", () => {
       const expectedEvent = {
         action: DashboardActions.EXECUTION_COMPLETE,
         execution_id: "",
-        schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+        schema_version: EXECUTION_SCHEMA_VERSION_20241125,
         snapshot: {
-          schema_version: EXECUTION_SCHEMA_VERSION_20240607,
+          schema_version: EXECUTION_SCHEMA_VERSION_20241125,
           layout: inputSnapshot.layout,
           panels: inputSnapshot.panels,
           inputs: inputSnapshot.inputs,

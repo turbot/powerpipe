@@ -34,12 +34,17 @@ export type InputProps = BaseInputProps & {
 
 export type InputType =
   | "combo"
+  | "date"
+  | "datetime"
+  | "date_range"
+  | "datetime_range"
   | "hidden"
   | "multicombo"
   | "multiselect"
   | "select"
   | "table"
-  | "text";
+  | "text"
+  | "time";
 
 export type IInput = {
   type: InputType;

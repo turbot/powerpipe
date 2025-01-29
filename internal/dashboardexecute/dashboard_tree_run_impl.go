@@ -26,8 +26,9 @@ type DashboardTreeRunImpl struct {
 	Type             string                   `json:"display_type,omitempty"`
 	Width            int                      `json:"width,omitempty"`
 
-	err           error
-	parent        dashboardtypes.DashboardParent
+	err    error
+	parent dashboardtypes.DashboardParent
+
 	executionTree *DashboardExecutionTree
 	resource      resources.DashboardLeafNode
 

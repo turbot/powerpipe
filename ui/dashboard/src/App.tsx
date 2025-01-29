@@ -9,31 +9,23 @@ import { FullHeightThemeWrapper, useTheme } from "./hooks/useTheme";
 import { Route, Routes } from "react-router-dom";
 import { useBreakpoint } from "./hooks/useBreakpoint";
 
-const Dashboards = ({ analyticsContext, breakpointContext, themeContext }) => (
-  <DashboardProvider
-    analyticsContext={analyticsContext}
-    breakpointContext={breakpointContext}
-    themeContext={themeContext}
-    versionMismatchCheck={true}
-  >
-    <DashboardHeader />
-    <WorkspaceErrorModal />
-    <DashboardList wrapperClassName="p-4 h-full overflow-y-auto" />
-    <Dashboard />
-  </DashboardProvider>
-);
-
 const DashboardApp = ({
   analyticsContext,
   breakpointContext,
   themeContext,
 }) => {
   const dashboards = (
-    <Dashboards
+    <DashboardProvider
       analyticsContext={analyticsContext}
       breakpointContext={breakpointContext}
       themeContext={themeContext}
-    />
+      versionMismatchCheck={true}
+    >
+      <DashboardHeader />
+      <WorkspaceErrorModal />
+      <DashboardList wrapperClassName="p-4 h-full overflow-y-auto" />
+      <Dashboard />
+    </DashboardProvider>
   );
 
   return (

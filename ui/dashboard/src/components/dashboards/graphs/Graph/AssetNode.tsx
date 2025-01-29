@@ -21,7 +21,7 @@ import { getComponent } from "@powerpipe/components/dashboards";
 import { Handle } from "reactflow";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { memo, ReactNode, useEffect, useMemo, useState } from "react";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 
 type AssetNodeProps = {
   id: string;
@@ -244,7 +244,7 @@ const AssetNode = ({
 }: AssetNodeProps) => {
   const { collapseNodes, expandNode, expandedNodes, renderResults } =
     useGraph();
-  const { searchPathPrefix } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const ExternalLink = getComponent("external_link");
   const iconType = useDashboardIconType(icon);
   const [renderedHref, setRenderedHref] = useState<string | null>(null);
@@ -265,7 +265,7 @@ const AssetNode = ({
       return;
     }
     setRenderedHref(withSearchPathPrefix);
-  }, [id, renderedHref, renderResults]);
+  }, [id, renderedHref, renderResults, searchPathPrefix]);
 
   const isExpandedNode = useMemo(
     () => !!expandedNodes[id],
@@ -316,10 +316,7 @@ const AssetNode = ({
     <div className="relative">
       {!renderedHref && innerIcon}
       {renderedHref && (
-        <ExternalLink
-          className="block flex flex-col items-center"
-          to={renderedHref}
-        >
+        <ExternalLink className="flex flex-col items-center" to={renderedHref}>
           {innerIcon}
         </ExternalLink>
       )}
@@ -365,10 +362,7 @@ const AssetNode = ({
     <>
       {!renderedHref && innerNodeLabel}
       {renderedHref && (
-        <ExternalLink
-          className="block flex flex-col items-center"
-          to={renderedHref}
-        >
+        <ExternalLink className="flex flex-col items-center" to={renderedHref}>
           {innerNodeLabel}
         </ExternalLink>
       )}

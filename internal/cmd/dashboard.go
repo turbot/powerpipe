@@ -244,7 +244,7 @@ func setExitCodeForDashboardError(err error) {
 }
 
 // gather the arg values provided with the --args flag
-func collectInputs() (map[string]interface{}, error) {
+func collectInputs() (*dashboardexecute.InputValues, error) {
 	res := make(map[string]interface{})
 	inputArgs := viper.GetStringSlice(constants.ArgArg)
 	for _, variableArg := range inputArgs {
@@ -267,7 +267,7 @@ func collectInputs() (map[string]interface{}, error) {
 		res[key] = rawVal
 	}
 
-	return res, nil
+	return &dashboardexecute.InputValues{Inputs: res}, nil
 
 }
 

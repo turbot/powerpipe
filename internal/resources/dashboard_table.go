@@ -2,7 +2,7 @@ package resources
 
 import (
 	"github.com/hashicorp/hcl/v2"
-	typehelpers "github.com/turbot/go-kit/types"
+	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/cty_helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/printers"
@@ -11,21 +11,17 @@ import (
 	"github.com/zclconf/go-cty/cty"
 )
 
-const SnapshotQueryTableName = "custom.table.results"
-
 // DashboardTable is a struct representing a leaf dashboard node
 type DashboardTable struct {
 	modconfig.ResourceWithMetadataImpl
 	QueryProviderImpl
+	DashboardLeafNodeImpl
 
 	// required to allow partial decoding
 	Remain hcl.Body `hcl:",remain" json:"-"`
 
-	Width      *int                             `cty:"width" hcl:"width"  json:"width,omitempty"`
-	Type       *string                          `cty:"type" hcl:"type"  json:"type,omitempty"`
 	ColumnList DashboardTableColumnList         `cty:"column_list" hcl:"column,block" json:"columns,omitempty"`
 	Columns    map[string]*DashboardTableColumn `cty:"columns" snapshot:"columns"`
-	Display    *string                          `cty:"display" hcl:"display" json:"display,omitempty" snapshot:"display"`
 	Base       *DashboardTable                  `hcl:"base" json:"-"`
 }
 
@@ -40,7 +36,7 @@ func NewDashboardTable(block *hcl.Block, mod *modconfig.Mod, shortName string) m
 // NewQueryDashboardTable creates a Table to wrap a query.
 // This is used in order to execute queries as dashboards
 func NewQueryDashboardTable(qp QueryProvider) (*DashboardTable, error) {
-	parsedName, err := modconfig.ParseResourceName(SnapshotQueryTableName)
+	parsedName, err := modconfig.ParseResourceName(constants.SnapshotQueryTableName)
 	if err != nil {
 		return nil, err
 	}
@@ -115,27 +111,9 @@ func (t *DashboardTable) Diff(other *DashboardTable) *modconfig.ModTreeItemDiffs
 	return res
 }
 
-// GetWidth implements DashboardLeafNode
-func (t *DashboardTable) GetWidth() int {
-	if t.Width == nil {
-		return 0
-	}
-	return *t.Width
-}
-
-// GetDisplay implements DashboardLeafNode
-func (t *DashboardTable) GetDisplay() string {
-	return typehelpers.SafeString(t.Display)
-}
-
-// GetDocumentation implements DashboardLeafNode, ModTreeItem
+// GetDocumentation implements ModTreeItem
 func (*DashboardTable) GetDocumentation() string {
 	return ""
-}
-
-// GetType implements DashboardLeafNode
-func (t *DashboardTable) GetType() string {
-	return typehelpers.SafeString(t.Type)
 }
 
 // CtyValue implements CtyValueProvider

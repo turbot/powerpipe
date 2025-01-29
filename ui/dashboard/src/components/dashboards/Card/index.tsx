@@ -16,7 +16,6 @@ import {
 } from "../data/CardDataProcessor";
 import { classNames } from "@powerpipe/utils/styles";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
-import { PanelDefinition, PanelProperties } from "@powerpipe/types";
 import { getComponent, registerComponent } from "../index";
 import {
   getIconClasses,
@@ -24,7 +23,8 @@ import {
   getWrapperClasses,
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { PanelProperties } from "@powerpipe/types";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useEffect, useState } from "react";
 
 const Table = getComponent("table");
@@ -34,6 +34,7 @@ export interface CardProperties extends IDiffProperties {
   value?: any;
   icon?: string;
   href?: string;
+  loading?: boolean;
 }
 
 export type CardProps = PanelProperties &
@@ -41,8 +42,6 @@ export type CardProps = PanelProperties &
   ExecutablePrimitiveProps & {
     display_type?: CardType;
     properties: CardProperties;
-  } & {
-    diff_panel?: PanelDefinition;
   };
 
 type CardState = {
@@ -71,7 +70,6 @@ interface CardDiffDisplayProps {
 
 const useCardState = ({
   data,
-  diff_panel,
   display_type,
   properties,
   status,
@@ -82,17 +80,17 @@ const useCardState = ({
 
   useDeepCompareEffect(() => {
     const diff = new CardDataProcessor();
-    setCalculatedProperties(
-      diff.buildCardState(data, diff_panel, display_type, properties, status),
+    const newState = diff.buildCardState(
+      data,
+      display_type,
+      properties,
+      status,
     );
-  }, [
-    data,
-    diff_panel,
-    display_type,
-    properties,
-    setCalculatedProperties,
-    status,
-  ]);
+    setCalculatedProperties(newState);
+    setCalculatedProperties(
+      diff.buildCardState(data, display_type, properties, status),
+    );
+  }, [data, display_type, properties, setCalculatedProperties, status]);
 
   return calculatedProperties;
 };
@@ -126,17 +124,32 @@ const Value = ({ loading, value }) => {
   return <Label value={value} />;
 };
 
-const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
+const CardDiffDisplay: React.FC<{
+  diff: CardDiffDisplayProps;
+  value: number;
+}> = ({ diff, value }) => {
   if (!diff || diff.direction === "none") {
     return null;
   }
+
+  // Calculate the original value based on direction
+  const originalValue =
+    diff.direction === "up" ? value - diff.value : value + diff.value;
+
+  // Calculate percentage change if originalValue is not zero
+  // Calculate percentage change with sign based on direction
+  const percentageChange =
+    originalValue !== 0
+      ? `${diff.direction === "up" ? "+" : "-"}${((diff.value / originalValue) * 100).toFixed(1)}`
+      : null;
+
   return (
-    <div
+    <span
       className={classNames(
-        "inline-flex rounded-lg px-2 font-medium md:mt-2 lg:mt-0 space-x-1 text-lg",
+        "inline-flex rounded-lg px-2 font-medium md:mt-2 space-x-1 text-lg",
         diff.status === "ok" ? "text-ok" : null,
         diff.status === "alert" ? "text-alert" : null,
-        diff.status === "alert" ? "text-severity" : null,
+        // diff.status === "alert" ? "text-severity" : null
       )}
     >
       <span aria-hidden="true" className={classNames("self-end")}>
@@ -149,17 +162,34 @@ const CardDiffDisplay = ({ diff }: CardDiffDisplayProps) => {
       {(diff.direction === "up" || diff.direction === "down") && (
         <>
           {/*@ts-ignore*/}
-          <IntegerDisplay num={diff.value || null} />
+          <div className="flex items-baseline space-x-1">
+            <span className="text-lg font-semibold">
+              {/*@ts-ignore*/}
+              <IntegerDisplay num={diff.value || null} />
+            </span>
+            {percentageChange !== null && (
+              <span className="text-sm ">({percentageChange}%)</span>
+            )}
+          </div>
         </>
       )}
-    </div>
+    </span>
   );
 };
+
+const ValueWithDiff = ({ loading, value, diff }) => (
+  <div className="flex items-center space-x-2">
+    {" "}
+    {/* Adjusts flex to align elements inline */}
+    <Value loading={loading} value={value} />
+    {diff && <CardDiffDisplay diff={diff} value={value} />}
+  </div>
+);
 
 const Card = (props: CardProps) => {
   const ExternalLink = getComponent("external_link");
   const state = useCardState(props);
-  const { searchPathPrefix } = useDashboard();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
     state.href || null,
@@ -241,11 +271,15 @@ const Card = (props: CardProps) => {
         <div className="grow mt-0.5 min-w-0">
           <dt>
             <p className="text-lg truncate" title={state.label || undefined}>
-              {state.loading ? "Loading..." : state.label}
+              {state.loading ? "Loading…" : state.label}
             </p>
           </dt>
           <dd className="font-semibold text-3xl mt-1 mb-1">
-            <Value loading={state.loading} value={state.value} />
+            <ValueWithDiff
+              loading={state.loading}
+              value={state.value}
+              diff={state.diff}
+            />
           </dd>
         </div>
       </div>

@@ -59,6 +59,11 @@ func NewDashboardContainerRun(container *resources.DashboardContainer, parent da
 			if err != nil {
 				return nil, err
 			}
+		case *resources.DetectionBenchmark:
+			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
+			if err != nil {
+				return nil, err
+			}
 		case *resources.Benchmark, *resources.Control:
 			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
 			if err != nil {

@@ -1,31 +1,40 @@
 import SearchInput from "../SearchInput";
-import { DashboardActions } from "@powerpipe/types";
-import { useCallback } from "react";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import useDebouncedEffect from "@powerpipe/hooks/useDebouncedEffect";
+import { useDashboardSearch } from "@powerpipe/hooks/useDashboardSearch";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { useEffect, useState } from "react";
 
 const DashboardSearch = () => {
   const {
     availableDashboardsLoaded,
     breakpointContext: { minBreakpoint },
-    dispatch,
-    search,
     metadata,
-  } = useDashboard();
+  } = useDashboardState();
+  const { search, updateSearchValue } = useDashboardSearch();
+  const [innerValue, setInnerValue] = useState(search.value);
 
-  const updateSearchValue = useCallback(
-    (value) =>
-      dispatch({ type: DashboardActions.SET_DASHBOARD_SEARCH_VALUE, value }),
-    [dispatch],
+  useEffect(() => {
+    setInnerValue(() => search.value);
+  }, [search.value]);
+
+  useDebouncedEffect(
+    () => {
+      if (search.value === innerValue) {
+        return;
+      }
+      updateSearchValue(innerValue);
+    },
+    250,
+    [search.value, innerValue, updateSearchValue],
   );
 
   return (
     <div className="w-full sm:w-56 md:w-72 lg:w-96">
       <SearchInput
-        //@ts-ignore
         disabled={!metadata || !availableDashboardsLoaded}
-        placeholder={minBreakpoint("sm") ? "Search dashboards..." : "Search..."}
-        value={search.value}
-        setValue={updateSearchValue}
+        placeholder={minBreakpoint("sm") ? "Search dashboards…" : "Search…"}
+        value={innerValue}
+        setValue={setInnerValue}
       />
     </div>
   );

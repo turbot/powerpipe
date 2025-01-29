@@ -10,6 +10,7 @@ import (
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/error_helpers"
+	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/queryresult"
 	"github.com/turbot/pipe-fittings/schema"
 	"github.com/turbot/pipe-fittings/statushooks"
@@ -23,6 +24,10 @@ import (
 	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
+
+type LeafRun interface {
+	GetRows() ResultRows
+}
 
 // ControlRun is a struct representing the execution of a control run. It will contain one or more result items (i.e. for one or more resources).
 type ControlRun struct {
@@ -197,6 +202,10 @@ func (r *ControlRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
+func (r *ControlRun) GetRows() ResultRows {
+	return r.Rows
+}
+
 func (r *ControlRun) setError(ctx context.Context, err error) {
 	if err == nil {
 		return
@@ -327,7 +336,7 @@ func (r *ControlRun) getControlQueryContext(ctx context.Context) context.Context
 	return newCtx
 }
 
-func (r *ControlRun) resolveControlQuery(control *resources.Control) (*resources.ResolvedQuery, error) {
+func (r *ControlRun) resolveControlQuery(control *resources.Control) (*modconfig.ResolvedQuery, error) {
 	resolvedQuery, err := r.Tree.Workspace.ResolveQueryFromQueryProvider(control, nil)
 	if err != nil {
 		return nil, fmt.Errorf(`cannot run %s - failed to resolve query "%s": %s`, control.Name(), typehelpers.SafeString(control.SQL), err.Error())

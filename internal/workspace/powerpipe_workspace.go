@@ -59,7 +59,7 @@ func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
 }
 
 // ResolveQueryFromQueryProvider resolves the query for the given QueryProvider
-func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider resources.QueryProvider, runtimeArgs *resources.QueryArgs) (*resources.ResolvedQuery, error) {
+func (w *PowerpipeWorkspace) ResolveQueryFromQueryProvider(queryProvider resources.QueryProvider, runtimeArgs *resources.QueryArgs) (*modconfig.ResolvedQuery, error) {
 	slog.Debug("ResolveQueryFromQueryProvider", "resourceName", queryProvider.Name())
 
 	query := queryProvider.GetQuery()

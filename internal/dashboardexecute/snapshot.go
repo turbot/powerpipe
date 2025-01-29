@@ -9,7 +9,7 @@ import (
 	"github.com/turbot/powerpipe/internal/workspace"
 )
 
-func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, rootResource modconfig.ModTreeItem, inputs *InputValues) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)
@@ -20,8 +20,6 @@ func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, root
 	w.RegisterDashboardEventHandler(ctx, dashboardEventHandler)
 	// clear event handlers again in case another snapshot will be generated in this run
 	defer w.UnregisterDashboardEventHandlers()
-
-	// pull out the target resource
 
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false

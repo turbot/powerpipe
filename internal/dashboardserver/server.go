@@ -162,6 +162,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedCards := e.ChangedCards
 		changedCharts := e.ChangedCharts
 		changedDashboards := e.ChangedDashboards
+		changedDetections := e.ChangedDetections
+		changedDetectionsBenchmarks := e.ChangedDetectionBenchmarks
 		changedEdges := e.ChangedEdges
 		changedFlows := e.ChangedFlows
 		changedGraphs := e.ChangedGraphs
@@ -182,6 +184,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			len(changedCards) == 0 &&
 			len(changedCharts) == 0 &&
 			len(changedDashboards) == 0 &&
+			len(changedDetections) == 0 &&
+			len(changedDetectionsBenchmarks) == 0 &&
 			len(changedEdges) == 0 &&
 			len(changedFlows) == 0 &&
 			len(changedGraphs) == 0 &&
@@ -241,6 +245,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedControls)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCards)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCharts)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetections)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetectionsBenchmarks)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedEdges)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedFlows)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedGraphs)...)
@@ -301,7 +307,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		dashboardClients := s.getDashboardClients()
 		if sessionInfo, ok := dashboardClients[e.Session]; ok {
 			for _, clearedInput := range e.ClearedInputs {
-				delete(sessionInfo.DashboardInputs, clearedInput)
+				delete(sessionInfo.DashboardInputs.Inputs, clearedInput)
 			}
 		}
 		s.writePayloadToSession(e.Session, payload)
@@ -345,20 +351,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			// TODO KAI verify we are ok to NOT send the cloud metadata here
 			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
-			}
-			_ = session.Write(payload)
-		case "get_dashboard_metadata":
-			dashboard := s.getResource(request.Payload.Dashboard.FullName)
-			if dashboard == nil {
-				return
-			}
-			payload, err := buildDashboardMetadataPayload(ctx, dashboard, s.workspace)
-			if err != nil {
-				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
@@ -372,21 +367,30 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			if dashboard == nil {
 				return
 			}
-			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
+
+			inputValues := request.Payload.InputValues()
+			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, inputValues)
 
 			// was a search path passed into the execute command?
-			var opts []backend.ConnectOption
+			var opts []backend.BackendOption
 			if request.Payload.SearchPath != nil || request.Payload.SearchPathPrefix != nil {
 				opts = append(opts, backend.WithSearchPathConfig(backend.SearchPathConfig{
 					SearchPath:       request.Payload.SearchPath,
 					SearchPathPrefix: request.Payload.SearchPathPrefix,
 				}))
 			}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, opts...)
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
+
+			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
+			payload, err := buildDashboardMetadataPayload(dashboard)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
+			}
+			_ = session.Write(payload)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
-			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues)
+			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues())
 			snap, err := dashboardexecute.Executor.LoadSnapshot(ctx, sessionId, snapshotName, s.workspace)
 			// TACTICAL- handle with error message
 			error_helpers.FailOnError(err)
@@ -398,8 +402,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.writePayloadToSession(sessionId, payload)
 			OutputReady(ctx, fmt.Sprintf("Show snapshot complete: %s", snapshotName))
 		case "input_changed":
-			s.setDashboardInputsForSession(sessionId, request.Payload.InputValues)
-			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, request.Payload.InputValues, request.Payload.ChangedInput)
+			inputValues := request.Payload.InputValues()
+			s.setDashboardInputsForSession(sessionId, inputValues)
+			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, inputValues, request.Payload.ChangedInput)
 		case "clear_dashboard":
 			s.setDashboardInputsForSession(sessionId, nil)
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
@@ -429,7 +434,7 @@ func (s *Server) addSession(session *melody.Session) {
 	s.addDashboardClient(sessionId, clientSession)
 }
 
-func (s *Server) setDashboardInputsForSession(sessionId string, inputs map[string]interface{}) {
+func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
 	dashboardClients := s.getDashboardClients()
 	if sessionInfo, ok := dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
@@ -442,7 +447,7 @@ func (s *Server) getSessionId(session *melody.Session) string {
 
 // functions providing locked access to member properties
 
-func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs map[string]interface{}) *DashboardClientInfo {
+func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs *dashboardexecute.InputValues) *DashboardClientInfo {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 

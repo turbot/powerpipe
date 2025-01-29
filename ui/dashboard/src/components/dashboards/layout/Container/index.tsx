@@ -4,7 +4,7 @@ import Grid from "../Grid";
 import { ContainerDefinition } from "@powerpipe/types";
 import { ContainerProvider, useContainer } from "@powerpipe/hooks/useContainer";
 import { registerComponent } from "../../index";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type ContainerProps = {
   layoutDefinition?: ContainerDefinition;
@@ -16,13 +16,16 @@ const Container = ({ definition }) => {
   return (
     <Grid name={definition.name} width={definition.width}>
       {showTitle && <ContainerTitle title={definition.title} />}
-      <Children children={definition?.children || []} parentType="container" />
+      <Children
+        childPanels={definition?.children || []}
+        parentType="container"
+      />
     </Grid>
   );
 };
 
 const ContainerWrapper = (props: ContainerProps) => {
-  const { panelsMap } = useDashboard();
+  const { panelsMap } = useDashboardState();
 
   if (!props.definition && !props.layoutDefinition) {
     return null;

@@ -2,9 +2,9 @@ package dashboardexecute
 
 import (
 	"context"
-	"github.com/turbot/powerpipe/internal/resources"
 
 	"github.com/turbot/pipe-fittings/backend"
+	"github.com/turbot/pipe-fittings/connection"
 	"github.com/turbot/pipe-fittings/modconfig"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/steampipeconfig"
@@ -14,18 +14,20 @@ import (
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // CheckRun is a struct representing the execution of a control or benchmark
 type CheckRun struct {
 	DashboardParentImpl
 
-	Summary   *controlexecute.GroupSummary     `json:"summary"`
-	SessionId string                           `json:"-"`
-	Root      controlexecute.ExecutionTreeNode `json:"-"`
+	Summary       *controlexecute.GroupSummary     `json:"summary"`
+	SessionId     string                           `json:"-"`
+	Root          controlexecute.ExecutionTreeNode `json:"-"`
+	BenchmarkType string                           `json:"benchmark_type"`
 
 	controlExecutionTree *controlexecute.ExecutionTree
-	database             string
+	database             connection.ConnectionStringProvider
 	searchPathConfig     backend.SearchPathConfig
 }
 
@@ -61,7 +63,7 @@ func (r *CheckRun) resolveDatabaseConfig() error {
 	// if the resource specifies a database, use that
 	if c, ok := r.resource.(modconfig.DatabaseItem); ok {
 		if resourceDatabase := c.GetDatabase(); resourceDatabase != nil {
-			database = *resourceDatabase
+			database = resourceDatabase
 		}
 		if resourceSearchPath := c.GetSearchPath(); len(resourceSearchPath) > 0 {
 			searchPathConfig.SearchPath = resourceSearchPath
@@ -95,6 +97,8 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	}
 	r.controlExecutionTree = executionTree
 	r.Root = executionTree.Root.Children[0]
+	// Type is always control for check run
+	r.BenchmarkType = "control"
 }
 
 // Execute implements DashboardTreeRun

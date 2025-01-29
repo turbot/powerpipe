@@ -16,10 +16,18 @@ const getIconForType = (type, icon) => {
       return "materialsymbols-solid:check_circle";
     case "info":
       return "materialsymbols-solid:info";
-    case "severity":
-      return "materialsymbols-solid:warning";
     case "skip":
       return "materialsymbols-solid:arrow_circle_right";
+    case "severity-critical":
+      return "materialsymbols-solid:pulse_alert";
+    case "severity-high":
+      return "materialsymbols-solid:warning";
+    case "severity-medium":
+      return "materialsymbols-solid:campaign";
+    case "severity-low":
+      return "materialsymbols-solid:info";
+    case "severity":
+      return "materialsymbols-solid:warning";
     default:
       return null;
   }
@@ -35,12 +43,6 @@ const getIconStyles = (type) => {
       return { fontWeight: "bold" };
     case "ok":
       return { fontVariationSettings: "'wght' 700" };
-    case "info":
-      return {};
-    case "severity":
-      return {};
-    case "skip":
-      return {};
     default:
       return {};
   }
@@ -57,6 +59,14 @@ const getIconClasses = (type) => {
       return classNames(baseClasses, "text-ok");
     case "severity":
       return classNames(baseClasses, "text-severity");
+    case "severity-critical":
+      return classNames(baseClasses, "text-alert");
+    case "severity-high":
+      return classNames(baseClasses, "text-orange");
+    case "severity-medium":
+      return classNames(baseClasses, "text-severity");
+    case "severity-low":
+      return classNames(baseClasses, "text-info");
     default:
       return classNames(baseClasses, "text-skip");
   }
@@ -71,10 +81,18 @@ const getWrapperClasses = (type) => {
       return classNames(baseClasses, "border-info");
     case "ok":
       return classNames(baseClasses, "border-ok");
-    case "severity":
-      return classNames(baseClasses, "border-severity");
     case "skip":
       return classNames(baseClasses, "border-skip");
+    case "severity-critical":
+      return classNames(baseClasses, "border-alert");
+    case "severity-high":
+      return classNames(baseClasses, "border-orange");
+    case "severity-medium":
+      return classNames(baseClasses, "border-severity");
+    case "severity-low":
+      return classNames(baseClasses, "border-info");
+    case "severity":
+      return classNames(baseClasses, "border-severity");
     default:
       return "rounded-md";
   }

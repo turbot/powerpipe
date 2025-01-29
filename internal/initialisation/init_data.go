@@ -3,7 +3,7 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/pipe-fittings/connection"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -19,6 +19,7 @@ import (
 	"github.com/turbot/pipe-fittings/plugin"
 	"github.com/turbot/pipe-fittings/statushooks"
 	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -28,7 +29,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
 
-type InitData[T modconfig.ModTreeItem] struct {
+type InitData struct {
 	Workspace *workspace.PowerpipeWorkspace
 	Result    *InitResult
 
@@ -38,15 +39,15 @@ type InitData[T modconfig.ModTreeItem] struct {
 	DefaultClient     *db_client.DbClient
 }
 
-func NewErrorInitData[T modconfig.ModTreeItem](err error) *InitData[T] {
-	return &InitData[T]{
+func NewErrorInitData(err error) *InitData {
+	return &InitData{
 		Result: &InitResult{
 			ErrorAndWarnings: error_helpers.NewErrorsAndWarning(err),
 		},
 	}
 }
 
-func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData[T] {
+func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData {
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
@@ -57,13 +58,13 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		workspace.WithLateBinding(false),
 	)
 	if errAndWarnings.GetError() != nil {
-		return NewErrorInitData[T](fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
 
 	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
-		return NewErrorInitData[T](localconstants.ErrorNoModDefinition{})
+		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
 	}
-	i := &InitData[T]{
+	i := &InitData{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
@@ -79,10 +80,20 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	}
 	i.Targets = targets
 
-	// if the database is NOT set in viper, and the mod has a connection string, set it
-	if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
-		viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase())
+	// TODO K breaking hack do not use viper for database
+	// this is because DefaultDatabase is now a ConnectionStringProvider
+	if db_client.DefaultDatabase == nil {
+		db_client.DefaultDatabase = w.Mod.GetDatabase()
 	}
+	// if database command line was passed, set default
+	// TODO K will we only pass connection string in db arg or could we pass connection name?
+	if db := viper.GetString(constants.ArgDatabase); db != "" {
+		db_client.DefaultDatabase = connection.NewConnectionString(db)
+	}
+	// if the database is NOT set in viper, and the mod has a connection string, set it
+	//if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
+	//	viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase().)
+	//}
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
@@ -101,7 +112,7 @@ func commandRequiresModfile(cmd *cobra.Command, args []string) bool {
 	return argIsNamedResource
 }
 
-func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
+func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 	for _, e := range exporters {
 		if err := i.ExportManager.Register(e); err != nil {
 			return err
@@ -111,7 +122,7 @@ func (i *InitData[T]) RegisterExporters(exporters ...export.Exporter) error {
 	return nil
 }
 
-func (i *InitData[T]) Init(ctx context.Context, args ...string) {
+func (i *InitData) Init(ctx context.Context, args ...string) {
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -162,18 +173,23 @@ func (i *InitData[T]) Init(ctx context.Context, args ...string) {
 
 	// create default client
 	// set the database and search patch config
-	database, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
 
 	// create client
-	var opts []backend.ConnectOption
+	var opts []backend.BackendOption
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-	client, err := db_client.NewDbClient(ctx, database, opts...)
+	connectionString, err := csp.GetConnectionString()
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
 	if err != nil {
 		i.Result.Error = err
 		return
@@ -218,7 +234,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.Db
 	return validationErrors
 }
 
-func (i *InitData[T]) Cleanup(ctx context.Context) {
+func (i *InitData) Cleanup(ctx context.Context) {
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}
@@ -232,7 +248,7 @@ func (i *InitData[T]) Cleanup(ctx context.Context) {
 }
 
 // GetSingleTarget validates there is only a single target and returns it
-func (i *InitData[T]) GetSingleTarget() (modconfig.ModTreeItem, error) {
+func (i *InitData) GetSingleTarget() (modconfig.ModTreeItem, error) {
 
 	// cobra should validate this
 	if len(i.Targets) != 1 {

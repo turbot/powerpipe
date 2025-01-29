@@ -5,6 +5,9 @@ import (
 	"maps"
 )
 
+// TODO replace with dashboardLeafNodeImple.Diff
+// need to think about also doing ModTreeItemImple.Diff and HclResourceImpl.Diff
+// think about which poroperties to diff
 func dashboardLeafNodeDiff(l DashboardLeafNode, r DashboardLeafNode) *modconfig.ModTreeItemDiffs {
 	d := &modconfig.ModTreeItemDiffs{}
 	if l.Name() != r.Name() {

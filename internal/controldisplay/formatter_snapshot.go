@@ -9,10 +9,15 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 type SnapshotFormatter struct {
 	FormatterBase
+}
+
+func (*SnapshotFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, fmt.Errorf("SnapshotFormatter does not support FormatDetection")
 }
 
 func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
@@ -42,7 +47,7 @@ func (f *SnapshotFormatter) FileExtension() string {
 	return localconstants.SnapshotExtension
 }
 
-func (f SnapshotFormatter) Name() string {
+func (f *SnapshotFormatter) Name() string {
 	return constants.OutputFormatSnapshot
 }
 

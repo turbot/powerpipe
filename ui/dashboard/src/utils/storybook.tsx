@@ -1,13 +1,19 @@
 import "@powerpipe/utils/registerComponents";
 import Dashboard from "@powerpipe/components/dashboards/layout/Dashboard";
 import { buildComponentsMap } from "@powerpipe/components";
-import { DashboardContext } from "@powerpipe/hooks/useDashboard";
+import { DashboardContext } from "@powerpipe/hooks/useDashboardState";
 import {
   DashboardDataModeLive,
   DashboardPanelType,
   DashboardRunState,
   DashboardSearch,
 } from "@powerpipe/types";
+import { DashboardInputsProvider } from "@powerpipe/hooks/useDashboardInputs";
+import { DashboardDatetimeRangeProvider } from "@powerpipe/hooks/useDashboardDatetimeRange";
+import { DashboardPanelDetailProvider } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { DashboardSearchPathProvider } from "@powerpipe/hooks/useDashboardSearchPath";
+import { DashboardSearchProvider } from "@powerpipe/hooks/useDashboardSearch";
+import { DashboardThemeProvider } from "@powerpipe/hooks/useDashboardTheme";
 import { noop } from "@powerpipe/utils/func";
 import { useStorybookTheme } from "@powerpipe/hooks/useStorybookTheme";
 
@@ -51,81 +57,85 @@ export const PanelStoryDecorator = ({
   };
 
   return (
-    <DashboardContext.Provider
-      value={{
-        versionMismatchCheck: false,
-        metadata: {
-          mod: {
-            title: "Storybook",
-            full_name: "mod.storybook",
-            short_name: "storybook",
-          },
-          installed_mods: {},
-          telemetry: "none",
-        },
-        availableDashboardsLoaded: true,
-        closePanelDetail: noop,
-        dataMode: DashboardDataModeLive,
-        snapshotId: null,
-        dispatch: noop,
-        error: null,
-        dashboards: [],
-        dashboardsMap: {},
-        selectedPanel: null,
-        selectedDashboard: {
-          title: "Storybook Dashboard Wrapper",
-          full_name: "storybook.dashboard.storybook_dashboard_wrapper",
-          short_name: "storybook_dashboard_wrapper",
-          type: "dashboard",
-          tags: {},
-          mod_full_name: "mod.storybook",
-          is_top_level: true,
-        },
-        selectedDashboardInputs: {},
-        lastChangedInput: null,
-        execution_id: null,
-        panelsLog: {},
-        panelsMap: {
-          [newPanel.name]: newPanel,
-          ...panels,
-        },
-        dashboard: {
-          artificial: false,
-          name: "storybook.dashboard.storybook_dashboard_wrapper",
-          children: [newPanel],
-          panel_type: "dashboard",
-          dashboard: "storybook.dashboard.storybook_dashboard_wrapper",
-        },
-
-        dashboardTags: {
-          keys: [],
-        },
-
-        search: stubDashboardSearch,
-
-        breakpointContext: {
-          currentBreakpoint: "xl",
-          maxBreakpoint: () => true,
-          minBreakpoint: () => true,
-          width: 0,
-        },
-
-        themeContext: {
-          theme,
-          setTheme: noop,
-          wrapperRef,
-        },
-
-        components: buildComponentsMap(),
-        refetchDashboard: false,
-        state: "complete",
-        progress: 100,
-        render: { headless: false, snapshotCompleteDiv: false },
-        snapshot: null,
-        snapshotFileName: null,
+    <DashboardThemeProvider
+      themeContext={{
+        theme,
+        setTheme: noop,
+        wrapperRef,
       }}
     >
-      <Dashboard showPanelControls={false} />
-    </DashboardContext.Provider>
+      <DashboardSearchProvider defaultSearch={stubDashboardSearch}>
+        <DashboardContext.Provider
+          value={{
+            versionMismatchCheck: false,
+            metadata: {
+              mod: {
+                title: "Storybook",
+                full_name: "mod.storybook",
+                short_name: "storybook",
+              },
+              installed_mods: {},
+              telemetry: "none",
+            },
+            availableDashboardsLoaded: true,
+            dataMode: DashboardDataModeLive,
+            snapshotId: null,
+            dispatch: noop,
+            error: null,
+            dashboards: [],
+            dashboardsMap: {},
+            selectedDashboard: {
+              title: "Storybook Dashboard Wrapper",
+              full_name: "storybook.dashboard.storybook_dashboard_wrapper",
+              short_name: "storybook_dashboard_wrapper",
+              type: "dashboard",
+              tags: {},
+              mod_full_name: "mod.storybook",
+              is_top_level: true,
+            },
+            execution_id: null,
+            panelsLog: {},
+            panelsMap: {
+              [newPanel.name]: newPanel,
+              ...panels,
+            },
+            dashboard: {
+              artificial: false,
+              name: "storybook.dashboard.storybook_dashboard_wrapper",
+              children: [newPanel],
+              panel_type: "dashboard",
+              dashboard: "storybook.dashboard.storybook_dashboard_wrapper",
+            },
+
+            dashboardTags: {
+              keys: [],
+            },
+
+            breakpointContext: {
+              currentBreakpoint: "xl",
+              maxBreakpoint: () => true,
+              minBreakpoint: () => true,
+              width: 0,
+            },
+
+            components: buildComponentsMap(),
+            state: "complete",
+            progress: 100,
+            snapshot: null,
+            snapshotFileName: null,
+          }}
+        >
+          <DashboardPanelDetailProvider>
+            <DashboardInputsProvider>
+              <DashboardSearchPathProvider>
+                <DashboardDatetimeRangeProvider>
+                  <Dashboard showPanelControls={false} />
+                </DashboardDatetimeRangeProvider>
+              </DashboardSearchPathProvider>
+            </DashboardInputsProvider>
+          </DashboardPanelDetailProvider>
+        </DashboardContext.Provider>
+      </DashboardSearchProvider>
+    </DashboardThemeProvider>
   );
 };

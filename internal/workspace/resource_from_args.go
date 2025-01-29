@@ -67,6 +67,7 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 	if parsedResourceName == nil {
 		return nil, nil, nil
 	}
+
 	// ok we managed to extract a resource name - does this resource exist?
 	resource, ok := w.GetResource(parsedResourceName)
 	if !ok {
@@ -74,10 +75,15 @@ func extractResourceFromQueryString[T modconfig.ModTreeItem](input string, w *wo
 	}
 
 	// if the target is not the expected type, fail
-	target, ok := resource.(T)
+	var target modconfig.ModTreeItem
+	target, ok = resource.(T)
 	if !ok {
 		typeName := utils.GetGenericTypeName[T]()
-		return nil, nil, sperr.New("target '%s' is not of the expected type '%s'", resource.GetUnqualifiedName(), typeName)
+		// // TODO HACK special case handling for detection benchmarks
+		target, ok = resource.(*resources.DetectionBenchmark)
+		if !ok {
+			return nil, nil, sperr.New("target '%s' is not of the expected type '%s'", resource.GetUnqualifiedName(), typeName)
+		}
 	}
 
 	_, args, err := pparse.ParseQueryInvocation(input)

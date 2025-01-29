@@ -1,5 +1,5 @@
 import ErrorModal from "@powerpipe/components/Modal/ErrorModal";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type WorkspaceErrorModalProps = {
   error: any;
@@ -10,7 +10,7 @@ const WorkspaceErrorModal = ({ error }: WorkspaceErrorModalProps) => (
 );
 
 const WorkspaceErrorModalWrapper = () => {
-  const { error } = useDashboard();
+  const { error } = useDashboardState();
   if (!error) {
     return null;
   }

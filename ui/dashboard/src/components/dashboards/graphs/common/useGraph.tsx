@@ -15,7 +15,7 @@ import {
   RowRenderResult,
 } from "@powerpipe/components/dashboards/common/types";
 import { noop } from "@powerpipe/utils/func";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { v4 as uuid } from "uuid";
 
 export type ExpandedNodeInfo = {
@@ -59,9 +59,7 @@ type CategoryNodeMap = {
 };
 
 const GraphProvider = ({ children }: { children: ReactNode }) => {
-  const {
-    themeContext: { theme },
-  } = useDashboard();
+  const { theme } = useDashboardTheme();
   const { fitView } = useReactFlow();
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
   const [layoutId, setLayoutId] = useState(uuid());

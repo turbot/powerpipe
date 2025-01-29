@@ -2,10 +2,11 @@ import CopyToClipboard, { CopyToClipboardProvider } from "../CopyToClipboard";
 import hcl from "react-syntax-highlighter/dist/esm/languages/prism/hcl";
 import json from "react-syntax-highlighter/dist/esm/languages/prism/json";
 import sql from "react-syntax-highlighter/dist/esm/languages/prism/sql";
+import yaml from "react-syntax-highlighter/dist/esm/languages/prism/yaml";
 import { classNames } from "@powerpipe/utils/styles";
 import { PrismLight as SyntaxHighlighter } from "react-syntax-highlighter";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useMemo, useState } from "react";
 import {
   vs,
@@ -15,11 +16,12 @@ import {
 SyntaxHighlighter.registerLanguage("hcl", hcl);
 SyntaxHighlighter.registerLanguage("json", json);
 SyntaxHighlighter.registerLanguage("sql", sql);
+SyntaxHighlighter.registerLanguage("yaml", yaml);
 
 type CodeBlockProps = {
   children: string;
   copyToClipboard?: boolean;
-  language?: "hcl" | "json" | "sql";
+  language?: "hcl" | "json" | "sql" | "yaml";
   style?: any;
 };
 
@@ -30,9 +32,7 @@ const CodeBlock = ({
   style = {},
 }: CodeBlockProps) => {
   const [showCopyIcon, setShowCopyIcon] = useState(false);
-  const {
-    themeContext: { theme },
-  } = useDashboard();
+  const { theme } = useDashboardTheme();
 
   const styles = useMemo(() => {
     const commonStyles = {
@@ -79,7 +79,8 @@ const CodeBlock = ({
       {({ setDoCopy }) => (
         <div
           className={classNames(
-            "relative p-1",
+            "p-1",
+            showCopyIcon ? "relative" : null,
             copyToClipboard ? "cursor-pointer" : null,
             copyToClipboard && showCopyIcon ? "bg-black-scale-1" : null,
           )}

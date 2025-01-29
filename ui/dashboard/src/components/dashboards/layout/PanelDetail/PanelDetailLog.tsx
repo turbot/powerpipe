@@ -14,7 +14,7 @@ import { Disclosure } from "@headlessui/react";
 import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
 import { PanelDetailProps } from "./index";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { usePanel } from "@powerpipe/hooks/usePanel";
 
 type PanelLogRowProps = {
@@ -252,7 +252,7 @@ const getDependencyLogs = (
 };
 
 const PanelLogs = () => {
-  const { panelsLog, panelsMap } = useDashboard();
+  const { panelsLog, panelsMap } = useDashboardState();
   const { definition } = usePanel();
   const panelLog = panelsLog[definition.name];
   const dependencyPanelLogs = getDependencyLogs(

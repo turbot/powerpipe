@@ -1,3 +1,5 @@
+const asyncNoop = async () => Promise.resolve();
+
 const noop = () => {};
 
-export { noop };
+export { asyncNoop, noop };

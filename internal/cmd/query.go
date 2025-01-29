@@ -134,7 +134,9 @@ func queryRun(cmd *cobra.Command, args []string) {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.FailOnError(err)
 	}
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, nil)
+
+	inputs := dashboardexecute.NewInputValues()
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)
@@ -218,7 +220,7 @@ func setExitCodeForQueryError(err error) {
 
 func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime time.Time) (*queryresult.Result, error) {
 	// the table of a snapshot query has a fixed name
-	tablePanel, ok := snap.Panels[resources.SnapshotQueryTableName]
+	tablePanel, ok := snap.Panels[constants.SnapshotQueryTableName]
 	if !ok {
 		return nil, sperr.New("dashboard does not contain table result for query")
 	}

@@ -1,19 +1,22 @@
+// Component overrides
+import "@powerpipe/components/ExternalLink";
+import "@powerpipe/components/SnapshotHeader";
+
 // Layout
 import "@powerpipe/components/dashboards/layout/Panel";
 import "@powerpipe/components/dashboards/layout/Container";
 
 // General
-import "@powerpipe/components/ExternalLink";
 import "@powerpipe/components/dashboards/Error";
 import "@powerpipe/components/dashboards/Table";
 import "@powerpipe/components/dashboards/Text";
-import "@powerpipe/components/SnapshotHeader";
 
 // Charts
 import "@powerpipe/components/dashboards/charts/AreaChart";
 import "@powerpipe/components/dashboards/charts/BarChart";
 import "@powerpipe/components/dashboards/charts/ColumnChart";
 import "@powerpipe/components/dashboards/charts/DonutChart";
+import "@powerpipe/components/dashboards/charts/HeatmapChart";
 import "@powerpipe/components/dashboards/charts/LineChart";
 import "@powerpipe/components/dashboards/charts/PieChart";
 import "@powerpipe/components/dashboards/charts/Chart";
@@ -31,15 +34,23 @@ import "@powerpipe/components/dashboards/hierarchies/Tree";
 import "@powerpipe/components/dashboards/hierarchies/Hierarchy";
 
 // Inputs
+import "@powerpipe/components/dashboards/inputs/DateInput";
+import "@powerpipe/components/dashboards/inputs/DateRangeInput";
+import "@powerpipe/components/dashboards/inputs/DatetimeInput";
+import "@powerpipe/components/dashboards/inputs/DatetimeRangeInput";
 import "@powerpipe/components/dashboards/inputs/MultiComboInput";
 import "@powerpipe/components/dashboards/inputs/MultiSelectInput";
 import "@powerpipe/components/dashboards/inputs/SingleComboInput";
 import "@powerpipe/components/dashboards/inputs/SingleSelectInput";
 import "@powerpipe/components/dashboards/inputs/TextInput";
+import "@powerpipe/components/dashboards/inputs/TimeInput";
 import "@powerpipe/components/dashboards/inputs/Input";
 
 // Check
-import "@powerpipe/components/dashboards/check/Benchmark";
+import "@powerpipe/components/dashboards/grouping/Benchmark";
+
+// Detection
+import "@powerpipe/components/dashboards/grouping/DetectionBenchmark";
 
 // Dashboard
 import "@powerpipe/components/dashboards/layout/Dashboard";

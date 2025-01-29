@@ -268,7 +268,7 @@ func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*resources.Dashb
 	for _, w := range withs {
 		// NOTE: set the name of the run to be the scoped name
 		withRunName := fmt.Sprintf("%s.%s", p.GetName(), w.UnqualifiedName)
-		withRun, err := NewLeafRun(w, p, executionTree, setName(withRunName))
+		withRun, err := NewLeafRun(w, p, executionTree, withName(withRunName))
 		if err != nil {
 			return err
 		}

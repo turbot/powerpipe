@@ -6,56 +6,62 @@ import (
 )
 
 type DashboardChanged struct {
-	ChangedDashboards  []*modconfig.ModTreeItemDiffs
-	ChangedContainers  []*modconfig.ModTreeItemDiffs
-	ChangedControls    []*modconfig.ModTreeItemDiffs
-	ChangedBenchmarks  []*modconfig.ModTreeItemDiffs
-	ChangedCategories  []*modconfig.ModTreeItemDiffs
-	ChangedCards       []*modconfig.ModTreeItemDiffs
-	ChangedCharts      []*modconfig.ModTreeItemDiffs
-	ChangedFlows       []*modconfig.ModTreeItemDiffs
-	ChangedGraphs      []*modconfig.ModTreeItemDiffs
-	ChangedHierarchies []*modconfig.ModTreeItemDiffs
-	ChangedImages      []*modconfig.ModTreeItemDiffs
-	ChangedInputs      []*modconfig.ModTreeItemDiffs
-	ChangedTables      []*modconfig.ModTreeItemDiffs
-	ChangedTexts       []*modconfig.ModTreeItemDiffs
-	ChangedNodes       []*modconfig.ModTreeItemDiffs
-	ChangedEdges       []*modconfig.ModTreeItemDiffs
+	ChangedDashboards          []*modconfig.ModTreeItemDiffs
+	ChangedContainers          []*modconfig.ModTreeItemDiffs
+	ChangedControls            []*modconfig.ModTreeItemDiffs
+	ChangedBenchmarks          []*modconfig.ModTreeItemDiffs
+	ChangedCategories          []*modconfig.ModTreeItemDiffs
+	ChangedCards               []*modconfig.ModTreeItemDiffs
+	ChangedCharts              []*modconfig.ModTreeItemDiffs
+	ChangedDetections          []*modconfig.ModTreeItemDiffs
+	ChangedDetectionBenchmarks []*modconfig.ModTreeItemDiffs
+	ChangedFlows               []*modconfig.ModTreeItemDiffs
+	ChangedGraphs              []*modconfig.ModTreeItemDiffs
+	ChangedHierarchies         []*modconfig.ModTreeItemDiffs
+	ChangedImages              []*modconfig.ModTreeItemDiffs
+	ChangedInputs              []*modconfig.ModTreeItemDiffs
+	ChangedTables              []*modconfig.ModTreeItemDiffs
+	ChangedTexts               []*modconfig.ModTreeItemDiffs
+	ChangedNodes               []*modconfig.ModTreeItemDiffs
+	ChangedEdges               []*modconfig.ModTreeItemDiffs
 
-	NewDashboards  []*resources.Dashboard
-	NewContainers  []*resources.DashboardContainer
-	NewControls    []*resources.Control
-	NewBenchmarks  []*resources.Benchmark
-	NewCards       []*resources.DashboardCard
-	NewCategories  []*resources.DashboardCategory
-	NewCharts      []*resources.DashboardChart
-	NewFlows       []*resources.DashboardFlow
-	NewGraphs      []*resources.DashboardGraph
-	NewHierarchies []*resources.DashboardHierarchy
-	NewImages      []*resources.DashboardImage
-	NewInputs      []*resources.DashboardInput
-	NewTables      []*resources.DashboardTable
-	NewTexts       []*resources.DashboardText
-	NewNodes       []*resources.DashboardNode
-	NewEdges       []*resources.DashboardEdge
+	NewDashboards          []*resources.Dashboard
+	NewContainers          []*resources.DashboardContainer
+	NewControls            []*resources.Control
+	NewBenchmarks          []*resources.Benchmark
+	NewCards               []*resources.DashboardCard
+	NewCategories          []*resources.DashboardCategory
+	NewCharts              []*resources.DashboardChart
+	NewDetections          []*resources.Detection
+	NewDetectionBenchmarks []*resources.DetectionBenchmark
+	NewFlows               []*resources.DashboardFlow
+	NewGraphs              []*resources.DashboardGraph
+	NewHierarchies         []*resources.DashboardHierarchy
+	NewImages              []*resources.DashboardImage
+	NewInputs              []*resources.DashboardInput
+	NewTables              []*resources.DashboardTable
+	NewTexts               []*resources.DashboardText
+	NewNodes               []*resources.DashboardNode
+	NewEdges               []*resources.DashboardEdge
 
-	DeletedDashboards  []*resources.Dashboard
-	DeletedContainers  []*resources.DashboardContainer
-	DeletedControls    []*resources.Control
-	DeletedBenchmarks  []*resources.Benchmark
-	DeletedCards       []*resources.DashboardCard
-	DeletedCategories  []*resources.DashboardCategory
-	DeletedCharts      []*resources.DashboardChart
-	DeletedFlows       []*resources.DashboardFlow
-	DeletedGraphs      []*resources.DashboardGraph
-	DeletedHierarchies []*resources.DashboardHierarchy
-	DeletedImages      []*resources.DashboardImage
-	DeletedInputs      []*resources.DashboardInput
-	DeletedTables      []*resources.DashboardTable
-	DeletedTexts       []*resources.DashboardText
-	DeletedNodes       []*resources.DashboardNode
-	DeletedEdges       []*resources.DashboardEdge
+	DeletedDashboards          []*resources.Dashboard
+	DeletedContainers          []*resources.DashboardContainer
+	DeletedControls            []*resources.Control
+	DeletedBenchmarks          []*resources.Benchmark
+	DeletedCards               []*resources.DashboardCard
+	DeletedCategories          []*resources.DashboardCategory
+	DeletedCharts              []*resources.DashboardChart
+	DeletedDetections          []*resources.Detection
+	DeletedDetectionBenchmarks []*resources.DetectionBenchmark
+	DeletedFlows               []*resources.DashboardFlow
+	DeletedGraphs              []*resources.DashboardGraph
+	DeletedHierarchies         []*resources.DashboardHierarchy
+	DeletedImages              []*resources.DashboardImage
+	DeletedInputs              []*resources.DashboardInput
+	DeletedTables              []*resources.DashboardTable
+	DeletedTexts               []*resources.DashboardText
+	DeletedNodes               []*resources.DashboardNode
+	DeletedEdges               []*resources.DashboardEdge
 }
 
 // IsDashboardEvent implements DashboardEvent interface
@@ -75,7 +81,8 @@ func (c *DashboardChanged) HasChanges() bool {
 		len(c.ChangedImages)+
 		len(c.ChangedInputs)+
 		len(c.ChangedTables)+
-		len(c.ChangedTexts)+
+		len(c.ChangedDetections)+
+		len(c.ChangedDetectionBenchmarks)+
 		len(c.ChangedNodes)+
 		len(c.ChangedEdges)+
 		len(c.NewDashboards)+
@@ -91,6 +98,8 @@ func (c *DashboardChanged) HasChanges() bool {
 		len(c.NewImages)+
 		len(c.NewInputs)+
 		len(c.NewTables)+
+		len(c.NewDetections)+
+		len(c.NewDetectionBenchmarks)+
 		len(c.NewTexts)+
 		len(c.NewNodes)+
 		len(c.NewEdges)+
@@ -107,6 +116,8 @@ func (c *DashboardChanged) HasChanges() bool {
 		len(c.DeletedImages)+
 		len(c.DeletedInputs)+
 		len(c.DeletedTables)+
+		len(c.DeletedDetections)+
+		len(c.DeletedDetectionBenchmarks)+
 		len(c.DeletedTexts)+
 		len(c.DeletedNodes)+
 		len(c.DeletedEdges) > 0
@@ -169,6 +180,16 @@ func (c *DashboardChanged) WalkChangedResources(resourceFunc func(item modconfig
 		}
 	}
 	for _, r := range c.ChangedTables {
+		if continueWalking, err := resourceFunc(r.Item); err != nil || !continueWalking {
+			return err
+		}
+	}
+	for _, r := range c.ChangedDetections {
+		if continueWalking, err := resourceFunc(r.Item); err != nil || !continueWalking {
+			return err
+		}
+	}
+	for _, r := range c.ChangedDetectionBenchmarks {
 		if continueWalking, err := resourceFunc(r.Item); err != nil || !continueWalking {
 			return err
 		}
@@ -385,6 +406,14 @@ func (c *DashboardChanged) AddChanged(item modconfig.ModTreeItem) {
 	case *resources.DashboardTable:
 		if !c.diffsContain(c.ChangedTables, item) {
 			c.ChangedTables = append(c.ChangedTables, diff)
+		}
+	case *resources.Detection:
+		if !c.diffsContain(c.ChangedDetections, item) {
+			c.ChangedDetections = append(c.ChangedDetections, diff)
+		}
+	case *resources.DetectionBenchmark:
+		if !c.diffsContain(c.ChangedDetectionBenchmarks, item) {
+			c.ChangedDetectionBenchmarks = append(c.ChangedDetectionBenchmarks, diff)
 		}
 	case *resources.DashboardText:
 		if !c.diffsContain(c.ChangedTexts, item) {

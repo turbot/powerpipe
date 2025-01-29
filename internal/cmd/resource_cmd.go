@@ -127,6 +127,8 @@ func dashboardChildCommands() []*cobra.Command {
 		resourceCmd[*resources.DashboardHierarchy](withCmdName("hierarchy")),
 		resourceCmd[*resources.DashboardImage](withCmdName("image")),
 		resourceCmd[*resources.DashboardTable](withCmdName("table")),
+		resourceCmd[*resources.Detection](withCmdName("detection")),
+		resourceCmd[*resources.DetectionBenchmark](withCmdName("detectionbenchmark")),
 		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
@@ -147,6 +149,10 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 		return dashboardRunCmd()
 	case *resources.Benchmark:
 		return checkCmd[*resources.Benchmark]()
+	case *resources.DetectionBenchmark:
+		return detectionRunCmd[*resources.DetectionBenchmark]()
+	case *resources.Detection:
+		return detectionRunCmd[*resources.Detection]()
 	case *resources.Control:
 		return checkCmd[*resources.Control]()
 	}
@@ -175,6 +181,9 @@ func resourceCommandShortDescription(typeName string) string {
 
 	case schema.BlockTypeVariable:
 		return "Manage Powerpipe variables in the current mod and its direct dependents"
+
+	case schema.BlockTypeDetection:
+		return "List, view, and run Powerpipe detections"
 
 	default:
 		return fmt.Sprintf("%s commands", typeName)
@@ -209,6 +218,12 @@ To run dashboards interactively, run powerpipe server.`
 	case schema.BlockTypeVariable:
 		return `List variables from the current mod and its direct dependents or show details of a variable
 from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	case schema.BlockTypeDetection:
+		return `List, view, and run Powerpipe detections and its direct dependents.
+
+Run a detection from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a detection from the current mod or its direct dependents or from a Powerpipe server instance.`
 
 	default:
 		return fmt.Sprintf("%s commands", typeName)
