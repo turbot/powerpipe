@@ -79,11 +79,6 @@ func (c *DashboardCard) Diff(other *DashboardCard) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetDocumentation implements ModTreeItem
-func (c *DashboardCard) GetDocumentation() string {
-	return ""
-}
-
 // ValidateQuery implements QueryProvider
 func (c *DashboardCard) ValidateQuery() hcl.Diagnostics {
 	// query is optional - nothing to do

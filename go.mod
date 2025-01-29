@@ -2,6 +2,8 @@ module github.com/turbot/powerpipe
 
 go 1.23.2
 
+replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/briandowns/spinner v1.23.0 // indirect

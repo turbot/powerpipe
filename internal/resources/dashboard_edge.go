@@ -71,11 +71,6 @@ func (e *DashboardEdge) Diff(other *DashboardEdge) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetDocumentation implements DashboardLeafNode
-func (e *DashboardEdge) GetDocumentation() string {
-	return ""
-}
-
 // CtyValue implements CtyValueProvider
 func (e *DashboardEdge) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(e)

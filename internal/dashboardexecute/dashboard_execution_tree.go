@@ -44,9 +44,9 @@ type DashboardExecutionTree struct {
 	inputValues map[string]any
 	id          string
 	// active database and search path config (unless overridden at the resource level)
-	database           connection.ConnectionStringProvider
-	searchPathConfig   backend.SearchPathConfig
-	DetectionTimeRange utils.TimeRange
+	database         connection.ConnectionStringProvider
+	searchPathConfig backend.SearchPathConfig
+	DateTimeRange    utils.TimeRange
 }
 
 func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, inputs *InputValues, defaultClientMap *db_client.ClientMap, opts ...backend.BackendOption) (*DashboardExecutionTree, error) {
@@ -179,15 +179,17 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	defer func() {
 
 		ev := &dashboardevents.ExecutionComplete{
-			Root:        e.Root,
-			Session:     e.sessionId,
-			ExecutionId: e.id,
-			Panels:      panels,
-			Inputs:      e.inputValues,
-			Variables:   referencedVariables,
-			SearchPath:  searchPath,
-			StartTime:   startTime,
-			EndTime:     time.Now(),
+			Root:             e.Root,
+			Session:          e.sessionId,
+			ExecutionId:      e.id,
+			Panels:           panels,
+			Inputs:           e.inputValues,
+			Variables:        referencedVariables,
+			SearchPath:       searchPath,
+			DateTimeRange:    e.DateTimeRange,
+			SearchPathPrefix: e.searchPathConfig.SearchPathPrefix,
+			StartTime:        startTime,
+			EndTime:          time.Now(),
 		}
 
 		workspace.PublishDashboardEvent(ctx, ev)
@@ -259,7 +261,7 @@ func (e *DashboardExecutionTree) SetInputValues(inputValues *InputValues) {
 	// TACTICAL
 	// if a time range has been passed, set the detection time range
 	// (if time range is not set, From and To will be nil - this is expected and handled)
-	e.DetectionTimeRange = inputValues.DetectionTimeRange
+	e.DateTimeRange = inputValues.DateTimeRange
 }
 
 // ChildCompleteChan implements DashboardParent
@@ -369,7 +371,7 @@ func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.ConnectionStringProvider, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
 	// ask the provider for the connection string, passing the filter
 	// TODO check connection type is tailpipe???
-	filter := &connection.TailpipeDatabaseFilters{From: e.DetectionTimeRange.From, To: e.DetectionTimeRange.To}
+	filter := &connection.TailpipeDatabaseFilters{From: e.DateTimeRange.From, To: e.DateTimeRange.To}
 	cs, err := csp.GetConnectionString(connection.WithFilter(filter))
 	if err != nil {
 		return nil, err

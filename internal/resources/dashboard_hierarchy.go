@@ -89,11 +89,6 @@ func (h *DashboardHierarchy) Diff(other *DashboardHierarchy) *modconfig.ModTreeI
 	return res
 }
 
-// GetDocumentation implements ModTreeItem
-func (h *DashboardHierarchy) GetDocumentation() string {
-	return ""
-}
-
 // CtyValue implements CtyValueProvider
 func (h *DashboardHierarchy) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(h)

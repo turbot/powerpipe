@@ -7,7 +7,7 @@ import (
 type InputValues struct {
 	Inputs map[string]interface{} `json:"inputs"`
 	// map of time ranges, keyed by target benchmark/detection
-	DetectionTimeRange utils.TimeRange `json:"detection_time_ranges"`
+	DateTimeRange utils.TimeRange `json:"detection_time_ranges"`
 }
 
 func NewInputValues() *InputValues {

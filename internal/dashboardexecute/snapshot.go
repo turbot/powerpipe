@@ -58,6 +58,14 @@ func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEven
 
 // ExecutionCompleteToSnapshot transforms the ExecutionComplete event into a SteampipeSnapshot
 func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *steampipeconfig.SteampipeSnapshot {
+	metadata := make(map[string]interface{})
+	if !event.DateTimeRange.Empty() {
+		metadata["datetime_range"] = event.DateTimeRange
+	}
+	if event.SearchPathPrefix != nil {
+		metadata["search_path_prefix"] = event.SearchPathPrefix
+	}
+
 	return &steampipeconfig.SteampipeSnapshot{
 		SchemaVersion: fmt.Sprintf("%d", steampipeconfig.SteampipeSnapshotSchemaVersion),
 		Panels:        event.Panels,
@@ -68,5 +76,6 @@ func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *stea
 		StartTime:     event.StartTime,
 		EndTime:       event.EndTime,
 		Title:         event.Root.GetTitle(),
+		Metadata:      metadata,
 	}
 }

@@ -118,8 +118,8 @@ type ClientRequestDashboardPayload struct {
 type ClientRequestPayload struct {
 	Dashboard ClientRequestDashboardPayload `json:"dashboard"`
 
-	Inputs             map[string]interface{} `json:"inputs"`
-	DetectionTimeRange utils.TimeRange        `json:"datetime_range"`
+	Inputs        map[string]interface{} `json:"inputs"`
+	DateTimeRange utils.TimeRange        `json:"datetime_range"`
 
 	ChangedInput     string   `json:"changed_input"`
 	SearchPath       []string `json:"search_path"`
@@ -129,8 +129,8 @@ type ClientRequestPayload struct {
 func (p *ClientRequestPayload) InputValues() *dashboardexecute.InputValues {
 	// construct input values from payload
 	return &dashboardexecute.InputValues{
-		Inputs:             p.Inputs,
-		DetectionTimeRange: p.DetectionTimeRange,
+		Inputs:        p.Inputs,
+		DateTimeRange: p.DateTimeRange,
 	}
 }
 

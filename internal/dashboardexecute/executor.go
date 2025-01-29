@@ -158,7 +158,7 @@ func (e *DashboardExecutor) OnInputChanged(ctx context.Context, sessionId string
 	}
 
 	// has the time range changed
-	timeRangeChanged := !inputs.DetectionTimeRange.Equals(executionTree.DetectionTimeRange)
+	timeRangeChanged := !inputs.DateTimeRange.Equals(executionTree.DateTimeRange)
 	currentRunFinished := executionTree.GetRunStatus().IsFinished()
 	prevInputsExist := inputPrevValue != nil
 

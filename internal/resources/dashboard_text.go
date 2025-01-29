@@ -62,11 +62,6 @@ func (t *DashboardText) Diff(other *DashboardText) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetDocumentation implements ModTreeItem
-func (*DashboardText) GetDocumentation() string {
-	return ""
-}
-
 // CtyValue implements CtyValueProvider
 func (t *DashboardText) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(t)

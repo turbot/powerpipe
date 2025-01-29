@@ -59,11 +59,6 @@ func (t *Detection) Diff(other *Detection) *modconfig.ModTreeItemDiffs {
 	return res
 }
 
-// GetDocumentation implements ModTreeItem
-func (*Detection) GetDocumentation() string {
-	return ""
-}
-
 // CtyValue implements CtyValueProvider
 func (t *Detection) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(t)

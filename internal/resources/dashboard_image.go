@@ -63,11 +63,6 @@ func (i *DashboardImage) Diff(other *DashboardImage) *modconfig.ModTreeItemDiffs
 	return res
 }
 
-// GetDocumentation implements ModTreeItem
-func (*DashboardImage) GetDocumentation() string {
-	return ""
-}
-
 // GetType implements DashboardLeafNode
 func (*DashboardImage) GetType() string {
 	return ""
