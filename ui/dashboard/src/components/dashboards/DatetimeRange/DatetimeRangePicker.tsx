@@ -530,7 +530,7 @@ const DatetimeRangePicker = ({
               <Popover.Button
                 ref={setReferenceElement}
                 as="div"
-                className={presetClassName}
+                className={classNames(presetClassName, "h-full")}
                 disabled={disabled}
               >
                 {preset.label}
