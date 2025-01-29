@@ -1,7 +1,5 @@
 package controldisplay
 
-import "github.com/turbot/powerpipe/internal/controlexecute"
-
 type TemplateRenderConfig struct {
 	RenderHeader bool
 	Separator    string
@@ -15,5 +13,6 @@ type TemplateRenderConstants struct {
 type TemplateRenderContext struct {
 	Constants TemplateRenderConstants
 	Config    TemplateRenderConfig
-	Data      *controlexecute.ExecutionTree
+	Data      any
+	// DetectionData *dashboardexecute.DetectionBenchmarkDisplayTree
 }

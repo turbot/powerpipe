@@ -7,6 +7,8 @@ import (
 	"github.com/turbot/pipe-fittings/constants"
 	"github.com/turbot/pipe-fittings/export"
 	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type FormatResolver struct {
@@ -15,8 +17,17 @@ type FormatResolver struct {
 	exportFormatters []Formatter
 }
 
-func NewFormatResolver() (*FormatResolver, error) {
-	templates, err := loadAvailableTemplates()
+func NewFormatResolver(target modconfig.ModTreeItem) (*FormatResolver, error) {
+	// TACTICAL
+	// if the target is a detection or detection benchmark use a separate resolver
+	var detection bool
+	switch target.(type) {
+	case *resources.Detection, *resources.DetectionBenchmark:
+		detection = true
+	default:
+	}
+
+	templates, err := loadAvailableTemplates(detection)
 	if err != nil {
 		return nil, err
 	}
@@ -88,8 +99,12 @@ func (r *FormatResolver) controlExporters() []export.Exporter {
 	return res
 }
 
-func loadAvailableTemplates() ([]*OutputTemplate, error) {
-	templateDirectories, err := files.ListFiles(filepaths.EnsureTemplateDir(), &files.ListOptions{
+func loadAvailableTemplates(detection bool) ([]*OutputTemplate, error) {
+	templateDir := filepaths.EnsureControlTemplateDir()
+	if detection {
+		templateDir = filepaths.EnsureDetectionTemplateDir()
+	}
+	templateDirectories, err := files.ListFiles(templateDir, &files.ListOptions{
 		Flags:   files.DirectoriesFlat | files.NotEmpty,
 		Exclude: []string{"./.*"},
 	})
