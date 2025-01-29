@@ -45,7 +45,12 @@ const DateRangeInput = (props: InputProps) => {
     if (stateValue) {
       return;
     }
-    updateInput(props.name, JSON.stringify(defaultValue), !!stateValue);
+    updateInput(
+      props.name,
+      // [defaultValue.from.format("YYYY-MM-DD"), null, "7d"].join(","),
+      JSON.stringify(defaultValue),
+      !!stateValue,
+    );
   }, [stateValue]);
 
   const onInputChange = (
@@ -55,6 +60,7 @@ const DateRangeInput = (props: InputProps) => {
   ) => {
     updateInput(
       props.name,
+      // [from, to, relative].join(","),
       JSON.stringify({
         from,
         to,

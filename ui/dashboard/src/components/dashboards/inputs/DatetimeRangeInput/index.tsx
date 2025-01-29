@@ -10,6 +10,12 @@ import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo } from "react";
 
+const defaultValue = {
+  from: dayjs().subtract(7, "day").utc(),
+  to: null,
+  relative: "7d",
+};
+
 const DateRangeInput = (props: InputProps) => {
   const { dataMode } = useDashboardState();
   const { inputs, updateInput } = useDashboardInputs();
@@ -28,20 +34,10 @@ const DateRangeInput = (props: InputProps) => {
         };
       } catch (err) {
         console.error("Parse error", err);
-        const now = dayjs();
-        return {
-          from: now.subtract(7, "day").utc(),
-          to: null,
-          relative: "7d",
-        };
+        return defaultValue;
       }
     } else {
-      const now = dayjs();
-      return {
-        from: now.subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      };
+      return defaultValue;
     }
   }, [stateValue]);
 
@@ -51,11 +47,8 @@ const DateRangeInput = (props: InputProps) => {
     }
     updateInput(
       props.name,
-      JSON.stringify({
-        from: dayjs().subtract(7, "day").utc(),
-        to: null,
-        relative: "7d",
-      }),
+      // [dayjs().subtract(7, "day").utc(), null, "7d"].join(","),
+      JSON.stringify(defaultValue),
       !!stateValue,
     );
   }, [stateValue]);
@@ -67,6 +60,7 @@ const DateRangeInput = (props: InputProps) => {
   ) => {
     updateInput(
       props.name,
+      // [from, to, relative].join(","),
       JSON.stringify({
         from,
         to,
