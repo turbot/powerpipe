@@ -3,8 +3,12 @@ package controldisplay
 import (
 	"context"
 	"io"
+	"os"
+	"testing"
 
+	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/modconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -80,48 +84,49 @@ var formatterTestCase = []testCase{
 	},
 }
 
-// func TestFormatResolver(t *testing.T) {
-// 	tmpDir, err := os.MkdirTemp(os.TempDir(), "test")
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	defer os.RemoveAll(tmpDir)
-// 	app_specific.InstallDir = tmpDir
-// 	if err := EnsureControlTemplates(); err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	resolver, err := NewFormatResolver()
-// 	if err != nil {
-// 		t.Fatal(err)
-// 	}
-// 	for _, testCase := range formatterTestCase {
-// 		f, err := resolver.GetFormatter(testCase.input)
-// 		shouldError := testCase.expected == "ERROR"
+func TestFormatResolver(t *testing.T) {
+	var target modconfig.ModTreeItem
+	tmpDir, err := os.MkdirTemp(os.TempDir(), "test")
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer os.RemoveAll(tmpDir)
+	app_specific.InstallDir = tmpDir
+	if err := EnsureControlTemplates(); err != nil {
+		t.Fatal(err)
+	}
+	resolver, err := NewFormatResolver(target)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, testCase := range formatterTestCase {
+		f, err := resolver.GetFormatter(testCase.input)
+		shouldError := testCase.expected == "ERROR"
 
-// 		if shouldError {
-// 			if err == nil {
-// 				t.Logf("Request for '%s' should have errored - but did not", testCase.input)
-// 				t.Fail()
-// 			}
-// 			continue
-// 		}
+		if shouldError {
+			if err == nil {
+				t.Logf("Request for '%s' should have errored - but did not", testCase.input)
+				t.Fail()
+			}
+			continue
+		}
 
-// 		expectedFormatter := testCase.expected.(testFormatter)
+		expectedFormatter := testCase.expected.(testFormatter)
 
-// 		if f.Alias() != expectedFormatter.Alias() {
-// 			t.Logf("Alias mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.Alias(), f.Alias())
-// 			t.Fail()
-// 			continue
-// 		}
-// 		if f.FileExtension() != expectedFormatter.FileExtension() {
-// 			t.Logf("Extension mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.FileExtension(), f.FileExtension())
-// 			t.Fail()
-// 			continue
-// 		}
-// 		if f.Name() != expectedFormatter.Name() {
-// 			t.Logf("Name mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.Name(), f.Name())
-// 			t.Fail()
-// 			continue
-// 		}
-// 	}
-// }
+		if f.Alias() != expectedFormatter.Alias() {
+			t.Logf("Alias mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.Alias(), f.Alias())
+			t.Fail()
+			continue
+		}
+		if f.FileExtension() != expectedFormatter.FileExtension() {
+			t.Logf("Extension mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.FileExtension(), f.FileExtension())
+			t.Fail()
+			continue
+		}
+		if f.Name() != expectedFormatter.Name() {
+			t.Logf("Name mismatch for '%s'. Expected '%s', but got '%s'", testCase.input, expectedFormatter.Name(), f.Name())
+			t.Fail()
+			continue
+		}
+	}
+}
