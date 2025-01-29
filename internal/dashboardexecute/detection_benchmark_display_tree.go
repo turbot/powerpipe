@@ -32,28 +32,5 @@ type DetectionBenchmarkDisplayTree struct {
 	DetectionRuns []*DetectionRun `json:"-"`
 }
 
-// TODO - for csv only?
-//
-// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
-// func (e *DetectionBenchmarkDisplayTree) PopulateDetectionRunInstances() {
-// 	var detectionRunInstances []*DetectionRunInstance
-
-// 	for _, detectionRun := range e.DetectionRuns {
-// 		for _, parent := range detectionRun.Parents {
-// 			flatDetectionRun := NewDetectionRunInstance(DetectionRun, parent)
-// 			DetectionRunInstances = append(DetectionRunInstances, &flatDetectionRun)
-// 		}
-// 	}
-
-// 	e.DetectionRunInstances = DetectionRunInstances
-// }
-
-// // ControlRunInstance is used to store control runs for each parent (in case of multiple parents)
-// type DetectionRunInstance struct {
-// 	DetectionRun *DetectionRun
-// 	Group        *ResultGroup `json:"-"`
-// 	Rows         []*ResultRowInstance
-// }
-
 // IsExportSourceData implements ExportSourceData
 func (*DetectionBenchmarkDisplayTree) IsExportSourceData() {}
