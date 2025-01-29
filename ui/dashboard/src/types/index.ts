@@ -2,6 +2,7 @@ import {
   CheckDisplayGroup,
   Filter,
 } from "@powerpipe/components/dashboards/grouping/common";
+import { DatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import {
   KeyValuePairs,
   TableConfig,
@@ -320,6 +321,8 @@ export type DashboardSnapshotViewMetadata = {
 
 export type DashboardSnapshotMetadata = {
   view?: KeyValuePairs<DashboardSnapshotViewMetadata>;
+  datetime_range?: DatetimeRange;
+  search_path_prefix?: string[];
 };
 
 export type DashboardSnapshot = {

@@ -123,6 +123,26 @@ export const DashboardExecutionProvider = ({
         snapshotSearchParams.set(key, value);
       }
 
+      // Set the date range parameters
+      if (executionCompleteEvent.snapshot.metadata?.datetime_range) {
+        snapshotSearchParams.set(
+          "datetime_range",
+          JSON.stringify(
+            executionCompleteEvent.snapshot.metadata?.datetime_range,
+          ),
+        );
+      }
+
+      // Set the search path prefix parameters
+      if (executionCompleteEvent.snapshot.metadata?.search_path_prefix) {
+        snapshotSearchParams.set(
+          "search_path_prefix",
+          JSON.stringify(
+            executionCompleteEvent.snapshot.metadata?.search_path_prefix,
+          ),
+        );
+      }
+
       // Build the filter & group search params
       const filtersByPanel = {};
       const groupingsByPanel = {};

@@ -44,7 +44,9 @@ export const DashboardSearchPathProvider = ({
       value={{
         searchPathPrefix,
         supportsSearchPath:
-          serverSupportsSearchPath || dashboardSupportsSearchPath,
+          serverSupportsSearchPath ||
+          dashboardSupportsSearchPath ||
+          !!rawSearchPathPrefix,
       }}
     >
       {children}

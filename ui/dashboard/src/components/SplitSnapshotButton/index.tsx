@@ -14,18 +14,21 @@ import {
   tableConfigToSnapshotMetadata,
 } from "@powerpipe/utils/snapshot";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
-// import { Menu } from "@headlessui/react";
 import { noop } from "@powerpipe/utils/func";
 import { saveAs } from "file-saver";
 import { SnapshotDataToExecutionCompleteSchemaMigrator } from "@powerpipe/utils/schema";
 import { timestampForFilename } from "@powerpipe/utils/date";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardExecution } from "@powerpipe/hooks/useDashboardExecution";
 import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { validateFilter } from "@powerpipe/components/dashboards/grouping/FilterEditor";
 
 const useSaveSnapshot = () => {
   const { dashboard, snapshot } = useDashboardState();
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
+  const { searchPathPrefix, supportsSearchPath } = useDashboardSearchPath();
   const { inputs } = useDashboardInputs();
   const { allFilters } = useFilterConfig();
   const { allGroupings } = useGroupingConfig();
@@ -43,7 +46,9 @@ const useSaveSnapshot = () => {
     if (
       !!Object.keys(allFilters).length ||
       !!Object.keys(allGroupings).length ||
-      !!Object.keys(allTables).length
+      !!Object.keys(allTables).length ||
+      supportsTimeRange ||
+      (supportsSearchPath && searchPathPrefix.length)
     ) {
       const metadata: DashboardSnapshotMetadata = {
         view: {},
@@ -76,6 +81,12 @@ const useSaveSnapshot = () => {
           metadata.view[panel].table =
             tableConfigToSnapshotMetadata(tableConfig);
         }
+      }
+      if (supportsTimeRange) {
+        metadata.datetime_range = range;
+      }
+      if (supportsSearchPath && searchPathPrefix.length) {
+        metadata.search_path_prefix = searchPathPrefix;
       }
       withMetadata.metadata = metadata;
     }

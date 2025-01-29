@@ -9,7 +9,7 @@ import { useSearchParams } from "react-router-dom";
 import dayjs from "dayjs";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
-interface DatetimeRange {
+export interface DatetimeRange {
   from: string;
   to?: string | null;
   relative?: string | null;
@@ -103,7 +103,9 @@ export const DashboardDatetimeRangeProvider = ({
       value={{
         range: datetimeRange,
         supportsTimeRange:
-          serverSupportsTimeRange || dashboardSupportsTimeRange,
+          serverSupportsTimeRange ||
+          dashboardSupportsTimeRange ||
+          !!rawDatetimeRange,
         setRange,
       }}
     >
