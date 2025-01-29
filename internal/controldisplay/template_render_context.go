@@ -14,5 +14,4 @@ type TemplateRenderContext struct {
 	Constants TemplateRenderConstants
 	Config    TemplateRenderConfig
 	Data      any
-	// DetectionData *dashboardexecute.DetectionBenchmarkDisplayTree
 }

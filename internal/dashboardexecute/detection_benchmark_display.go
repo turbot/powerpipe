@@ -235,6 +235,7 @@ func (r *DetectionBenchmarkDisplay) AddDetection(detectionRun *DetectionRun) {
 	r.Children = append(r.Children, detectionRun)
 }
 
+//
 // func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
 // 	r.updateLock.Lock()
 // 	defer r.updateLock.Unlock()
