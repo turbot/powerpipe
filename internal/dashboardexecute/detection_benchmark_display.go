@@ -235,17 +235,16 @@ func (r *DetectionBenchmarkDisplay) AddDetection(detectionRun *DetectionRun) {
 	r.Children = append(r.Children, detectionRun)
 }
 
-//
-//func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
-//	r.updateLock.Lock()
-//	defer r.updateLock.Unlock()
-//	r.DimensionKeys = append(r.DimensionKeys, keys...)
-//	if r.Parent != nil {
-//		r.Parent.addDimensionKeys(keys...)
-//	}
-//	r.DimensionKeys = helpers.StringSliceDistinct(r.DimensionKeys)
-//	sort.Strings(r.DimensionKeys)
-//}
+// func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
+// 	r.updateLock.Lock()
+// 	defer r.updateLock.Unlock()
+// 	r.DimensionKeys = append(r.DimensionKeys, keys...)
+// 	if r.Parent != nil {
+// 		r.Parent.addDimensionKeys(keys...)
+// 	}
+// 	r.DimensionKeys = helpers.StringSliceDistinct(r.DimensionKeys)
+// 	sort.Strings(r.DimensionKeys)
+// }
 
 //// onChildDone is a callback that gets called from the children of this result group when they are done
 //func (r *DetectionBenchmarkDisplay) onChildDone() {
