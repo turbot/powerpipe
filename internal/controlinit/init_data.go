@@ -67,13 +67,18 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 		i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
 	}
 
-	if err := controldisplay.EnsureTemplates(); err != nil {
+	if err := controldisplay.EnsureControlTemplates(); err != nil {
+		i.Result.Error = err
+		return i
+	}
+
+	if err := controldisplay.EnsureDetectionTemplates(); err != nil {
 		i.Result.Error = err
 		return i
 	}
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		if err := i.registerCheckExporters(); err != nil {
+		if err := i.registerCheckExporters(i.Targets[0]); err != nil {
 			i.Result.Error = err
 			return i
 		}
@@ -86,7 +91,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 	}
 
 	output := viper.GetString(constants.ArgOutput)
-	formatter, err := parseOutputArg(output)
+	formatter, err := resolveFormatter(output, i.Targets[0])
 	if err != nil {
 		i.Result.Error = err
 		return i
@@ -113,17 +118,17 @@ func (i *InitData) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData) registerCheckExporters() error {
-	exporters, err := controldisplay.GetExporters()
+func (i *InitData) registerCheckExporters(target modconfig.ModTreeItem) error {
+	exporters, err := controldisplay.GetExporters(target)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 
 	// register all exporters
 	return i.RegisterExporters(exporters...)
 }
 
-// parseOutputArg parses the --output flag value and returns the Formatter that can format the data
-func parseOutputArg(arg string) (formatter controldisplay.Formatter, err error) {
-	formatResolver, err := controldisplay.NewFormatResolver()
+// resolveFormatter parses the --output flag value and returns the Formatter that can format the data
+func resolveFormatter(arg string, target modconfig.ModTreeItem) (formatter controldisplay.Formatter, err error) {
+	formatResolver, err := controldisplay.NewFormatResolver(target)
 	if err != nil {
 		return nil, err
 	}

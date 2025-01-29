@@ -1,8 +1,9 @@
 package dashboardexecute
 
 import (
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"time"
+
+	"github.com/turbot/powerpipe/internal/controlexecute"
 
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/workspace"
@@ -22,28 +23,37 @@ type DetectionBenchmarkDisplayTree struct {
 	//SearchPath []string                      `json:"-"`
 	Workspace *workspace.PowerpipeWorkspace `json:"-"`
 	// TODO K for csv only?
-	// TODO need DetectionRunInstances
-	//// ControlRunInstances is a list of control runs for each parent.
-	//ControlRunInstances []*ControlRunInstance `json:"-"`
+	// TODO need DetectionRunInstances - we need to replicate the control execution tree
+	// DetectionRunInstances is a list of detection runs for each parent.
+	// DetectionRunInstances []*DetectionRunInstance `json:"-"`
 	// an optional map of control names used to filter the controls which are run
 	//controlNameFilterMap map[string]struct{}
+	// for now just using DetectionRuns
+	DetectionRuns []*DetectionRun `json:"-"`
 }
 
 // TODO - for csv only?
 //
-//// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
-//func (e *DetectionBenchmarkDisplayTree) PopulateControlRunInstances() {
-//	var controlRunInstances []*ControlRunInstance
-//
-//	for _, controlRun := range e.LeafRuns {
-//		for _, parent := range controlRun.Parents {
-//			flatControlRun := NewControlRunInstance(controlRun, parent)
-//			controlRunInstances = append(controlRunInstances, &flatControlRun)
-//		}
-//	}
-//
-//	e.ControlRunInstances = controlRunInstances
-//}
+// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
+// func (e *DetectionBenchmarkDisplayTree) PopulateDetectionRunInstances() {
+// 	var detectionRunInstances []*DetectionRunInstance
+
+// 	for _, detectionRun := range e.DetectionRuns {
+// 		for _, parent := range detectionRun.Parents {
+// 			flatDetectionRun := NewDetectionRunInstance(DetectionRun, parent)
+// 			DetectionRunInstances = append(DetectionRunInstances, &flatDetectionRun)
+// 		}
+// 	}
+
+// 	e.DetectionRunInstances = DetectionRunInstances
+// }
+
+// // ControlRunInstance is used to store control runs for each parent (in case of multiple parents)
+// type DetectionRunInstance struct {
+// 	DetectionRun *DetectionRun
+// 	Group        *ResultGroup `json:"-"`
+// 	Rows         []*ResultRowInstance
+// }
 
 // IsExportSourceData implements ExportSourceData
 func (*DetectionBenchmarkDisplayTree) IsExportSourceData() {}
