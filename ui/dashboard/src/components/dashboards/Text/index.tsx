@@ -47,7 +47,7 @@ const Markdown = ({ value }) => {
   const isLong = value.split("\n").length > 3;
   const panelClasses = isLong ? getLongPanelClasses() : getShortPanelClasses();
   const proseHeadings =
-    "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:mt-1 p-4 text-foreground prose-h1:text-foreground prose-h2:text-foreground prose-h4:text-foreground prose-h4:text-foreground prose-h5:text-foreground prose-h6:text-foreground";
+    "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:mt-1 p-4 text-foreground prose-h1:text-foreground prose-h2:text-foreground prose-h4:text-foreground prose-h4:text-foreground prose-h5:text-foreground prose-h6:text-foreground prose-strong:text-foreground";
   const markdown = (
     <ReactMarkdown
       rehypePlugins={[[rehypeExternalLinks, { target: "_blank" }]]}
