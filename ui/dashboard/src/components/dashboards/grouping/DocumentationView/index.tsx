@@ -21,7 +21,7 @@ const Documentation = ({
   }, []);
 
   return (
-    <div className="border border-dashboard rounded-md bg-dashboard-panel mt-1 p-3 space-y-3 min-w-60 max-w-xl max-h-96 overflow-y-auto">
+    <div className="border border-dashboard rounded-md bg-dashboard-panel text-foreground mt-1 p-3 space-y-3 min-w-60 max-w-xl max-h-96 overflow-y-auto">
       <Markdown value={documentation} />
     </div>
   );
