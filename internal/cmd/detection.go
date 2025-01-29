@@ -54,6 +54,8 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		AddCloudFlags().
 		AddModLocationFlag().
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a detection argument").
+		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
+		AddStringFlag(constants.ArgSeparator, ",", "Separator string for csv output").
 		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported format: pps (snapshot)").
 		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").

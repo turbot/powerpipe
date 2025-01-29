@@ -1,10 +1,11 @@
 package dashboardexecute
 
 import (
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"sort"
 	"sync"
 	"time"
+
+	"github.com/turbot/powerpipe/internal/controlexecute"
 
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/modconfig"
@@ -19,6 +20,11 @@ const RootResultGroup_Name = "root_result_group"
 // It may correspond to a Benchmark, or some other arbitrary grouping
 // TODO ultimately just use benchmark
 
+type SummaryProvider interface {
+	SetSummary()
+	GetSummary() *DetectionBenchmarkSummary
+}
+
 type DetectionBenchmarkDisplay struct {
 	GroupId       string            `json:"name" csv:"group_id"`
 	Title         string            `json:"title,omitempty" csv:"title"`
@@ -31,9 +37,9 @@ type DetectionBenchmarkDisplay struct {
 	// the overall summary of the group
 	Summary *DetectionBenchmarkSummary `json:"summary"`
 	// child result groups
-	Groups []*DetectionBenchmarkDisplay `json:"-"`
+	Groups []*DetectionBenchmarkDisplay `json:"groups"`
 	// child runs
-	DetectionRuns []*DetectionRun                        `json:"-"` // list of children stored as controlexecute.ExecutionTreeNode
+	DetectionRuns []*DetectionRun                        `json:"detection_runs"` // list of children stored as controlexecute.ExecutionTreeNode
 	Children      []controlexecute.ExecutionTreeNode     `json:"-"`
 	Severity      map[string]controlstatus.StatusSummary `json:"-"`
 	// "benchmark"
@@ -111,6 +117,24 @@ func NewDetectionBenchmarkDisplay(benchmarkRun *DetectionBenchmarkRun, parent *D
 	}
 
 	return group, nil
+}
+
+// SetSummary populates the summary (which just counts the number of detections)
+func (r *DetectionBenchmarkDisplay) SetSummary() {
+
+	for _, c := range r.Children {
+		if summaryProvider, ok := c.(SummaryProvider); ok {
+			summaryProvider.SetSummary()
+			r.Summary.Count = summaryProvider.GetSummary().Count
+		}
+	}
+	for _, run := range r.DetectionRuns {
+		r.Summary.Count = len(run.Data.Rows)
+	}
+}
+
+func (r *DetectionBenchmarkDisplay) GetSummary() *DetectionBenchmarkSummary {
+	return r.Summary
 }
 
 func (r *DetectionBenchmarkDisplay) AllTagKeys() []string {
@@ -210,41 +234,3 @@ func (r *DetectionBenchmarkDisplay) AddDetection(detectionRun *DetectionRun) {
 	r.DetectionRuns = append(r.DetectionRuns, detectionRun)
 	r.Children = append(r.Children, detectionRun)
 }
-
-//
-//func (r *DetectionBenchmarkDisplay) addDimensionKeys(keys ...string) {
-//	r.updateLock.Lock()
-//	defer r.updateLock.Unlock()
-//	r.DimensionKeys = append(r.DimensionKeys, keys...)
-//	if r.Parent != nil {
-//		r.Parent.addDimensionKeys(keys...)
-//	}
-//	r.DimensionKeys = helpers.StringSliceDistinct(r.DimensionKeys)
-//	sort.Strings(r.DimensionKeys)
-//}
-
-//// onChildDone is a callback that gets called from the children of this result group when they are done
-//func (r *DetectionBenchmarkDisplay) onChildDone() {
-//	newCount := atomic.AddUint32(&r.childrenComplete, 1)
-//	totalCount := uint32(len(r.DetectionRuns) + len(r.Groups)) //nolint:gosec // will not overflow
-//	if newCount < totalCount {
-//		// all children haven't finished execution yet
-//		return
-//	}
-//
-//	// all children are done
-//	r.Duration = time.Since(r.executionStartTime)
-//	if r.Parent != nil {
-//		r.Parent.onChildDone()
-//	}
-//}
-//
-//func (r *DetectionBenchmarkDisplay) updateSummary(count int) {
-//	r.updateLock.Lock()
-//	defer r.updateLock.Unlock()
-//
-//	r.Summary.Count += count
-//	if r.Parent != nil {
-//		r.Parent.updateSummary(count)
-//	}
-//}

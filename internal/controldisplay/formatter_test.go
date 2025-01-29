@@ -8,6 +8,7 @@ import (
 
 	"github.com/turbot/pipe-fittings/app_specific"
 	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/modconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -84,16 +85,17 @@ var formatterTestCase = []testCase{
 }
 
 func TestFormatResolver(t *testing.T) {
+	var target modconfig.ModTreeItem
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "test")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(tmpDir)
 	app_specific.InstallDir = tmpDir
-	if err := EnsureTemplates(); err != nil {
+	if err := EnsureControlTemplates(); err != nil {
 		t.Fatal(err)
 	}
-	resolver, err := NewFormatResolver()
+	resolver, err := NewFormatResolver(target)
 	if err != nil {
 		t.Fatal(err)
 	}

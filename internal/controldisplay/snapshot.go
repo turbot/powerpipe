@@ -72,7 +72,7 @@ func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.Stea
 	}
 
 	// Step 2: Populate summaries
-	populateSummaries(tree.Root, snapshot.Layout)
+	populateSummaries(tree.Root)
 
 	// Step 3: Populate results
 	populateResults(tree.Root, snapshot.Panels)
@@ -138,23 +138,13 @@ func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *wor
 	return executionTree, nil
 }
 
-func populateSummaries(treeNode controlexecute.ExecutionTreeNode, snapshotNode *steampipeconfig.SnapshotTreeNode) {
-	if treeNode == nil || snapshotNode == nil {
+func populateSummaries(treeNode controlexecute.ExecutionTreeNode) {
+	if treeNode == nil {
 		return
 	}
 
-	//// Copy the summary (ensure treeNode has a Summary method)
-	//if summaryProvider, ok := treeNode.(interface{ SetSummary(summary string) }); ok {
-	//	summaryProvider.SetSummary(snapshotNode.Summary)
-	//}
-
-	// Recursively populate summaries for children
-	treeChildren := treeNode.GetChildren()
-	snapshotChildren := snapshotNode.Children
-	for i := range treeChildren {
-		if i < len(snapshotChildren) {
-			populateSummaries(treeChildren[i], snapshotChildren[i])
-		}
+	if summaryProvider, ok := treeNode.(dashboardexecute.SummaryProvider); ok {
+		summaryProvider.SetSummary()
 	}
 }
 

@@ -1,8 +1,9 @@
 package dashboardexecute
 
 import (
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"time"
+
+	"github.com/turbot/powerpipe/internal/controlexecute"
 
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/workspace"
@@ -18,32 +19,10 @@ type DetectionBenchmarkDisplayTree struct {
 	Progress  *controlstatus.ControlProgress    `json:"progress"`
 	// map of dimension property name to property value to color map
 	DimensionColorGenerator *controlexecute.DimensionColorGenerator `json:"-"`
-	// the current session search path
-	//SearchPath []string                      `json:"-"`
 	Workspace *workspace.PowerpipeWorkspace `json:"-"`
-	// TODO K for csv only?
-	// TODO need DetectionRunInstances
-	//// ControlRunInstances is a list of control runs for each parent.
-	//ControlRunInstances []*ControlRunInstance `json:"-"`
-	// an optional map of control names used to filter the controls which are run
-	//controlNameFilterMap map[string]struct{}
+	// for now just using DetectionRuns
+	DetectionRuns []*DetectionRun `json:"-"`
 }
-
-// TODO - for csv only?
-//
-//// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
-//func (e *DetectionBenchmarkDisplayTree) PopulateControlRunInstances() {
-//	var controlRunInstances []*ControlRunInstance
-//
-//	for _, controlRun := range e.LeafRuns {
-//		for _, parent := range controlRun.Parents {
-//			flatControlRun := NewControlRunInstance(controlRun, parent)
-//			controlRunInstances = append(controlRunInstances, &flatControlRun)
-//		}
-//	}
-//
-//	e.ControlRunInstances = controlRunInstances
-//}
 
 // IsExportSourceData implements ExportSourceData
 func (*DetectionBenchmarkDisplayTree) IsExportSourceData() {}
