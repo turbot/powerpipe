@@ -139,9 +139,9 @@ export const DashboardExecutionProvider = ({
       if (executionCompleteEvent.snapshot.metadata?.search_path_prefix) {
         snapshotSearchParams.set(
           "search_path_prefix",
-          JSON.stringify(
-            executionCompleteEvent.snapshot.metadata?.search_path_prefix,
-          ),
+          (
+            executionCompleteEvent.snapshot.metadata?.search_path_prefix || []
+          ).join(","),
         );
       }
 

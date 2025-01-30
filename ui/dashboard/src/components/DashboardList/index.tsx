@@ -279,7 +279,7 @@ const DashboardList = ({ showOptions = true }) => {
     search: { value: searchValue, groupBy: searchGroupBy },
     updateSearchValue,
   } = useDashboardSearch();
-  const { search: globalSearchContext } = useGlobalContextNavigate();
+  const { search: globalSearchContext } = useGlobalContextNavigate(false);
   const [unfilteredDashboards, setUnfilteredDashboards] = useState<
     AvailableDashboardWithMod[]
   >([]);

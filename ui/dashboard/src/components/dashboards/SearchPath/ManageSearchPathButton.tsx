@@ -29,6 +29,7 @@ const PopoverButton = forwardRef((props, ref) => {
     !!dashboardsMetadata[selectedDashboard.full_name]?.search_path
       ?.original_search_path?.length;
   const enabled = hasServerMetadataSearchPath || hasDashboardMetadataSearchPath;
+
   return (
     // @ts-ignore
     <NeutralButton
@@ -58,7 +59,7 @@ const PopoverButton = forwardRef((props, ref) => {
       {searchPathPrefix.length >= 1 ? (
         <span className="hidden lg:block">{searchPathPrefix[0]}</span>
       ) : null}
-      {!!searchPathPrefix.length && searchPathPrefix.length > 1 ? (
+      {searchPathPrefix.length > 1 ? (
         <Badge>{searchPathPrefix.length}</Badge>
       ) : null}
     </NeutralButton>
