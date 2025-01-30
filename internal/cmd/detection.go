@@ -33,7 +33,7 @@ type DetectionTarget interface {
 }
 
 // variable used to assign the output mode flag
-var detectionOutputMode = localconstants.CheckOutputModeText
+var detectionOutputMode = localconstants.DetectionOutputModeText
 
 func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 	typeName := resources.GenericTypeToBlockType[T]()
@@ -66,9 +66,9 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
 			constants.ArgPull,
 			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
-		AddVarFlag(enumflag.New(&detectionOutputMode, constants.ArgOutput, localconstants.CheckOutputModeIds, enumflag.EnumCaseInsensitive),
+		AddVarFlag(enumflag.New(&detectionOutputMode, constants.ArgOutput, localconstants.DetectionOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
-			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.CheckOutputModeIds), ", "))).
+			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DetectionOutputModeIds), ", "))).
 		AddBoolFlag(constants.ArgProgress, true, "Display detection execution progress respected when a detection name argument is passed").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
