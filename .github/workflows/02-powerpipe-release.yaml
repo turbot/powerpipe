@@ -649,7 +649,7 @@ jobs:
 
       - name: Create pull request
         run: |
-          gh pr create --base main --head $VERSION --title "$Version" --body "Update formula"
+          gh pr create --base main --head $VERSION --title "Powerpipe $Version" --body "Update formula"
 
   update_pr_for_versioning:
     name: Update PR
