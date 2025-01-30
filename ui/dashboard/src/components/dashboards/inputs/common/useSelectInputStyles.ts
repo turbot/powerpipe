@@ -1,11 +1,9 @@
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useEffect, useState } from "react";
 
 const useSelectInputStyles = () => {
   const [, setRandomVal] = useState(0);
-  const {
-    themeContext: { theme, wrapperRef },
-  } = useDashboard();
+  const { theme, wrapperRef } = useDashboardTheme();
 
   // This is annoying, but unless I force a refresh the theme doesn't stay in sync when you switch
   useEffect(() => setRandomVal(Math.random()), [theme.name]);
@@ -52,6 +50,34 @@ const useSelectInputStyles = () => {
         color: foreground,
       };
     },
+    multiValue: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueContainer: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueRemove: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
+    multiValueLabel: (provided) => {
+      return {
+        ...provided,
+        background,
+        color: foreground,
+      };
+    },
     menu: (provided) => {
       return {
         ...provided,
@@ -60,7 +86,7 @@ const useSelectInputStyles = () => {
         boxShadow: "none",
         marginTop: 0,
         marginBottom: 0,
-        maxWidth: "300px",
+        maxWidth: "400px",
       };
     },
     menuList: (provided) => {

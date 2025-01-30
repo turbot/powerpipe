@@ -1,3 +1,24 @@
+## v1.2.0 [2025-01-30]
+_Whats new_
+- Add support for `tailpipe` detections and detection benchmarks.
+- Add `tailpipe` connection type.
+- Add `detection` command. 
+- Add default column support for tables. ([#567](https://github.com/turbot/powerpipe/issues/567))
+- Allow multiple benchmarks/controls to be filtered/grouped on a single dashboard. ([#588](https://github.com/turbot/powerpipe/issues/588))
+- Add support for equal / not_equal / in / not_in filters. ([#594](https://github.com/turbot/powerpipe/issues/594))
+- Show documentation in Benchmark UI. ([#591](https://github.com/turbot/powerpipe/issues/591))
+- Combine snap / open button into single split button. ([#606](https://github.com/turbot/powerpipe/issues/606))
+- Add table column selection to table panel controls. ([#631](https://github.com/turbot/powerpipe/issues/631))
+- Add table row view. ([#636](https://github.com/turbot/powerpipe/issues/636))
+- Add support for draggable split pane for dashboard UI right content section. ([#648](https://github.com/turbot/powerpipe/issues/648))
+- Update default date_range input to be 7 days. ([#641](https://github.com/turbot/powerpipe/issues/641))
+- Add cell filtering to tables. ([#662](https://github.com/turbot/powerpipe/issues/662))
+- Add href support to detection column data. ([#642](https://github.com/turbot/powerpipe/issues/642))
+- Add table filter side panel for regular tables. ([#670](https://github.com/turbot/powerpipe/issues/670))
+- Add 500 MB limit for opening snapshots. ([#671](https://github.com/turbot/powerpipe/issues/671))
+- Add control row detail side panel view. ([#672](https://github.com/turbot/powerpipe/issues/672))
+- Add heatmap chart. ([#673](https://github.com/turbot/powerpipe/issues/673))
+
 ## v1.1.0 [2025-01-20]
 _Whats new_
 - Add support for installing mods from GitLab repositories. ([#656](https://github.com/turbot/powerpipe/issues/656))
@@ -6,9 +27,6 @@ _Dependencies_
 - Upgrade `crypto`, `net` and `go-git` packages to remediate critical and high vulnerabilities.
 
 ## v1.0.1 [2024-11-21]
-_Whats new_
-- Update uploaded Pipes snapshot URL to include `/powerpipe`. ([#577](https://github.com/turbot/powerpipe/issues/577))
-
 _Bug fixes_
 - Fix minor spelling issue in query help output. ([#542](https://github.com/turbot/powerpipe/issues/542))
 - Update error message to inform users to run `make dashboard_assets` when dashboard assets are not present. ([#524](https://github.com/turbot/powerpipe/issues/524))
@@ -114,7 +132,6 @@ _Whats new_
 - Optimize workspace load time for large workspaces with multiple dependent mods. ([#365](https://github.com/turbot/pipe-fittings/issues/365))
 
 ## v0.1.1 [2024-03-07]
-
 _Bug fixes_
 * Fix CLI available version check. ([#250](https://github.com/turbot/powerpipe/issues/250))
 * Notify when `mod install` creates a default mod. ([#246](https://github.com/turbot/powerpipe/issues/246))
@@ -123,7 +140,6 @@ _Bug fixes_
 
 
 ## v0.1.0 [2024-03-06]
-
 Introducing Powerpipe - Dashboards for DevOps.
 
 *Benchmarks* - 5,000+ open-source controls from CIS, NIST, PCI, HIPAA, FedRamp and more. Run instantly on your machine or as part of your deployment pipeline.

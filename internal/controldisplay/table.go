@@ -4,7 +4,7 @@ import (
 	"strings"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
@@ -35,7 +35,7 @@ func (r TableRenderer) MinimumWidth() int {
 func (r TableRenderer) maxIndent() int {
 	depth := r.groupDepth(r.resultTree.Root, 0)
 	// each indent level is "| " or "+ " (2 characters)
-	return (depth * 2)
+	return depth * 2
 }
 
 func (r TableRenderer) groupDepth(g *controlexecute.ResultGroup, myDepth int) int {

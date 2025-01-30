@@ -13,14 +13,14 @@ import (
 
 	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -28,10 +28,10 @@ type Server struct {
 	mutex            *sync.Mutex
 	dashboardClients map[string]*DashboardClientInfo
 	webSocket        *melody.Melody
-	workspace        *dashboardworkspace.WorkspaceEvents
+	workspace        *workspace.PowerpipeWorkspace
 }
 
-func NewServer(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, w *workspace.PowerpipeWorkspace, webSocket *melody.Melody) (*Server, error) {
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -162,6 +162,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedCards := e.ChangedCards
 		changedCharts := e.ChangedCharts
 		changedDashboards := e.ChangedDashboards
+		changedDetections := e.ChangedDetections
+		changedDetectionsBenchmarks := e.ChangedDetectionBenchmarks
 		changedEdges := e.ChangedEdges
 		changedFlows := e.ChangedFlows
 		changedGraphs := e.ChangedGraphs
@@ -182,6 +184,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			len(changedCards) == 0 &&
 			len(changedCharts) == 0 &&
 			len(changedDashboards) == 0 &&
+			len(changedDetections) == 0 &&
+			len(changedDetectionsBenchmarks) == 0 &&
 			len(changedEdges) == 0 &&
 			len(changedFlows) == 0 &&
 			len(changedGraphs) == 0 &&
@@ -203,15 +207,15 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, payloadError = buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, payloadError = buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if payloadError != nil {
 				return
 			}
 			_ = s.webSocket.Broadcast(payload)
 
 			// Emit available dashboards event
-			payload, payloadError = buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			workspaceResources := s.workspace.GetPowerpipeModResources()
+			payload, payloadError = buildAvailableDashboardsPayload(workspaceResources)
 			if payloadError != nil {
 				return
 			}
@@ -241,6 +245,8 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedControls)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCards)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedCharts)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetections)...)
+		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedDetectionsBenchmarks)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedEdges)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedFlows)...)
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedGraphs)...)
@@ -301,7 +307,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		dashboardClients := s.getDashboardClients()
 		if sessionInfo, ok := dashboardClients[e.Session]; ok {
 			for _, clearedInput := range e.ClearedInputs {
-				delete(sessionInfo.DashboardInputs, clearedInput)
+				delete(sessionInfo.DashboardInputs.Inputs, clearedInput)
 			}
 		}
 		s.writePayloadToSession(e.Session, payload)
@@ -345,24 +351,13 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			// TODO KAI verify we are ok to NOT send the cloud metadata here
-			payload, err := buildServerMetadataPayload(s.workspace.GetResourceMaps(), &steampipeconfig.PipesMetadata{}) //s.workspace.PipesMetadata)
+			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
 			_ = session.Write(payload)
-		case "get_dashboard_metadata":
-			dashboard := s.getResource(request.Payload.Dashboard.FullName)
-			if dashboard == nil {
-				return
-			}
-			payload, err := buildDashboardMetadataPayload(ctx, dashboard, s.workspace)
-			if err != nil {
-				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
-			}
-			_ = session.Write(payload)
 		case "get_available_dashboards":
-			payload, err := buildAvailableDashboardsPayload(s.workspace.GetResourceMaps())
+			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeModResources())
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}
@@ -372,21 +367,30 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			if dashboard == nil {
 				return
 			}
-			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, request.Payload.InputValues)
+
+			inputValues := request.Payload.InputValues()
+			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, inputValues)
 
 			// was a search path passed into the execute command?
-			var opts []backend.ConnectOption
+			var opts []backend.BackendOption
 			if request.Payload.SearchPath != nil || request.Payload.SearchPathPrefix != nil {
 				opts = append(opts, backend.WithSearchPathConfig(backend.SearchPathConfig{
 					SearchPath:       request.Payload.SearchPath,
 					SearchPathPrefix: request.Payload.SearchPathPrefix,
 				}))
 			}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, request.Payload.InputValues, s.workspace, opts...)
+			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
+
+			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
+			payload, err := buildDashboardMetadataPayload(dashboard)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
+			}
+			_ = session.Write(payload)
 
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
-			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues)
+			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues())
 			snap, err := dashboardexecute.Executor.LoadSnapshot(ctx, sessionId, snapshotName, s.workspace)
 			// TACTICAL- handle with error message
 			error_helpers.FailOnError(err)
@@ -398,8 +402,9 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			s.writePayloadToSession(sessionId, payload)
 			OutputReady(ctx, fmt.Sprintf("Show snapshot complete: %s", snapshotName))
 		case "input_changed":
-			s.setDashboardInputsForSession(sessionId, request.Payload.InputValues)
-			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, request.Payload.InputValues, request.Payload.ChangedInput)
+			inputValues := request.Payload.InputValues()
+			s.setDashboardInputsForSession(sessionId, inputValues)
+			_ = dashboardexecute.Executor.OnInputChanged(ctx, sessionId, inputValues, request.Payload.ChangedInput)
 		case "clear_dashboard":
 			s.setDashboardInputsForSession(sessionId, nil)
 			dashboardexecute.Executor.CancelExecutionForSession(ctx, sessionId)
@@ -429,7 +434,7 @@ func (s *Server) addSession(session *melody.Session) {
 	s.addDashboardClient(sessionId, clientSession)
 }
 
-func (s *Server) setDashboardInputsForSession(sessionId string, inputs map[string]interface{}) {
+func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
 	dashboardClients := s.getDashboardClients()
 	if sessionInfo, ok := dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
@@ -442,7 +447,7 @@ func (s *Server) getSessionId(session *melody.Session) string {
 
 // functions providing locked access to member properties
 
-func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs map[string]interface{}) *DashboardClientInfo {
+func (s *Server) setDashboardForSession(sessionId string, dashboardName string, inputs *dashboardexecute.InputValues) *DashboardClientInfo {
 	s.mutex.Lock()
 	defer s.mutex.Unlock()
 
@@ -497,7 +502,7 @@ func (s *Server) getResource(name string) modconfig.ModTreeItem {
 	return resource.(modconfig.ModTreeItem)
 }
 
-func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.DashboardTreeItemDiffs) []string {
+func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.ModTreeItemDiffs) []string {
 	var changedDashboardNames []string
 
 	for _, changedItem := range changedItems {

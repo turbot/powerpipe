@@ -10,16 +10,16 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/modinstaller"
-	"github.com/turbot/pipe-fittings/parse"
-	"github.com/turbot/pipe-fittings/plugin"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modinstaller"
+	"github.com/turbot/pipe-fittings/v2/parse"
+	"github.com/turbot/pipe-fittings/v2/plugin"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/db_client"
@@ -171,7 +171,16 @@ func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
 		return nil
 	}
 
-	client, err := db_client.NewDbClient(ctx, defaultDatabase)
+	connectionString, err := defaultDatabase.GetConnectionString()
+	if err != nil {
+		// do not show warning if --force is set
+		if !viper.GetBool(constants.ArgForce) {
+			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")
+		}
+		return nil
+	}
+
+	client, err := db_client.NewDbClient(ctx, connectionString)
 	if err != nil {
 		// do not show warning if --force is set
 		if !viper.GetBool(constants.ArgForce) {

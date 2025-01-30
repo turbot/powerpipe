@@ -12,21 +12,22 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/contexthelpers"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/contexthelpers"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/display"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -35,7 +36,7 @@ var checkOutputMode = localconstants.CheckOutputModeText
 
 // generic command to handle benchmark and control execution
 func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 	argsSupported := cobra.ExactArgs(1)
 	if typeName == "benchmark" {
 		argsSupported = cobra.MinimumNArgs(1)
@@ -111,7 +112,7 @@ func checkCmdShort(typeName string) string {
 func checkCmdLong(typeName string) string {
 	return fmt.Sprintf(`Execute one or more %ss.
 
-You may specify one or more benchmarks to run, separated by a space.`, typeName)
+You may specify one or more %ss to run, separated by a space.`, typeName, typeName)
 }
 
 // exitCode=0 no runtime errors, no control alarms or errors
@@ -158,13 +159,24 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	initCtx := statushooks.DisableStatusHooks(ctx)
 
 	// initialise
-	initData := controlinit.NewInitData[T](initCtx, cmd, args)
+	initData := controlinit.NewInitData[T](initCtx, cmd, args...)
 	if initData.Result.Error != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.ShowError(ctx, initData.Result.Error)
 		return
 	}
+
 	defer initData.Cleanup(ctx)
+
+	// TODO TACTICAL
+	// ifd the target is a detection benchmark, we need to run the detection benchmark using detectionRunWithInitData
+	if _, ok := initData.Targets[0].(*resources.DetectionBenchmark); ok {
+		if !viper.IsSet(constants.ArgOutput) {
+			viper.Set(constants.ArgOutput, constants.OutputFormatSnapshot)
+		}
+		detectionRunWithInitData[*resources.DetectionBenchmark](cmd, initData, args)
+		return
+	}
 
 	// hide the spinner so that warning messages can be shown
 	statushooks.Done(ctx)
@@ -174,7 +186,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	// now filter the target
 	// get the execution trees
-	trees, err := getExecutionTrees[T](ctx, initData)
+	trees, err := getExecutionTrees(ctx, initData)
 	error_helpers.FailOnError(err)
 
 	// pull out useful properties
@@ -218,7 +230,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 }
 
 // exportExecutionTree relies on the fact that the given tree is already executed
-func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData[T], exportArgs []string) error {
+func exportExecutionTree(ctx context.Context, namedTree *namedExecutionTree, initData *controlinit.InitData, exportArgs []string) error {
 	statushooks.Show(ctx)
 	defer statushooks.Done(ctx)
 
@@ -240,7 +252,7 @@ func exportExecutionTree[T controlinit.CheckTarget](ctx context.Context, namedTr
 }
 
 // executeTree executes and displays the (table) results of an execution
-func executeTree[T controlinit.CheckTarget](ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData[T]) error {
+func executeTree(ctx context.Context, tree *controlexecute.ExecutionTree, initData *controlinit.InitData) error {
 	// create a context with check status hooks
 	checkCtx, cancel := createCheckContext(ctx)
 	defer cancel()
@@ -279,7 +291,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTrees[T controlinit.CheckTarget](ctx context.Context, initData *controlinit.InitData[T]) ([]*namedExecutionTree, error) {
+func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()
@@ -376,6 +388,15 @@ func shouldPrintCheckTiming() bool {
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
 	reader, err := formatter.Format(ctx, executionTree)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(os.Stdout, reader)
+	return err
+}
+
+func displayDetectionResults(ctx context.Context, executionTree *dashboardexecute.DetectionBenchmarkDisplayTree, formatter controldisplay.Formatter) error {
+	reader, err := formatter.FormatDetection(ctx, executionTree)
 	if err != nil {
 		return err
 	}

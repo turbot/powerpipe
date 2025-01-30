@@ -9,6 +9,10 @@ import {
   TableColumnWrap,
 } from "@powerpipe/components/dashboards/Table";
 
+export type TableConfig = {
+  display_columns: string[];
+};
+
 export type CategoryProperties = {
   [name: string]: CategoryProperty;
 };
@@ -20,8 +24,8 @@ export type CategoryProperty = {
   wrap?: TableColumnWrap;
 };
 
-export type KeyValuePairs = {
-  [key: string]: any;
+export type KeyValuePairs<T = any> = {
+  [key: string]: T;
 };
 
 export type KeyValueStringPairs = {

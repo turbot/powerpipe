@@ -1,4 +1,3 @@
-import usePanelControls from "@powerpipe/hooks/usePanelControls";
 import { BaseChartProps } from "@powerpipe/components/dashboards/charts/types";
 import { CardProps } from "@powerpipe/components/dashboards/Card";
 import {
@@ -26,12 +25,13 @@ import {
   InputProperties,
   InputProps,
 } from "@powerpipe/components/dashboards/inputs/types";
-import { IPanelControl } from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
+import { PanelControlsProvider } from "@powerpipe/hooks/usePanelControls";
 import { TableProps } from "@powerpipe/components/dashboards/Table";
 import { TextProps } from "@powerpipe/components/dashboards/Text";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
 import { useContainer } from "@powerpipe/hooks/useContainer";
+import { useDashboardInputs } from "@powerpipe/hooks/useDashboardInputs";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type IPanelContext = {
   definition:
@@ -48,12 +48,9 @@ type IPanelContext = {
   dependencies: PanelDefinition[];
   dependenciesByStatus: PanelDependenciesByStatus;
   inputPanelsAwaitingValue: PanelDefinition[];
-  panelControls: IPanelControl[];
   panelInformation: ReactNode | null;
-  showPanelControls: boolean;
   showPanelInformation: boolean;
   setPanelInformation: (information: ReactNode) => void;
-  setShowPanelControls: (show: boolean) => void;
   setShowPanelInformation: (show: boolean) => void;
 };
 
@@ -79,7 +76,7 @@ const PanelContext = createContext<IPanelContext | null>(null);
 const recordDependency = (
   definition: PanelDefinition,
   panelsMap: PanelsMap,
-  selectedDashboardInputs: DashboardInputs,
+  inputs: DashboardInputs,
   dependencies: PanelDefinition[],
   dependenciesByStatus: PanelDependenciesByStatus,
   inputPanelsAwaitingValue: PanelDefinition[],
@@ -102,7 +99,7 @@ const recordDependency = (
   const hasInputValue =
     isInput &&
     inputProperties?.unqualified_name &&
-    !!selectedDashboardInputs[inputProperties?.unqualified_name];
+    !!inputs[inputProperties?.unqualified_name];
   if (isInput && !hasInputValue && !recordedInputPanels[definition.name]) {
     inputPanelsAwaitingValue.push(definition);
     recordedInputPanels[definition.name] = definition;
@@ -116,7 +113,7 @@ const recordDependency = (
     recordDependency(
       dependencyPanel,
       panelsMap,
-      selectedDashboardInputs,
+      inputs,
       dependencies,
       dependenciesByStatus,
       inputPanelsAwaitingValue,
@@ -132,13 +129,12 @@ const PanelProvider = ({
   showControls,
 }: PanelProviderProps) => {
   const { updateChildStatus } = useContainer();
-  const { selectedDashboardInputs, panelsMap } = useDashboard();
-  const [showPanelControls, setShowPanelControls] = useState(false);
+  const { panelsMap } = useDashboardState();
+  const { inputs } = useDashboardInputs();
   const [showPanelInformation, setShowPanelInformation] = useState(false);
   const [panelInformation, setPanelInformation] = useState<ReactNode | null>(
     null,
   );
-  const { panelControls } = usePanelControls(definition, showControls);
   const { dependencies, dependenciesByStatus, inputPanelsAwaitingValue } =
     useMemo(() => {
       if (!definition) {
@@ -177,7 +173,7 @@ const PanelProvider = ({
           recordDependency(
             nodePanel,
             panelsMap,
-            selectedDashboardInputs,
+            inputs,
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
@@ -192,7 +188,7 @@ const PanelProvider = ({
           recordDependency(
             edgePanel,
             panelsMap,
-            selectedDashboardInputs,
+            inputs,
             dependencies,
             dependenciesByStatus,
             inputPanelsAwaitingValue,
@@ -209,7 +205,7 @@ const PanelProvider = ({
         recordDependency(
           dependencyPanel,
           panelsMap,
-          selectedDashboardInputs,
+          inputs,
           dependencies,
           dependenciesByStatus,
           inputPanelsAwaitingValue,
@@ -218,7 +214,7 @@ const PanelProvider = ({
       }
 
       return { dependencies, dependenciesByStatus, inputPanelsAwaitingValue };
-    }, [definition, panelsMap, selectedDashboardInputs]);
+    }, [definition, panelsMap, inputs]);
 
   useEffect(() => {
     if (parentType !== "container") {
@@ -231,23 +227,22 @@ const PanelProvider = ({
   }, [definition, inputPanelsAwaitingValue, parentType, updateChildStatus]);
 
   return (
-    <PanelContext.Provider
-      value={{
-        definition,
-        dependencies,
-        dependenciesByStatus,
-        inputPanelsAwaitingValue,
-        panelControls,
-        panelInformation,
-        showPanelControls,
-        showPanelInformation,
-        setPanelInformation,
-        setShowPanelControls,
-        setShowPanelInformation,
-      }}
-    >
-      {children}
-    </PanelContext.Provider>
+    <PanelControlsProvider definition={definition} enabled={showControls}>
+      <PanelContext.Provider
+        value={{
+          definition,
+          dependencies,
+          dependenciesByStatus,
+          inputPanelsAwaitingValue,
+          panelInformation,
+          showPanelInformation,
+          setPanelInformation,
+          setShowPanelInformation,
+        }}
+      >
+        {children}
+      </PanelContext.Provider>
+    </PanelControlsProvider>
   );
 };
 

@@ -12,22 +12,23 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/contexthelpers"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/export"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/pipes"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/contexthelpers"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/export"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/pipes"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 )
 
@@ -119,7 +120,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	ctx = createSnapshotContext(ctx, dashboardName)
 
 	statushooks.SetStatus(ctx, "Initializing…")
-	initData := initialisation.NewInitData[*modconfig.Dashboard](ctx, cmd, dashboardName)
+	initData := initialisation.NewInitData[*resources.Dashboard](ctx, cmd, dashboardName)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
 		err := initData.RegisterExporters(dashboardExporters()...)
@@ -142,7 +143,7 @@ func dashboardRun(cmd *cobra.Command, args []string) {
 	// so a dashboard name was specified - just call GenerateSnapshot
 	target, err := initData.GetSingleTarget()
 	error_helpers.FailOnError(err)
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, inputs)
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	error_helpers.FailOnError(err)
 	// display the snapshot result (if needed)
 	displaySnapshot(snap)
@@ -243,7 +244,7 @@ func setExitCodeForDashboardError(err error) {
 }
 
 // gather the arg values provided with the --args flag
-func collectInputs() (map[string]interface{}, error) {
+func collectInputs() (*dashboardexecute.InputValues, error) {
 	res := make(map[string]interface{})
 	inputArgs := viper.GetStringSlice(constants.ArgArg)
 	for _, variableArg := range inputArgs {
@@ -266,7 +267,7 @@ func collectInputs() (map[string]interface{}, error) {
 		res[key] = rawVal
 	}
 
-	return res, nil
+	return &dashboardexecute.InputValues{Inputs: res}, nil
 
 }
 

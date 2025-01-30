@@ -6,7 +6,7 @@ import (
 
 	"github.com/spf13/viper"
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 )
 
@@ -107,7 +107,7 @@ func (r ControlRenderer) Render() string {
 	// now render the results (if any)
 	var resultStrings []string
 	for _, row := range r.run.Rows {
-		resultRenderer := NewResultRenderer(
+		resultRenderer := NewControlResultRenderer(
 			row.Status,
 			row.Reason,
 			row.Dimensions,

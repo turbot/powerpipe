@@ -6,10 +6,12 @@ import (
 	"os"
 	"testing"
 
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/dashboardexecute"
 )
 
 // testFormatter is an implementation of the Formatter interface
@@ -23,6 +25,9 @@ type testFormatter struct {
 func (b *testFormatter) FileExtension() string { return b.extension }
 func (b *testFormatter) Name() string          { return b.name }
 func (b *testFormatter) Alias() string         { return b.alias }
+func (b *testFormatter) FormatDetection(ctx context.Context, tree *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
+	return nil, nil
+}
 func (b *testFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	return nil, nil
 }
@@ -80,16 +85,17 @@ var formatterTestCase = []testCase{
 }
 
 func TestFormatResolver(t *testing.T) {
+	var target modconfig.ModTreeItem
 	tmpDir, err := os.MkdirTemp(os.TempDir(), "test")
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer os.RemoveAll(tmpDir)
 	app_specific.InstallDir = tmpDir
-	if err := EnsureTemplates(); err != nil {
+	if err := EnsureControlTemplates(); err != nil {
 		t.Fatal(err)
 	}
-	resolver, err := NewFormatResolver()
+	resolver, err := NewFormatResolver(target)
 	if err != nil {
 		t.Fatal(err)
 	}

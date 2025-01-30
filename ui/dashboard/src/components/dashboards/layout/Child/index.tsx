@@ -8,7 +8,6 @@ import {
 import { getComponent } from "@powerpipe/components/dashboards";
 import { getNodeAndEdgeDataFormat } from "@powerpipe/components/dashboards/common/useNodeAndEdgeData";
 import { NodeAndEdgeProperties } from "@powerpipe/components/dashboards/common/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
 
 type ChildProps = {
   layoutDefinition: DashboardLayoutNode;
@@ -23,17 +22,41 @@ const Child = ({
   parentType,
   showPanelControls = true,
 }: ChildProps) => {
-  const { diff } = useDashboard();
-  const diff_panel = diff ? diff.panelsMap[panelDefinition.name] : null;
   const Panel = getComponent("panel");
   switch (layoutDefinition.panel_type) {
     case "benchmark":
+      if (panelDefinition.benchmark_type === "detection") {
+        const DetectionBenchmark = getComponent("detection_benchmark");
+        return (
+          <DetectionBenchmark
+            definition={panelDefinition}
+            benchmarkChildren={layoutDefinition.children}
+            showControls={showPanelControls}
+          />
+        );
+      } else {
+        const Benchmark = getComponent("benchmark");
+        return (
+          <Benchmark
+            definition={panelDefinition}
+            benchmarkChildren={layoutDefinition.children}
+            showControls={showPanelControls}
+          />
+        );
+      }
     case "control":
       const Benchmark = getComponent("benchmark");
       return (
         <Benchmark
-          {...(layoutDefinition as PanelDefinition)}
-          diff_panels={diff ? diff.panelsMap : null}
+          definition={panelDefinition}
+          showControls={showPanelControls}
+        />
+      );
+    case "detection":
+      const DetectionBenchmark = getComponent("detection_benchmark");
+      return (
+        <DetectionBenchmark
+          definition={panelDefinition}
           showControls={showPanelControls}
         />
       );
@@ -46,7 +69,7 @@ const Child = ({
           showControls={showPanelControls}
           showPanelStatus={false}
         >
-          <Card {...panelDefinition} diff_panel={diff_panel} />
+          <Card {...panelDefinition} />
         </Panel>
       );
     case "chart":

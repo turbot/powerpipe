@@ -1,3 +1,4 @@
+import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
 import { getComponent } from "../dashboards";
 // @ts-ignore
 import { ReactComponent as Logo } from "./logos/powerpipe-logo.svg";
@@ -8,21 +9,16 @@ import { ReactComponent as LogoWordmark } from "./logos/powerpipe-logo-wordmark.
 // @ts-ignore
 import { ReactComponent as LogoWordmarkDarkmode } from "./logos/powerpipe-logo-wordmark-darkmode.svg";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const PowerpipeLogo = () => {
-  const {
-    themeContext: { theme },
-    searchPathPrefix,
-  } = useDashboard();
+  const { search } = useGlobalContextNavigate();
+  const { theme } = useDashboardTheme();
   const ExternalLink = getComponent("external_link");
 
   return (
     <div className="mr-1 md:mr-4">
-      <ExternalLink
-        ignoreDataMode
-        to={`/${!!searchPathPrefix.length ? `?search_path_prefix=${searchPathPrefix}` : ""}`}
-      >
+      <ExternalLink ignoreDataMode to={`/${search ? `?${search}` : ""}`}>
         <div className="block md:hidden w-8">
           {theme.name === ThemeNames.STEAMPIPE_DEFAULT && <Logo />}
           {theme.name === ThemeNames.STEAMPIPE_DARK && <LogoDarkmode />}

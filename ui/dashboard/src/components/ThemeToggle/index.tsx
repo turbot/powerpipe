@@ -1,12 +1,10 @@
 import DashboardIcon from "../dashboards/common/DashboardIcon";
 import { classNames } from "@powerpipe/utils/styles";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const ThemeToggle = () => {
-  const {
-    themeContext: { setTheme, theme },
-  } = useDashboard();
+  const { theme, setTheme } = useDashboardTheme();
 
   return (
     <button

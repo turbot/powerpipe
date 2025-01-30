@@ -15,6 +15,8 @@ const filterTypeMap = {
   benchmark: "Benchmark",
   control: "Control",
   control_tag: "Control Tag",
+  detection: "Detection",
+  detection_tag: "Detection Tag",
   dimension: "Dimension",
   reason: "Reason",
   resource: "Resource",

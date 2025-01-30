@@ -3,7 +3,7 @@ package constants
 import (
 	"fmt"
 
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 )
 
 type ErrorNoModDefinition struct{}

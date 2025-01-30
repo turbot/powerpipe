@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
 // DbClient wraps over `sql.DB` and gives an interface to the database
@@ -21,7 +21,7 @@ type DbClient struct {
 	Backend backend.Backend
 }
 
-func NewDbClient(ctx context.Context, connectionString string, opts ...backend.ConnectOption) (_ *DbClient, err error) {
+func NewDbClient(ctx context.Context, connectionString string, opts ...backend.BackendOption) (_ *DbClient, err error) {
 	utils.LogTime("db_client.NewDbClient start")
 	defer utils.LogTime("db_client.NewDbClient end")
 
@@ -42,8 +42,8 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.C
 		}
 	}()
 
-	// process options - searhc path may have been passed in
-	config := backend.NewConnectConfig(opts)
+	// process options - search path may have been passed in
+	config := backend.NewBackendConfig(opts)
 	config.MaxOpenConns = MaxDbConnections()
 	// if no search path override passed in as an option, use the viper config
 	if config.SearchPathConfig.Empty() {

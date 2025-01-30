@@ -4,13 +4,15 @@ import {
   EXECUTION_SCHEMA_VERSION_20221222,
   EXECUTION_SCHEMA_VERSION_20240130,
   EXECUTION_SCHEMA_VERSION_20240607,
+  EXECUTION_SCHEMA_VERSION_20241125,
 } from "@powerpipe/constants/versions";
 import { PanelDefinition } from "@powerpipe/types";
 import {
   CheckDisplayGroup,
   CheckDisplayGroupType,
-  CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
+import { TableConfig } from "@powerpipe/components/dashboards/common/types";
 
 const stripObjectProperties = (obj) => {
   if (!obj) {
@@ -39,6 +41,7 @@ const stripSnapshotDataForExport = (snapshot) => {
     case EXECUTION_SCHEMA_VERSION_20221222:
     case EXECUTION_SCHEMA_VERSION_20240130:
     case EXECUTION_SCHEMA_VERSION_20240607:
+    case EXECUTION_SCHEMA_VERSION_20241125:
       const { panels, ...restSnapshot } = stripObjectProperties(snapshot);
       const newPanels = {};
       for (const [name, panel] of Object.entries(panels)) {
@@ -90,12 +93,19 @@ const groupingToSnapshotMetadata = (
     });
 };
 
-const filterToSnapshotMetadata = (filter: CheckFilter): CheckFilter => {
+const filterToSnapshotMetadata = (filter: Filter): Filter => {
   return filter;
+};
+
+const tableConfigToSnapshotMetadata = (
+  tableConfig: TableConfig,
+): TableConfig => {
+  return tableConfig;
 };
 
 export {
   filterToSnapshotMetadata,
   groupingToSnapshotMetadata,
   stripSnapshotDataForExport,
+  tableConfigToSnapshotMetadata,
 };

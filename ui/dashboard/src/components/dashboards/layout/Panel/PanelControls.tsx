@@ -1,12 +1,14 @@
 import Icon from "@powerpipe/components/Icon";
+import { classNames } from "@powerpipe/utils/styles";
 import { createPortal } from "react-dom";
 import { ReactNode, useMemo, useState } from "react";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { usePopper } from "react-popper";
 
 export interface PanelControlProps {
-  action: (e: any) => Promise<void>;
+  action: (e: any, ref?: HTMLDivElement | null) => Promise<void>;
   component?: ReactNode;
+  disabled?: boolean;
   icon: string;
   title: string;
 }
@@ -14,13 +16,25 @@ export interface PanelControlProps {
 const PanelControl = ({
   action,
   component,
+  disabled,
   icon,
   title,
 }: PanelControlProps) => {
   return (
     <div
-      className="flex items-center space-x-2 px-2 py-1.5 cursor-pointer bg-dashboard-panel text-foreground first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard"
-      onClick={async (e) => await action(e)}
+      className={classNames(
+        "flex items-center space-x-2 px-2 py-1.5 bg-dashboard-panel first:rounded-tl-[4px] first:rounded-bl-[4px] last:rounded-tr-[4px] last:rounded-br-[4px] hover:bg-dashboard",
+        disabled
+          ? "cursor-not-allowed text-foreground-light"
+          : "cursor-pointer text-foreground",
+      )}
+      onClick={async (e) => {
+        e.stopPropagation();
+        if (disabled) {
+          return;
+        }
+        action && (await action(e));
+      }}
       title={title}
     >
       {component}
@@ -68,6 +82,7 @@ const PanelControls = ({ controls, referenceElement, withOffset = false }) => {
                 {controls.map((control, idx) => (
                   <PanelControl
                     key={idx}
+                    disabled={control.disabled}
                     action={control.action}
                     component={control.component}
                     icon={control.icon}
@@ -84,5 +99,7 @@ const PanelControls = ({ controls, referenceElement, withOffset = false }) => {
     </>
   );
 };
+
+export { PanelControl };
 
 export default PanelControls;

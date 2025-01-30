@@ -1,12 +1,10 @@
 import { getChartColors } from "@powerpipe/components/dashboards/common";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
 import { useCallback, useEffect, useState } from "react";
-import { useDashboard } from "./useDashboard";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
 const useChartThemeColors = () => {
-  const {
-    themeContext: { theme, wrapperRef },
-  } = useDashboard();
+  const { theme, wrapperRef } = useDashboardTheme();
 
   const getThemeColors = useCallback(() => {
     // We need to get the theme CSS variable values - these are accessible on the theme root element and below in the tree

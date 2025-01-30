@@ -2,11 +2,12 @@ package dashboardexecute
 
 import (
 	"fmt"
+	"github.com/turbot/powerpipe/internal/resources"
 	"strings"
 
-	"github.com/turbot/pipe-fittings/modconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 // GetReferencedVariables builds map of variables values containing only those mod variables which are referenced
@@ -14,7 +15,7 @@ import (
 // <mod>.<var-name>
 // the VariableValues map will contain these variables with the name format <mod>.var.<var-name>,
 // so we must convert the name
-func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardworkspace.WorkspaceEvents) (map[string]string, error) {
+func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *workspace.PowerpipeWorkspace) (map[string]string, error) {
 	var referencedVariables = make(map[string]string)
 
 	addReferencedVars := func(refs []*modconfig.ResourceReference) {
@@ -50,7 +51,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardwo
 		}
 	case *CheckRun:
 		switch n := r.resource.(type) {
-		case *modconfig.Benchmark:
+		case *resources.Benchmark:
 			err := n.WalkResources(
 				func(resource modconfig.ModTreeItem) (bool, error) {
 					if resourceWithMetadata, ok := resource.(modconfig.ResourceWithMetadata); ok {
@@ -62,7 +63,7 @@ func GetReferencedVariables(root dashboardtypes.DashboardTreeRun, w *dashboardwo
 			if err != nil {
 				return nil, err
 			}
-		case *modconfig.Control:
+		case *resources.Control:
 			addReferencedVars(n.GetReferences())
 		}
 	}

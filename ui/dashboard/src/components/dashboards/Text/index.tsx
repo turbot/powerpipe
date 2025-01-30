@@ -1,6 +1,7 @@
 import Error from "../Error";
 import gfm from "remark-gfm"; // Support for strikethrough, tables, tasklists and URLs
 import ReactMarkdown from "react-markdown";
+import rehypeExternalLinks from "rehype-external-links";
 import {
   BasePrimitiveProps,
   ExecutablePrimitiveProps,
@@ -46,7 +47,15 @@ const Markdown = ({ value }) => {
   const isLong = value.split("\n").length > 3;
   const panelClasses = isLong ? getLongPanelClasses() : getShortPanelClasses();
   const proseHeadings =
-    "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:mt-1 p-4";
+    "prose-h1:text-3xl prose-h2:text-2xl prose-h3:text-xl prose-h3:mt-1 p-4 text-foreground prose-h1:text-foreground prose-h2:text-foreground prose-h4:text-foreground prose-h4:text-foreground prose-h5:text-foreground prose-h6:text-foreground prose-strong:text-foreground";
+  const markdown = (
+    <ReactMarkdown
+      rehypePlugins={[[rehypeExternalLinks, { target: "_blank" }]]}
+      remarkPlugins={[gfm]}
+    >
+      {value}
+    </ReactMarkdown>
+  );
 
   return (
     <>
@@ -58,14 +67,14 @@ const Markdown = ({ value }) => {
               proseHeadings,
             )}
           >
-            <ReactMarkdown remarkPlugins={[gfm]}>{value}</ReactMarkdown>
+            {markdown}
           </div>
         </div>
       ) : (
         <article
           className={classNames(panelClasses, "break-keep", proseHeadings)}
         >
-          <ReactMarkdown remarkPlugins={[gfm]}>{value}</ReactMarkdown>
+          {markdown}
         </article>
       )}
     </>
@@ -76,7 +85,11 @@ const Raw = ({ value }) => {
   if (!value) {
     return null;
   }
-  return <pre className="whitespace-pre-wrap break-keep">{value}</pre>;
+  return (
+    <pre className="whitespace-pre-wrap break-keep text-foreground">
+      {value}
+    </pre>
+  );
 };
 
 const renderText = (type, value) => {
@@ -97,5 +110,7 @@ const Text = (props: TextProps) =>
   );
 
 registerComponent("text", Text);
+
+export { Markdown };
 
 export default Text;

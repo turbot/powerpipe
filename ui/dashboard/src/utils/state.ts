@@ -14,19 +14,17 @@ import {
 } from "@powerpipe/types";
 import {
   EdgeProperties,
-  KeyValueStringPairs,
   NodeProperties,
 } from "@powerpipe/components/dashboards/common/types";
 
 const buildDashboards = (
   dashboards: AvailableDashboardsDictionary,
   benchmarks: AvailableDashboardsDictionary,
-  snapshots: KeyValueStringPairs,
 ): DashboardsCollection => {
   const dashboardsMap = {};
   const builtDashboards: AvailableDashboard[] = [];
 
-  for (const [, dashboard] of Object.entries(dashboards)) {
+  for (const [, dashboard] of Object.entries(dashboards || {})) {
     const builtDashboard: AvailableDashboard = {
       title: dashboard.title,
       full_name: dashboard.full_name,
@@ -40,11 +38,12 @@ const buildDashboards = (
     builtDashboards.push(builtDashboard);
   }
 
-  for (const [, benchmark] of Object.entries(benchmarks)) {
+  for (const [, benchmark] of Object.entries(benchmarks || {})) {
     const builtBenchmark: AvailableDashboard = {
       title: benchmark.title,
       full_name: benchmark.full_name,
       short_name: benchmark.short_name,
+      benchmark_type: benchmark.benchmark_type,
       type: "benchmark",
       tags: benchmark.tags,
       mod_full_name: benchmark.mod_full_name,
@@ -54,19 +53,6 @@ const buildDashboards = (
     };
     dashboardsMap[builtBenchmark.full_name] = builtBenchmark;
     builtDashboards.push(builtBenchmark);
-  }
-
-  for (const snapshot of Object.keys(snapshots || {})) {
-    const builtSnapshot: AvailableDashboard = {
-      title: snapshot,
-      full_name: snapshot,
-      short_name: snapshot,
-      type: "snapshot",
-      tags: {},
-      is_top_level: true,
-    };
-    dashboardsMap[builtSnapshot.full_name] = builtSnapshot;
-    builtDashboards.push(builtSnapshot);
   }
 
   return {
@@ -193,18 +179,6 @@ const updatePanelsLogFromCompletedPanels = (
   return newPanelsLog;
 };
 
-const buildSelectedDashboardInputsFromSearchParams = (searchParams) => {
-  const selectedDashboardInputs = {};
-  // @ts-ignore
-  for (const entry of searchParams.entries()) {
-    if (!entry[0].startsWith("input")) {
-      continue;
-    }
-    selectedDashboardInputs[entry[0]] = entry[1];
-  }
-  return selectedDashboardInputs;
-};
-
 const updateSelectedDashboard = (
   selectedDashboard: AvailableDashboard | null,
   newDashboards: AvailableDashboard[],
@@ -247,7 +221,6 @@ export {
   addUpdatedPanelLogs,
   buildDashboards,
   buildPanelsLog,
-  buildSelectedDashboardInputsFromSearchParams,
   panelLogTitle,
   updatePanelsLogFromCompletedPanels,
   updateSelectedDashboard,

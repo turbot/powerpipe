@@ -1,11 +1,6 @@
 [
   {
-    "EdgeNames": [
-      "introspection_table_mod.edge.sample_edge_2"
-    ],
-    "NodeNames": [
-      "introspection_table_mod.node.sample_node_2"
-    ],
+    "categories": {},
     "auto_generated": false,
     "edges": [
       {

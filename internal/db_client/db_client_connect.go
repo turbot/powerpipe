@@ -2,12 +2,12 @@ package db_client
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func (c *DbClient) connect(ctx context.Context, opts ...backend.ConnectOption) error {
+func (c *DbClient) connect(ctx context.Context, opts ...backend.BackendOption) error {
 	utils.LogTime("db_client.establishConnectionPool start")
 	defer utils.LogTime("db_client.establishConnectionPool end")
 

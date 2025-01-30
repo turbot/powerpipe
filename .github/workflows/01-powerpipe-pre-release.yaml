@@ -37,12 +37,12 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
-          ref: v1.6.x
+          ref: develop
 
-       # this is required, check golangci-lint-action docs
+      # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23'
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
       - name: Build
@@ -64,28 +64,28 @@ jobs:
         run: ls -l ~/artifacts
 
       - name: Save Linux Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-linux
           path: ~/artifacts/linux.tar.gz
           if-no-files-found: error
 
       - name: Save Linux ARM Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-linux-arm
           path: ~/artifacts/linux-arm.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-darwin
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS ARM Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-darwin-arm
           path: ~/artifacts/darwin-arm.tar.gz
@@ -129,16 +129,16 @@ jobs:
         id: prepare-for-downloads
         run: |
           mkdir ~/artifacts
-  
+
       - name: Download Linux Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         if: ${{ matrix.platform == 'ubuntu-latest' }}
         with:
           name: build-artifact-linux
           path: ~/artifacts
 
       - name: Download Darwin Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         if: ${{ matrix.platform == 'macos-latest' }}
         with:
           name: build-artifact-darwin-arm
@@ -155,7 +155,7 @@ jobs:
         run: |
           mkdir ~/build
           tar -xf ~/artifacts/linux.tar.gz -C ~/build
-      
+
       - name: Install Steampipe(Darwin)
         if: ${{ matrix.platform == 'macos-latest' }}
         run: |
@@ -167,7 +167,7 @@ jobs:
         run: |
           sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
           steampipe -v
-      
+
       - name: Set PATH
         run: |
           echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV
@@ -216,17 +216,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
-  
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-  
+
       - name: Pull Ubuntu latest Image
         run: docker pull ubuntu:latest
-  
+
       - name: Create and Start Ubuntu latest Container
         run: |
           docker run -d --name ubuntu-24-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts ubuntu:latest tail -f /dev/null
@@ -234,7 +234,7 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec ubuntu-24-test /scripts/linux_container_info.sh
-  
+
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec ubuntu-24-test /scripts/prepare_ubuntu_container.sh
@@ -242,7 +242,7 @@ jobs:
       - name: Run smoke tests
         run: |
           docker exec -u steampipe ubuntu-24-test /scripts/smoke_test.sh
-  
+
       - name: Stop and Remove Container
         run: |
           docker stop ubuntu-24-test
@@ -255,19 +255,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-  
+
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
-  
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-  
+
       - name: Pull CentOS Stream 9 image
         run: docker pull quay.io/centos/centos:stream9
-  
+
       - name: Create and Start CentOS stream9 Container
         run: |
           docker run -d --name centos-stream9-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts quay.io/centos/centos:stream9 tail -f /dev/null
@@ -275,15 +275,15 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec centos-stream9-test /scripts/linux_container_info.sh
-  
+
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec centos-stream9-test /scripts/prepare_centos_container.sh
-        
+
       - name: Run smoke tests
         run: |
           docker exec -u steampipe centos-stream9-test /scripts/smoke_test.sh
-  
+
       - name: Stop and Remove Container
         run: |
           docker stop centos-stream9-test
@@ -298,17 +298,17 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
-  
+
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
-  
+
       - name: Pull Amazon Linux 2023 Image
         run: docker pull amazonlinux:2023
-  
+
       - name: Create and Start Amazon Linux 2023 Container
         run: |
           docker run -d --name amazonlinux-2023-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts amazonlinux:2023 tail -f /dev/null
@@ -316,7 +316,7 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec amazonlinux-2023-test /scripts/linux_container_info.sh
-  
+
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec amazonlinux-2023-test /scripts/prepare_amazonlinux_container.sh
@@ -324,7 +324,7 @@ jobs:
       - name: Run smoke tests
         run: |
           docker exec -u steampipe amazonlinux-2023-test /scripts/smoke_test.sh
-  
+
       - name: Stop and Remove Container
         run: |
           docker stop amazonlinux-2023-test
@@ -343,23 +343,23 @@ jobs:
   #       with:
   #         name: build-artifact-linux-arm
   #         path: ./artifacts
-  
+
   #     - name: Set up Docker Buildx
   #       uses: docker/setup-buildx-action@v3
-  
+
   #     - name: Set up QEMU
   #       uses: docker/setup-qemu-action@v3
   #       with:
   #         platforms: arm64
-  
+
   #     - name: Create Buildx Builder
   #       run: |
   #         docker buildx create --use --name mybuilder
   #         docker buildx inspect --bootstrap
-  
+
   #     - name: Pull Ubuntu 24 ARM64 Image
   #       run: docker pull arm64v8/ubuntu:latest
-  
+
   #     - name: Create and Start Ubuntu 24 ARM64 Container
   #       run: |
   #         docker run -d --name ubuntu-24-arm64-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts arm64v8/ubuntu:latest tail -f /dev/null
@@ -375,7 +375,7 @@ jobs:
   #     - name: Run smoke tests
   #       run: |
   #         docker exec -u steampipe ubuntu-24-arm64-test /scripts/smoke_test.sh
-  
+
   #     - name: Stop and Remove Container
   #       run: |
   #         docker stop ubuntu-24-arm64-test
@@ -390,7 +390,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Darwin Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-darwin
           path: ~/artifacts
@@ -558,7 +558,7 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
-          ref: v1.6.x
+          ref: develop
 
       - name: Tag Release
         run: |

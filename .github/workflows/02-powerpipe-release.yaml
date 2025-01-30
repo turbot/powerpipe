@@ -61,7 +61,7 @@ jobs:
         # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@v5
         with:
-          go-version: '1.22'
+          go-version: '1.23'
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
       - name: Build
@@ -83,28 +83,28 @@ jobs:
         run: ls -l ~/artifacts
 
       - name: Save Linux Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-linux
           path: ~/artifacts/linux.tar.gz
           if-no-files-found: error
 
       - name: Save Linux ARM Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-linux-arm
           path: ~/artifacts/linux-arm.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-darwin
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS ARM Build Artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-artifact-darwin-arm
           path: ~/artifacts/darwin-arm.tar.gz
@@ -150,14 +150,14 @@ jobs:
           mkdir ~/artifacts
   
       - name: Download Linux Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         if: ${{ matrix.platform == 'ubuntu-latest' }}
         with:
           name: build-artifact-linux
           path: ~/artifacts
 
       - name: Download Darwin Build Artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         if: ${{ matrix.platform == 'macos-latest' }}
         with:
           name: build-artifact-darwin-arm
@@ -235,7 +235,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -276,7 +276,7 @@ jobs:
         uses: actions/checkout@v4
   
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -317,7 +317,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -358,7 +358,7 @@ jobs:
   #       uses: actions/checkout@v4
 
   #     - name: Download Linux Build Artifact
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: build-artifact-linux-arm
   #         path: ./artifacts
@@ -409,7 +409,7 @@ jobs:
   #       uses: actions/checkout@v4
 
   #     - name: Download Darwin Build Artifact
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: build-artifact-darwin
   #         path: ~/artifacts
@@ -649,7 +649,7 @@ jobs:
 
       - name: Create pull request
         run: |
-          gh pr create --base main --head $VERSION --title "$Version" --body "Update formula"
+          gh pr create --base main --head $VERSION --title "Powerpipe $Version" --body "Update formula"
 
   update_pr_for_versioning:
     name: Update PR

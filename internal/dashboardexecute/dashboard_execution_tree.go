@@ -9,16 +9,18 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 // DashboardExecutionTree is a structure representing the control result hierarchy
@@ -33,7 +35,7 @@ type DashboardExecutionTree struct {
 	defaultClientMap *db_client.ClientMap
 	// map of executing runs, keyed by full name
 	runs      map[string]dashboardtypes.DashboardTreeRun
-	workspace *dashboardworkspace.WorkspaceEvents
+	workspace *workspace.PowerpipeWorkspace
 
 	runComplete chan dashboardtypes.DashboardTreeRun
 	// map of subscribers to notify when an input value changes
@@ -42,11 +44,12 @@ type DashboardExecutionTree struct {
 	inputValues map[string]any
 	id          string
 	// active database and search path config (unless overridden at the resource level)
-	database         string
+	database         connection.ConnectionStringProvider
 	searchPathConfig backend.SearchPathConfig
+	DateTimeRange    utils.TimeRange
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *dashboardworkspace.WorkspaceEvents, defaultClientMap *db_client.ClientMap, opts ...backend.ConnectOption) (*DashboardExecutionTree, error) {
+func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, inputs *InputValues, defaultClientMap *db_client.ClientMap, opts ...backend.BackendOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
@@ -71,11 +74,6 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 	}
 	executionTree.database = database
 	executionTree.searchPathConfig = searchPathConfig
-	// add a client for the active database and search path
-	_, err = executionTree.getClient(context.Background(), database, searchPathConfig)
-	if err != nil {
-		return nil, err
-	}
 
 	// create the root run node (either a report run or a counter run)
 	root, err := executionTree.createRootItem(rootResource)
@@ -84,18 +82,35 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 	}
 
 	executionTree.Root = root
+
+	// if inputs have been passed, set them first
+	executionTree.SetInputValues(inputs)
+
+	// add a client for the active database and search path
+	_, err = executionTree.getClient(context.Background(), database, searchPathConfig)
+	if err != nil {
+		return nil, err
+	}
+
 	return executionTree, nil
 }
 
 func (e *DashboardExecutionTree) createRootItem(rootResource modconfig.ModTreeItem) (dashboardtypes.DashboardTreeRun, error) {
 	switch r := rootResource.(type) {
-	case *modconfig.Dashboard:
+	case *resources.Dashboard:
 		return NewDashboardRun(r, e, e)
-	case *modconfig.Benchmark:
+	case *resources.Benchmark:
 		return NewCheckRun(r, e, e)
-	case *modconfig.Query:
+	case *resources.Detection:
+		// create a wrapper for the detection
+		benchmark := resources.NewWrapperDetectionBenchmark(r)
+		return NewDetectionBenchmarkRun(benchmark, e, e)
+
+	case *resources.DetectionBenchmark:
+		return NewDetectionBenchmarkRun(r, e, e)
+	case *resources.Query:
 		// wrap this in a chart and a dashboard
-		dashboard, err := modconfig.NewQueryDashboard(r)
+		dashboard, err := resources.NewQueryDashboard(r)
 		// TACTICAL - set the execution tree dashboard name from the query dashboard
 		e.dashboardName = dashboard.Name()
 		if err != nil {
@@ -164,15 +179,17 @@ func (e *DashboardExecutionTree) Execute(ctx context.Context) {
 	defer func() {
 
 		ev := &dashboardevents.ExecutionComplete{
-			Root:        e.Root,
-			Session:     e.sessionId,
-			ExecutionId: e.id,
-			Panels:      panels,
-			Inputs:      e.inputValues,
-			Variables:   referencedVariables,
-			SearchPath:  searchPath,
-			StartTime:   startTime,
-			EndTime:     time.Now(),
+			Root:             e.Root,
+			Session:          e.sessionId,
+			ExecutionId:      e.id,
+			Panels:           panels,
+			Inputs:           e.inputValues,
+			Variables:        referencedVariables,
+			SearchPath:       searchPath,
+			DateTimeRange:    e.DateTimeRange,
+			SearchPathPrefix: e.searchPathConfig.SearchPathPrefix,
+			StartTime:        startTime,
+			EndTime:          time.Now(),
 		}
 
 		workspace.PublishDashboardEvent(ctx, ev)
@@ -220,25 +237,31 @@ func (*DashboardExecutionTree) GetNodeType() string {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (e *DashboardExecutionTree) SetInputValues(inputValues map[string]any) {
+func (e *DashboardExecutionTree) SetInputValues(inputValues *InputValues) {
 	slog.Debug("SetInputValues")
 	e.inputLock.Lock()
 	defer e.inputLock.Unlock()
 
-	// we only support inputs if root is a dashboard (NOT a benchmark)
-	runtimeDependencyPublisher, ok := e.Root.(RuntimeDependencyPublisher)
-	if !ok {
-		// should never happen
-		slog.Warn("SetInputValues called but root WorkspaceEvents run is not a RuntimeDependencyPublisher", "root", e.Root.GetName())
+	if inputValues == nil {
+		slog.Warn("SetInputValues - inputValues is nil")
 		return
 	}
-
-	for name, value := range inputValues {
+	// set the input values and publish the runtime dependencies (if root implements RuntimeDependencyPublisher)
+	runtimeDependencyPublisher, _ := e.Root.(RuntimeDependencyPublisher)
+	for name, value := range inputValues.Inputs {
 		slog.Debug("DashboardExecutionTree SetInput", "name", name, "value", value)
 		e.inputValues[name] = value
 		// publish runtime dependency
-		runtimeDependencyPublisher.PublishRuntimeDependencyValue(name, &dashboardtypes.ResolvedRuntimeDependencyValue{Value: value})
+		if runtimeDependencyPublisher != nil {
+			runtimeDependencyPublisher.PublishRuntimeDependencyValue(name, &dashboardtypes.ResolvedRuntimeDependencyValue{Value: value})
+		}
 	}
+
+	// TODO K
+	// TACTICAL
+	// if a time range has been passed, set the detection time range
+	// (if time range is not set, From and To will be nil - this is expected and handled)
+	e.DateTimeRange = inputValues.DateTimeRange
 }
 
 // ChildCompleteChan implements DashboardParent
@@ -340,19 +363,26 @@ func (*DashboardExecutionTree) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
-func (*DashboardExecutionTree) GetResource() modconfig.DashboardLeafNode {
+func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 	panic("should never call for DashboardExecutionTree")
 }
 
 // function to get a client from one of the client maps
-func (e *DashboardExecutionTree) getClient(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
+func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.ConnectionStringProvider, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
+	// ask the provider for the connection string, passing the filter
+	// TODO check connection type is tailpipe???
+	filter := &connection.TailpipeDatabaseFilters{From: e.DateTimeRange.From, To: e.DateTimeRange.To}
+	cs, err := csp.GetConnectionString(connection.WithFilter(filter))
+	if err != nil {
+		return nil, err
+	}
 	// if the default map already contains a client for this connection string, use that
-	if client := e.defaultClientMap.Get(connectionString, searchPathConfig); client != nil {
+	if client := e.defaultClientMap.Get(cs, searchPathConfig); client != nil {
 		return client, nil
 	}
 
 	// otherwise get or create one
-	client, err := e.clientMap.GetOrCreate(ctx, connectionString, searchPathConfig)
+	client, err := e.clientMap.GetOrCreate(ctx, cs, searchPathConfig)
 	if err != nil {
 		return nil, err
 	}

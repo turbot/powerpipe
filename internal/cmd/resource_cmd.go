@@ -6,14 +6,15 @@ import (
 
 	"github.com/spf13/cobra"
 	"github.com/thediveo/enumflag/v2"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/display"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // variable used to assign the output mode flag
@@ -26,7 +27,7 @@ type ResourceCommandConfig struct {
 }
 
 func newResourceCommandConfig[T modconfig.ModTreeItem]() *ResourceCommandConfig {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 	return &ResourceCommandConfig{
 		cmd: typeName,
 	}
@@ -62,7 +63,7 @@ func resourceCmd[T modconfig.ModTreeItem](opts ...ResourceCommandOption) *cobra.
 }
 
 func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 	var cmd = &cobra.Command{
 		Use:   "list",
 		Args:  cobra.NoArgs,
@@ -79,7 +80,7 @@ func listCmd[T modconfig.ModTreeItem]() *cobra.Command {
 }
 
 func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 
 	var cmd = &cobra.Command{
 		Use:   showCommandUse(typeName),
@@ -99,7 +100,7 @@ func showCmd[T modconfig.ModTreeItem]() *cobra.Command {
 
 // determine which resource commands apply to this resource
 func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
-	typeName := modconfig.GenericTypeToBlockType[T]()
+	typeName := resources.GenericTypeToBlockType[T]()
 
 	var res = []*cobra.Command{listCmd[T](), showCmd[T]()}
 
@@ -118,15 +119,17 @@ func getResourceCommands[T modconfig.ModTreeItem]() []*cobra.Command {
 
 func dashboardChildCommands() []*cobra.Command {
 	res := []*cobra.Command{
-		resourceCmd[*modconfig.DashboardCard](withCmdName("card")),
-		resourceCmd[*modconfig.DashboardChart](withCmdName("chart")),
-		resourceCmd[*modconfig.DashboardContainer](withCmdName("container")),
-		resourceCmd[*modconfig.DashboardFlow](withCmdName("flow")),
-		resourceCmd[*modconfig.DashboardGraph](withCmdName("graph")),
-		resourceCmd[*modconfig.DashboardHierarchy](withCmdName("hierarchy")),
-		resourceCmd[*modconfig.DashboardImage](withCmdName("image")),
-		resourceCmd[*modconfig.DashboardTable](withCmdName("table")),
-		resourceCmd[*modconfig.DashboardText](withCmdName("text")),
+		resourceCmd[*resources.DashboardCard](withCmdName("card")),
+		resourceCmd[*resources.DashboardChart](withCmdName("chart")),
+		resourceCmd[*resources.DashboardContainer](withCmdName("container")),
+		resourceCmd[*resources.DashboardFlow](withCmdName("flow")),
+		resourceCmd[*resources.DashboardGraph](withCmdName("graph")),
+		resourceCmd[*resources.DashboardHierarchy](withCmdName("hierarchy")),
+		resourceCmd[*resources.DashboardImage](withCmdName("image")),
+		resourceCmd[*resources.DashboardTable](withCmdName("table")),
+		resourceCmd[*resources.Detection](withCmdName("detection")),
+		resourceCmd[*resources.DetectionBenchmark](withCmdName("detectionbenchmark")),
+		resourceCmd[*resources.DashboardText](withCmdName("text")),
 	}
 
 	// set all to hidden
@@ -140,14 +143,18 @@ func runCmd[T modconfig.HclResource]() *cobra.Command {
 	var empty T
 
 	switch any(empty).(type) {
-	case *modconfig.Query:
+	case *resources.Query:
 		return queryRunCmd()
-	case *modconfig.Dashboard:
+	case *resources.Dashboard:
 		return dashboardRunCmd()
-	case *modconfig.Benchmark:
-		return checkCmd[*modconfig.Benchmark]()
-	case *modconfig.Control:
-		return checkCmd[*modconfig.Control]()
+	case *resources.Benchmark:
+		return checkCmd[*resources.Benchmark]()
+	case *resources.DetectionBenchmark:
+		return detectionRunCmd[*resources.DetectionBenchmark]()
+	case *resources.Detection:
+		return detectionRunCmd[*resources.Detection]()
+	case *resources.Control:
+		return checkCmd[*resources.Control]()
 	}
 
 	return nil
@@ -174,6 +181,9 @@ func resourceCommandShortDescription(typeName string) string {
 
 	case schema.BlockTypeVariable:
 		return "Manage Powerpipe variables in the current mod and its direct dependents"
+
+	case schema.BlockTypeDetection:
+		return "List, view, and run Powerpipe detections"
 
 	default:
 		return fmt.Sprintf("%s commands", typeName)
@@ -208,6 +218,12 @@ To run dashboards interactively, run powerpipe server.`
 	case schema.BlockTypeVariable:
 		return `List variables from the current mod and its direct dependents or show details of a variable
 from the current mod or its direct dependents or from a Powerpipe server instance.`
+
+	case schema.BlockTypeDetection:
+		return `List, view, and run Powerpipe detections and its direct dependents.
+
+Run a detection from the current mod or its direct dependents or from a Powerpipe server instance or
+view details of a detection from the current mod or its direct dependents or from a Powerpipe server instance.`
 
 	default:
 		return fmt.Sprintf("%s commands", typeName)

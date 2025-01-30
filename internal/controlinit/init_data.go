@@ -3,40 +3,44 @@ package controlinit
 import (
 	"context"
 	"fmt"
-	"github.com/spf13/cobra"
 
+	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type CheckTarget interface {
 	modconfig.ModTreeItem
-	*modconfig.Benchmark | *modconfig.Control
+	*resources.Benchmark | *resources.DetectionBenchmark | *resources.Control | *resources.Detection
 }
 
-type InitData[T CheckTarget] struct {
-	initialisation.InitData[T]
+type InitData struct {
+	initialisation.InitData
 	OutputFormatter controldisplay.Formatter
 	ControlFilter   workspace.ResourceFilter
+}
+
+func (i *InitData) BaseInitData() *initialisation.InitData {
+	return &i.InitData
 }
 
 // NewInitData returns a new InitData object
 // It also starts an asynchronous population of the object
 // InitData.Done closes after asynchronous initialization completes
-func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []string) *InitData[T] {
-
+func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ...string) *InitData {
 	statushooks.SetStatus(ctx, "Loading workspace")
 
 	initData := initialisation.NewInitData[T](ctx, cmd, args...)
 
 	// create InitData, but do not initialize yet, since 'viper' is not completely setup
-	i := &InitData[T]{
+	i := &InitData{
 		InitData: *initData,
 	}
 	if i.Result.Error != nil {
@@ -58,18 +62,23 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 		i.Result.Error = err
 		return i
 	}
-
-	if len(w.GetResourceMaps().Controls)+len(w.GetResourceMaps().Benchmarks) == 0 {
-		i.Result.AddWarnings("no controls or benchmarks found in current workspace")
+	modResources := resources.GetModResources(w.Mod)
+	if len(modResources.Controls)+len(modResources.ControlBenchmarks)+len(modResources.DetectionBenchmarks) == 0+len(modResources.Detections) {
+		i.Result.AddWarnings("no controls, detections or benchmarks found in current workspace")
 	}
 
-	if err := controldisplay.EnsureTemplates(); err != nil {
+	if err := controldisplay.EnsureControlTemplates(); err != nil {
+		i.Result.Error = err
+		return i
+	}
+
+	if err := controldisplay.EnsureDetectionTemplates(); err != nil {
 		i.Result.Error = err
 		return i
 	}
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		if err := i.registerCheckExporters(); err != nil {
+		if err := i.registerCheckExporters(i.Targets[0]); err != nil {
 			i.Result.Error = err
 			return i
 		}
@@ -82,7 +91,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 	}
 
 	output := viper.GetString(constants.ArgOutput)
-	formatter, err := parseOutputArg(output)
+	formatter, err := resolveFormatter(output, i.Targets[0])
 	if err != nil {
 		i.Result.Error = err
 		return i
@@ -94,7 +103,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args []
 	return i
 }
 
-func (i *InitData[T]) setControlFilter() {
+func (i *InitData) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
 		// if '--tag' args were used, derive the whereClause from them
 		tags := viper.GetStringSlice(constants.ArgTag)
@@ -109,17 +118,17 @@ func (i *InitData[T]) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData[T]) registerCheckExporters() error {
-	exporters, err := controldisplay.GetExporters()
+func (i *InitData) registerCheckExporters(target modconfig.ModTreeItem) error {
+	exporters, err := controldisplay.GetExporters(target)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 
 	// register all exporters
 	return i.RegisterExporters(exporters...)
 }
 
-// parseOutputArg parses the --output flag value and returns the Formatter that can format the data
-func parseOutputArg(arg string) (formatter controldisplay.Formatter, err error) {
-	formatResolver, err := controldisplay.NewFormatResolver()
+// resolveFormatter parses the --output flag value and returns the Formatter that can format the data
+func resolveFormatter(arg string, target modconfig.ModTreeItem) (formatter controldisplay.Formatter, err error) {
+	formatResolver, err := controldisplay.NewFormatResolver(target)
 	if err != nil {
 		return nil, err
 	}

@@ -2,7 +2,7 @@ package constants
 
 import (
 	"github.com/thediveo/enumflag/v2"
-	"github.com/turbot/pipe-fittings/constants"
+	"github.com/turbot/pipe-fittings/v2/constants"
 )
 
 type OutputMode enumflag.Flag
@@ -64,9 +64,11 @@ var DashboardOutputModeIds = map[DashboardOutputMode][]string{
 
 type CheckOutputMode enumflag.Flag
 
+type DetectionOutputMode enumflag.Flag
+
 const (
-	CheckOutputModeText  CheckOutputMode = iota
-	CheckOutputModeBrief CheckOutputMode = iota
+	CheckOutputModeText CheckOutputMode = iota
+	CheckOutputModeBrief
 	CheckOutputModeCsv
 	CheckOutputModeHTM
 	CheckOutputModeJSON
@@ -75,6 +77,11 @@ const (
 	CheckOutputModeSnapshot
 	CheckOutputModeSnapshotShort
 	CheckOutputModeNone
+)
+
+const (
+	DetectionOutputModeText DetectionOutputMode = iota
+	DetectionOutputModeJSON
 )
 
 var CheckOutputModeIds = map[CheckOutputMode][]string{
@@ -88,4 +95,9 @@ var CheckOutputModeIds = map[CheckOutputMode][]string{
 	CheckOutputModeSnapshot:      {constants.OutputFormatSnapshot},
 	CheckOutputModeSnapshotShort: {OutputFormatPpSnapshotShort},
 	CheckOutputModeNone:          {constants.OutputFormatNone},
+}
+
+var DetectionOutputModeIds = map[DetectionOutputMode][]string{
+	DetectionOutputModeText: {constants.OutputFormatText},
+	DetectionOutputModeJSON: {constants.OutputFormatJSON},
 }

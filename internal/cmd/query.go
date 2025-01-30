@@ -13,19 +13,19 @@ import (
 	"github.com/spf13/viper"
 	"github.com/thediveo/enumflag/v2"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/export"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/export"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/display"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
@@ -105,7 +105,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		return
 	}
 
-	initData := initialisation.NewInitData[*modconfig.Query](ctx, cmd, args...)
+	initData := initialisation.NewInitData[*resources.Query](ctx, cmd, args...)
 	// shutdown the service on exit
 	defer initData.Cleanup(ctx)
 	error_helpers.FailOnError(initData.Result.Error)
@@ -134,7 +134,9 @@ func queryRun(cmd *cobra.Command, args []string) {
 		exitCode = constants.ExitCodeInitializationFailed
 		error_helpers.FailOnError(err)
 	}
-	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.WorkspaceEvents, target, nil)
+
+	inputs := dashboardexecute.NewInputValues()
+	snap, err := dashboardexecute.GenerateSnapshot(ctx, initData.Workspace, target, inputs)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)
@@ -218,7 +220,7 @@ func setExitCodeForQueryError(err error) {
 
 func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime time.Time) (*queryresult.Result, error) {
 	// the table of a snapshot query has a fixed name
-	tablePanel, ok := snap.Panels[modconfig.SnapshotQueryTableName]
+	tablePanel, ok := snap.Panels[constants.SnapshotQueryTableName]
 	if !ok {
 		return nil, sperr.New("dashboard does not contain table result for query")
 	}

@@ -3,13 +3,13 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
-func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents, rootResource modconfig.ModTreeItem, inputs map[string]any) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
+func GenerateSnapshot(ctx context.Context, w *workspace.PowerpipeWorkspace, rootResource modconfig.ModTreeItem, inputs *InputValues) (snapshot *steampipeconfig.SteampipeSnapshot, err error) {
 	// no session for manual execution
 	sessionId := ""
 	errorChannel := make(chan error)
@@ -20,8 +20,6 @@ func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents
 	w.RegisterDashboardEventHandler(ctx, dashboardEventHandler)
 	// clear event handlers again in case another snapshot will be generated in this run
 	defer w.UnregisterDashboardEventHandlers()
-
-	// pull out the target resource
 
 	// all runtime dependencies must be resolved before execution (i.e. inputs must be passed in)
 	Executor.interactive = false
@@ -39,7 +37,7 @@ func GenerateSnapshot(ctx context.Context, w *dashboardworkspace.WorkspaceEvents
 
 		// if the root resource has no corresponding filename, this must be a query snapshot - update the filename root
 		if rootResource.GetDeclRange().Filename == "" {
-			fileRootName = rootResource.BlockType()
+			fileRootName = rootResource.GetBlockType()
 		}
 
 		snapshot.FileNameRoot = fileRootName
@@ -60,6 +58,14 @@ func handleDashboardEvent(_ context.Context, event dashboardevents.DashboardEven
 
 // ExecutionCompleteToSnapshot transforms the ExecutionComplete event into a SteampipeSnapshot
 func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *steampipeconfig.SteampipeSnapshot {
+	metadata := make(map[string]interface{})
+	if !event.DateTimeRange.Empty() {
+		metadata["datetime_range"] = event.DateTimeRange
+	}
+	if event.SearchPathPrefix != nil {
+		metadata["search_path_prefix"] = event.SearchPathPrefix
+	}
+
 	return &steampipeconfig.SteampipeSnapshot{
 		SchemaVersion: fmt.Sprintf("%d", steampipeconfig.SteampipeSnapshotSchemaVersion),
 		Panels:        event.Panels,
@@ -70,5 +76,6 @@ func ExecutionCompleteToSnapshot(event *dashboardevents.ExecutionComplete) *stea
 		StartTime:     event.StartTime,
 		EndTime:       event.EndTime,
 		Title:         event.Root.GetTitle(),
+		Metadata:      metadata,
 	}
 }

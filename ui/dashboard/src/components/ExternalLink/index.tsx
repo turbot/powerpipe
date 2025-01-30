@@ -1,11 +1,11 @@
-import { Link } from "react-router-dom";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
 } from "@powerpipe/types";
+import { Link } from "react-router-dom";
 import { ReactNode } from "react";
 import { registerComponent } from "../dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 
 type ExternalLinkProps = {
   children: ReactNode;
@@ -26,7 +26,7 @@ const ExternalLink = ({
   to,
   withReferrer = false,
 }: ExternalLinkProps) => {
-  const { dataMode } = useDashboard();
+  const { dataMode } = useDashboardState();
 
   if (!to) {
     return null;

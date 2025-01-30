@@ -4,33 +4,36 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-
 	"github.com/spf13/viper"
+	"log/slog"
+
 	typeHelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
 		// Ignore current mod
-		if mod.FullName == workspaceResources.Mod.FullName {
+		if mod.GetFullName() == workspaceResources.Mod.GetFullName() {
 			continue
 		}
-		installedMods[mod.FullName] = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
+		installedMods[mod.GetFullName()] = &ModMetadata{
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
+			FullName:  mod.GetFullName(),
 			ShortName: mod.ShortName,
 		}
 	}
@@ -49,22 +52,33 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipe
 		cliVersion = versionFile.Version
 	}
 
+	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	if err != nil {
+		return nil, err
+	}
+
+	// populate the backend support flags (supportsSearchPath, supportsTimeRange) from the default database
+	var bs backendSupport
+	bs.setFromDb(defaultDatabase)
+
 	payload := ServerMetadataPayload{
 		Action: "server_metadata",
 		Metadata: ServerMetadata{
 			CLI: DashboardCLIMetadata{
 				Version: cliVersion,
 			},
-			InstalledMods: installedMods,
-			Telemetry:     viper.GetString(constants.ArgTelemetry),
+			InstalledMods:      installedMods,
+			Telemetry:          viper.GetString(constants.ArgTelemetry),
+			SupportsSearchPath: bs.supportsSearchPath,
+			SupportsTimeRange:  bs.supportsTimeRange,
 		},
 	}
 
-	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	connectionString, err := defaultDatabase.GetConnectionString()
 	if err != nil {
 		return nil, err
 	}
-	searchPath, err := getSearchPathMetadata(context.Background(), defaultDatabase, defaultSearchPathConfig)
+	searchPath, err := getSearchPathMetadata(context.Background(), connectionString, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -72,8 +86,8 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipe
 
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
-			Title:     typeHelpers.SafeString(mod.Title),
-			FullName:  mod.FullName,
+			Title:     typeHelpers.SafeString(mod.GetTitle()),
+			FullName:  mod.GetFullName(),
 			ShortName: mod.ShortName,
 		}
 	}
@@ -85,30 +99,80 @@ func buildServerMetadataPayload(workspaceResources *modconfig.ResourceMaps, pipe
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(ctx context.Context, dashboard modconfig.ModTreeItem, w *dashboardworkspace.WorkspaceEvents) ([]byte, error) {
-	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+func buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) ([]byte, error) {
+	slog.Debug("calling buildDashboardMetadataPayload")
+
+	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
 	if err != nil {
+		slog.Warn("error getting database config for resource", "error", err)
 		return nil, err
 	}
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(dashboard, w.Mod, defaultDatabase, defaultSearchPathConfig)
-	if err != nil {
-		return nil, err
-	}
+
+	// walk the tree of resources and determine whether any of them are using a tailpipe/steampipe/postrgres
+	// and set the SupportsSearchPath and SupportsTimeRange flags accordingly
+	backendSupport := determineBackendSupport(dashboard, defaultDatabase)
 
 	payload := DashboardMetadataPayload{
 		Action: "dashboard_metadata",
 		Metadata: DashboardMetadata{
-			Database: database,
+			SupportsSearchPath: backendSupport.supportsSearchPath,
+			SupportsTimeRange:  backendSupport.supportsTimeRange,
 		},
 	}
 
-	searchPath, err := getSearchPathMetadata(ctx, database, searchPathConfig)
+	res, err := json.Marshal(payload)
 	if err != nil {
+		slog.Warn("error marshalling payload", "error", err)
 		return nil, err
 	}
-	payload.Metadata.SearchPath = searchPath
+	return res, nil
+}
 
-	return json.Marshal(payload)
+type backendSupport struct {
+	supportsSearchPath bool
+	supportsTimeRange  bool
+}
+
+func (bs *backendSupport) setFromDb(db connection.ConnectionStringProvider) {
+	if db != nil {
+		switch db.(type) {
+		case *connection.SteampipePgConnection, *connection.PostgresConnection:
+			bs.supportsSearchPath = true
+		case *connection.TailpipeConnection:
+			bs.supportsTimeRange = true
+		}
+	}
+}
+func determineBackendSupport(dashboard modconfig.ModTreeItem, defaultDatabase connection.ConnectionStringProvider) backendSupport {
+	var res backendSupport
+
+	usingDefaultDb := determineBackendSupportForResource(dashboard, &res)
+	if usingDefaultDb {
+		res.setFromDb(defaultDatabase)
+	}
+	return res
+}
+
+func determineBackendSupportForResource(item modconfig.ModTreeItem, bs *backendSupport) bool {
+	var usingDefaultDb bool
+	db := item.GetDatabase()
+	if db == nil {
+		usingDefaultDb = true
+	} else {
+		bs.setFromDb(db)
+	}
+
+	// if we have now found both, we can stop
+	if bs.supportsSearchPath && bs.supportsTimeRange {
+		return false
+	}
+	for _, child := range item.GetChildren() {
+		childUsingDefaultDb := determineBackendSupportForResource(child, bs)
+		if childUsingDefaultDb {
+			usingDefaultDb = true
+		}
+	}
+	return usingDefaultDb
 }
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
@@ -133,11 +197,11 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	return nil, nil
 }
 
-func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
-		case *modconfig.Benchmark:
+		case *resources.Benchmark:
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
@@ -145,11 +209,12 @@ func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trun
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
 			availableBenchmark := ModAvailableBenchmark{
-				Title:     t.GetTitle(),
-				FullName:  t.FullName,
-				ShortName: t.ShortName,
-				Tags:      t.Tags,
-				Children:  addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Title:         t.GetTitle(),
+				FullName:      t.FullName,
+				ShortName:     t.ShortName,
+				BenchmarkType: "control",
+				Tags:          t.Tags,
+				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
 			}
 			children = append(children, availableBenchmark)
 		}
@@ -157,8 +222,32 @@ func addBenchmarkChildren(benchmark *modconfig.Benchmark, recordTrunk bool, trun
 	return children
 }
 
-func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps) ([]byte, error) {
+func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+	var children []ModAvailableBenchmark
+	for _, child := range benchmark.GetChildren() {
+		switch t := child.(type) {
+		case *resources.DetectionBenchmark:
+			childTrunk := make([]string, len(trunk)+1)
+			copy(childTrunk, trunk)
+			childTrunk[len(childTrunk)-1] = t.FullName
+			if recordTrunk {
+				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
+			}
+			availableBenchmark := ModAvailableBenchmark{
+				Title:         t.GetTitle(),
+				FullName:      t.FullName,
+				ShortName:     t.ShortName,
+				BenchmarkType: "detection",
+				Tags:          t.Tags,
+				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+			}
+			children = append(children, availableBenchmark)
+		}
+	}
+	return children
+}
 
+func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -171,7 +260,9 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 		// build a map of the dashboards provided by each mod
 
 		// iterate over the dashboards for the top level mod - this will include the dashboards from dependency mods
-		for _, dashboard := range workspaceResources.Mod.ResourceMaps.Dashboards {
+		topLevelResources := resources.GetModResources(workspaceResources.Mod)
+
+		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
@@ -179,12 +270,12 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
 				Tags:        dashboard.Tags,
-				ModFullName: mod.FullName,
+				ModFullName: mod.GetFullName(),
 			}
 		}
 
 		benchmarkTrunks := make(map[string][][]string)
-		for _, benchmark := range workspaceResources.Mod.ResourceMaps.Benchmarks {
+		for _, benchmark := range topLevelResources.ControlBenchmarks {
 			if benchmark.IsAnonymous() {
 				continue
 			}
@@ -206,13 +297,14 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 			}
 
 			availableBenchmark := ModAvailableBenchmark{
-				Title:       benchmark.GetTitle(),
-				FullName:    benchmark.FullName,
-				ShortName:   benchmark.ShortName,
-				Tags:        benchmark.Tags,
-				IsTopLevel:  isTopLevel,
-				Children:    addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
-				ModFullName: mod.FullName,
+				Title:         benchmark.GetTitle(),
+				FullName:      benchmark.FullName,
+				ShortName:     benchmark.ShortName,
+				BenchmarkType: "control",
+				Tags:          benchmark.Tags,
+				IsTopLevel:    isTopLevel,
+				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
+				ModFullName:   mod.GetFullName(),
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark
@@ -221,6 +313,48 @@ func buildAvailableDashboardsPayload(workspaceResources *modconfig.ResourceMaps)
 			if foundBenchmark, ok := payload.Benchmarks[benchmarkName]; ok {
 				foundBenchmark.Trunks = trunks
 				payload.Benchmarks[benchmarkName] = foundBenchmark
+			}
+		}
+
+		detectionBenchmarkTrunks := make(map[string][][]string)
+		for _, detectionBenchmark := range topLevelResources.DetectionBenchmarks {
+			if detectionBenchmark.IsAnonymous() {
+				continue
+			}
+
+			// Find any detectionBenchmarks who have a parent that is a mod - we consider these top-level
+			isTopLevel := false
+			for _, parent := range detectionBenchmark.GetParents() {
+				switch parent.(type) {
+				case *modconfig.Mod:
+					isTopLevel = true
+				}
+			}
+
+			mod := detectionBenchmark.Mod
+			trunk := []string{detectionBenchmark.FullName}
+
+			if isTopLevel {
+				detectionBenchmarkTrunks[detectionBenchmark.FullName] = [][]string{trunk}
+			}
+
+			availableDetectionBenchmark := ModAvailableBenchmark{
+				Title:         detectionBenchmark.GetTitle(),
+				FullName:      detectionBenchmark.FullName,
+				ShortName:     detectionBenchmark.ShortName,
+				BenchmarkType: "detection",
+				Tags:          detectionBenchmark.Tags,
+				IsTopLevel:    isTopLevel,
+				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
+				ModFullName:   mod.GetFullName(),
+			}
+
+			payload.Benchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark
+		}
+		for detectionBenchmarkName, trunks := range detectionBenchmarkTrunks {
+			if foundDetectionBenchmark, ok := payload.Benchmarks[detectionBenchmarkName]; ok {
+				foundDetectionBenchmark.Trunks = trunks
+				payload.Benchmarks[detectionBenchmarkName] = foundDetectionBenchmark
 			}
 		}
 	}

@@ -1,27 +1,29 @@
 import {
   CheckDisplayGroup,
-  CheckFilter,
-} from "@powerpipe/components/dashboards/check/common";
+  Filter,
+} from "@powerpipe/components/dashboards/grouping/common";
+import { DatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
+import {
+  KeyValuePairs,
+  TableConfig,
+} from "@powerpipe/components/dashboards/common/types";
 import { LeafNodeData, Width } from "@powerpipe/components/dashboards/common";
 import { Ref } from "react";
 import { Theme } from "@powerpipe/hooks/useTheme";
 
 export type IDashboardContext = {
-  cliMode: DashboardCliMode;
-
   versionMismatchCheck: boolean;
   metadata: ServerMetadata | null;
   availableDashboardsLoaded: boolean;
 
-  closePanelDetail(): void;
   dispatch(action: DashboardAction): void;
 
   dataMode: DashboardDataMode;
   snapshotId: string | null;
 
-  refetchDashboard: boolean;
-
   error: any;
+
+  overlayVisible: boolean;
 
   panelsLog: PanelsLog;
   panelsMap: PanelsMap;
@@ -33,39 +35,22 @@ export type IDashboardContext = {
   dashboardsMetadata: DashboardsMetadataDictionary;
   dashboard: DashboardDefinition | null;
 
-  selectedPanel: PanelDefinition | null;
   selectedDashboard: AvailableDashboard | null;
-  selectedDashboardInputs: DashboardInputs;
-  lastChangedInput: string | null;
-
-  searchPathPrefix: string[];
 
   dashboardTags: DashboardTags;
 
-  search: DashboardSearch;
-
   breakpointContext: IBreakpointContext;
-  themeContext: IThemeContext;
 
   components: ComponentsMap;
 
+  rootPathname: string;
+
   progress: number;
   state: DashboardRunState;
-  render: {
-    headless: boolean;
-    snapshotCompleteDiv: boolean;
-  };
 
   snapshot: DashboardSnapshot | null;
   snapshotFileName: string | null;
   snapshot_metadata_loaded: boolean;
-
-  diff?: {
-    panelsMap: PanelsMap;
-    snapshotFileName: string;
-  };
-
-  showCustomizeBenchmarkPanel: boolean;
 };
 
 export type IBreakpointContext = {
@@ -84,8 +69,6 @@ export type IThemeContext = {
 export const DashboardDataModeLive = "live";
 export const DashboardDataModeCLISnapshot = "cli_snapshot";
 export const DashboardDataModeCloudSnapshot = "cloud_snapshot";
-
-export type DashboardCliMode = "powerpipe" | "steampipe";
 
 export type DashboardDataMode = "live" | "cli_snapshot" | "cloud_snapshot";
 
@@ -134,37 +117,26 @@ export type DashboardRunState =
 
 export const DashboardActions: IActions = {
   AVAILABLE_DASHBOARDS: "available_dashboards",
-  CLEAR_DASHBOARD_INPUTS: "clear_dashboard_inputs",
   CONTROL_COMPLETE: "control_complete",
   CONTROL_ERROR: "control_error",
   CONTROLS_UPDATED: "controls_updated",
   SERVER_METADATA: "server_metadata",
   DASHBOARD_METADATA: "dashboard_metadata",
-  DELETE_DASHBOARD_INPUT: "delete_dashboard_input",
-  DIFF_SNAPSHOT: "diff_snapshot",
   EXECUTION_COMPLETE: "execution_complete",
   EXECUTION_ERROR: "execution_error",
   EXECUTION_STARTED: "execution_started",
-  INPUT_VALUES_CLEARED: "input_values_cleared",
   LEAF_NODE_COMPLETE: "leaf_node_complete",
   LEAF_NODE_UPDATED: "leaf_node_updated",
   LEAF_NODES_COMPLETE: "leaf_nodes_complete",
   LEAF_NODES_UPDATED: "leaf_nodes_updated",
+  LOAD_SNAPSHOT: "load_snapshot",
   SELECT_DASHBOARD: "select_dashboard",
-  SELECT_PANEL: "select_panel",
-  SET_CLI_MODE: "set_cli_mode",
   SET_DASHBOARD: "set_dashboard",
-  SET_DASHBOARD_INPUT: "set_dashboard_input",
-  SET_DASHBOARD_INPUTS: "set_dashboard_inputs",
+  SET_OVERLAY_VISIBLE: "set_overlay_visible",
   SET_SEARCH_PATH_PREFIX: "set_search_path_prefix",
   SET_SNAPSHOT_METADATA_LOADED: "set_snapshot_metadata_loaded",
-  SET_DASHBOARD_SEARCH_VALUE: "set_dashboard_search_value",
-  SET_DASHBOARD_SEARCH_GROUP_BY: "set_dashboard_search_group_by",
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
   SET_DATA_MODE: "set_data_mode",
-  SET_REFETCH_DASHBOARD: "set_refetch_dashboard",
-  SHOW_CUSTOMIZE_BENCHMARK_PANEL: "show_customize_benchmark_panel",
-  HIDE_CUSTOMIZE_BENCHMARK_PANEL: "hide_customize_benchmark_panel",
   WORKSPACE_ERROR: "workspace_error",
 };
 
@@ -173,27 +145,31 @@ type DashboardExecutionEventSchemaVersion =
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionStartedEventSchemaVersion =
   | "20220614"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardExecutionCompleteEventSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 type DashboardSnapshotSchemaVersion =
   | "20220614"
   | "20220929"
   | "20221222"
   | "20240130"
-  | "20240607";
+  | "20240607"
+  | "20241125";
 
 export type DashboardExecutionStartedEvent = {
   action: "execution_started";
@@ -231,7 +207,9 @@ export type DashboardAction = {
   [key: string]: any;
 };
 
-type DashboardSearchGroupByMode = "mod" | "tag";
+export type DashboardSearchGroupByMode = "mod" | "tag";
+
+export type DashboardDisplayMode = "top_level" | "all";
 
 type DashboardSearchGroupBy = {
   value: DashboardSearchGroupByMode;
@@ -245,17 +223,6 @@ export type DashboardSearch = {
 
 export type DashboardTags = {
   keys: string[];
-};
-
-export type SelectedDashboardStates = {
-  dashboard_name: string | undefined;
-  dataMode: DashboardDataMode;
-  refetchDashboard: boolean;
-  search: DashboardSearch;
-  searchParams: URLSearchParams;
-  searchPathPrefix: string[];
-  selectedDashboard: AvailableDashboard | null;
-  selectedDashboardInputs: DashboardInputs;
 };
 
 export type DashboardInputs = {
@@ -309,6 +276,8 @@ export type ServerMetadata = {
   cloud?: CloudServerMetadata;
   telemetry: "info" | "none";
   search_path: SearchPathMetadata;
+  supports_search_path: boolean;
+  supports_time_range: boolean;
 };
 
 export type DashboardLayoutNode = {
@@ -316,6 +285,8 @@ export type DashboardLayoutNode = {
   panel_type: DashboardPanelType;
   children?: DashboardLayoutNode[];
 };
+
+export const DashboardPanelTypeBenchmark = "benchmark";
 
 export type DashboardPanelType =
   | "benchmark"
@@ -325,6 +296,7 @@ export type DashboardPanelType =
   | "container"
   | "control"
   | "dashboard"
+  | "detection"
   | "edge"
   | "error"
   | "flow"
@@ -337,16 +309,20 @@ export type DashboardPanelType =
   | "text"
   | "with";
 
-export type DashboardSnapshotViewFilterByMetadata = CheckFilter;
+export type DashboardSnapshotViewFilterByMetadata = Filter;
 export type DashboardSnapshotViewGroupByMetadata = CheckDisplayGroup[];
+export type DashboardSnapshotViewTableConfigMetadata = TableConfig;
 
 export type DashboardSnapshotViewMetadata = {
   filter_by?: DashboardSnapshotViewFilterByMetadata;
   group_by?: DashboardSnapshotViewGroupByMetadata;
+  table?: DashboardSnapshotViewTableConfigMetadata;
 };
 
 export type DashboardSnapshotMetadata = {
-  view?: DashboardSnapshotViewMetadata;
+  view?: KeyValuePairs<DashboardSnapshotViewMetadata>;
+  datetime_range?: DatetimeRange;
+  search_path_prefix?: string[];
 };
 
 export type DashboardSnapshot = {
@@ -365,12 +341,19 @@ type AvailableDashboardTags = {
   [key: string]: string;
 };
 
-type AvailableDashboardType = "benchmark" | "dashboard" | "snapshot";
+type AvailableDashboardType =
+  | "available_dashboard"
+  | "benchmark"
+  | "control"
+  | "dashboard"
+  | "detection"
+  | "snapshot";
 
 export type AvailableDashboard = {
   full_name: string;
   short_name: string;
   mod_full_name?: string;
+  benchmark_type?: "control" | "detection";
   tags: AvailableDashboardTags;
   title: string;
   is_top_level: boolean;
@@ -392,6 +375,8 @@ export type SearchPathMetadata = {
 export type DashboardMetadata = {
   database?: string | null;
   search_path: SearchPathMetadata;
+  supports_search_path: boolean;
+  supports_time_range: boolean;
 };
 
 export type DashboardsMetadataDictionary = {
@@ -415,25 +400,28 @@ export type DependencyPanelProperties = {
   name: string;
 };
 
+export type PanelDefinitionBenchmarkType = "control" | "detection";
+
 export type PanelDefinition = {
   name: string;
   args?: any[];
+  benchmark_type?: PanelDefinitionBenchmarkType;
+  children?: DashboardLayoutNode[];
+  dashboard: string;
+  data?: LeafNodeData;
+  dependencies?: string[];
+  description?: string;
   display?: string;
   display_type?: string;
-  panel_type: DashboardPanelType;
-  title?: string;
-  description?: string;
   documentation?: string;
-  width?: Width;
-  sql?: string;
-  data?: LeafNodeData;
-  source_definition?: string;
-  status?: DashboardRunState;
   error?: string;
+  panel_type: DashboardPanelType;
   properties?: PanelProperties;
-  dashboard: string;
-  children?: DashboardLayoutNode[];
-  dependencies?: string[];
+  source_definition?: string;
+  sql?: string;
+  status?: DashboardRunState;
+  title?: string;
+  width?: Width;
 };
 
 export type PanelDependenciesByStatus = {
@@ -453,13 +441,4 @@ export type DashboardDefinition = {
 export type DashboardsCollection = {
   dashboards: AvailableDashboard[];
   dashboardsMap: AvailableDashboardsDictionary;
-};
-
-export type DashboardDataOptions = {
-  dataMode: DashboardDataMode;
-  snapshotId?: string;
-};
-
-export type DashboardRenderOptions = {
-  headless?: boolean;
 };

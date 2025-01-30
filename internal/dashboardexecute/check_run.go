@@ -3,28 +3,31 @@ package dashboardexecute
 import (
 	"context"
 
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // CheckRun is a struct representing the execution of a control or benchmark
 type CheckRun struct {
 	DashboardParentImpl
 
-	Summary   *controlexecute.GroupSummary     `json:"summary"`
-	SessionId string                           `json:"-"`
-	Root      controlexecute.ExecutionTreeNode `json:"-"`
+	Summary       *controlexecute.GroupSummary     `json:"summary"`
+	SessionId     string                           `json:"-"`
+	Root          controlexecute.ExecutionTreeNode `json:"-"`
+	BenchmarkType string                           `json:"benchmark_type"`
 
 	controlExecutionTree *controlexecute.ExecutionTree
-	database             string
+	database             connection.ConnectionStringProvider
 	searchPathConfig     backend.SearchPathConfig
 }
 
@@ -32,13 +35,13 @@ func (r *CheckRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return r.Root.AsTreeNode()
 }
 
-func NewCheckRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
+func NewCheckRun(resource resources.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*CheckRun, error) {
 	r := &CheckRun{SessionId: executionTree.sessionId}
 	// create NewDashboardTreeRunImpl
 	// (we must create after creating the run as it requires a ref to the run)
 	r.DashboardParentImpl = newDashboardParentImpl(resource, parent, r, executionTree)
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 	//  set status to initialized
 	r.Status = dashboardtypes.RunInitialized
 	// add r into execution tree
@@ -60,7 +63,7 @@ func (r *CheckRun) resolveDatabaseConfig() error {
 	// if the resource specifies a database, use that
 	if c, ok := r.resource.(modconfig.DatabaseItem); ok {
 		if resourceDatabase := c.GetDatabase(); resourceDatabase != nil {
-			database = *resourceDatabase
+			database = resourceDatabase
 		}
 		if resourceSearchPath := c.GetSearchPath(); len(resourceSearchPath) > 0 {
 			searchPathConfig.SearchPath = resourceSearchPath
@@ -86,7 +89,7 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 		r.SetError(ctx, err)
 		return
 	}
-	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace.Workspace, client, workspace.ResourceFilter{}, r.resource)
+	executionTree, err := controlexecute.NewExecutionTree(ctx, r.executionTree.workspace, client, workspace.ResourceFilter{}, r.resource)
 	if err != nil {
 		// set the error status on the counter - this will raise counter error event
 		r.SetError(ctx, err)
@@ -94,6 +97,8 @@ func (r *CheckRun) Initialise(ctx context.Context) {
 	}
 	r.controlExecutionTree = executionTree
 	r.Root = executionTree.Root.Children[0]
+	// Type is always control for check run
+	r.BenchmarkType = "control"
 }
 
 // Execute implements DashboardTreeRun

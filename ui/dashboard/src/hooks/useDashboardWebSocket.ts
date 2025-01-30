@@ -1,7 +1,6 @@
 import isEmpty from "lodash/isEmpty";
 import useWebSocket, { ReadyState } from "react-use-websocket";
 import {
-  DashboardCliMode,
   DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
@@ -13,24 +12,17 @@ import { useCallback, useEffect, useRef } from "react";
 export const SocketActions: IActions = {
   CLEAR_DASHBOARD: "clear_dashboard",
   GET_AVAILABLE_DASHBOARDS: "get_available_dashboards",
-  GET_DASHBOARD_METADATA: "get_dashboard_metadata",
   GET_SERVER_METADATA: "get_server_metadata",
   SELECT_DASHBOARD: "select_dashboard",
-  SELECT_SNAPSHOT: "select_snapshot",
   INPUT_CHANGED: "input_changed",
 };
 
 const useDashboardWebSocket = (
-  cliMode: DashboardCliMode,
   dataMode: DashboardDataMode,
-  dispatch: (action: any) => void,
   eventHandler: (event: ReceivedSocketMessagePayload) => void,
   socketUrlFactory?: () => Promise<string>,
 ) => {
   const didUnmount = useRef(false);
-  // const [socketUrl, setSocketUrl] = useState<string | null>(
-  //   !socketUrlFactory ? getSocketServerUrl() : null
-  // );
 
   const getSocketServerUrl = useCallback(async () => {
     if (socketUrlFactory) {
@@ -80,14 +72,9 @@ const useDashboardWebSocket = (
     if (readyState !== ReadyState.OPEN || !sendJsonMessage) {
       return;
     }
-    // TODO remove once all workspaces are running Powerpipe as this is actually GET_SERVER_METADATA in Powerpipe
-    if (cliMode === "steampipe") {
-      sendJsonMessage({ action: SocketActions.GET_DASHBOARD_METADATA });
-    } else {
-      sendJsonMessage({ action: SocketActions.GET_SERVER_METADATA });
-    }
+    sendJsonMessage({ action: SocketActions.GET_SERVER_METADATA });
     sendJsonMessage({ action: SocketActions.GET_AVAILABLE_DASHBOARDS });
-  }, [cliMode, readyState, sendJsonMessage]);
+  }, [readyState, sendJsonMessage]);
 
   useEffect(() => {
     return () => {

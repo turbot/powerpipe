@@ -4,17 +4,19 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/pipes"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/pipes"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlexecute"
+	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/dashboardworkspace"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.SteampipeSnapshot, error) {
-	var dashboardNode modconfig.DashboardLeafNode
+	var dashboardNode resources.DashboardLeafNode
 	var panels map[string]steampipeconfig.SnapshotPanel
 	var checkRun *dashboardexecute.CheckRun
 
@@ -22,7 +24,7 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	switch root := e.Root.Children[0].(type) {
 	case *controlexecute.ResultGroup:
 		var ok bool
-		dashboardNode, ok = root.GroupItem.(modconfig.DashboardLeafNode)
+		dashboardNode, ok = root.GroupItem.(resources.DashboardLeafNode)
 		if !ok {
 			return nil, fmt.Errorf("invalid node found in control execution tree - cannot cast '%s' to a DashboardLeafNode", root.GroupItem.Name())
 		}
@@ -34,13 +36,15 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 	checkRun = &dashboardexecute.CheckRun{
 		Root:    e.Root.Children[0],
 		Summary: e.Root.Summary,
+		// hardcode benchmark type for now
+		BenchmarkType: "control",
 	}
 	checkRun.DashboardTreeRunImpl = dashboardexecute.NewDashboardTreeRunImpl(dashboardNode, nil, checkRun, nil)
 
 	// populate the panels
 	panels = checkRun.BuildSnapshotPanels(make(map[string]steampipeconfig.SnapshotPanel))
 
-	vars, err := dashboardexecute.GetReferencedVariables(checkRun, dashboardworkspace.NewWorkspaceEvents(e.Workspace))
+	vars, err := dashboardexecute.GetReferencedVariables(checkRun, e.Workspace)
 	if err != nil {
 		return nil, err
 	}
@@ -58,6 +62,110 @@ func executionTreeToSnapshot(e *controlexecute.ExecutionTree) (*steampipeconfig.
 		FileNameRoot:  dashboardNode.Name(),
 	}
 	return res, nil
+}
+
+func SnapshotToExecutionTree(ctx context.Context, snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DetectionBenchmarkDisplayTree, error) {
+	// Step 1: Create the execution tree
+	tree, err := newDisplayExecutionTree(snapshot, w, targets...)
+	if err != nil {
+		return nil, err
+	}
+
+	// Step 2: Populate summaries
+	populateSummaries(tree.Root)
+
+	// Step 3: Populate results
+	populateResults(tree.Root, snapshot.Panels)
+
+	// Step 4: Add any additional metadata from the snapshot
+	tree.StartTime = snapshot.StartTime
+	tree.EndTime = snapshot.EndTime
+
+	return tree, nil
+}
+
+func newDisplayExecutionTree(snapshot *steampipeconfig.SteampipeSnapshot, w *workspace.PowerpipeWorkspace, targets ...modconfig.ModTreeItem) (*dashboardexecute.DetectionBenchmarkDisplayTree, error) {
+	// now populate the ExecutionTree
+	executionTree := &dashboardexecute.DetectionBenchmarkDisplayTree{
+		LeafRuns: make(map[string]controlexecute.LeafRun),
+	}
+	// TODO remove need for this?
+	// add dimension colour map
+	executionTree.DimensionColorGenerator, _ = controlexecute.NewDimensionColorGenerator(4, 27)
+
+	var resolvedItem modconfig.ModTreeItem
+	// if only one argument is provided, add this as execution root
+	if len(targets) == 1 {
+		resolvedItem = targets[0]
+	} else {
+		// create a root benchmark with `items` as it's children
+		resolvedItem = resources.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
+	}
+
+	// build tree of result groups, starting with a synthetic 'root' node
+
+	root, err := dashboardexecute.NewRootBenchmarkDisplay(resolvedItem)
+	if err != nil {
+		return nil, err
+	}
+
+	// now traverse the layout snapshot layout, find the corresponding items in the snapshot panesl and build the tree
+	rootLayout := snapshot.Layout
+
+	// build node for this item
+	rootRun := snapshot.Panels[rootLayout.Name]
+	if rootRun == nil {
+		return nil, fmt.Errorf("rootRun %s not found in panels", rootLayout.Name)
+	}
+
+	switch resource := rootRun.(type) {
+	case *dashboardexecute.DetectionRun:
+		root.AddDetection(resource)
+	case *dashboardexecute.DetectionBenchmarkRun:
+		// create a result group for this item
+		benchmarkGroup, err := dashboardexecute.NewDetectionBenchmarkDisplay(resource, root)
+		if err != nil {
+			return nil, err
+		}
+		root.AddResultGroup(benchmarkGroup)
+	}
+
+	executionTree.Root = root
+
+	// after tree has built, ControlCount will be set - create progress rendered
+	executionTree.Progress = controlstatus.NewControlProgress(len(executionTree.LeafRuns))
+
+	return executionTree, nil
+}
+
+func populateSummaries(treeNode controlexecute.ExecutionTreeNode) {
+	if treeNode == nil {
+		return
+	}
+
+	if summaryProvider, ok := treeNode.(dashboardexecute.SummaryProvider); ok {
+		summaryProvider.SetSummary()
+	}
+}
+
+func populateResults(treeNode controlexecute.ExecutionTreeNode, panels map[string]steampipeconfig.SnapshotPanel) {
+	if treeNode == nil {
+		return
+	}
+
+	// If the tree node matches a snapshot panel, populate the result
+	if panel, exists := panels[treeNode.GetName()]; exists {
+		if resultSetter, ok := treeNode.(interface {
+			SetResult(panel steampipeconfig.SnapshotPanel)
+		}); ok {
+			resultSetter.SetResult(panel)
+		}
+	}
+
+	// Recursively populate results for children
+	for _, child := range treeNode.GetChildren() {
+		populateResults(child, panels)
+	}
 }
 
 func PublishSnapshot(ctx context.Context, e *controlexecute.ExecutionTree, shouldShare bool) error {

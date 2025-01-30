@@ -8,12 +8,16 @@ import (
 	"github.com/Masterminds/semver/v3"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/app_specific"
-	"github.com/turbot/pipe-fittings/app_specific_connection"
-	"github.com/turbot/pipe-fittings/cmdconfig"
-	"github.com/turbot/pipe-fittings/connection"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/filepaths"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
+	"github.com/turbot/pipe-fittings/v2/app_specific_connection"
+	"github.com/turbot/pipe-fittings/v2/cmdconfig"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/parse"
+	pparse "github.com/turbot/powerpipe/internal/parse"
+	"github.com/turbot/powerpipe/internal/resources"
 )
 
 // SetAppSpecificConstants sets app specific constants defined in pipe-fittings
@@ -23,7 +27,7 @@ func SetAppSpecificConstants() {
 	// set all app specific env var keys
 	app_specific.SetAppSpecificEnvVarKeys("POWERPIPE_")
 
-	// version
+	// version string
 	versionString := viper.GetString("main.version")
 	app_specific.AppVersion = semver.MustParse(versionString)
 
@@ -71,6 +75,11 @@ func SetAppSpecificConstants() {
 	app_specific.VersionCheckPath = "api/cli/version/latest"
 	app_specific.EnvProfile = "POWERPIPE_PROFILE"
 
+	// set app specific parse related constants
+	modconfig.AppSpecificNewModResourcesFunc = resources.NewModResources
+	parse.ModDecoderFunc = pparse.NewPowerpipeModDecoder
+	parse.AppSpecificGetResourceSchemaFunc = pparse.GetResourceSchema
+
 	// register supported connection types
 	registerConnections()
 }
@@ -82,5 +91,6 @@ func registerConnections() {
 		connection.NewPostgresConnection,
 		connection.NewSqliteConnection,
 		connection.NewDuckDbConnection,
+		connection.NewTailpipeConnection,
 	)
 }

@@ -1,7 +1,7 @@
 package dashboardevents
 
 import (
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"time"
 )

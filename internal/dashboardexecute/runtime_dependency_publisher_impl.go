@@ -4,14 +4,15 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 	"strconv"
 	"sync"
 
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
@@ -22,19 +23,19 @@ type runtimeDependencyPublisherImpl struct {
 	subscriptions  map[string][]*RuntimeDependencyPublishTarget
 	withValueMutex *sync.Mutex
 	withRuns       map[string]*LeafRun
-	inputs         map[string]*modconfig.DashboardInput
+	inputs         map[string]*resources.DashboardInput
 }
 
-func newRuntimeDependencyPublisherImpl(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
+func newRuntimeDependencyPublisherImpl(resource resources.DashboardLeafNode, parent dashboardtypes.DashboardParent, run dashboardtypes.DashboardTreeRun, executionTree *DashboardExecutionTree) runtimeDependencyPublisherImpl {
 	b := runtimeDependencyPublisherImpl{
 		DashboardParentImpl: newDashboardParentImpl(resource, parent, run, executionTree),
 		subscriptions:       make(map[string][]*RuntimeDependencyPublishTarget),
-		inputs:              make(map[string]*modconfig.DashboardInput),
+		inputs:              make(map[string]*resources.DashboardInput),
 		withRuns:            make(map[string]*LeafRun),
 		withValueMutex:      new(sync.Mutex),
 	}
 	// if the resource is a query provider, get params and set status
-	if queryProvider, ok := resource.(modconfig.QueryProvider); ok {
+	if queryProvider, ok := resource.(resources.QueryProvider); ok {
 		// get params
 		b.Params = queryProvider.GetParams()
 		if queryProvider.RequiresExecution(queryProvider) || len(queryProvider.GetChildren()) > 0 {
@@ -59,14 +60,14 @@ func (p *runtimeDependencyPublisherImpl) GetName() string {
 	return p.Name
 }
 
-func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *modconfig.RuntimeDependency) bool {
+func (p *runtimeDependencyPublisherImpl) ProvidesRuntimeDependency(dependency *resources.RuntimeDependency) bool {
 	resourceName := dependency.SourceResourceName()
 	switch dependency.PropertyPath.ItemType {
 	case schema.BlockTypeWith:
 		// we cannot use withRuns here as if withs have dependencies on each other,
 		// this function may be called before all runs have been added
 		// instead, look directly at the underlying resource withs
-		if wp, ok := p.resource.(modconfig.WithProvider); ok {
+		if wp, ok := p.resource.(resources.WithProvider); ok {
 			for _, w := range wp.GetWiths() {
 				if w.UnqualifiedName == resourceName {
 					return true
@@ -122,7 +123,7 @@ func (p *runtimeDependencyPublisherImpl) GetWithRuns() map[string]*LeafRun {
 
 func (p *runtimeDependencyPublisherImpl) initWiths() error {
 	// if the resource is a runtime dependency provider, create with runs and resolve dependencies
-	wp, ok := p.resource.(modconfig.WithProvider)
+	wp, ok := p.resource.(resources.WithProvider)
 	if !ok {
 		return nil
 	}
@@ -263,11 +264,11 @@ func populateData(withData *dashboardtypes.LeafData, result *dashboardtypes.Reso
 	}
 }
 
-func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*modconfig.DashboardWith, executionTree *DashboardExecutionTree) error {
+func (p *runtimeDependencyPublisherImpl) createWithRuns(withs []*resources.DashboardWith, executionTree *DashboardExecutionTree) error {
 	for _, w := range withs {
 		// NOTE: set the name of the run to be the scoped name
 		withRunName := fmt.Sprintf("%s.%s", p.GetName(), w.UnqualifiedName)
-		withRun, err := NewLeafRun(w, p, executionTree, setName(withRunName))
+		withRun, err := NewLeafRun(w, p, executionTree, withName(withRunName))
 		if err != nil {
 			return err
 		}

@@ -8,21 +8,26 @@ import (
 	"time"
 
 	typehelpers "github.com/turbot/go-kit/types"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/queryresult"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
-	"github.com/turbot/pipe-fittings/utils"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/snapshot"
 	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
 )
+
+type LeafRun interface {
+	GetRows() ResultRows
+}
 
 // ControlRun is a struct representing the execution of a control run. It will contain one or more result items (i.e. for one or more resources).
 type ControlRun struct {
@@ -43,7 +48,7 @@ type ControlRun struct {
 	NodeType string `json:"panel_type"`
 
 	// the control being run
-	Control *modconfig.Control `json:"-"`
+	Control *resources.Control `json:"-"`
 	// this is populated by retrieving Control properties with the snapshot tag
 	Properties map[string]any `json:"properties,omitempty"`
 
@@ -105,7 +110,7 @@ func NewControlRunInstance(cr *ControlRun, parent *ResultGroup) ControlRunInstan
 	return res //nolint:govet // we want the struct
 }
 
-func NewControlRun(control *modconfig.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
+func NewControlRun(control *resources.Control, group *ResultGroup, executionTree *ExecutionTree) (*ControlRun, error) {
 	controlId := control.Name()
 
 	// only show qualified control names for controls from dependent mods
@@ -195,6 +200,10 @@ func (r *ControlRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 		NodeType: r.NodeType,
 	}
 	return res
+}
+
+func (r *ControlRun) GetRows() ResultRows {
+	return r.Rows
 }
 
 func (r *ControlRun) setError(ctx context.Context, err error) {
@@ -327,7 +336,7 @@ func (r *ControlRun) getControlQueryContext(ctx context.Context) context.Context
 	return newCtx
 }
 
-func (r *ControlRun) resolveControlQuery(control *modconfig.Control) (*modconfig.ResolvedQuery, error) {
+func (r *ControlRun) resolveControlQuery(control *resources.Control) (*modconfig.ResolvedQuery, error) {
 	resolvedQuery, err := r.Tree.Workspace.ResolveQueryFromQueryProvider(control, nil)
 	if err != nil {
 		return nil, fmt.Errorf(`cannot run %s - failed to resolve query "%s": %s`, control.Name(), typehelpers.SafeString(control.SQL), err.Error())

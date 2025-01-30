@@ -6,26 +6,35 @@ import { renderInterpolatedTemplates } from "@powerpipe/utils/template";
 import { useCallback, useEffect, useState } from "react";
 
 const useTemplateRender = () => {
-  const [jqWeb, setJqWeb] = useState<any | null>(null);
+  const [jq, setJq] = useState<any | null>(null);
 
   // Dynamically import jq-web from its own bundle
   useEffect(() => {
-    import("jq-web").then((m) => setJqWeb(m));
+    const loadJq = async () => {
+      try {
+        const module = await import("jq-wasm");
+        setJq(module);
+      } catch (error) {
+        console.error("Error loading jq-web:", error);
+      }
+    };
+
+    loadJq();
   }, []);
 
   const renderTemplates = useCallback(
     async (templates: TemplatesMap, data: KeyValuePairs[]) => {
-      if (!jqWeb) {
+      if (!jq) {
         return [];
       }
-      return renderInterpolatedTemplates(templates, data, jqWeb);
+      return renderInterpolatedTemplates(templates, data, jq);
     },
-    [jqWeb],
+    [jq],
   );
 
   return {
     renderTemplates,
-    ready: !!jqWeb,
+    ready: !!jq,
   };
 };
 

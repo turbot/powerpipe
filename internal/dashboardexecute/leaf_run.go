@@ -3,17 +3,18 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
 
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/queryresult"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/statushooks"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/statushooks"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/snapshot"
@@ -24,14 +25,15 @@ type LeafRun struct {
 	// all RuntimeDependencySubscribers are also publishers as they have args/params
 	RuntimeDependencySubscriberImpl
 
-	Resource modconfig.DashboardLeafNode `json:"-"`
+	Resource resources.DashboardLeafNode `json:"-"`
 	// this is populated by retrieving Resource properties with the snapshot tag
-	Properties map[string]any           `json:"properties,omitempty"`
-	Data       *dashboardtypes.LeafData `json:"data,omitempty"`
+	Properties    map[string]any           `json:"properties,omitempty"`
+	Data          *dashboardtypes.LeafData `json:"data,omitempty"`
+	Documentation string                   `json:"documentation,omitempty"`
 	// function called when the run is complete
 	// this property populated for 'with' runs
 	onComplete       func()
-	database         string
+	database         connection.ConnectionStringProvider
 	searchPathConfig backend.SearchPathConfig
 }
 
@@ -42,7 +44,7 @@ func (r *LeafRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	}
 }
 
-func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
+func NewLeafRun(resource resources.DashboardLeafNode, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree, opts ...LeafRunOption) (*LeafRun, error) {
 	r := &LeafRun{
 		Resource:   resource,
 		Properties: make(map[string]any),
@@ -67,7 +69,7 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 		return nil, err
 	}
 
-	r.NodeType = resource.BlockType()
+	r.NodeType = resource.GetBlockType()
 
 	// if the node has no runtime dependencies, resolve the sql
 	if !r.hasRuntimeDependencies() {
@@ -89,6 +91,8 @@ func NewLeafRun(resource modconfig.DashboardLeafNode, parent dashboardtypes.Dash
 
 	// populate the names of any withs we depend on
 	r.setRuntimeDependencies()
+
+	r.Documentation = resource.GetDocumentation()
 
 	if err := r.populateProperties(); err != nil {
 		return nil, err
@@ -119,7 +123,7 @@ func (r *LeafRun) createChildRuns(executionTree *DashboardExecutionTree) error {
 
 	for i, c := range children {
 		var opts []LeafRunOption
-		childRun, err := NewLeafRun(c.(modconfig.DashboardLeafNode), r, executionTree, opts...)
+		childRun, err := NewLeafRun(c.(resources.DashboardLeafNode), r, executionTree, opts...)
 		if err != nil {
 			errors = append(errors, err)
 			continue
@@ -258,7 +262,7 @@ func (r *LeafRun) combineChildData() {
 		childLeafRun := c.(*LeafRun)
 		data := childLeafRun.Data
 		// if there is no data or this is a 'with', skip
-		if data == nil || childLeafRun.resource.BlockType() == schema.BlockTypeWith {
+		if data == nil || childLeafRun.resource.GetBlockType() == schema.BlockTypeWith {
 			continue
 		}
 		for _, s := range data.Columns {

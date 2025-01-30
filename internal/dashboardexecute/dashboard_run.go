@@ -3,11 +3,11 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
+	"github.com/turbot/powerpipe/internal/resources"
 	"log/slog"
 
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
@@ -16,7 +16,7 @@ type DashboardRun struct {
 	runtimeDependencyPublisherImpl
 
 	parent    dashboardtypes.DashboardParent
-	dashboard *modconfig.Dashboard
+	dashboard *resources.Dashboard
 }
 
 func (r *DashboardRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
@@ -36,7 +36,7 @@ func (r *DashboardRun) AsTreeNode() *steampipeconfig.SnapshotTreeNode {
 	return res
 }
 
-func NewDashboardRun(dashboard *modconfig.Dashboard, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardRun, error) {
+func NewDashboardRun(dashboard *resources.Dashboard, parent dashboardtypes.DashboardParent, executionTree *DashboardExecutionTree) (*DashboardRun, error) {
 	r := &DashboardRun{
 		parent:    parent,
 		dashboard: dashboard,
@@ -100,7 +100,7 @@ func (r *DashboardRun) Execute(ctx context.Context) {
 func (*DashboardRun) IsSnapshotPanel() {}
 
 // GetInput searches for an input with the given name
-func (r *DashboardRun) GetInput(name string) (*modconfig.DashboardInput, bool) {
+func (r *DashboardRun) GetInput(name string) (*resources.DashboardInput, bool) {
 	return r.dashboard.GetInput(name)
 }
 
@@ -123,41 +123,46 @@ func (r *DashboardRun) createChildRuns(executionTree *DashboardExecutionTree) er
 		var childRun dashboardtypes.DashboardTreeRun
 		var err error
 		switch i := child.(type) {
-		case *modconfig.DashboardWith:
+		case *resources.DashboardWith:
 			// ignore as with runs are created by RuntimeDependencyPublisherImpl
 			continue
-		case *modconfig.Dashboard:
+		case *resources.Dashboard:
 			childRun, err = NewDashboardRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *modconfig.DashboardContainer:
+		case *resources.DashboardContainer:
 			childRun, err = NewDashboardContainerRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *modconfig.Benchmark, *modconfig.Control:
-			childRun, err = NewCheckRun(i.(modconfig.DashboardLeafNode), r, executionTree)
+		case *resources.DetectionBenchmark:
+			childRun, err = NewDetectionBenchmarkRun(i, r, executionTree)
 			if err != nil {
 				return err
 			}
-		case *modconfig.DashboardInput:
+
+		case *resources.Benchmark, *resources.Control:
+			childRun, err = NewCheckRun(i.(resources.DashboardLeafNode), r, executionTree)
+			if err != nil {
+				return err
+			}
+		case *resources.DashboardInput:
 			// NOTE: clone the input to avoid mutating the original
 			// TODO remove the need for this when we refactor input values resolution
 			// TODO https://github.com/turbot/steampipe/issues/2864
 
 			// TACTICAL: as this is a runtime dependency,  set the run name to the 'scoped name'
 			// this is to match the name in the panel dependendencies
-			// TODO [node_reuse] consider naming https://github.com/turbot/steampipe/issues/2921
 			inputRunName := fmt.Sprintf("%s.%s", r.DashboardName, i.UnqualifiedName)
-			childRun, err = NewLeafRun(i.Clone(), r, executionTree, setName(inputRunName))
+			childRun, err = NewLeafRun(i.Clone(), r, executionTree, withName(inputRunName))
 			if err != nil {
 				return err
 			}
 
 		default:
 			// ensure this item is a DashboardLeafNode
-			leafNode, ok := i.(modconfig.DashboardLeafNode)
+			leafNode, ok := i.(resources.DashboardLeafNode)
 			if !ok {
 				return fmt.Errorf("child %s does not implement DashboardLeafNode", i.Name())
 			}

@@ -1,11 +1,7 @@
 import get from "lodash/get";
 import isNumber from "lodash/isNumber";
 import { CardProperties } from "@powerpipe/components/dashboards/Card";
-import {
-  DashboardPanelType,
-  DashboardRunState,
-  PanelDefinition,
-} from "@powerpipe/types";
+import { DashboardPanelType, DashboardRunState } from "@powerpipe/types";
 import { getColumn, hasData } from "@powerpipe/utils/data";
 import { getIconForType } from "@powerpipe/utils/card";
 import {
@@ -40,58 +36,35 @@ export type CardDataFormat = "simple" | "formal";
 export type CardType = "alert" | "info" | "ok" | "severity" | "table" | null;
 
 export class CardDataProcessor {
-  constructor() {}
-
   getDefaultState = (
     status: DashboardRunState,
     properties: CardProperties,
     display_type: CardType | undefined,
   ): CardState => {
     return {
-      loading: status === "running",
-      label: properties.label || null,
-      value: isNumber(properties.value)
-        ? properties.value.toLocaleString()
-        : properties.value || null,
-      value_number: isNumber(properties.value) ? properties.value : null,
+      loading: status === "running" || !!properties?.loading,
+      label: properties?.label || null,
+      value: isNumber(properties?.value)
+        ? properties?.value.toLocaleString()
+        : properties?.value || null,
+      value_number: isNumber(properties?.value) ? properties?.value : null,
       type: display_type || null,
-      icon: getIconForType(display_type, properties.icon),
-      href: properties.href || null,
+      icon: getIconForType(display_type, properties?.icon),
+      href: properties?.href || null,
     };
   };
 
   buildCardState(
     data: LeafNodeData | undefined,
-    diff_panel: PanelDefinition | undefined,
     display_type: CardType | undefined,
     properties: CardProperties,
     status: DashboardRunState,
   ): CardState {
     if (!data || !hasData(data)) {
-      const state = this.getDefaultState(status, properties, display_type);
-      if (!!diff_panel && !!diff_panel.properties) {
-        const diffState = this.getDefaultState(
-          status,
-          diff_panel.properties,
-          display_type,
-        );
-        state.diff = this.diff(properties, state, diffState) as CardDiffState;
-      }
-      return state;
+      return this.getDefaultState(status, properties, display_type);
     }
 
-    const state = this.parseData(data, display_type, properties);
-
-    if (!!diff_panel && !!diff_panel.data) {
-      const diffState = this.parseData(
-        diff_panel.data,
-        display_type,
-        properties,
-      );
-      state.diff = this.diff(properties, state, diffState) as CardDiffState;
-    }
-
-    return state;
+    return this.parseData(data, display_type, properties);
   }
 
   parseData(

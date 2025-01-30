@@ -10,13 +10,14 @@ import (
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/schema"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/schema"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -81,7 +82,7 @@ func NewRootResultGroup(ctx context.Context, executionTree *ExecutionTree, rootI
 	}
 
 	// if root item is a benchmark, create new result group with root as parent
-	if control, ok := rootItem.(*modconfig.Control); ok {
+	if control, ok := rootItem.(*resources.Control); ok {
 		// if root item is a control, add control run
 		if err := executionTree.AddControl(ctx, control, root); err != nil {
 			return nil, err
@@ -116,18 +117,18 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 
 	// populate additional properties (this avoids adding GetDocumentation, GetDisplay and GetType to all ModTreeItems)
 	switch t := treeItem.(type) {
-	case *modconfig.Benchmark:
+	case *resources.Benchmark:
 		group.Documentation = t.GetDocumentation()
 		group.Display = t.GetDisplay()
 		group.Type = t.GetType()
-	case *modconfig.Control:
+	case *resources.Control:
 		group.Documentation = t.GetDocumentation()
 		group.Display = t.GetDisplay()
 		group.Type = t.GetType()
 	}
 	// add child groups for children which are benchmarks
 	for _, c := range treeItem.GetChildren() {
-		if benchmark, ok := c.(*modconfig.Benchmark); ok {
+		if benchmark, ok := c.(*resources.Benchmark); ok {
 			// create a result group for this item
 			benchmarkGroup, err := NewResultGroup(ctx, executionTree, benchmark, group)
 			if err != nil {
@@ -139,7 +140,7 @@ func NewResultGroup(ctx context.Context, executionTree *ExecutionTree, treeItem 
 				group.addResultGroup(benchmarkGroup)
 			}
 		}
-		if control, ok := c.(*modconfig.Control); ok {
+		if control, ok := c.(*resources.Control); ok {
 			if err := executionTree.AddControl(ctx, control, group); err != nil {
 				return nil, err
 			}

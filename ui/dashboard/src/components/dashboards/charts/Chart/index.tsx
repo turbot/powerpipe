@@ -30,8 +30,10 @@ import { GraphType } from "@powerpipe/components/dashboards/graphs/types";
 import { HierarchyType } from "@powerpipe/components/dashboards/hierarchies/types";
 import { injectSearchPathPrefix } from "@powerpipe/utils/url";
 import { registerComponent } from "@powerpipe/components/dashboards";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
+import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 import { useNavigate } from "react-router-dom";
+import { parseDate } from "@powerpipe/utils/date";
 
 const getThemeColorsWithPointOverrides = (
   type: ChartType = "column",
@@ -93,7 +95,7 @@ const getThemeColorsWithPointOverrides = (
   }
 };
 
-const getCommonBaseOptions = () => ({
+const getCommonBaseOptions = (themeColors) => ({
   animation: false,
   grid: {
     left: "5%",
@@ -118,7 +120,11 @@ const getCommonBaseOptions = () => ({
   },
   tooltip: {
     appendToBody: true,
+    backgroundColor: themeColors.dashboard,
+    borderColor: themeColors.dashboardPanel,
+    borderWidth: 1,
     textStyle: {
+      color: themeColors.foreground,
       fontSize: 11,
     },
     trigger: "item",
@@ -165,8 +171,87 @@ const getCommonBaseOptionsForChartType = (
   series: any[],
   seriesOverrides: ChartSeries | undefined,
   themeColors,
+  dataConfig: any = {},
 ) => {
   switch (type) {
+    case "heatmap": {
+      return {
+        grid: {
+          top: "17%",
+        },
+        tooltip: {
+          position: "top",
+          formatter: function (params) {
+            if (dataConfig.interval === "hourly") {
+              return `${params.value[2].toLocaleString()} entries on ${params.value[0]} at ${params.value[1]}`;
+            } else {
+              return `${params.value[2].toLocaleString()} entries on ${params.value[0]}`;
+            }
+          },
+        },
+        visualMap: {
+          type: "piecewise", // Use piecewise for custom range-color mapping
+          show: true, // Display the legend at the top
+          orient: "horizontal", // Horizontal layout for the legend
+          top: 10, // Position the legend at the top
+          left: "center",
+          min: 0,
+          max: dataConfig.maxValue,
+          textStyle: {
+            color: themeColors.foreground,
+          },
+          pieces: [
+            { value: 0, color: themeColors.foregroundLightest, label: "0" },
+            {
+              min: 1,
+              max: Math.floor(dataConfig.maxValue * 0.2) - 1,
+              color: "#dae2fa",
+              label: `1-${(Math.floor(dataConfig.maxValue * 0.2) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.2),
+              max: Math.floor(dataConfig.maxValue * 0.4) - 1,
+              color: "#b6c5f6",
+              label: `${Math.floor(dataConfig.maxValue * 0.2).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.4) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.4),
+              max: Math.floor(dataConfig.maxValue * 0.6) - 1,
+              color: "#91a7f1",
+              label: `${Math.floor(dataConfig.maxValue * 0.4).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.6) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.6),
+              max: Math.floor(dataConfig.maxValue * 0.8) - 1,
+              color: "#6d8aed",
+              label: `${Math.floor(dataConfig.maxValue * 0.6).toLocaleString()}-${(Math.floor(dataConfig.maxValue * 0.8) - 1).toLocaleString()}`,
+            },
+            {
+              min: Math.floor(dataConfig.maxValue * 0.8),
+              max: dataConfig.maxValue,
+              color: "#486de8",
+              label: `${Math.floor(dataConfig.maxValue * 0.8).toLocaleString()}-${dataConfig.maxValue.toLocaleString()}`,
+            },
+          ],
+        },
+        xAxis: {
+          type: "category",
+          data: dataConfig.xAxisData,
+          axisLabel: {
+            color: themeColors.foreground,
+            //fontSize: 10,
+          },
+        },
+        yAxis: {
+          type: "category",
+          data: dataConfig.yAxisData,
+          axisLabel: {
+            color: themeColors.foreground,
+            //fontSize: 10,
+          },
+        },
+      };
+    }
     case "bar":
       return {
         color: getThemeColorsWithPointOverrides(
@@ -535,6 +620,7 @@ const getSeriesForChartType = (
   transform: ChartTransform,
   shouldBeTimeSeries: boolean,
   themeColors,
+  dataConfig: any = {},
 ) => {
   if (!data) {
     return [];
@@ -562,6 +648,24 @@ const getSeriesForChartType = (
     }
 
     switch (type) {
+      case "heatmap": {
+        series.push({
+          type: "heatmap",
+          data: dataConfig.heatmapData,
+          emphasis: {
+            itemStyle: {
+              borderColor: themeColors.dashboardPanel,
+              borderWidth: 1,
+            },
+          },
+          itemStyle: {
+            borderRadius: [3, 3, 3, 3],
+            borderWidth: 2, // Add a larger border for padding effect
+            borderColor: themeColors.dashboardPanel, // Border color matches the background
+          },
+        });
+        break;
+      }
       case "bar":
       case "column":
         series.push({
@@ -705,6 +809,59 @@ const adjustGridConfig = (
   return newConfig;
 };
 
+const getDataConfigForChartType = (
+  type: ChartType = "column",
+  dataset: any[][],
+) => {
+  switch (type) {
+    case "heatmap": {
+      const rawData = dataset.slice(1);
+
+      // Infer the interval
+      const timestamps = rawData.map((d) => parseDate(d[0])?.unix());
+      const differences = timestamps.slice(1).map((t, i) => t - timestamps[i]);
+      const avgDifference =
+        differences.reduce((a, b) => a + b, 0) / differences.length;
+      const interval = avgDifference <= 3600 ? "hourly" : "daily"; // 3600000 ms = 1 hour
+
+      // Generate x and y axes based on the inferred interval
+      let xAxisData,
+        yAxisData,
+        heatmapData,
+        maxValue = 0;
+
+      if (interval === "hourly") {
+        xAxisData = Array.from(new Set(rawData.map((d) => d[0].split("T")[0]))); // Unique days
+        yAxisData = Array.from(
+          { length: 24 },
+          (_, i) => `${i < 10 ? `0${i}` : i}:00`,
+        ); // Hours
+        heatmapData = rawData.map((d) => {
+          const [date, time] = d[0].split("T");
+          if (!maxValue || d[1] > maxValue) {
+            maxValue = d[1];
+          }
+          return [date, time.split(":")[0] + ":00", d[1]];
+        });
+      } else {
+        xAxisData = Array.from(new Set(rawData.map((d) => d[0].split("T")[0]))); // Unique days
+        yAxisData = ["Daily"];
+        heatmapData = rawData.map((d) => {
+          const date = d[0].split("T")[0];
+          if (!maxValue || d[1] > maxValue) {
+            maxValue = d[1];
+          }
+          return [date, "Daily", d[1]];
+        });
+      }
+
+      return { interval, heatmapData, xAxisData, yAxisData, maxValue };
+    }
+    default:
+      return {};
+  }
+};
+
 const buildChartOptions = (props: ChartProps, themeColors: any) => {
   const { dataset, rowSeriesLabels, transform } = buildChartDataset(
     props.data,
@@ -713,6 +870,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
   const treatAsTimeSeries = ["timestamp", "timestamptz", "date"].includes(
     props.data?.columns[0].data_type.toLowerCase() || "",
   );
+  const dataConfig = getDataConfigForChartType(props.display_type, dataset);
   const series = getSeriesForChartType(
     props.display_type || "column",
     props.data,
@@ -721,9 +879,10 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
     transform,
     treatAsTimeSeries,
     themeColors,
+    dataConfig,
   );
   const config = merge(
-    getCommonBaseOptions(),
+    getCommonBaseOptions(themeColors),
     getCommonBaseOptionsForChartType(
       props.display_type || "column",
       props.width,
@@ -732,6 +891,7 @@ const buildChartOptions = (props: ChartProps, themeColors: any) => {
       series,
       props.properties?.series,
       themeColors,
+      dataConfig,
     ),
     getOptionOverridesForChartType(
       props.display_type || "column",
@@ -851,10 +1011,8 @@ const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
 };
 
 const ChartWrapper = (props: ChartProps) => {
-  const {
-    searchPathPrefix,
-    themeContext: { wrapperRef },
-  } = useDashboard();
+  const { wrapperRef } = useDashboardTheme();
+  const { searchPathPrefix } = useDashboardSearchPath();
   const themeColors = useChartThemeColors();
 
   if (!wrapperRef) {

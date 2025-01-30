@@ -7,11 +7,11 @@ import (
 
 	"github.com/spf13/viper"
 	filehelpers "github.com/turbot/go-kit/files"
-	"github.com/turbot/pipe-fittings/connection"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/error_helpers"
-	"github.com/turbot/pipe-fittings/pipes"
-	"github.com/turbot/pipe-fittings/steampipeconfig"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/pipes"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 )
 
@@ -32,7 +32,10 @@ func ValidateDatabaseArg() error {
 			// unexpected - all registered connections should implement this interface
 			return fmt.Errorf("connection '%s' does not implement connection.ConnectionStringProvider", databaseArg)
 		}
-		connectionString := csp.GetConnectionString()
+		connectionString, err := csp.GetConnectionString()
+		if err != nil {
+			return err
+		}
 		// update viper Database arg with the connection string
 		viper.Set(constants.ArgDatabase, connectionString)
 		// if no search path is set, set it to the connection's default search path
@@ -71,6 +74,7 @@ func ValidateSnapshotArgs(ctx context.Context) error {
 		return err
 	}
 
+	// TODO K this is probably broken as we do not really use database arg
 	// if workspace-database or snapshot-location are a cloud workspace handle, cloud token must be set
 	requireCloudToken := steampipeconfig.IsPipesWorkspaceIdentifier(viper.GetString(constants.ArgDatabase)) ||
 		steampipeconfig.IsPipesWorkspaceIdentifier(viper.GetString(constants.ArgSnapshotLocation))

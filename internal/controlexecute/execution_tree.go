@@ -7,12 +7,14 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/backend"
-	"github.com/turbot/pipe-fittings/constants"
-	"github.com/turbot/pipe-fittings/modconfig"
-	"github.com/turbot/pipe-fittings/workspace"
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+	pworkspace "github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"golang.org/x/sync/semaphore"
 )
 
@@ -27,8 +29,8 @@ type ExecutionTree struct {
 	// map of dimension property name to property value to color map
 	DimensionColorGenerator *DimensionColorGenerator `json:"-"`
 	// the current session search path
-	SearchPath []string             `json:"-"`
-	Workspace  *workspace.Workspace `json:"-"`
+	SearchPath []string                      `json:"-"`
+	Workspace  *workspace.PowerpipeWorkspace `json:"-"`
 	// ControlRunInstances is a list of control runs for each parent.
 	ControlRunInstances []*ControlRunInstance `json:"-"`
 	client              *db_client.DbClient
@@ -36,10 +38,10 @@ type ExecutionTree struct {
 	controlNameFilterMap map[string]struct{}
 }
 
-func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, client *db_client.DbClient, controlFilter workspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
+func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, client *db_client.DbClient, controlFilter pworkspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
 	// now populate the ExecutionTree
 	executionTree := &ExecutionTree{
-		Workspace:   workspace,
+		Workspace:   w,
 		client:      client,
 		ControlRuns: make(map[string]*ControlRun),
 	}
@@ -61,7 +63,7 @@ func NewExecutionTree(ctx context.Context, workspace *workspace.Workspace, clien
 		resolvedItem = targets[0]
 	} else {
 		// create a root benchmark with `items` as it's children
-		resolvedItem = modconfig.NewRootBenchmarkWithChildren(workspace.Mod, targets).(modconfig.ModTreeItem)
+		resolvedItem = resources.NewRootBenchmarkWithChildren(w.Mod, targets).(modconfig.ModTreeItem)
 	}
 
 	// build tree of result groups, starting with a synthetic 'root' node
@@ -95,7 +97,7 @@ func (*ExecutionTree) IsExportSourceData() {}
 
 // AddControl checks whether control should be included in the tree
 // if so, creates a ControlRun, which is added to the parent group
-func (e *ExecutionTree) AddControl(ctx context.Context, control *modconfig.Control, group *ResultGroup) error {
+func (e *ExecutionTree) AddControl(ctx context.Context, control *resources.Control, group *ResultGroup) error {
 	// note we use short name to determine whether to include a control
 	if e.ShouldIncludeControl(control.Name()) {
 		// check if we have a run already
@@ -173,7 +175,7 @@ func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, paralle
 	return parallelismLock.Acquire(waitCtx, maxParallelGoRoutines)
 }
 
-func (e *ExecutionTree) populateControlFilterMap(controlFilter workspace.ResourceFilter) error {
+func (e *ExecutionTree) populateControlFilterMap(controlFilter pworkspace.ResourceFilter) error {
 	// if we derived or were passed a where clause, run the filter
 	if controlFilter.Empty() {
 		return nil
@@ -199,9 +201,10 @@ func (e *ExecutionTree) ShouldIncludeControl(controlName string) bool {
 
 // Get a map of control names from the introspection table steampipe_control
 // This is used to implement the 'where' control filtering
-func (e *ExecutionTree) getControlMapFromFilter(controlFilter workspace.ResourceFilter) (map[string]struct{}, error) {
+func (e *ExecutionTree) getControlMapFromFilter(controlFilter pworkspace.ResourceFilter) (map[string]struct{}, error) {
 	var res = make(map[string]struct{})
-	controls, err := workspace.FilterWorkspaceResourcesOfType[*modconfig.Control](e.Workspace, controlFilter)
+	// TODO K pass workspace interface instead
+	controls, err := pworkspace.FilterWorkspaceResourcesOfType[*resources.Control](&e.Workspace.Workspace, controlFilter)
 	if err != nil {
 		return nil, err
 	}

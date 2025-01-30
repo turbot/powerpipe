@@ -8,7 +8,8 @@ import PanelDetailPreview from "./PanelDetailPreview";
 import PanelDetailQuery from "./PanelDetailQuery";
 import { classNames } from "@powerpipe/utils/styles";
 import { DashboardDataModeLive, PanelDefinition } from "@powerpipe/types";
-import { useDashboard } from "@powerpipe/hooks/useDashboard";
+import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
+import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useMemo, useState } from "react";
 
 export type PanelDetailProps = {
@@ -47,10 +48,10 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
   const [selectedTab, setSelectedTab] = useState(Tabs.PREVIEW);
   const {
     breakpointContext: { minBreakpoint },
-    closePanelDetail,
     dataMode,
     panelsLog,
-  } = useDashboard();
+  } = useDashboardState();
+  const { closePanel, panelOverrideData } = useDashboardPanelDetail();
   const isTablet = minBreakpoint("md");
 
   const panelLog = panelsLog[definition.name];
@@ -74,7 +75,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
         selected: selectedTab.name === Tabs.DEFINITION.name,
       });
     }
-    if (definition.data) {
+    if (panelOverrideData || definition.data) {
       tabs.push({
         ...Tabs.DATA,
         selected: selectedTab.name === Tabs.DATA.name,
@@ -84,6 +85,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
       dataMode === DashboardDataModeLive &&
       definition.panel_type !== "benchmark" &&
       definition.panel_type !== "control" &&
+      definition.panel_type !== "detection" &&
       !!panelLog
     ) {
       tabs.push({
@@ -105,10 +107,7 @@ const PanelDetail = ({ definition }: PanelDetailProps) => {
             panelDefinition={definition}
             size={isTablet ? "md" : "sm"}
           />
-          <NeutralButton
-            onClick={closePanelDetail}
-            size={isTablet ? "md" : "sm"}
-          >
+          <NeutralButton onClick={closePanel} size={isTablet ? "md" : "sm"}>
             <>
               Close<span className="ml-2 font-light text-xxs">ESC</span>
             </>
