@@ -43,35 +43,41 @@ export const DashboardSearchProvider = ({
 
   const updateSearchValue = useCallback(
     (value: string | undefined) => {
-      if (value) {
-        searchParams.set("search", value);
-      } else {
-        searchParams.delete("search");
-      }
-      setSearchParams(searchParams);
+      setSearchParams((previous) => {
+        if (value) {
+          previous.set("search", value);
+        } else {
+          previous.delete("search");
+        }
+        return previous;
+      });
     },
-    [searchParams],
+    [setSearchParams],
   );
 
   const updateGroupBy = useCallback(
     (value: DashboardSearchGroupByMode, tag?: string) => {
-      searchParams.set("group_by", value);
-      if (tag) {
-        searchParams.set("tag", tag);
-      } else {
-        searchParams.delete("tag");
-      }
-      setSearchParams(searchParams);
+      setSearchParams((previous) => {
+        previous.set("group_by", value);
+        if (tag) {
+          previous.set("tag", tag);
+        } else {
+          previous.delete("tag");
+        }
+        return previous;
+      });
     },
-    [searchParams],
+    [setSearchParams],
   );
 
   const updateDashboardsDisplay = useCallback(
     (value: DashboardDisplayMode) => {
-      searchParams.set("dashboard_display", value);
-      setSearchParams(searchParams);
+      setSearchParams((previous) => {
+        previous.set("dashboard_display", value);
+        return previous;
+      });
     },
-    [searchParams],
+    [setSearchParams],
   );
 
   return (
