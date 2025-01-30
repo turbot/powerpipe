@@ -90,7 +90,9 @@ export const DashboardExecutionProvider = ({
     sendMessage({
       action: SocketActions.CLEAR_DASHBOARD,
     });
-    navigate(`../${search ? `?${search}` : ""}`, { replace: true });
+    navigate(`${rootPathname}${search ? `?${search}` : ""}`, {
+      replace: true,
+    });
     setLastChangedInput(null);
     closeSidePanel();
     dispatch({
@@ -103,7 +105,7 @@ export const DashboardExecutionProvider = ({
       return;
     }
     clearDashboard();
-  }, [dispatch, pathname, search]);
+  }, [dispatch, pathname, rootPathname, search]);
 
   const loadSnapshot = useCallback(
     (
@@ -220,7 +222,9 @@ export const DashboardExecutionProvider = ({
         type: DashboardActions.SELECT_DASHBOARD,
         dashboard: null,
       });
-      navigate(`../${search}`, { replace: true });
+      navigate(`${rootPathname}${search ? `?${search}` : ""}`, {
+        replace: true,
+      });
       setLastChangedInput(null);
       return;
     }
@@ -277,6 +281,7 @@ export const DashboardExecutionProvider = ({
     if (!availableDashboardsLoaded) {
       return;
     }
+
     executeDashboard(dashboard_name);
   }, [
     availableDashboardsLoaded,
