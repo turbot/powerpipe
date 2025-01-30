@@ -1,24 +1,23 @@
 ## v1.2.0 [2025-01-30]
 _Whats new_
-
-* Add support for `tailpipe` detections and detection benchmarks
-* Add `tailpipe` connection type
-* Add `detection run` command
-* Add default column support for tables. Closes #567.
-* Allow multiple benchmarks/controls to be filtered/grouped on a single dashboard. Closes #588.
-* Add support for equal / not_equal / in / not_in filters. Closes #594.
-* Show documentation in Benchmark UI. Closes #591.
-* Combine snap / open button into single split button. Closes #606.
-* Add table column selection to table panel controls. Closes #631.
-* Add table row view. Closes #636.
-* Add support for draggable split pane for dashboard UI right content section. Closes #648.
-* Update default date_range input to be 7 days. Closes #641.
-* Add cell filtering to tables. Closes #662.
-* Add href support to detection column data. Closes #642.
-* Add table filter side panel for regular tables. Closes #670.
-* Add 500 MB limit for opening snapshots. Closes #671.
-* Add control row detail side panel view. Closes #672.
-* Add heatmap chart. Closes #673.
+- Add support for `tailpipe` detections and detection benchmarks.
+- Add `tailpipe` connection type.
+- Add `detection` command. 
+- Add default column support for tables. ([#567](https://github.com/turbot/powerpipe/issues/567))
+- Allow multiple benchmarks/controls to be filtered/grouped on a single dashboard. ([#588](https://github.com/turbot/powerpipe/issues/588))
+- Add support for equal / not_equal / in / not_in filters. ([#594](https://github.com/turbot/powerpipe/issues/594))
+- Show documentation in Benchmark UI. ([#591](https://github.com/turbot/powerpipe/issues/591))
+- Combine snap / open button into single split button. ([#606](https://github.com/turbot/powerpipe/issues/606))
+- Add table column selection to table panel controls. ([#631](https://github.com/turbot/powerpipe/issues/631))
+- Add table row view. ([#636](https://github.com/turbot/powerpipe/issues/636))
+- Add support for draggable split pane for dashboard UI right content section. ([#648](https://github.com/turbot/powerpipe/issues/648))
+- Update default date_range input to be 7 days. ([#641](https://github.com/turbot/powerpipe/issues/641))
+- Add cell filtering to tables. ([#662](https://github.com/turbot/powerpipe/issues/662))
+- Add href support to detection column data. ([#642](https://github.com/turbot/powerpipe/issues/642))
+- Add table filter side panel for regular tables. ([#670](https://github.com/turbot/powerpipe/issues/670))
+- Add 500 MB limit for opening snapshots. ([#671](https://github.com/turbot/powerpipe/issues/671))
+- Add control row detail side panel view. ([#672](https://github.com/turbot/powerpipe/issues/672))
+- Add heatmap chart. ([#673](https://github.com/turbot/powerpipe/issues/673))
 
 ## v1.1.0 [2025-01-20]
 _Whats new_
