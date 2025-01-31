@@ -1,6 +1,8 @@
 package db_client
 
 import (
+	"log/slog"
+
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
@@ -11,6 +13,8 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
+// GetDatabaseConfigForResource returns the ConnectionStringProvider and searchPathConfig for a resource
+// if no database is set, use the default database, likewise for search path
 func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *modconfig.Mod, defaultDatabase connection.ConnectionStringProvider, defaultSearchPathConfig backend.SearchPathConfig) (connection.ConnectionStringProvider, backend.SearchPathConfig, error) {
 	csp := defaultDatabase
 	searchPathConfig := defaultSearchPathConfig
@@ -35,8 +39,7 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 
 		// if the mod requirement has a search path, prefix or database, set it in viper,
 		if modRequirement.Database != nil {
-			// TODO K test/fix setting database in mod require
-			// if database is overriden, also use overriden search path and search path prefix (even if empty)
+			// if database is overridden, also use overriden search path and search path prefix (even if empty)
 			csp = connection.NewConnectionString(*modRequirement.Database)
 			searchPathConfig.SearchPath = modRequirement.SearchPath
 			searchPathConfig.SearchPathPrefix = modRequirement.SearchPathPrefix
@@ -81,9 +84,9 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 	return csp, searchPathConfig, nil
 }
 
-// GetDefaultDatabaseConfig builds the default database and searchPathConfig
+// GetDefaultDatabaseConfig returns the default ConnectionStringProvider and searchPathConfig
 // NOTE: if the dashboardUI has overridden the search path, opts wil be passed in to set the overridden value
-func GetDefaultDatabaseConfig(opts ...backend.BackendOption) (connection.ConnectionStringProvider, backend.SearchPathConfig, error) {
+func GetDefaultDatabaseConfig(mod *modconfig.Mod, opts ...backend.BackendOption) (connection.ConnectionStringProvider, backend.SearchPathConfig, error) {
 	var cfg backend.BackendConfig
 	for _, opt := range opts {
 		opt(&cfg)
@@ -100,11 +103,23 @@ func GetDefaultDatabaseConfig(opts ...backend.BackendOption) (connection.Connect
 		defaultSearchPathConfig = cfg.SearchPathConfig
 	}
 
-	// TODO K hack
-	csp := DefaultDatabase //viper.GetString(constants.ArgDatabase)
+	var csp connection.ConnectionStringProvider
+	// has a database arg been set in viper?
+	databaseArgs := viper.GetString(constants.ArgDatabase)
+	modDatabase := mod.GetDatabase()
 
+	switch {
+	// if database command line was passed, set default
+	case databaseArgs != "":
+		slog.Info("GetDefaultDatabaseConfig: Using database connection string from command line", "database arg", databaseArgs)
+		csp = connection.NewConnectionString(databaseArgs)
+	case modDatabase != nil:
+		slog.Info("GetDefaultDatabaseConfig: Using database connection string from mod")
+		csp = modDatabase
 	// if no database is set, use the default connection
-	if csp == nil {
+	default:
+		slog.Info("GetDefaultDatabaseConfig: Using default connection")
+
 		defaultConnection := powerpipeconfig.GlobalConfig.GetDefaultConnection()
 		csp = defaultConnection
 		// if no search path has been set, use the default connection
@@ -120,6 +135,8 @@ func GetDefaultDatabaseConfig(opts ...backend.BackendOption) (connection.Connect
 
 	// if the database is a cloud workspace, resolve the connection string
 	if steampipeconfig.IsPipesWorkspaceConnectionString(csp) {
+		slog.Info("GetDefaultDatabaseConfig: Resolving Pipes workspace connection string")
+
 		cs, err := csp.GetConnectionString()
 		if err != nil {
 			return nil, backend.SearchPathConfig{}, err

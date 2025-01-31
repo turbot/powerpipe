@@ -144,7 +144,7 @@ func runModInstallCmd(cmd *cobra.Command, args []string) {
 
 	// if any mod names were passed as args, convert into formed mod names
 	installOpts := modinstaller.NewInstallOpts(workspaceMod, args...)
-	installOpts.PluginVersions = getPluginVersions(ctx)
+	installOpts.PluginVersions = getPluginVersions(ctx, workspaceMod)
 
 	installData, err := modinstaller.InstallWorkspaceDependencies(ctx, installOpts)
 	if err != nil {
@@ -162,8 +162,8 @@ func validateModArgs() error {
 	return localcmdconfig.ValidateDatabaseArg()
 }
 
-func getPluginVersions(ctx context.Context) *plugin.PluginVersionMap {
-	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
+func getPluginVersions(ctx context.Context, workspaceMod *modconfig.Mod) *plugin.PluginVersionMap {
+	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig(workspaceMod)
 	if err != nil {
 		if !viper.GetBool(constants.ArgForce) {
 			error_helpers.ShowWarning("Could not connect to database - plugin validation will not be performed")

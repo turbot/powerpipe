@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"log/slog"
 	"os"
 	"reflect"
@@ -14,35 +13,44 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/schema"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/workspace"
+	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
 )
 
 type Server struct {
-	mutex            *sync.Mutex
-	dashboardClients map[string]*DashboardClientInfo
-	webSocket        *melody.Melody
-	workspace        *workspace.PowerpipeWorkspace
+	mutex                   *sync.Mutex
+	dashboardClients        map[string]*DashboardClientInfo
+	webSocket               *melody.Melody
+	workspace               *workspace.PowerpipeWorkspace
+	defaultDatabase         connection.ConnectionStringProvider
+	defaultSearchPathConfig backend.SearchPathConfig
 }
 
-func NewServer(ctx context.Context, w *workspace.PowerpipeWorkspace, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket *melody.Melody) (*Server, error) {
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
 
 	var mutex = &sync.Mutex{}
 
+	w := initData.Workspace
+
 	server := &Server{
-		mutex:            mutex,
-		dashboardClients: dashboardClients,
-		webSocket:        webSocket,
-		workspace:        w,
+		mutex:                   mutex,
+		dashboardClients:        dashboardClients,
+		webSocket:               webSocket,
+		workspace:               w,
+		defaultDatabase:         initData.DefaultDatabase,
+		defaultSearchPathConfig: initData.DefaultSearchPathConfig,
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
@@ -207,7 +215,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			payload, payloadError = buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
+			payload, payloadError = s.buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if payloadError != nil {
 				return
 			}
@@ -351,7 +359,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			payload, err := buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
+			payload, err := s.buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
@@ -382,7 +390,7 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
 
 			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
-			payload, err := buildDashboardMetadataPayload(dashboard)
+			payload, err := s.buildDashboardMetadataPayload(dashboard)
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata_details"))
 			}
