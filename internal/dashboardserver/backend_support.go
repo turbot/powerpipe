@@ -1,9 +1,13 @@
 package dashboardserver
 
 import (
-	"github.com/turbot/pipe-fittings/v2/connection"
-	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"context"
 	"log/slog"
+
+	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 )
 
 type backendSupport struct {
@@ -19,6 +23,22 @@ func (bs *backendSupport) setFromDb(db connection.ConnectionStringProvider) {
 			bs.supportsSearchPath = true
 		case *connection.TailpipeConnection:
 			bs.supportsTimeRange = true
+		case *connection.ConnectionString:
+			// create a backend and get its name
+			// if it is a steampipe or postgres backend, set supportsSearchPath
+			// NOTE: a tailpipe connection cannot be specified by a connection string
+			// (as the connection string is dynamic and provided by the Tailpipe CLI),
+			// so we will not set the supportsTimeRange flag here
+
+			// we do not expect an error from ConnectionString.GetConnectionString
+			connectionString, _ := db.GetConnectionString()
+			// get the backend name from the connection string
+			// NOTE: this does not create the backend and will therefore return postgres for a steampipe backend
+			// as we cannot tell the difference purely from	the connection string
+			// This is fine as we just want to determine whether a search path is supported
+			backendName, _ := backend.NameFromConnectionString(context.Background(), connectionString)
+			// set supportsSearchPath if the backend is a steampipe or postgres backend
+			bs.supportsSearchPath = backendName == constants.PostgresBackendName
 		}
 	}
 }

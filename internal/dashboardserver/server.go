@@ -278,7 +278,10 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == changedDashboardName {
 
 					if changedResource := s.getResource(changedDashboardName); changedResource != nil {
-						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace)
+						err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace)
+						if err != nil {
+							OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
+						}
 					}
 				}
 			}
@@ -300,7 +303,10 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == newDashboardName {
 					if newDashboard := s.getResource(newDashboardName); newDashboard != nil {
-						_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace)
+						err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace)
+						if err != nil {
+							OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
+						}
 					}
 				}
 			}
@@ -387,8 +393,10 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 					SearchPathPrefix: request.Payload.SearchPathPrefix,
 				}))
 			}
-			_ = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
-
+			err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
+			}
 			slog.Debug("get_dashboard_metadata", "dashboard", request.Payload.Dashboard.FullName)
 			payload, err := s.buildDashboardMetadataPayload(dashboard)
 			if err != nil {
