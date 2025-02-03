@@ -160,8 +160,6 @@ type ModAvailableBenchmark struct {
 	ModFullName   string                  `json:"mod_full_name"`
 }
 
-// TODO KAI COORDINATE WITH MIKE
-
 type AvailableDashboardsPayload struct {
 	Action              string                           `json:"action"`
 	Dashboards          map[string]ModAvailableDashboard `json:"dashboards"`

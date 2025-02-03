@@ -83,7 +83,9 @@ func (q *QueryProviderImpl) ValidateQuery() hcl.Diagnostics {
 		return nil
 	}
 
-	if queryRequired && q.Query == nil && q.SQL == nil {
+	// so query IS required
+
+	if q.Query == nil && q.SQL == nil {
 		diags = append(diags, &hcl.Diagnostic{
 			Severity: hcl.DiagError,
 			Summary:  fmt.Sprintf("%s does not define a query or SQL", q.Name()),
