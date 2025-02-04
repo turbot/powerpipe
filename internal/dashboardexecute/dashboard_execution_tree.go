@@ -63,7 +63,19 @@ func (e *DashboardExecutor) newDashboardExecutionTree(rootResource modconfig.Mod
 	}
 	executionTree.id = fmt.Sprintf("%p", executionTree)
 
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(rootResource, workspace.Mod, e.defaultDatabase, e.defaultSearchPathConfig)
+	// apply options and use to override the default search path
+	var cfg backend.BackendConfig
+	for _, opt := range opts {
+		opt(&cfg)
+	}
+
+	// has the search path been overridden?
+	defaultSearchPathConfig := e.defaultSearchPathConfig
+	if !cfg.SearchPathConfig.Empty() {
+		defaultSearchPathConfig = cfg.SearchPathConfig
+	}
+
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(rootResource, workspace.Mod, e.defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}
