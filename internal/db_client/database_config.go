@@ -86,21 +86,11 @@ func GetDatabaseConfigForResource(resource modconfig.ModTreeItem, workspaceMod *
 
 // GetDefaultDatabaseConfig returns the default ConnectionStringProvider and searchPathConfig
 // NOTE: if the dashboardUI has overridden the search path, opts wil be passed in to set the overridden value
-func GetDefaultDatabaseConfig(mod *modconfig.Mod, opts ...backend.BackendOption) (connection.ConnectionStringProvider, backend.SearchPathConfig, error) {
-	var cfg backend.BackendConfig
-	for _, opt := range opts {
-		opt(&cfg)
-	}
-
+func GetDefaultDatabaseConfig(mod *modconfig.Mod) (connection.ConnectionStringProvider, backend.SearchPathConfig, error) {
 	// resolve the active database and search search path config for the dashboard
 	defaultSearchPathConfig := backend.SearchPathConfig{
 		SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
 		SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
-	}
-
-	// has the search path been overridden?
-	if !cfg.SearchPathConfig.Empty() {
-		defaultSearchPathConfig = cfg.SearchPathConfig
 	}
 
 	var csp connection.ConnectionStringProvider
