@@ -1,4 +1,4 @@
-<a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark.svg"></a>
+<a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark_white_outline.svg"></a>
 
 [![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.powerpipe.io) &nbsp;
 [![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
