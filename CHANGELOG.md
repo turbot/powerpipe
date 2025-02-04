@@ -1,3 +1,9 @@
+## v1.2.1 [2025-02-04]
+
+Fix backend support if the database is specified by a connection string. ([#713](https://github.com/turbot/powerpipe/issues/713))
+Improve search path button config popover to handle narrower screens. ([#711](https://github.com/turbot/powerpipe/issues/711))
+Dashboard UI sending `changed_input` field at wrong level in `input_changed` event. ([#708](https://github.com/turbot/powerpipe/issues/708))
+
 ## v1.2.0 [2025-01-30]
 _Whats new_
 - Add support for `tailpipe` detections and detection benchmarks.
