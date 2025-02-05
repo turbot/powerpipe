@@ -258,7 +258,7 @@ export const DashboardExecutionProvider = ({
       selectedDashboardRef.current === dashboardFullName
     ) {
       dashboardMessage.action = SocketActions.INPUT_CHANGED;
-      dashboardMessage.changed_input = lastChangedInput;
+      dashboardMessage.payload.changed_input = lastChangedInput;
       sendMessage(dashboardMessage);
     } else {
       selectedDashboardRef.current = dashboard.full_name;

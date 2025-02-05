@@ -49,12 +49,12 @@ type DashboardExecutionTree struct {
 	DateTimeRange    utils.TimeRange
 }
 
-func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, inputs *InputValues, defaultClientMap *db_client.ClientMap, opts ...backend.BackendOption) (*DashboardExecutionTree, error) {
+func (e *DashboardExecutor) newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId string, workspace *workspace.PowerpipeWorkspace, inputs *InputValues, opts ...backend.BackendOption) (*DashboardExecutionTree, error) {
 	// now populate the DashboardExecutionTree
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
 		sessionId:        sessionId,
-		defaultClientMap: defaultClientMap,
+		defaultClientMap: e.defaultClient,
 		clientMap:        db_client.NewClientMap(),
 		runs:             make(map[string]dashboardtypes.DashboardTreeRun),
 		workspace:        workspace,
@@ -63,12 +63,19 @@ func newDashboardExecutionTree(rootResource modconfig.ModTreeItem, sessionId str
 	}
 	executionTree.id = fmt.Sprintf("%p", executionTree)
 
-	// set the dashboard database and search patch config
-	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig(opts...)
-	if err != nil {
-		return nil, err
+	// apply options and use to override the default search path
+	var cfg backend.BackendConfig
+	for _, opt := range opts {
+		opt(&cfg)
 	}
-	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(rootResource, workspace.Mod, defaultDatabase, defaultSearchPathConfig)
+
+	// has the search path been overridden?
+	defaultSearchPathConfig := e.defaultSearchPathConfig
+	if !cfg.SearchPathConfig.Empty() {
+		defaultSearchPathConfig = cfg.SearchPathConfig
+	}
+
+	database, searchPathConfig, err := db_client.GetDatabaseConfigForResource(rootResource, workspace.Mod, e.defaultDatabase, defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}

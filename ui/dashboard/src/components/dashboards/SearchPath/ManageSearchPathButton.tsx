@@ -2,14 +2,17 @@ import Badge from "@powerpipe/components/Badge";
 import Icon from "@powerpipe/components/Icon";
 import NeutralButton from "@powerpipe/components/forms/NeutralButton";
 import SearchPathConfig from "@powerpipe/components/dashboards/SearchPath/SearchPathConfig";
+import { createPortal } from "react-dom";
 import {
   DashboardDataModeCLISnapshot,
   DashboardDataModeCloudSnapshot,
 } from "@powerpipe/types";
 import { forwardRef, useEffect, useState } from "react";
 import { Popover } from "@headlessui/react";
+import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
+import { usePopper } from "react-popper";
 
 const PopoverButton = forwardRef((props, ref) => {
   const { metadata, dashboardsMetadata, selectedDashboard } =
@@ -67,6 +70,19 @@ const PopoverButton = forwardRef((props, ref) => {
 });
 
 const ManageSearchPathButton = () => {
+  const [popperElement, setPopperElement] = useState(null);
+  const [referenceElement, setReferenceElement] = useState(null);
+  const { styles, attributes } = usePopper(referenceElement, popperElement, {
+    placement: "bottom-start",
+    modifiers: [
+      {
+        name: "flip",
+        options: {
+          fallbackPlacements: ["bottom-end"],
+        },
+      },
+    ],
+  });
   const { dashboard, dashboardsMetadata, dataMode, metadata } =
     useDashboardState();
   const { searchPathPrefix } = useDashboardSearchPath();
@@ -90,28 +106,41 @@ const ManageSearchPathButton = () => {
     } else {
       setShow(!!metadata?.supports_search_path);
     }
-  }, [
-    metadata?.supports_search_path,
-    dashboard,
-    dashboardsMetadata,
-    dataMode,
-    searchPathPrefix,
-  ]);
+  }, [metadata, dashboard, dashboardsMetadata, dataMode, searchPathPrefix]);
 
   return show ? (
     <Popover className="hidden md:block relative">
       <Popover.Button
+        ref={setReferenceElement}
         disabled={
           dataMode === DashboardDataModeCLISnapshot ||
           dataMode === DashboardDataModeCloudSnapshot
         }
         as={PopoverButton}
       />
-      <Popover.Panel className="absolute left-1/2 z-10 mt-4 flex w-screen max-w-max -translate-x-1/2 px-4">
+      <Popover.Panel className="absolute z-10">
         {({ close }) => (
-          <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
-            <SearchPathConfig onClose={close} />
-          </div>
+          <>
+            {createPortal(
+              <ThemeProvider>
+                <ThemeWrapper>
+                  <div
+                    // @ts-ignore
+                    ref={setPopperElement}
+                    style={{ ...styles.popper }}
+                    {...attributes.popper}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    <div className="w-screen max-w-md flex-auto overflow-hidden rounded-md bg-dashboard border border-divide shadow-lg ring-1 ring-gray-900/5 p-4">
+                      <SearchPathConfig onClose={close} />
+                    </div>
+                  </div>
+                </ThemeWrapper>
+              </ThemeProvider>,
+              // @ts-ignore as this element definitely exists
+              document.getElementById("portals"),
+            )}
+          </>
         )}
       </Popover.Panel>
     </Popover>
