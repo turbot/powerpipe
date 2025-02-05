@@ -4,13 +4,12 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/spf13/viper"
 	"log/slog"
 
+	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/backend"
-	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
@@ -23,7 +22,7 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
-func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
 	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
@@ -52,14 +51,8 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 		cliVersion = versionFile.Version
 	}
 
-	defaultDatabase, defaultSearchPathConfig, err := db_client.GetDefaultDatabaseConfig()
-	if err != nil {
-		return nil, err
-	}
-
 	// populate the backend support flags (supportsSearchPath, supportsTimeRange) from the default database
-	var bs backendSupport
-	bs.setFromDb(defaultDatabase)
+	bs := newBackendSupport(s.defaultDatabase)
 
 	payload := ServerMetadataPayload{
 		Action: "server_metadata",
@@ -74,11 +67,11 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 		},
 	}
 
-	connectionString, err := defaultDatabase.GetConnectionString()
+	connectionString, err := s.defaultDatabase.GetConnectionString()
 	if err != nil {
 		return nil, err
 	}
-	searchPath, err := getSearchPathMetadata(context.Background(), connectionString, defaultSearchPathConfig)
+	searchPath, err := getSearchPathMetadata(context.Background(), connectionString, s.defaultSearchPathConfig)
 	if err != nil {
 		return nil, err
 	}
@@ -99,18 +92,12 @@ func buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steamp
 	return json.Marshal(payload)
 }
 
-func buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) ([]byte, error) {
+func (s *Server) buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) ([]byte, error) {
 	slog.Debug("calling buildDashboardMetadataPayload")
-
-	defaultDatabase, _, err := db_client.GetDefaultDatabaseConfig()
-	if err != nil {
-		slog.Warn("error getting database config for resource", "error", err)
-		return nil, err
-	}
 
 	// walk the tree of resources and determine whether any of them are using a tailpipe/steampipe/postrgres
 	// and set the SupportsSearchPath and SupportsTimeRange flags accordingly
-	backendSupport := determineBackendSupport(dashboard, defaultDatabase)
+	backendSupport := determineBackendSupport(dashboard, s.defaultDatabase)
 
 	payload := DashboardMetadataPayload{
 		Action: "dashboard_metadata",
@@ -126,53 +113,6 @@ func buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) ([]byte, err
 		return nil, err
 	}
 	return res, nil
-}
-
-type backendSupport struct {
-	supportsSearchPath bool
-	supportsTimeRange  bool
-}
-
-func (bs *backendSupport) setFromDb(db connection.ConnectionStringProvider) {
-	if db != nil {
-		switch db.(type) {
-		case *connection.SteampipePgConnection, *connection.PostgresConnection:
-			bs.supportsSearchPath = true
-		case *connection.TailpipeConnection:
-			bs.supportsTimeRange = true
-		}
-	}
-}
-func determineBackendSupport(dashboard modconfig.ModTreeItem, defaultDatabase connection.ConnectionStringProvider) backendSupport {
-	var res backendSupport
-
-	usingDefaultDb := determineBackendSupportForResource(dashboard, &res)
-	if usingDefaultDb {
-		res.setFromDb(defaultDatabase)
-	}
-	return res
-}
-
-func determineBackendSupportForResource(item modconfig.ModTreeItem, bs *backendSupport) bool {
-	var usingDefaultDb bool
-	db := item.GetDatabase()
-	if db == nil {
-		usingDefaultDb = true
-	} else {
-		bs.setFromDb(db)
-	}
-
-	// if we have now found both, we can stop
-	if bs.supportsSearchPath && bs.supportsTimeRange {
-		return false
-	}
-	for _, child := range item.GetChildren() {
-		childUsingDefaultDb := determineBackendSupportForResource(child, bs)
-		if childUsingDefaultDb {
-			usingDefaultDb = true
-		}
-	}
-	return usingDefaultDb
 }
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {

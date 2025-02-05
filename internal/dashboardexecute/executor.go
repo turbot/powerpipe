@@ -11,6 +11,7 @@ import (
 
 	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
@@ -29,15 +30,19 @@ type DashboardExecutor struct {
 	interactive bool
 	// store the default client which is created during initData creation
 	// - this is to avoid creating a new client for each dashboard execution if the database/search path is NOT overridden
-	defaultClient *db_client.ClientMap
+	defaultClient           *db_client.ClientMap
+	defaultDatabase         connection.ConnectionStringProvider
+	defaultSearchPathConfig backend.SearchPathConfig
 }
 
-func NewDashboardExecutor(defaultClient *db_client.ClientMap) *DashboardExecutor {
+func NewDashboardExecutor(defaultClient *db_client.ClientMap, defaultDatabase connection.ConnectionStringProvider, defaultSearchPathConfig backend.SearchPathConfig) *DashboardExecutor {
 	return &DashboardExecutor{
 		executions: make(map[string]*DashboardExecutionTree),
 		// default to interactive execution
-		interactive:   true,
-		defaultClient: defaultClient,
+		interactive:             true,
+		defaultClient:           defaultClient,
+		defaultDatabase:         defaultDatabase,
+		defaultSearchPathConfig: defaultSearchPathConfig,
 	}
 }
 
@@ -68,7 +73,7 @@ func (e *DashboardExecutor) ExecuteDashboard(ctx context.Context, sessionId stri
 	e.CancelExecutionForSession(ctx, sessionId)
 
 	// now create a new execution
-	executionTree, err = newDashboardExecutionTree(rootResource, sessionId, workspace, inputs, e.defaultClient, opts...)
+	executionTree, err = e.newDashboardExecutionTree(rootResource, sessionId, workspace, inputs, opts...)
 	if err != nil {
 		return err
 	}

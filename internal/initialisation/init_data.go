@@ -37,6 +37,9 @@ type InitData struct {
 	ExportManager     *export.Manager
 	Targets           []modconfig.ModTreeItem
 	DefaultClient     *db_client.DbClient
+
+	DefaultDatabase         connection.ConnectionStringProvider
+	DefaultSearchPathConfig backend.SearchPathConfig
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -79,21 +82,6 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		return i
 	}
 	i.Targets = targets
-
-	// TODO K breaking hack do not use viper for database
-	// this is because DefaultDatabase is now a ConnectionStringProvider
-	if db_client.DefaultDatabase == nil {
-		db_client.DefaultDatabase = w.Mod.GetDatabase()
-	}
-	// if database command line was passed, set default
-	// TODO K will we only pass connection string in db arg or could we pass connection name?
-	if db := viper.GetString(constants.ArgDatabase); db != "" {
-		db_client.DefaultDatabase = connection.NewConnectionString(db)
-	}
-	// if the database is NOT set in viper, and the mod has a connection string, set it
-	//if !viper.IsSet(constants.ArgDatabase) && w.Mod.GetDatabase() != nil {
-	//	viper.Set(constants.ArgDatabase, *w.Mod.GetDatabase().)
-	//}
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
@@ -173,11 +161,13 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 
 	// create default client
 	// set the database and search patch config
-	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig()
+	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
+	i.DefaultDatabase = csp
+	i.DefaultSearchPathConfig = searchPathConfig
 
 	// create client
 	var opts []backend.BackendOption
@@ -202,7 +192,7 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 
 	// create the dashboard executor, passing the default client inside a client map
 	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
-	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap)
+	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {

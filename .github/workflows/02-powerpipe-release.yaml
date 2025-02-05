@@ -700,11 +700,11 @@ jobs:
 
       - name: Fail if PR title does not match with version
         run: |
-          if ${{ (steps.pr_title.outputs.PR_TITLE == env.VERSION) }} == 'true';then
+          if [[ "${{ steps.pr_title.outputs.PR_TITLE }}" == "Powerpipe ${{ env.VERSION }}" ]]; then
             echo "Correct version"
           else
-            echo "Incorrect version"
-            exit 1
+              echo "Incorrect version"
+              exit 1
           fi
 
       - name: Merge pull request to update brew formula
