@@ -55,8 +55,6 @@ import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 
-const ExternalLink = getComponent("external_link");
-
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
 
@@ -211,6 +209,7 @@ const CellValue = ({
   isScrolling = false,
   onRowSelected = noop,
 }: CellValueProps) => {
+  const ExternalLink = getComponent("external_link");
   const baseClasses = "px-4 py-4";
   const { searchPathPrefix } = useDashboardSearchPath();
   const [renderState, setRenderState] = useState<{
