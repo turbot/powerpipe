@@ -6,6 +6,7 @@ import (
 	"log/slog"
 	"os"
 	"runtime/debug"
+	"slices"
 	"strings"
 	"time"
 
@@ -13,7 +14,6 @@ import (
 	"github.com/mattn/go-isatty"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
-	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/cmdconfig"
 	"github.com/turbot/pipe-fittings/v2/connection"
@@ -220,7 +220,7 @@ func setPipesTokenDefault(loader *parse.WorkspaceProfileLoader[*workspace_profil
 func validateConfig(activeWorkspace *workspace_profile.PowerpipeWorkspaceProfile) error_helpers.ErrorAndWarnings {
 	var res = error_helpers.ErrorAndWarnings{}
 	telemetry := viper.GetString(constants.ArgTelemetry)
-	if !helpers.StringSliceContains(constants.TelemetryLevels, telemetry) {
+	if !slices.Contains(constants.TelemetryLevels, telemetry) {
 		res.Error = sperr.New(`invalid value of 'telemetry' (%s), must be one of: %s`, telemetry, strings.Join(constants.TelemetryLevels, ", "))
 		return res
 	}

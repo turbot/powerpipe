@@ -2,9 +2,8 @@ package controldisplay
 
 import (
 	"fmt"
+	"slices"
 	"strings"
-
-	"github.com/turbot/go-kit/helpers"
 )
 
 const severityMaxLen = len("CRITICAL")
@@ -23,7 +22,7 @@ func NewSeverityRenderer(severity string) *SeverityRenderer {
 // for all other values an empty string is returned
 // NOTE: adds a trailing space
 func (r SeverityRenderer) Render() string {
-	if helpers.StringSliceContains([]string{"CRITICAL", "HIGH"}, r.severity) {
+	if slices.Contains([]string{"CRITICAL", "HIGH"}, r.severity) {
 		return fmt.Sprintf("%s ", ControlColors.Severity(r.severity))
 	}
 	return ""

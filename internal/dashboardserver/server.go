@@ -7,10 +7,10 @@ import (
 	"log/slog"
 	"os"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 
-	"github.com/turbot/go-kit/helpers"
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
@@ -236,7 +236,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		for _, dashboardClientInfo := range dashboardClients {
 			dashboardName := typeHelpers.SafeString(dashboardClientInfo.Dashboard)
 			if dashboardClientInfo.Dashboard != nil {
-				if helpers.StringSliceContains(dashboardsBeingWatched, dashboardName) {
+				if slices.Contains(dashboardsBeingWatched, dashboardName) {
 					continue
 				}
 				dashboardsBeingWatched = append(dashboardsBeingWatched, dashboardName)
@@ -266,7 +266,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		changedDashboardNames = append(changedDashboardNames, getDashboardsInterestedInResourceChanges(dashboardsBeingWatched, changedDashboardNames, changedTexts)...)
 
 		for _, changedDashboard := range changedDashboards {
-			if helpers.StringSliceContains(changedDashboardNames, changedDashboard.Name) {
+			if slices.Contains(changedDashboardNames, changedDashboard.Name) {
 				continue
 			}
 			changedDashboardNames = append(changedDashboardNames, changedDashboard.Name)
@@ -292,7 +292,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 		// will come in here as new, so we need to check if any of those new dashboards are being watched.
 		// If so, execute them
 		for _, newDashboard := range newDashboards {
-			if helpers.StringSliceContains(newDashboardNames, newDashboard.Name()) {
+			if slices.Contains(newDashboardNames, newDashboard.Name()) {
 				continue
 			}
 			newDashboardNames = append(newDashboardNames, newDashboard.Name())
@@ -527,11 +527,11 @@ func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, e
 			for _, nodeName := range nodePath {
 				resourceParts, _ := modconfig.ParseResourceName(nodeName)
 				// We only care about changes from these resource types
-				if !helpers.StringSliceContains([]string{schema.BlockTypeDashboard, schema.BlockTypeBenchmark}, resourceParts.ItemType) {
+				if !slices.Contains([]string{schema.BlockTypeDashboard, schema.BlockTypeBenchmark}, resourceParts.ItemType) {
 					continue
 				}
 
-				if helpers.StringSliceContains(existingChangedDashboardNames, nodeName) || helpers.StringSliceContains(changedDashboardNames, nodeName) || !helpers.StringSliceContains(dashboardsBeingWatched, nodeName) {
+				if slices.Contains(existingChangedDashboardNames, nodeName) || slices.Contains(changedDashboardNames, nodeName) || !slices.Contains(dashboardsBeingWatched, nodeName) {
 					continue
 				}
 
