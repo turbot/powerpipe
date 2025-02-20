@@ -17,12 +17,13 @@ import (
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
+	pquerydisplay "github.com/turbot/pipe-fittings/v2/querydisplay"
+	pqueryresult "github.com/turbot/pipe-fittings/v2/queryresult"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/pipe-fittings/v2/workspace"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
-	"github.com/turbot/powerpipe/internal/display"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -53,7 +54,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
 		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, html, json, md, nunit3, pps (snapshot), asff").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, json, line, table, pps (snapshot)").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
@@ -142,6 +143,10 @@ func queryRun(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
+	// convert the snapshot into a query result
+	result, err := snapshotToQueryResult(snap, startTime)
+	error_helpers.FailOnError(err)
+
 	// display the result
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:
@@ -154,10 +159,7 @@ func queryRun(cmd *cobra.Command, args []string) {
 		}
 		fmt.Println(string(jsonOutput)) //nolint:forbidigo // intentional use of fmt
 	default:
-		// otherwise convert the snapshot into a query result
-		result, err := snapshotToQueryResult(snap, startTime)
-		error_helpers.FailOnError(err)
-		display.ShowQueryOutput(ctx, result)
+		pquerydisplay.ShowOutput(ctx, result)
 	}
 
 	// share the snapshot if necessary
@@ -169,8 +171,10 @@ func queryRun(cmd *cobra.Command, args []string) {
 
 	// export the result if necessary
 	exportArgs := viper.GetStringSlice(constants.ArgExport)
-	exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
-	error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
+	exportMsg, err := initData.ExportManager.DoExport(ctx, "query", result, exportArgs)
+	error_helpers.FailOnErrorWithMessage(err, "failed to export")
+	// exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
+	// error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
 	// print the location where the file is exported
 	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
 		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
@@ -202,7 +206,7 @@ func validateQueryArgs(ctx context.Context) error {
 }
 
 func queryExporters() []export.Exporter {
-	return []export.Exporter{&export.SnapshotExporter{}}
+	return []export.Exporter{&export.SnapshotExporter{}, &export.JsonExporter{}, &export.CsvExporter{}}
 }
 
 func setExitCodeForQueryError(err error) {
@@ -250,8 +254,19 @@ func snapshotToQueryResult(snap *steampipeconfig.SteampipeSnapshot, startTime ti
 		res.Close()
 	}()
 
-	res.Timing = &queryresult.TimingMetadata{
-		Duration: time.Since(startTime),
+	res.Timing = &pqueryresult.QueryTimingMetadata{
+		RowsReturned: len(chartRun.Data.Rows),
+		Duration:     getDurationString(time.Since(startTime)),
 	}
 	return res, nil
+}
+
+func getDurationString(duration time.Duration) string {
+	// Calculate duration since startTime and round down to the nearest millisecond
+	durationInMS := duration / time.Millisecond
+	//nolint:durationcheck // we want to print the duration in milliseconds
+	duration = durationInMS * time.Millisecond
+
+	durationString := duration.String()
+	return durationString
 }

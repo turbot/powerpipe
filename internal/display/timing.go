@@ -2,10 +2,11 @@ package display
 
 import (
 	"fmt"
+	"time"
+
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/queryresult"
-	"time"
 )
 
 func shouldShowQueryTiming() bool {
@@ -13,7 +14,7 @@ func shouldShowQueryTiming() bool {
 	return viper.GetBool(constants.ArgTiming) && outputFormat == constants.OutputFormatTable
 }
 
-func PrintTiming(timingMetadata *queryresult.TimingMetadata) {
+func PrintTiming(timingMetadata *queryresult.CheckTimingMetadata) {
 	durationString := getDurationString(timingMetadata.Duration)
 	fmt.Printf("\nTime: %s\n", durationString) //nolint:forbidigo // intentional use of fmt
 }
