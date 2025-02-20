@@ -3,10 +3,11 @@ package dashboardserver
 import (
 	"context"
 	"fmt"
-	"github.com/fatih/color"
-	"github.com/mattn/go-isatty"
 	"log/slog"
 	"os"
+
+	"github.com/fatih/color"
+	"github.com/mattn/go-isatty"
 )
 
 const (
@@ -18,7 +19,7 @@ const (
 )
 
 func output(_ context.Context, prefix string, msg interface{}) {
-	_, _ = fmt.Fprintf(os.Stdout, "%s %v\n", prefix, msg)
+	_, _ = fmt.Fprintf(os.Stdout, "%s %v\n", prefix, msg) //nolint:forbidigo // printing to stdout
 }
 
 func OutputMessage(ctx context.Context, msg string) {
