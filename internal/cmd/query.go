@@ -54,7 +54,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddStringArrayFlag(constants.ArgArg, nil, "Specify the value of a query argument").
 		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
-		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, json, line, table, pps (snapshot)").
+		AddStringSliceFlag(constants.ArgExport, nil, "Export output to file, supported formats: csv, json, pps (snapshot)").
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
