@@ -143,10 +143,6 @@ func queryRun(cmd *cobra.Command, args []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	// convert the snapshot into a query result
-	result, err := snapshotToQueryResult(snap, startTime)
-	error_helpers.FailOnError(err)
-
 	// display the result
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone:
@@ -159,6 +155,9 @@ func queryRun(cmd *cobra.Command, args []string) {
 		}
 		fmt.Println(string(jsonOutput)) //nolint:forbidigo // intentional use of fmt
 	default:
+		// convert the snapshot into a query result
+		result, err := snapshotToQueryResult(snap, startTime)
+		error_helpers.FailOnError(err)
 		pquerydisplay.ShowOutput(ctx, result)
 	}
 
@@ -170,16 +169,48 @@ func queryRun(cmd *cobra.Command, args []string) {
 	}
 
 	// export the result if necessary
-	exportArgs := viper.GetStringSlice(constants.ArgExport)
-	exportMsg, err := initData.ExportManager.DoExport(ctx, "query", result, exportArgs)
-	error_helpers.FailOnErrorWithMessage(err, "failed to export")
-	// exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
-	// error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
-	// print the location where the file is exported
-	if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
-		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
-		fmt.Println(strings.Join(exportMsg, "\n")) //nolint:forbidigo // intentional use of fmt
-		fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
+	if viper.IsSet(constants.ArgExport) {
+		exportArgs := viper.GetStringSlice(constants.ArgExport)
+		var exportMsg []string
+
+		// check if export format is csv or json
+		isCsvOrJson := false
+		isSnapshot := false
+		for _, arg := range exportArgs {
+			argLower := strings.ToLower(arg)
+			if strings.Contains(argLower, "csv") || strings.Contains(argLower, "json") {
+				isCsvOrJson = true
+			}
+			if strings.Contains(argLower, "pps") {
+				isSnapshot = true
+			}
+		}
+
+		switch {
+		case isCsvOrJson:
+			// export csv/json with the query result
+			// convert the snapshot into a query result (this is needed again since the rowChan has been already closed)
+			result, err := snapshotToQueryResult(snap, startTime)
+			error_helpers.FailOnError(err)
+			exportMsg, err = initData.ExportManager.DoExport(ctx, "query", result, exportArgs)
+			error_helpers.FailOnErrorWithMessage(err, "failed to export")
+
+		case isSnapshot:
+			// export snapshot with the snapshot result
+			exportMsg, err = initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
+			error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
+
+		default:
+			// not a recognised export format
+			error_helpers.FailOnError(fmt.Errorf("unsupported export format: %s", exportArgs))
+		}
+
+		// print the location where the file is exported
+		if len(exportMsg) > 0 && viper.GetBool(constants.ArgProgress) {
+			fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
+			fmt.Println(strings.Join(exportMsg, "\n")) //nolint:forbidigo // intentional use of fmt
+			fmt.Printf("\n")                           //nolint:forbidigo // intentional use of fmt
+		}
 	}
 
 }
