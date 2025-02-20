@@ -22,7 +22,7 @@ require (
 	github.com/spf13/pflag v1.0.5 // indirect
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
-	github.com/turbot/go-kit v1.0.1-rc.0
+	github.com/turbot/go-kit v1.1.0
 	github.com/turbot/pipe-fittings/v2 v2.1.1
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect

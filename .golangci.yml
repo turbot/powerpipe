@@ -15,7 +15,6 @@ linters:
     - bidichk
     - depguard
     - durationcheck
-    - exportloopref
     - forbidigo
     - gocritic
     - gocheckcompilerdirectives
