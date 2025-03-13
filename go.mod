@@ -7,7 +7,7 @@ go 1.23.2
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
 	github.com/briandowns/spinner v1.23.0 // indirect
-	github.com/fatih/color v1.17.0
+	github.com/fatih/color v1.18.0
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.21.0
