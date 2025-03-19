@@ -2,8 +2,9 @@ package resources
 
 import (
 	"fmt"
+	"slices"
+
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/go-kit/helpers"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/cty_helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
@@ -77,13 +78,13 @@ func (q *QueryProviderImpl) ValidateQuery() hcl.Diagnostics {
 	// only used as base for a nested resource.
 	// Therefore only nested resources, controls and queries MUST have sql or a query defined
 	queryRequired := !q.IsTopLevel() ||
-		helpers.StringSliceContains([]string{schema.BlockTypeQuery, schema.BlockTypeControl}, q.GetBlockType())
+		slices.Contains([]string{schema.BlockTypeQuery, schema.BlockTypeControl}, q.GetBlockType())
 
 	if !queryRequired {
 		return nil
 	}
 
-	if queryRequired && q.Query == nil && q.SQL == nil {
+	if q.Query == nil && q.SQL == nil {
 		diags = append(diags, &hcl.Diagnostic{
 			Severity: hcl.DiagError,
 			Summary:  fmt.Sprintf("%s does not define a query or SQL", q.Name()),

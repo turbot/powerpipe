@@ -5,6 +5,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"reflect"
+	"slices"
 	"testing"
 )
 
@@ -317,7 +318,7 @@ func TestResolveAsString(t *testing.T) {
 	testsToRun := []string{}
 
 	for name, test := range testCasesResolveParams {
-		if len(testsToRun) > 0 && !helpers.StringSliceContains(testsToRun, name) {
+		if len(testsToRun) > 0 && !slices.Contains(testsToRun, name) {
 			continue
 		}
 		query := &Control{

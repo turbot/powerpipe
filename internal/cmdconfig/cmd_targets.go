@@ -3,6 +3,7 @@ package cmdconfig
 import (
 	"fmt"
 	"golang.org/x/exp/maps"
+	"slices"
 	"strings"
 
 	"github.com/spf13/viper"
@@ -131,7 +132,7 @@ func handleAllArg[T modconfig.ModTreeItem](args []string, w *pworkspace.Powerpip
 	// if there is more than 1 arg, "all" is not valid
 	if len(args) > 1 {
 		// verify that no other benchmarks/controls are given with an all
-		if helpers.StringSliceContains(args, "all") {
+		if slices.Contains(args, "all") {
 			return nil, sperr.New("cannot execute 'all' with other benchmarks")
 		}
 	}

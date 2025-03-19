@@ -2,10 +2,10 @@ package workspace
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 
 	"github.com/hashicorp/hcl/v2"
-	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/schema"
 	"github.com/turbot/pipe-fittings/v2/sperr"
@@ -174,7 +174,7 @@ func SqlLooksLikeExecutableResource(input string) (string, bool) {
 		input = input[:openBracketIdx]
 	}
 	parsedName, err := modconfig.ParseResourceName(input)
-	if err == nil && helpers.StringSliceContains(schema.QueryProviderBlocks, parsedName.ItemType) {
+	if err == nil && slices.Contains(schema.QueryProviderBlocks, parsedName.ItemType) {
 		return parsedName.ToResourceName(), true
 	}
 	// do not bubble error up, just return false

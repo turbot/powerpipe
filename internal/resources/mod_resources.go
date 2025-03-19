@@ -2,6 +2,8 @@ package resources
 
 import (
 	"fmt"
+	"log/slog"
+
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/schema"
@@ -426,7 +428,13 @@ func (m *PowerpipeModResources) Equals(o modconfig.ModResources) bool {
 
 // GetResource tries to find a resource with the given name in the PowerpipeModResources
 // NOTE: this does NOT support inputs, which are NOT uniquely named in a mod
-func (m *PowerpipeModResources) GetResource(parsedName *modconfig.ParsedResourceName) (resource modconfig.HclResource, found bool) {
+func (m *PowerpipeModResources) GetResource(rp modconfig.ResourceNameProvider) (resource modconfig.HclResource, found bool) {
+	parsedName, ok := rp.(*modconfig.ParsedResourceName)
+	if !ok {
+		slog.Warn("GetResource called with non ParsedResourceName", "name", rp.ToResourceName())
+		return nil, false
+	}
+
 	modName := parsedName.Mod
 	if modName == "" {
 		modName = m.Mod.ShortName
