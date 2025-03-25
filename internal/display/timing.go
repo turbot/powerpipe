@@ -4,15 +4,8 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/queryresult"
 )
-
-func shouldShowQueryTiming() bool {
-	outputFormat := viper.GetString(constants.ArgOutput)
-	return viper.GetBool(constants.ArgTiming) && outputFormat == constants.OutputFormatTable
-}
 
 func PrintTiming(timingMetadata *queryresult.CheckTimingMetadata) {
 	durationString := getDurationString(timingMetadata.Duration)

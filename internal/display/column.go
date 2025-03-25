@@ -10,21 +10,6 @@ import (
 	"github.com/turbot/pipe-fittings/v2/queryresult"
 )
 
-// columnNames builds a list of name from a slice of column defs - respecting the original name if present
-func columnNames(columns []*queryresult.ColumnDef) []string {
-	var colNames = make([]string, len(columns))
-	for i, c := range columns {
-		// respect original name
-		if c.OriginalName != "" {
-			colNames[i] = c.OriginalName
-		} else {
-			colNames[i] = c.Name
-		}
-	}
-
-	return colNames
-}
-
 type columnValueSettings struct{ nullString string }
 
 type ColumnValueOption func(opt *columnValueSettings)
