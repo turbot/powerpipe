@@ -1,6 +1,7 @@
 module github.com/turbot/powerpipe
 
 go 1.23.2
+toolchain go1.24.1
 
 // replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
@@ -10,7 +11,7 @@ require (
 	github.com/fatih/color v1.17.0
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
-	github.com/go-playground/validator/v10 v10.21.0
+	github.com/go-playground/validator/v10 v10.26.0
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
 	github.com/hashicorp/hcl/v2 v2.20.1
@@ -108,7 +109,7 @@ require (
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/fsnotify/fsnotify v1.7.0 // indirect
-	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
+	github.com/gabriel-vasile/mimetype v1.4.8 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/gin-contrib/sse v0.1.0 // indirect
