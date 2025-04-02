@@ -23,7 +23,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.1.0
-	github.com/turbot/pipe-fittings/v2 v2.1.1
+	github.com/turbot/pipe-fittings/v2 v2.3.0-rc.3
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -42,7 +42,6 @@ require (
 	github.com/gin-contrib/size v1.0.1
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/jackc/pgx/v5 v5.6.0
-	github.com/jedib0t/go-pretty/v6 v6.5.9
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb v1.8.3
 	github.com/mattn/go-sqlite3 v1.14.22
@@ -158,6 +157,7 @@ require (
 	github.com/jackc/pgservicefile v0.0.0-20221227161230-091c0ba34f0a // indirect
 	github.com/jackc/puddle/v2 v2.2.1 // indirect
 	github.com/jbenet/go-context v0.0.0-20150711004518-d14ea06fba99 // indirect
+	github.com/jedib0t/go-pretty/v6 v6.5.9 // indirect
 	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/kevinburke/ssh_config v1.2.0 // indirect
@@ -208,7 +208,6 @@ require (
 	github.com/tklauser/numcpus v0.3.0 // indirect
 	github.com/tkrajina/go-reflector v0.5.6 // indirect
 	github.com/turbot/pipes-sdk-go v0.12.0 // indirect
-	github.com/turbot/steampipe-plugin-code v1.0.1-alpha.1 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
 	github.com/ulikunitz/xz v0.5.10 // indirect
