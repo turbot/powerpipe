@@ -216,7 +216,7 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 			return
 		}
 		if shouldPrintCheckTiming() {
-			display.PrintTiming(&localqueryresult.TimingMetadata{
+			display.PrintTiming(&localqueryresult.CheckTimingMetadata{
 				Duration: time.Since(startTime),
 			})
 		}

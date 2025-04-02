@@ -2,6 +2,7 @@ package controldisplay
 
 import (
 	"fmt"
+	"slices"
 
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
@@ -38,7 +39,7 @@ func NewControlResultRenderer(status, reason string, dimensions []controlexecute
 
 func (r ControlResultRenderer) Render() string {
 	// in quiet mode, only render failures
-	if r.errorsOnly && !helpers.StringSliceContains([]string{string(constants.ControlAlarm), string(constants.ControlError)}, r.status) {
+	if r.errorsOnly && !slices.Contains([]string{string(constants.ControlAlarm), string(constants.ControlError)}, r.status) {
 		return ""
 	}
 
