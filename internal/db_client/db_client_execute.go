@@ -4,10 +4,10 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"slices"
 	"time"
 
 	"github.com/spf13/viper"
-	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/queryresult"
@@ -236,7 +236,7 @@ func (c *DbClient) readRow(rows *sql.Rows, cols []*queryresult.ColumnDef) ([]any
 func isStreamingOutput() bool {
 	outputFormat := viper.GetString(constants.ArgOutput)
 
-	return helpers.StringSliceContains([]string{constants.OutputFormatCSV, constants.OutputFormatLine}, outputFormat)
+	return slices.Contains([]string{constants.OutputFormatCSV, constants.OutputFormatLine}, outputFormat)
 }
 
 func humanizeRowCount(count int) string {

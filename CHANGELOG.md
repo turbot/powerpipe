@@ -1,3 +1,11 @@
+## v1.2.3 [2025-04-02]
+_Bug Fixes_
+- Fix the supported export formats in `powerpipe query run` command. ([#539](https://github.com/turbot/powerpipe/issues/539))
+- Ensure dashboard UI Table component fetches external link from registry when used rather than during module import. ([#720](https://github.com/turbot/powerpipe/issues/720))
+
+_Dependencies_
+- Upgrade `containerd` and `golang.org/x/net` packages to remediate moderate vulnerabilities.
+
 ## v1.2.2 [2025-02-05]
 _Bug Fixes_
 - When DashboardServer executes a dashboard, ensure search path prefix is respected. ([#717](https://github.com/turbot/powerpipe/issues/717))

@@ -132,7 +132,8 @@
     "nth-check": "2.0.1",
     "semver": "7.5.2",
     "path-to-regexp": "0.1.12",
-    "nanoid": "3.3.8"
+    "nanoid": "3.3.8",
+    "prismjs": "1.30.0"
   },
   "engines": {
     "node": ">=20",
