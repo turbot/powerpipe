@@ -1,6 +1,7 @@
 module github.com/turbot/powerpipe
 
 go 1.23.2
+toolchain go1.24.1
 
 // replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
@@ -46,8 +47,8 @@ require (
 	github.com/marcboeker/go-duckdb v1.8.3
 	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/thediveo/enumflag/v2 v2.0.5
-	golang.org/x/sync v0.11.0
-	golang.org/x/text v0.22.0
+	golang.org/x/sync v0.12.0
+	golang.org/x/text v0.23.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
 
