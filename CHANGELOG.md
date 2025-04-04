@@ -1,3 +1,7 @@
+## v1.2.4 [2025-04-04]
+* Table headers for numeric columns are now right-aligned like the row-level cell content. ([#755](https://github.com/turbot/powerpipe/issues/755)) 
+
+* _Bug Fixes_
 ## v1.2.3 [2025-04-02]
 _Bug Fixes_
 - Fix the supported export formats in `powerpipe query run` command. ([#539](https://github.com/turbot/powerpipe/issues/539))

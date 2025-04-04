@@ -1030,7 +1030,10 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                         colSpan={header.colSpan}
                         scope="col"
                         className={classNames(
-                          "py-3 text-left font-normal tracking-wider whitespace-nowrap pl-4",
+                          "py-3 font-normal tracking-wider whitespace-nowrap px-4",
+                          isNumericCol(header.column.columnDef.data_type)
+                            ? "text-right"
+                            : "text-left",
                         )}
                         //style={{ width: header.getSize() }}
                       >
