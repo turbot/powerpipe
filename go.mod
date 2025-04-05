@@ -1,6 +1,7 @@
 module github.com/turbot/powerpipe
 
 go 1.23.2
+toolchain go1.24.1
 
 // replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
@@ -18,8 +19,8 @@ require (
 	github.com/karrick/gows v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/cobra v1.9.1
+	github.com/spf13/pflag v1.0.6 // indirect
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.1.0
