@@ -1101,7 +1101,7 @@ const TableViewVirtualizedRows = (props: TableProps) => {
                         <td
                           key={cell.id}
                           className={classNames(
-                            "align-top content-center max-w-[500px] overflow-x-hidden",
+                            "align-top content-center max-w-[500px] whitespace-nowrap overflow-hidden",
                             isNumericCol(cell.column.columnDef.data_type)
                               ? "text-right"
                               : "",
