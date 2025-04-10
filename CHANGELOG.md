@@ -1,3 +1,8 @@
+## v1.2.5 [TBD]
+
+_Bug Fixes_
+ - Fix the table data cells displaying a vertical scroll in some browsers. ([#765](https://github.com/turbot/powerpipe/issues/765))
+
 ## v1.2.4 [2025-04-04]
 * Table headers for numeric columns are now right-aligned like the row-level cell content. ([#755](https://github.com/turbot/powerpipe/issues/755)) 
 
