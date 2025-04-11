@@ -46,9 +46,7 @@ const CustomDatePicker = ({
   tempState,
   unitOfTime,
   withTime,
-  setDuration,
   setTempState,
-  setUnitOfTime,
   onApply,
   onCancel,
   onTimeOptionClick,
@@ -62,14 +60,12 @@ const CustomDatePicker = ({
   };
   unitOfTime: string;
   withTime: boolean;
-  setDuration: (duration: number) => void;
   setTempState: (state: {
     from: dayjs.Dayjs;
     to?: dayjs.Dayjs | null;
     relative?: string | null;
     showCustom?: boolean;
   }) => void;
-  setUnitOfTime: (unit: string) => void;
   onApply: () => void;
   onCancel: () => void;
   onTimeOptionClick: (value: number, unit: string) => void;
@@ -180,12 +176,12 @@ const CustomDatePicker = ({
                   min={1}
                   max={999999999999}
                   value={duration}
-                  onChange={(e) => setDuration(Number(e.target.value))}
+                  onChange={(e) => onTimeOptionClick(Number(e.target.value), unitOfTime)}
                   className="flex-grow border border-divide rounded-md p-2 bg-dashboard-panel"
                 />
                 <select
                   value={unitOfTime}
-                  onChange={(e) => setUnitOfTime(e.target.value)}
+                  onChange={(e) => onTimeOptionClick(duration, (e.target.value))}
                   className="block border border-divide rounded-md bg-dashboard"
                 >
                   {withTime && (
@@ -552,9 +548,7 @@ const DatetimeRangePicker = ({
                             tempState={tempState}
                             unitOfTime={unitOfTime}
                             withTime={withTime}
-                            setDuration={setDuration}
                             setTempState={setTempState}
-                            setUnitOfTime={setUnitOfTime}
                             onApply={() => {
                               handleApply();
                               close();
