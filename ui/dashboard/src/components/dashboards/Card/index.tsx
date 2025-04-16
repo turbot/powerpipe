@@ -12,18 +12,19 @@ import { BasePrimitiveProps, ExecutablePrimitiveProps } from "../common";
 import {
   CardDataProcessor,
   CardDiffState,
-  CardType,
+  CardType
 } from "../data/CardDataProcessor";
 import { classNames } from "@powerpipe/utils/styles";
-import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { injectSearchPathPrefix, injectTimeRange } from "@powerpipe/utils/url";
 import { getComponent, registerComponent } from "../index";
 import {
   getIconClasses,
   getIconStyles,
-  getWrapperClasses,
+  getWrapperClasses
 } from "@powerpipe/utils/card";
 import { IDiffProperties } from "../data/types";
 import { PanelProperties } from "@powerpipe/types";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useEffect, useState } from "react";
 
@@ -40,9 +41,9 @@ export interface CardProperties extends IDiffProperties {
 export type CardProps = PanelProperties &
   Omit<BasePrimitiveProps, "display_type"> &
   ExecutablePrimitiveProps & {
-    display_type?: CardType;
-    properties: CardProperties;
-  };
+  display_type?: CardType;
+  properties: CardProperties;
+};
 
 type CardState = {
   loading: boolean;
@@ -69,13 +70,13 @@ interface CardDiffDisplayProps {
 //      a card going from alarm 10 to ok 10 is good, so it's no change in value, but change in state
 
 const useCardState = ({
-  data,
-  display_type,
-  properties,
-  status,
-}: CardProps) => {
+                        data,
+                        display_type,
+                        properties,
+                        status
+                      }: CardProps) => {
   const [calculatedProperties, setCalculatedProperties] = useState<CardState>(
-    new CardDataProcessor().getDefaultState(status, properties, display_type),
+    new CardDataProcessor().getDefaultState(status, properties, display_type)
   );
 
   useDeepCompareEffect(() => {
@@ -84,11 +85,11 @@ const useCardState = ({
       data,
       display_type,
       properties,
-      status,
+      status
     );
     setCalculatedProperties(newState);
     setCalculatedProperties(
-      diff.buildCardState(data, display_type, properties, status),
+      diff.buildCardState(data, display_type, properties, status)
     );
   }, [data, display_type, properties, setCalculatedProperties, status]);
 
@@ -148,7 +149,7 @@ const CardDiffDisplay: React.FC<{
       className={classNames(
         "inline-flex rounded-lg px-2 font-medium md:mt-2 space-x-1 text-lg",
         diff.status === "ok" ? "text-ok" : null,
-        diff.status === "alert" ? "text-alert" : null,
+        diff.status === "alert" ? "text-alert" : null
         // diff.status === "alert" ? "text-severity" : null
       )}
     >
@@ -190,9 +191,10 @@ const Card = (props: CardProps) => {
   const ExternalLink = getComponent("external_link");
   const state = useCardState(props);
   const { searchPathPrefix } = useDashboardSearchPath();
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
   const [renderError, setRenderError] = useState<string | null>(null);
   const [renderedHref, setRenderedHref] = useState<string | null>(
-    state.href || null,
+    state.href || null
   );
   const { ready: templateRenderReady, renderTemplates } = useTemplateRender();
 
@@ -221,7 +223,7 @@ const Card = (props: CardProps) => {
     const doRender = async () => {
       const renderedResults = await renderTemplates(
         { card: state.href as string },
-        [renderData],
+        [renderData]
       );
       if (
         !renderedResults ||
@@ -231,11 +233,15 @@ const Card = (props: CardProps) => {
         setRenderedHref(null);
         setRenderError(null);
       } else if (renderedResults[0].card.result) {
-        const withSearchPathPrefix = injectSearchPathPrefix(
+        let withContext: string | null;
+        withContext = injectSearchPathPrefix(
           renderedResults[0].card.result,
-          searchPathPrefix,
+          searchPathPrefix
         );
-        setRenderedHref(withSearchPathPrefix);
+        if (supportsTimeRange) {
+          withContext = injectTimeRange(withContext, range);
+        }
+        setRenderedHref(withContext);
         setRenderError(null);
       } else if (renderedResults[0].card.error) {
         setRenderError(renderedResults[0].card.error as string);
@@ -243,14 +249,14 @@ const Card = (props: CardProps) => {
       }
     };
     doRender();
-  }, [renderTemplates, templateRenderReady, state, props.data]);
+  }, [renderTemplates, templateRenderReady, state, props.data, searchPathPrefix, supportsTimeRange, range]);
 
   const card = (
     <div
       className={classNames(
         "overflow-hidden bg-dashboard-panel text-foreground print:bg-white print:text-black shadow-sm p-3 pr-5",
         getWrapperClasses(state.type),
-        !state.icon ? "pl-4" : undefined,
+        !state.icon ? "pl-4" : undefined
       )}
     >
       <div className="flex space-x-3">

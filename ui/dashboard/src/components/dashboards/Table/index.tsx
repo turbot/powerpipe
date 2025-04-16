@@ -42,12 +42,13 @@ import {
 import { createPortal } from "react-dom";
 import { formatDate, parseDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
-import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { injectSearchPathPrefix, injectTimeRange } from "@powerpipe/utils/url";
 import { KeyValuePairs, RowRenderResult } from "../common/types";
 import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { noop } from "@powerpipe/utils/func";
 import { PanelDefinition } from "@powerpipe/types";
 import { ThemeProvider, ThemeWrapper } from "@powerpipe/hooks/useTheme";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
@@ -211,6 +212,7 @@ const CellValue = ({
 }: CellValueProps) => {
   const ExternalLink = getComponent("external_link");
   const baseClasses = "px-4 py-4";
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
   const [renderState, setRenderState] = useState<{
     href: string | null;
@@ -235,15 +237,19 @@ const CellValue = ({
       return;
     }
     if (renderedTemplateForColumn.result) {
-      const withSearchPathPrefix = injectSearchPathPrefix(
+      let withContext: string | null;
+      withContext = injectSearchPathPrefix(
         renderedTemplateForColumn.result,
         searchPathPrefix,
       );
-      setRenderState({ href: withSearchPathPrefix, error: null });
+      if (supportsTimeRange) {
+        withContext = injectTimeRange(withContext, range);
+      }
+      setRenderState({ href: withContext, error: null });
     } else if (renderedTemplateForColumn.error) {
       setRenderState({ href: null, error: renderedTemplateForColumn.error });
     }
-  }, [panel.isDetectionTable, column, renderedTemplateObj, searchPathPrefix]);
+  }, [panel.isDetectionTable, column, renderedTemplateObj, searchPathPrefix, supportsTimeRange, range]);
 
   useEffect(() => {
     if (!panel.isDetectionTable || value === undefined || value === null) {

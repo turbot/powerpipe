@@ -19,8 +19,9 @@ import { classNames } from "@powerpipe/utils/styles";
 import { ExpandedNodeInfo, useGraph } from "../common/useGraph";
 import { getComponent } from "@powerpipe/components/dashboards";
 import { Handle } from "reactflow";
-import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { injectSearchPathPrefix, injectTimeRange } from "@powerpipe/utils/url";
 import { memo, ReactNode, useEffect, useMemo, useState } from "react";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 
 type AssetNodeProps = {
@@ -83,9 +84,9 @@ type RefoldNodeControlProps = {
 };
 
 const FoldedNodeTooltipTitle = ({
-  category,
-  foldedNodesCount,
-}: FoldedNodeTooltipTitleProps) => (
+                                  category,
+                                  foldedNodesCount
+                                }: FoldedNodeTooltipTitleProps) => (
   <div className="flex flex-col space-y-1">
     {category && (
       <span
@@ -102,8 +103,8 @@ const FoldedNodeTooltipTitle = ({
 );
 
 const FoldedNodeTooltipNodes = ({
-  foldedNodes,
-}: FolderNodeTooltipNodesProps) => {
+                                  foldedNodes
+                                }: FolderNodeTooltipNodesProps) => {
   const { visibleItems, hasMore, loadMore } = usePaginatedList(foldedNodes, 5);
 
   return (
@@ -131,7 +132,8 @@ const FoldedNodeCountBadge = ({ foldedNodes }: FoldedNodeCountBadgeProps) => {
     return null;
   }
   return (
-    <div className="absolute -right-[4%] -top-[4%] items-center bg-info text-white rounded-full px-1.5 text-sm font-medium cursor-pointer">
+    <div
+      className="absolute -right-[4%] -top-[4%] items-center bg-info text-white rounded-full px-1.5 text-sm font-medium cursor-pointer">
       <IntegerDisplay num={foldedNodes?.length || null} />
     </div>
   );
@@ -140,7 +142,7 @@ const FoldedNodeCountBadge = ({ foldedNodes }: FoldedNodeCountBadgeProps) => {
 const Label = ({ children, themeColors, title }: LabelProps) => (
   <span
     style={{
-      textShadow: buildLabelTextShadow(themeColors.dashboardPanel),
+      textShadow: buildLabelTextShadow(themeColors.dashboardPanel)
     }}
     title={title}
   >
@@ -149,10 +151,10 @@ const Label = ({ children, themeColors, title }: LabelProps) => (
 );
 
 const FoldedNodeLabel = ({
-  category,
-  fold,
-  themeColors,
-}: FoldedNodeLabelProps) => (
+                           category,
+                           fold,
+                           themeColors
+                         }: FoldedNodeLabelProps) => (
   <>
     {fold?.title && (
       <Label themeColors={themeColors} title={fold?.title}>
@@ -173,12 +175,12 @@ const FoldedNodeLabel = ({
 );
 
 const NodeControl = ({
-  action,
-  className,
-  icon,
-  iconClassName,
-  title,
-}: NodeControlProps) => {
+                       action,
+                       className,
+                       icon,
+                       iconClassName,
+                       title
+                     }: NodeControlProps) => {
   return (
     <div
       onClick={(e) => {
@@ -195,7 +197,8 @@ const NodeControl = ({
 
 const NodeControls = ({ children }: NodeControlsProps) => {
   return (
-    <div className="invisible group-hover:visible absolute -left-[17%] -bottom-[4%] flex flex-col space-y-px bg-dashboard text-foreground">
+    <div
+      className="invisible group-hover:visible absolute -left-[17%] -bottom-[4%] flex flex-col space-y-px bg-dashboard text-foreground">
       {children}
     </div>
   );
@@ -211,9 +214,9 @@ const NodeGrabHandleControl = () => (
 );
 
 const RefoldNodeControl = ({
-  collapseNodes,
-  expandedNodeInfo,
-}: RefoldNodeControlProps) => {
+                             collapseNodes,
+                             expandedNodeInfo
+                           }: RefoldNodeControlProps) => {
   if (!expandedNodeInfo) {
     return null;
   }
@@ -228,22 +231,23 @@ const RefoldNodeControl = ({
 };
 
 const AssetNode = ({
-  id,
-  data: {
-    category,
-    color,
-    properties,
-    fold,
-    icon,
-    isFolded,
-    foldedNodes,
-    row_data,
-    label,
-    themeColors,
-  },
-}: AssetNodeProps) => {
+                     id,
+                     data: {
+                       category,
+                       color,
+                       properties,
+                       fold,
+                       icon,
+                       isFolded,
+                       foldedNodes,
+                       row_data,
+                       label,
+                       themeColors
+                     }
+                   }: AssetNodeProps) => {
   const { collapseNodes, expandNode, expandedNodes, renderResults } =
     useGraph();
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
   const ExternalLink = getComponent("external_link");
   const iconType = useDashboardIconType(icon);
@@ -257,15 +261,19 @@ const AssetNode = ({
     if (!renderResult.result) {
       return;
     }
-    const withSearchPathPrefix = injectSearchPathPrefix(
+    let withContext: string | null;
+    withContext = injectSearchPathPrefix(
       renderResult.result,
       searchPathPrefix,
     );
-    if (withSearchPathPrefix === renderedHref) {
+    if (supportsTimeRange) {
+      withContext = injectTimeRange(withContext, range);
+    }
+    if (withContext === renderedHref) {
       return;
     }
-    setRenderedHref(withSearchPathPrefix);
-  }, [id, renderedHref, renderResults, searchPathPrefix]);
+    setRenderedHref(withContext);
+  }, [id, renderedHref, renderResults, searchPathPrefix, supportsTimeRange, range]);
 
   const isExpandedNode = useMemo(
     () => !!expandedNodes[id],

@@ -10,7 +10,8 @@ import {
 import { classNames } from "@powerpipe/utils/styles";
 import { ErrorIcon } from "@powerpipe/constants/icons";
 import { getComponent } from "@powerpipe/components/dashboards";
-import { injectSearchPathPrefix } from "@powerpipe/utils/url";
+import { injectSearchPathPrefix, injectTimeRange } from "@powerpipe/utils/url";
+import { useDashboardDatetimeRange } from "@powerpipe/hooks/useDashboardDatetimeRange";
 import { useDashboardSearchPath } from "@powerpipe/hooks/useDashboardSearchPath";
 import { useEffect, useState } from "react";
 
@@ -52,6 +53,7 @@ const RowPropertyItemValue = ({
   wrap,
 }: RowPropertyItemProps) => {
   const ExternalLink = getComponent("external_link");
+  const { range, supportsTimeRange } = useDashboardDatetimeRange();
   const { searchPathPrefix } = useDashboardSearchPath();
   const [href, setHref] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -68,17 +70,21 @@ const RowPropertyItemValue = ({
       return;
     }
     if (renderedTemplateForProperty.result) {
-      const withSearchPathPrefix = injectSearchPathPrefix(
+      let withContext: string | null;
+      withContext = injectSearchPathPrefix(
         renderedTemplateForProperty.result,
         searchPathPrefix,
       );
-      setHref(withSearchPathPrefix);
+      if (supportsTimeRange) {
+        withContext = injectTimeRange(withContext, range);
+      }
+      setHref(withContext);
       setError(null);
     } else if (renderedTemplateForProperty.error) {
       setHref(null);
       setError(renderedTemplateForProperty.error);
     }
-  }, [name, rowTemplateData, searchPathPrefix]);
+  }, [name, rowTemplateData, searchPathPrefix, supportsTimeRange, range]);
 
   const wrapClassName = wrap ? "whitespace-normal" : "truncate";
   const linkClassName = classNames("link-highlight", wrapClassName);
