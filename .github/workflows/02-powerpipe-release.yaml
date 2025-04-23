@@ -37,7 +37,7 @@ jobs:
           echo "VERSION=${trim}" >> $GITHUB_ENV
           
       - name: Validate Branch
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           ref: ${{ github.event.ref }}
 
@@ -47,19 +47,19 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
 
       - name: Checkout Pipe Fittings Components repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
 
         # this is required, check golangci-lint-action docs
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version: '1.23'
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
@@ -83,28 +83,28 @@ jobs:
         run: ls -l ~/artifacts
 
       - name: Save Linux Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-artifact-linux
           path: ~/artifacts/linux.tar.gz
           if-no-files-found: error
 
       - name: Save Linux ARM Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-artifact-linux-arm
           path: ~/artifacts/linux-arm.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-artifact-darwin
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
       - name: Save MacOS ARM Build Artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: build-artifact-darwin-arm
           path: ~/artifacts/darwin-arm.tar.gz
@@ -133,13 +133,13 @@ jobs:
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           submodules: true
           path: powerpipe
           ref: ${{ github.event.ref }}
 
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version: 1.22
           cache: false
@@ -150,14 +150,14 @@ jobs:
           mkdir ~/artifacts
   
       - name: Download Linux Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         if: ${{ matrix.platform == 'ubuntu-latest' }}
         with:
           name: build-artifact-linux
           path: ~/artifacts
 
       - name: Download Darwin Build Artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         if: ${{ matrix.platform == 'macos-latest' }}
         with:
           name: build-artifact-darwin-arm
@@ -232,16 +232,16 @@ jobs:
     needs: [goreleaser]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           name: build-artifact-linux
           path: ./artifacts
   
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
   
       - name: Pull Ubuntu latest Image
         run: docker pull ubuntu:latest
@@ -273,16 +273,16 @@ jobs:
     needs: [goreleaser]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
   
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           name: build-artifact-linux
           path: ./artifacts
   
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
   
       - name: Pull CentOS Stream 9 image
         run: docker pull quay.io/centos/centos:stream9
@@ -314,16 +314,16 @@ jobs:
     needs: [goreleaser]
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           name: build-artifact-linux
           path: ./artifacts
   
       - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+        uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
   
       - name: Pull Amazon Linux 2023 Image
         run: docker pull amazonlinux:2023
@@ -446,7 +446,7 @@ jobs:
       version: ${{ steps.set_version.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
@@ -469,7 +469,7 @@ jobs:
           echo "VERSION=${trim}" >> $GITHUB_ENV
 
       - name: Setup Node
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
         with:
           node-version: ">=18.12.0"
 
@@ -481,7 +481,7 @@ jobs:
       # Cache node modules to speed up builds
       - name: Cache node modules
         id: cache-npm
-        uses: actions/cache@v4
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
         env:
           cache-name: cache-node-modules
         with:
@@ -537,7 +537,7 @@ jobs:
           tar -czvf ../dashboard_ui_assets.tar.gz *
 
       - name: Upload dashboard assets artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: dashboard-ui-assets-archive
           path: dashboard_ui_assets.tar.gz
@@ -548,7 +548,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -574,13 +574,13 @@ jobs:
       VERSION: ${{ needs.build_assets.outputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
 
       - name: Checkout Pipe Fittings Components repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
@@ -594,13 +594,13 @@ jobs:
           git push origin $VERSION
 
       # this is required, check golangci-lint-action docs
-      - uses: actions/setup-go@v5
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version: "1.22"
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
       - name: Download Dashboard UI Assets Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           name: dashboard-ui-assets-archive
           path: powerpipe/internal/dashboardassets
@@ -629,7 +629,7 @@ jobs:
       Version: ${{ github.event.inputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -659,7 +659,7 @@ jobs:
       Version: ${{ github.event.inputs.version }}
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
@@ -680,7 +680,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
