@@ -17,7 +17,7 @@ type SnapshotFormatter struct {
 }
 
 func (*SnapshotFormatter) FormatDetection(context.Context, *dashboardexecute.DetectionBenchmarkDisplayTree) (io.Reader, error) {
-	return nil, fmt.Errorf("SnapshotFormatter does not support FormatDetection")
+	return nil, fmt.Errorf("Currently only JSON format is supported for detection benchmarks")
 }
 
 func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
