@@ -1,3 +1,9 @@
+## v1.2.6 [2025-05-08]
+_Bug Fixes_
+* Fix issue where powerpipe was failing to run detections from dependant mods if steampipe service was not running. ([#788](https://github.com/turbot/powerpipe/issues/788))
+* Fix issue where detection benchmarks were not showing date range selector in powerpipe server. ([#789](https://github.com/turbot/powerpipe/issues/789))
+* Fix issue where powerpipe was failing to export detection benchmarks. ([#796](https://github.com/turbot/powerpipe/issues/796))
+
 ## v1.2.5 [2025-04-14]
 _Bug Fixes_
 * Fix the table data cells displaying a vertical scroll in some browsers. ([#765](https://github.com/turbot/powerpipe/issues/765))
