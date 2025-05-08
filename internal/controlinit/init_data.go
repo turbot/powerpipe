@@ -8,6 +8,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/workspace"
@@ -78,7 +79,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 	}
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		if err := i.registerCheckExporters(i.Targets[0]); err != nil {
+		if err := i.registerExporters(i.Targets[0]); err != nil {
 			i.Result.Error = err
 			return i
 		}
@@ -118,7 +119,7 @@ func (i *InitData) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData) registerCheckExporters(target modconfig.ModTreeItem) error {
+func (i *InitData) registerExporters(target modconfig.ModTreeItem) error {
 	exporters, err := controldisplay.GetExporters(target)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 
@@ -153,4 +154,8 @@ func initialiseCheckColorScheme() error {
 	}
 	controldisplay.ControlColors = scheme
 	return nil
+}
+
+func detectionExporters() []export.Exporter {
+	return []export.Exporter{&export.SnapshotExporter{}}
 }

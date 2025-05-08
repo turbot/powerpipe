@@ -14,7 +14,6 @@ import (
 	"github.com/turbot/pipe-fittings/v2/cmdconfig"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
-	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/workspace"
@@ -134,9 +133,6 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *c
 	defer initData.Cleanup(ctx)
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		err := initData.RegisterExporters(detectionExporters()...)
-		error_helpers.FailOnError(err)
-
 		// validate required export formats
 		err = initData.ExportManager.ValidateExportFormat(viper.GetStringSlice(constants.ArgExport))
 		error_helpers.FailOnError(err)
@@ -174,7 +170,7 @@ func detectionRunWithInitData[T DetectionTarget](cmd *cobra.Command, initData *c
 
 	// export the result (if needed)
 	exportArgs := viper.GetStringSlice(constants.ArgExport)
-	exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, snap, exportArgs)
+	exportMsg, err := initData.ExportManager.DoExport(ctx, snap.FileNameRoot, tree, exportArgs)
 	error_helpers.FailOnErrorWithMessage(err, "failed to export snapshot")
 
 	// print the location where the file is exported
@@ -203,10 +199,6 @@ func validateDetectionArgs(ctx context.Context) error {
 	}
 
 	return localcmdconfig.ValidateDatabaseArg()
-}
-
-func detectionExporters() []export.Exporter {
-	return []export.Exporter{&export.SnapshotExporter{}}
 }
 
 func setExitCodeForDetectionError(err error) {
