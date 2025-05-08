@@ -8,7 +8,6 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
-	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/workspace"
@@ -154,8 +153,4 @@ func initialiseCheckColorScheme() error {
 	}
 	controldisplay.ControlColors = scheme
 	return nil
-}
-
-func detectionExporters() []export.Exporter {
-	return []export.Exporter{&export.SnapshotExporter{}}
 }
