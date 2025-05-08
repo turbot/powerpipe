@@ -157,8 +157,6 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 		}
 	}
 
-	// determine whether
-
 	// create default client
 	// set the database and search patch config
 	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)

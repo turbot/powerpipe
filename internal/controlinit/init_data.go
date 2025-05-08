@@ -78,7 +78,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 	}
 
 	if len(viper.GetStringSlice(constants.ArgExport)) > 0 {
-		if err := i.registerCheckExporters(i.Targets[0]); err != nil {
+		if err := i.registerExporters(i.Targets[0]); err != nil {
 			i.Result.Error = err
 			return i
 		}
@@ -118,7 +118,7 @@ func (i *InitData) setControlFilter() {
 }
 
 // register exporters for each of the supported check formats
-func (i *InitData) registerCheckExporters(target modconfig.ModTreeItem) error {
+func (i *InitData) registerExporters(target modconfig.ModTreeItem) error {
 	exporters, err := controldisplay.GetExporters(target)
 	error_helpers.FailOnErrorWithMessage(err, "failed to load exporters")
 
