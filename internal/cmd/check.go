@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -25,6 +26,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/display"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -184,9 +186,17 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	// if there is a usage warning we display it
 	initData.Result.DisplayMessages()
 
-	// now filter the target
+	// create a client to pass to the execution tree
+	client, err := initData.GetDefaultClient(ctx)
+	if err != nil {
+		exitCode = constants.ExitCodeInitializationFailed
+		error_helpers.ShowError(ctx, err)
+		return
+
+	}
+
 	// get the execution trees
-	trees, err := getExecutionTrees(ctx, initData)
+	trees, err := getExecutionTrees(ctx, initData, client)
 	error_helpers.FailOnError(err)
 
 	// pull out useful properties
@@ -194,6 +204,10 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	defer func() {
 		// set the defined exit code after successful execution
 		exitCode = getExitCode(totalAlarms, totalErrors)
+		// close the database client
+		if err := client.Close(ctx); err != nil {
+			slog.Error("error closing database client", "error", err)
+		}
 	}()
 
 	for _, namedTree := range trees {
@@ -291,7 +305,7 @@ func publishSnapshot(ctx context.Context, executionTree *controlexecute.Executio
 	return nil
 }
 
-func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*namedExecutionTree, error) {
+func getExecutionTrees(ctx context.Context, initData *controlinit.InitData, client *db_client.DbClient) ([]*namedExecutionTree, error) {
 	var trees []*namedExecutionTree
 	if error_helpers.IsContextCanceled(ctx) {
 		return nil, ctx.Err()
@@ -299,7 +313,7 @@ func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*
 
 	if initData.ExportManager.HasNamedExport(viper.GetStringSlice(constants.ArgExport)) {
 		// if there is a named export - combine targets into a single tree
-		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, initData.Targets...)
+		executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, client, initData.ControlFilter, initData.Targets...)
 		if err != nil {
 			return nil, sperr.WrapWithMessage(err, "could not create merged execution tree")
 		}
@@ -311,7 +325,7 @@ func getExecutionTrees(ctx context.Context, initData *controlinit.InitData) ([]*
 			if error_helpers.IsContextCanceled(ctx) {
 				return nil, ctx.Err()
 			}
-			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, initData.DefaultClient, initData.ControlFilter, target)
+			executionTree, err := controlexecute.NewExecutionTree(ctx, initData.Workspace, client, initData.ControlFilter, target)
 			if err != nil {
 				return nil, sperr.WrapWithMessage(err, "could not create execution tree for %s", target)
 			}

@@ -97,11 +97,6 @@ func GetDefaultDatabaseConfig(mod *modconfig.Mod) (connection.ConnectionStringPr
 	// has a database arg been set in viper?
 	databaseArgs := viper.GetString(constants.ArgDatabase)
 	modDatabase := mod.GetDatabase()
-	// if there is no mod database specified, see if we have mod dependencies
-	// and if so, do they all specify the same database. If so we can use that as default
-	if modDatabase == nil {
-		modDatabase = getDefaultDatabaseFromModDependencies(mod)
-	}
 
 	switch {
 	// if database command line was passed, set default
@@ -142,26 +137,4 @@ func GetDefaultDatabaseConfig(mod *modconfig.Mod) (connection.ConnectionStringPr
 		}
 	}
 	return csp, defaultSearchPathConfig, nil
-}
-
-func getDefaultDatabaseFromModDependencies(mod *modconfig.Mod) connection.ConnectionStringProvider {
-	var depModDb connection.ConnectionStringProvider
-
-	for _, dep := range mod.Resources.GetMods() {
-		if dep.Name() == mod.Name() {
-			continue
-		}
-		thisDb := dep.GetDatabase()
-		if thisDb == nil {
-			thisDb = powerpipeconfig.GlobalConfig.GetDefaultConnection()
-		}
-		if depModDb == nil {
-			depModDb = thisDb
-		} else if depModDb != dep.GetDatabase() {
-			// more than one database specified - we cannot determine which to use
-			return nil
-		}
-	}
-	// so to get here, all mod dependencies use the same database ( which may be the default database)
-	return depModDb
 }
