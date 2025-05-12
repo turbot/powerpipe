@@ -150,14 +150,14 @@ jobs:
           mkdir ~/artifacts
   
       - name: Download Linux Build Artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         if: ${{ matrix.platform == 'ubuntu-latest' }}
         with:
           name: build-artifact-linux
           path: ~/artifacts
 
       - name: Download Darwin Build Artifacts
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         if: ${{ matrix.platform == 'macos-latest' }}
         with:
           name: build-artifact-darwin-arm
@@ -235,7 +235,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -276,7 +276,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
   
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -317,7 +317,7 @@ jobs:
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
 
       - name: Download Linux Build Artifact
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: build-artifact-linux
           path: ./artifacts
@@ -600,7 +600,7 @@ jobs:
           cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
 
       - name: Download Dashboard UI Assets Artifact
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093 # v4.3.0
         with:
           name: dashboard-ui-assets-archive
           path: powerpipe/internal/dashboardassets
