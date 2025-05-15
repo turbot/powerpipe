@@ -33,9 +33,11 @@ type Server struct {
 	workspace               *workspace.PowerpipeWorkspace
 	defaultDatabase         connection.ConnectionStringProvider
 	defaultSearchPathConfig backend.SearchPathConfig
+	listenPort              ListenPort
+	listenType              ListenType
 }
 
-func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket *melody.Melody) (*Server, error) {
+func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket *melody.Melody, serverPort ListenPort, serverlisten ListenType) (*Server, error) {
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -51,6 +53,8 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 		workspace:               w,
 		defaultDatabase:         initData.DefaultDatabase,
 		defaultSearchPathConfig: initData.DefaultSearchPathConfig,
+		listenPort:              serverPort,
+		listenType:              serverlisten,
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
@@ -65,7 +69,7 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 // it returns a channel which is signalled when the API server terminates
 func (s *Server) Start(ctx context.Context) chan struct{} {
 	s.InitAsync(ctx)
-	return startAPIAsync(ctx, s.webSocket)
+	return startAPIAsync(ctx, s.webSocket, int(s.listenPort), s.listenType)
 }
 
 // Shutdown stops the API server
