@@ -85,7 +85,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	// setup a new webSocket service
 	webSocket := melody.New()
 	// create the dashboardServer
-	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData, webSocket, serverPort, serverListen)
+	dashboardServer, err := dashboardserver.NewServer(ctx, modInitData, webSocket)
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server
@@ -105,7 +105,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		error_helpers.FailOnError(err)
 	}
 
-	dashboardserver.OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", serverPort, serverListen))
+	dashboardserver.OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", serverPort, viper.GetString(constants.ArgListen)))
 	dashboardserver.OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", serverPort))
 	dashboardserver.OutputMessage(ctx, "Press Ctrl+C to exit")
 

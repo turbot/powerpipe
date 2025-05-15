@@ -10,12 +10,14 @@ import (
 
 	"github.com/gin-contrib/static"
 	"github.com/gin-gonic/gin"
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/filepaths"
 	"gopkg.in/olahol/melody.v1"
 )
 
-func startAPIAsync(ctx context.Context, webSocket *melody.Melody, portVal int, listenVal ListenType) chan struct{} {
+func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} {
 	doneChan := make(chan struct{})
 
 	go func() {
@@ -40,12 +42,10 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody, portVal int, l
 			c.File(path.Join(assetsDirectory, "index.html"))
 		})
 
-		// Use passed-in portVal and listenVal instead of viper
-		// dashboardServerPort := viper.GetInt(constants.ArgPort)
-		dashboardServerPort := portVal
+		dashboardServerPort := viper.GetInt(constants.ArgPort)
+
 		dashboardServerListen := "localhost"
-		// if viper.GetString(constants.ArgListen) == string(ListenTypeNetwork) {
-		if listenVal == ListenTypeNetwork {
+		if viper.GetString(constants.ArgListen) == string(ListenTypeNetwork) {
 			dashboardServerListen = ""
 		}
 
@@ -62,7 +62,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody, portVal int, l
 			}
 		}()
 
-		OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, listenVal))
+		OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", dashboardServerPort, viper.GetString(constants.ArgListen)))
 		OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", dashboardServerPort))
 		OutputMessage(ctx, "Press Ctrl+C to exit")
 		<-ctx.Done()
