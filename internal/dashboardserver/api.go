@@ -43,6 +43,7 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 		})
 
 		dashboardServerPort := viper.GetInt(constants.ArgPort)
+
 		dashboardServerListen := "localhost"
 		if viper.GetString(constants.ArgListen) == string(ListenTypeNetwork) {
 			dashboardServerListen = ""

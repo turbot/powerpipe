@@ -57,7 +57,8 @@ type APIService struct {
 	httpServer  *http.Server
 	httpsServer *http.Server
 
-	HTTPPort string `json:"http_port,omitempty"`
+	HTTPPort   dashboardserver.ListenPort `json:"http_port,omitempty"`
+	HTTPListen dashboardserver.ListenType `json:"http_listen,omitempty"`
 
 	HTTPSHost string `json:"https_host,omitempty"`
 	HTTPSPort string `json:"https_port,omitempty"`
@@ -92,9 +93,11 @@ func WithWorkspace(workspace *pworkspace.PowerpipeWorkspace) APIServiceOption {
 	}
 }
 
-func WithHttpPort(port dashboardserver.ListenPort) APIServiceOption {
+// WithHTTPPortAndListenConfig sets the HTTP port and listen type for the API service.
+func WithHTTPPortAndListenConfig(listenPort dashboardserver.ListenPort, listenType dashboardserver.ListenType) APIServiceOption {
 	return func(api *APIService) error {
-		api.HTTPPort = fmt.Sprintf("%d", port)
+		api.HTTPPort = listenPort
+		api.HTTPListen = listenType
 		return nil
 	}
 }
@@ -207,9 +210,16 @@ func (api *APIService) Start() error {
 	// 	}
 	// })
 
+	// determine the listen address based on HTTPListenType
+	listenHost := "" // Default to all interfaces (network)
+	if api.HTTPListen == dashboardserver.ListenTypeLocal {
+		listenHost = "localhost"
+	}
+
 	// Server setup with graceful shutdown
 	api.httpServer = &http.Server{
-		Addr:              fmt.Sprintf("%s:%s", api.HTTPSHost, api.HTTPPort),
+		// Use listenHost (derived from api.HTTPListenType) and api.HTTPListenPort (the integer port)
+		Addr:              fmt.Sprintf("%s:%d", listenHost, api.HTTPPort),
 		Handler:           router,
 		ReadHeaderTimeout: 60 * time.Second,
 	}
@@ -219,14 +229,6 @@ func (api *APIService) Start() error {
 		Handler:           router,
 		ReadHeaderTimeout: 60 * time.Second,
 	}
-
-	// Initializing the server in a goroutine so that
-	// it won't block the graceful shutdown handling below
-	// go func() {
-	// 	if err := api.httpsServer.ListenAndServeTLS("./service/certificate/server.crt", "./service/certificate/server.key"); err != nil && err != http.ErrServerClosed {
-	// 		log.Fatalf("listen: %s\n", err)
-	// 	}
-	// }()
 
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
