@@ -1,4 +1,4 @@
-## v1.2.6 [2025-05-21]
+## v1.2.7 [2025-05-21]
 _Bug Fixes_
 * Fix issue where powerpipe was exposing the server port to the internet even when listen was local. ([#761](https://github.com/turbot/powerpipe/issues/761))
 * Fix issue where benchmark/control json output was not printing the complete JSON to stdout. ([#791](https://github.com/turbot/powerpipe/issues/791))
