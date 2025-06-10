@@ -113,10 +113,6 @@ const Benchmark = (props: InnerCheckProps) => {
         cumulative.ok += current.ok;
         cumulative.info += current.info;
         cumulative.skip += current.skip;
-        cumulative.skipped += current.skipped;
-        cumulative.invalid += current.invalid || 0;
-        cumulative.muted += current.muted || 0;
-        cumulative.tbd += current.tbd || 0;
         return cumulative;
       },
       {
@@ -125,10 +121,6 @@ const Benchmark = (props: InnerCheckProps) => {
         ok: 0,
         info: 0,
         skip: 0,
-        skipped: 0,
-        invalid: 0,
-        muted: 0,
-        tbd: 0,
       },
     );
 
@@ -164,36 +156,6 @@ const Benchmark = (props: InnerCheckProps) => {
         },
       },
       {
-        name: `${props.definition.name}.container.summary.status.invalid`,
-        width: 2,
-        display_type: totalSummary.invalid > 0 ? "invalid" : "skip",
-        properties: {
-          label: "Invalid",
-          value: totalSummary.invalid,
-          icon: "materialsymbols-rounded:help",
-        },
-      },
-      {
-        name: `${props.definition.name}.container.summary.status.muted`,
-        width: 2,
-        display_type: totalSummary.muted > 0 ? "muted" : "skip",
-        properties: {
-          label: "Muted",
-          value: totalSummary.muted,
-          icon: "materialsymbols-rounded:volume_off",
-        },
-      },
-      {
-        name: `${props.definition.name}.container.summary.status.tbd`,
-        width: 2,
-        display_type: totalSummary.tbd > 0 ? "tbd" : "skip",
-        properties: {
-          label: "TBD",
-          value: totalSummary.tbd,
-          icon: "materialsymbols-rounded:hourglass_empty",
-        },
-      },
-      {
         name: `${props.definition.name}.container.summary.status.info`,
         width: 2,
         display_type: totalSummary.info > 0 ? "info" : "skip",
@@ -209,7 +171,7 @@ const Benchmark = (props: InnerCheckProps) => {
         display_type: "skip",
         properties: {
           label: "Skipped",
-          value: totalSummary.skip || totalSummary.skipped,
+          value: totalSummary.skip,
           icon: "materialsymbols-solid:arrow_circle_right",
         },
       },
