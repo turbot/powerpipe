@@ -40,7 +40,11 @@ class ControlEmptyResultNode implements CheckNode {
       ok: 0,
       info: 0,
       skip: 0,
+      skipped: 0,
       error: 0,
+      invalid: 0,
+      muted: 0,
+      tbd: 0,
     };
   }
 

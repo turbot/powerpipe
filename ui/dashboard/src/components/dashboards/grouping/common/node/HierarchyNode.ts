@@ -53,7 +53,11 @@ class HierarchyNode implements CheckNode {
       ok: 0,
       info: 0,
       skip: 0,
+      skipped: 0,
       error: 0,
+      invalid: 0,
+      muted: 0,
+      tbd: 0,
     };
     for (const child of this._children) {
       const nestedSummary = child.summary;
@@ -61,7 +65,11 @@ class HierarchyNode implements CheckNode {
       summary.ok += nestedSummary.ok;
       summary.info += nestedSummary.info;
       summary.skip += nestedSummary.skip;
+      summary.skipped += nestedSummary.skipped;
       summary.error += nestedSummary.error;
+      summary.invalid += nestedSummary.invalid;
+      summary.muted += nestedSummary.muted;
+      summary.tbd += nestedSummary.tbd;
     }
     return summary;
   }

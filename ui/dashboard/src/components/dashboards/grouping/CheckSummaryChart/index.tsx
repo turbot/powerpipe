@@ -56,6 +56,15 @@ const getSummaryTitle = (summary: CheckSummary): string => {
   if (summary.alarm) {
     titleParts.push(`Alarm: ${summary.alarm.toLocaleString()}`);
   }
+  if (summary.invalid) {
+    titleParts.push(`Invalid: ${summary.invalid.toLocaleString()}`);
+  }
+  if (summary.muted) {
+    titleParts.push(`Muted: ${summary.muted.toLocaleString()}`);
+  }
+  if (summary.tbd) {
+    titleParts.push(`TBD: ${summary.tbd.toLocaleString()}`);
+  }
   if (summary.ok) {
     titleParts.push(`OK: ${summary.ok.toLocaleString()}`);
   }
@@ -65,11 +74,13 @@ const getSummaryTitle = (summary: CheckSummary): string => {
   if (summary.skip) {
     titleParts.push(`Skipped: ${summary.skip.toLocaleString()}`);
   }
+  if (summary.skipped) {
+    titleParts.push(`Skipped: ${summary.skipped.toLocaleString()}`);
+  }
   if (titleParts.length === 0) {
     return "";
   }
-  return titleParts.join(`
-`);
+  return titleParts.join(`\n`);
 };
 
 const AlertProgressBarGroupTotal = ({
@@ -88,13 +99,24 @@ const NonAlertProgressBarGroupTotal = ({
   className,
   summary,
 }: NonAlertProgressBarGroupTotalProps) => {
-  const nonAlertTotal = summary.ok + summary.info + summary.skip;
-  let textClassName;
+  const nonAlertTotal =
+    summary.ok +
+    summary.info +
+    summary.muted +
+    summary.skip +
+    summary.skipped +
+    summary.tbd;
+  const okTotal = summary.ok;
+  const infoTotal = summary.info;
+  const skipTotal =
+    summary.muted + summary.skip + summary.skipped + summary.tbd;
+
+  let textClassName: string;
   if (nonAlertTotal === 0) {
     textClassName = "text-foreground-lightest";
-  } else if (summary.skip > summary.info && summary.skip > summary.ok) {
+  } else if (skipTotal > infoTotal && skipTotal > okTotal) {
     textClassName = "text-black-scale-5";
-  } else if (summary.info > summary.ok && summary.info >= summary.skip) {
+  } else if (infoTotal > okTotal && infoTotal >= skipTotal) {
     textClassName = "text-info";
   } else {
     textClassName = "text-ok";
@@ -148,9 +170,17 @@ const CheckSummaryChart = ({
   let maxAlerts = 0;
   let maxNonAlerts = 0;
   for (const firstChildSummary of firstChildSummaries) {
-    const currentMaxAlerts = firstChildSummary.error + firstChildSummary.alarm;
+    const currentMaxAlerts =
+      firstChildSummary.error +
+      firstChildSummary.alarm +
+      (firstChildSummary.invalid || 0);
     const currentMaxNonAlerts =
-      firstChildSummary.ok + firstChildSummary.info + firstChildSummary.skip;
+      firstChildSummary.ok +
+      firstChildSummary.info +
+      firstChildSummary.skip +
+      firstChildSummary.skipped +
+      (firstChildSummary.muted || 0) +
+      (firstChildSummary.tbd || 0);
     if (currentMaxAlerts > maxAlerts) {
       maxAlerts = currentMaxAlerts;
     }
@@ -158,13 +188,6 @@ const CheckSummaryChart = ({
       maxNonAlerts = currentMaxNonAlerts;
     }
   }
-  // const [alarm, error, ok, info, skip] = ensureMinPercentages(name, [
-  //   summary.alarm,
-  //   summary.error,
-  //   summary.ok,
-  //   summary.info,
-  //   summary.skip,
-  // ]);
   let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
   let nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts);
   if (alertsWidth > nonAlertsWidth) {
@@ -190,6 +213,15 @@ const CheckSummaryChart = ({
               status === "running" ? "summary-chart-error-animate" : null,
             )}
             percent={getCheckSummaryChartPercent(summary.error, maxAlerts)}
+          />
+          <ProgressBar
+            className={classNames(
+              "border border-invalid",
+              status === "running"
+                ? "summary-chart-invalid-animate"
+                : "bg-invalid",
+            )}
+            percent={getCheckSummaryChartPercent(summary.invalid, maxAlerts)}
           />
           <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
         </ProgressBarGroup>
@@ -221,7 +253,24 @@ const CheckSummaryChart = ({
               "border border-skip",
               status === "running" ? "summary-chart-skip-animate" : "bg-skip",
             )}
-            percent={getCheckSummaryChartPercent(summary.skip, maxNonAlerts)}
+            percent={getCheckSummaryChartPercent(
+              summary.skip || summary.skipped,
+              maxNonAlerts,
+            )}
+          />
+          <ProgressBar
+            className={classNames(
+              "border border-muted",
+              status === "running" ? "summary-chart-muted-animate" : "bg-muted",
+            )}
+            percent={getCheckSummaryChartPercent(summary.muted, maxNonAlerts)}
+          />
+          <ProgressBar
+            className={classNames(
+              "border border-tbd",
+              status === "running" ? "summary-chart-tbd-animate" : "bg-tbd",
+            )}
+            percent={getCheckSummaryChartPercent(summary.tbd, maxNonAlerts)}
           />
           <NonAlertProgressBarGroupTotal className="ml-2" summary={summary} />
         </ProgressBarGroup>

@@ -40,7 +40,11 @@ class ControlErrorNode implements CheckNode {
       ok: 0,
       info: 0,
       skip: 0,
+      skipped: 0,
       error: 1,
+      invalid: 0,
+      muted: 0,
+      tbd: 0,
     };
   }
 

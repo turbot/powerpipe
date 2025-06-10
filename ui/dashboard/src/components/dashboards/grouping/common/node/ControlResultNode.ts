@@ -55,22 +55,40 @@ class ControlResultNode implements CheckNode {
       ok: 0,
       info: 0,
       skip: 0,
+      skipped: 0,
       error: 0,
+      invalid: 0,
+      muted: 0,
+      tbd: 0,
     };
-    if (this._result.status === "alarm") {
-      summary.alarm += 1;
-    }
-    if (this._result.status === "error") {
-      summary.error += 1;
-    }
-    if (this._result.status === "ok") {
-      summary.ok += 1;
-    }
-    if (this._result.status === "info") {
-      summary.info += 1;
-    }
-    if (this._result.status === "skip") {
-      summary.skip += 1;
+    switch (this._result.status) {
+      case "alarm":
+        summary.alarm += 1;
+        break;
+      case "error":
+        summary.error += 1;
+        break;
+      case "invalid":
+        summary.invalid += 1;
+        break;
+      case "ok":
+        summary.ok += 1;
+        break;
+      case "info":
+        summary.info += 1;
+        break;
+      case "skip":
+        summary.skip += 1;
+        break;
+      case "skipped":
+        summary.skipped += 1;
+        break;
+      case "muted":
+        summary.muted += 1;
+        break;
+      case "tbd":
+        summary.tbd += 1;
+        break;
     }
     return summary;
   }

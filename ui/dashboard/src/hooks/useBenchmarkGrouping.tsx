@@ -10,8 +10,8 @@ import useFilterConfig from "./useFilterConfig";
 import useGroupingConfig from "./useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
+  applyFilter,
   CheckDisplayGroup,
-  Filter,
   CheckNode,
   CheckResult,
   CheckResultDimension,
@@ -19,8 +19,8 @@ import {
   CheckSeverity,
   CheckSummary,
   CheckTags,
+  Filter,
   findDimension,
-  applyFilter,
 } from "@powerpipe/components/dashboards/grouping/common";
 import {
   createContext,
@@ -54,15 +54,32 @@ export type CheckGroupingAction = {
   [key: string]: any;
 };
 
+// Update CheckGroupFilterStatusValuesMap to include new states
 type CheckGroupFilterStatusValuesMap = {
   [key in keyof typeof CheckResultStatus]: number;
+} & {
+  invalid: number;
+  muted: number;
+  tbd: number;
 };
 
 export type CheckGroupFilterValues = {
   status: CheckGroupFilterStatusValuesMap;
   control_tag: { key: {}; value: {} };
   dimension: { key: {}; value: {} };
+  reason: { value: {} };
+  resource: { value: {} };
+  control: { value: {} };
+  severity: { value: {} };
+  benchmark: { value: {} };
 };
+
+// Extend CheckResultStatus type to include new states
+export type ExtendedCheckResultStatus =
+  | CheckResultStatus
+  | "invalid"
+  | "muted"
+  | "tbd";
 
 type ICheckGroupingContext = {
   benchmark: BenchmarkType | null;
@@ -143,37 +160,58 @@ const addBenchmarkTrunkNode = (
   );
 };
 
-const getCheckStatusGroupingKey = (status: CheckResultStatus): string => {
+// Update function signatures to use ExtendedCheckResultStatus
+const getCheckStatusGroupingKey = (
+  status: ExtendedCheckResultStatus,
+): string => {
   switch (status) {
     case CheckResultStatus.alarm:
       return "Alarm";
+    case CheckResultStatus.invalid:
+      return "Invalid";
     case CheckResultStatus.error:
       return "Error";
-    case CheckResultStatus.info:
-      return "Info";
     case CheckResultStatus.ok:
       return "OK";
+    case CheckResultStatus.info:
+      return "Info";
+    case CheckResultStatus.muted:
+      return "Muted";
     case CheckResultStatus.skip:
+    case CheckResultStatus.skipped:
       return "Skipped";
     case CheckResultStatus.empty:
       return "Empty";
+    case CheckResultStatus.tbd:
+      return "TBD";
+    default:
+      return status || "Unknown";
   }
 };
 
-const getCheckStatusSortKey = (status: CheckResultStatus): string => {
+const getCheckStatusSortKey = (status: ExtendedCheckResultStatus): string => {
   switch (status) {
-    case CheckResultStatus.ok:
-      return "0";
     case CheckResultStatus.alarm:
       return "1";
     case CheckResultStatus.error:
       return "2";
-    case CheckResultStatus.info:
+    case CheckResultStatus.invalid:
       return "3";
-    case CheckResultStatus.skip:
+    case CheckResultStatus.ok:
       return "4";
-    case CheckResultStatus.empty:
+    case CheckResultStatus.info:
       return "5";
+    case CheckResultStatus.muted:
+      return "6";
+    case CheckResultStatus.skip:
+    case CheckResultStatus.skipped:
+      return "7";
+    case CheckResultStatus.empty:
+      return "8";
+    case CheckResultStatus.tbd:
+      return "9";
+    default:
+      return "99";
   }
 };
 
@@ -758,7 +796,7 @@ const useGroupingInternal = (
   const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
 
   return useMemo(() => {
-    const filterValues = {
+    const filterValues: CheckGroupFilterValues = {
       benchmark: { value: {} },
       control: { value: {} },
       control_tag: { key: {}, value: {} },
@@ -766,11 +804,30 @@ const useGroupingInternal = (
       reason: { value: {} },
       resource: { value: {} },
       severity: { value: {} },
-      status: { alarm: 0, empty: 0, error: 0, info: 0, ok: 0, skip: 0 },
+      status: {
+        alarm: 0,
+        empty: 0,
+        error: 0,
+        info: 0,
+        ok: 0,
+        skip: 0,
+        skipped: 0,
+        invalid: 0,
+        muted: 0,
+        tbd: 0,
+      },
     };
 
     if (!definition || skip || !panelsMap) {
-      return [null, null, null, [], {}, filterValues];
+      // Return empty but valid types
+      return [null, null, [], null, {}, filterValues] as [
+        BenchmarkType | null,
+        CheckNode | null,
+        CheckSummary[],
+        any,
+        any,
+        CheckGroupFilterValues,
+      ];
     }
 
     // @ts-ignore
@@ -890,14 +947,14 @@ const GroupingProvider = ({
   return (
     <GroupingContext.Provider
       value={{
-        benchmark,
+        benchmark: benchmark as BenchmarkType | null,
         definition,
         dispatch,
-        firstChildSummaries,
-        grouping,
+        firstChildSummaries: firstChildSummaries as CheckSummary[],
+        grouping: grouping as CheckNode | null,
         groupingConfig,
         nodeStates,
-        filterValues,
+        filterValues: filterValues as CheckGroupFilterValues,
       }}
     >
       {children}

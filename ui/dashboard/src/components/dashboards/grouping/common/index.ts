@@ -87,7 +87,11 @@ export type CheckSummary = {
   ok: number;
   info: number;
   skip: number;
+  skipped: number;
   error: number;
+  invalid: number;
+  muted: number;
+  tbd: number;
 };
 
 export type DetectionSummary = {
@@ -124,11 +128,15 @@ export type DetectionResultDimension = {
 
 export enum CheckResultStatus {
   alarm = "alarm",
+  invalid = "invalid",
+  error = "error",
   ok = "ok",
   info = "info",
+  muted = "muted",
   skip = "skip",
-  error = "error",
+  skipped = "skipped",
   empty = "empty",
+  tbd = "tbd",
 }
 
 export type CheckResultType = "loading" | "error" | "empty" | "result";
