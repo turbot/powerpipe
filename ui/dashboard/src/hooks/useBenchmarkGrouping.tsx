@@ -7,7 +7,6 @@ import ControlRunningNode from "@powerpipe/components/dashboards/grouping/common
 import KeyValuePairNode from "@powerpipe/components/dashboards/grouping/common/node/KeyValuePairNode";
 import RootNode from "@powerpipe/components/dashboards/grouping/common/node/RootNode";
 import useFilterConfig from "./useFilterConfig";
-import useGroupingConfig from "./useGroupingConfig";
 import usePrevious from "./usePrevious";
 import {
   applyFilter,
@@ -19,6 +18,7 @@ import {
   CheckSeverity,
   CheckSummary,
   CheckTags,
+  DisplayGroup,
   Filter,
   findDimension,
 } from "@powerpipe/components/dashboards/grouping/common";
@@ -36,8 +36,6 @@ import {
   PanelDefinition,
   PanelsMap,
 } from "@powerpipe/types";
-import { useDashboardState } from "./useDashboardState";
-import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 
 type CheckGroupingActionType = ElementType<typeof checkGroupingActions>;
 
@@ -595,6 +593,10 @@ type CheckGroupingProviderProps = {
   children: null | JSX.Element | JSX.Element[];
   definition: PanelDefinition;
   benchmarkChildren?: PanelDefinition[] | undefined;
+  groupingConfig: DisplayGroup[];
+  checkFilterConfig: Filter;
+  panelsMap: PanelsMap;
+  setDashboardControlsContext: (context: any) => void;
 };
 
 function recordFilterValues(
@@ -791,10 +793,9 @@ const useGroupingInternal = (
   benchmarkChildren: PanelDefinition[] | undefined,
   panelsMap: PanelsMap | undefined,
   groupingConfig: CheckDisplayGroup[],
+  checkFilterConfig: Filter,
   skip = false,
 ) => {
-  const { filter: checkFilterConfig } = useFilterConfig(definition?.name);
-
   return useMemo(() => {
     const filterValues: CheckGroupFilterValues = {
       benchmark: { value: {} },
@@ -904,11 +905,12 @@ const GroupingProvider = ({
   children,
   definition,
   benchmarkChildren,
+  groupingConfig,
+  checkFilterConfig,
+  panelsMap,
+  setDashboardControlsContext,
 }: CheckGroupingProviderProps) => {
-  const { panelsMap } = useDashboardState();
-  const { setContext: setDashboardControlsContext } = useDashboardControls();
   const [nodeStates, dispatch] = useReducer(reducer, { nodes: {} });
-  const { grouping: groupingConfig } = useGroupingConfig(definition.name);
 
   const [
     benchmark,
@@ -921,6 +923,7 @@ const GroupingProvider = ({
     benchmarkChildren,
     panelsMap,
     groupingConfig,
+    checkFilterConfig,
   );
 
   const previousGroupings = usePrevious({ groupingConfig });

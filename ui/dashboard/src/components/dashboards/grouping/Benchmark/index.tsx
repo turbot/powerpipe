@@ -10,11 +10,14 @@ import Grid from "@powerpipe/components/dashboards/layout/Grid";
 import Panel from "@powerpipe/components/dashboards/layout/Panel";
 import PanelControls from "@powerpipe/components/dashboards/layout/Panel/PanelControls";
 import useFilterConfig from "@powerpipe/hooks/useFilterConfig";
+import useGroupingConfig from "@powerpipe/hooks/useGroupingConfig";
 import {
   BenchmarkTreeProps,
   CheckDisplayGroup,
   CheckNode,
   CheckSummary,
+  DisplayGroup,
+  Filter,
 } from "../common";
 import { CardType } from "@powerpipe/components/dashboards/data/CardDataProcessor";
 import { default as BenchmarkType } from "../common/Benchmark";
@@ -31,7 +34,8 @@ import {
   PanelControlsProvider,
   usePanelControls,
 } from "@powerpipe/hooks/usePanelControls";
-import { PanelDefinition } from "@powerpipe/types";
+import { PanelDefinition, PanelsMap } from "@powerpipe/types";
+import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Dashboard/DashboardControlsProvider";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useEffect, useMemo, useState } from "react";
@@ -351,7 +355,7 @@ const BenchmarkTableView = ({
   );
 };
 
-const Inner = ({ withTitle }) => {
+export const BenchmarkRender = ({ withTitle }) => {
   const {
     benchmark,
     definition,
@@ -405,22 +409,55 @@ type BenchmarkProps = {
   withTitle: boolean;
 };
 
-const BenchmarkWrapper = (props: BenchmarkProps) => {
+type BenchmarkPropsInternal = {
+  definition: PanelDefinition;
+  benchmarkChildren?: PanelDefinition[] | undefined;
+  showControls: boolean;
+  withTitle: boolean;
+  groupingConfig: DisplayGroup[];
+  checkFilterConfig: Filter;
+  panelsMap: PanelsMap;
+  setDashboardControlsContext: (context: any) => void;
+};
+
+const BenchmarkWrapper = (props: BenchmarkPropsInternal) => {
   return (
     <GroupingProvider
       definition={props.definition}
       benchmarkChildren={props.benchmarkChildren}
+      groupingConfig={props.groupingConfig}
+      checkFilterConfig={props.checkFilterConfig}
+      panelsMap={props.panelsMap}
+      setDashboardControlsContext={props.setDashboardControlsContext}
     >
       <PanelControlsProvider
         definition={props.definition}
         enabled={props.showControls}
       >
-        <Inner withTitle={props.withTitle} />
+        <BenchmarkRender withTitle={props.withTitle} />
       </PanelControlsProvider>
     </GroupingProvider>
   );
 };
 
-registerComponent("benchmark", BenchmarkWrapper);
+const BenchmarkContextWrapper = (props: BenchmarkProps) => {
+  const { panelsMap } = useDashboardState();
+  const { setContext: setDashboardControlsContext } = useDashboardControls();
+  const { grouping: groupingConfig } = useGroupingConfig(
+    props.definition?.name,
+  );
+  const { filter: checkFilterConfig } = useFilterConfig(props.definition?.name);
+  return (
+    <BenchmarkWrapper
+      {...props}
+      groupingConfig={groupingConfig}
+      checkFilterConfig={checkFilterConfig}
+      panelsMap={panelsMap}
+      setDashboardControlsContext={setDashboardControlsContext}
+    />
+  );
+};
+
+registerComponent("benchmark", BenchmarkContextWrapper);
 
 export default BenchmarkWrapper;
