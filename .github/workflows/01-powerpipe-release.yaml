@@ -1,16 +1,25 @@
-name: "01 - Powerpipe: Prerelease"
+name: "02 - Powerpipe: Release"
 
 on:
   workflow_dispatch:
     inputs:
-      pre_release_identifier:
+      environment:
         type: choice
-        description: "Select Pre-Release Identifier"
+        description: 'Select Release Type'
         options:
-          - alpha
-          - beta
-          - rc
+        # to change the values in this option, we also need to update the condition test below in at least 3 location. Search for github.event.inputs.environment
+        - Development (alpha)
+        - Development (beta)
+        - Final (RC and final release)
         required: true
+      version:
+        description: "Version (without 'v')"
+        required: true
+        default: 0.2.\invalid
+      confirmDevelop:
+        description: Confirm running on develop branch
+        required: true
+        type: boolean
 
 env:
   PROJECT_ID: steampipe
@@ -19,10 +28,35 @@ env:
   ASSET_IMAGE_NAME: assets
   POWERPIPE_UPDATE_CHECK: false
   GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
+  VERSION: ${{ github.event.inputs.version }}
   SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
 
 jobs:
+
+  verify_input:
+    name: Verify Inputs
+    runs-on: ubuntu-latest
+    steps:
+      - name: Trim asset version prefix and Validate
+        run: |-
+          echo $VERSION
+          trim=${VERSION#"v"}
+          echo $trim
+          if [[ $trim =~  ^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+            echo "Version OK: $trim"
+          else
+            echo "Invalid version: $trim"
+            exit 1
+          fi
+          echo "VERSION=${trim}" >> $GITHUB_ENV
+          
+      - name: Validate Branch
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.event.ref }}
+
   goreleaser:
+    needs: verify_input
     name: Build
     runs-on: ubuntu-latest
     steps:
@@ -37,9 +71,8 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
-          ref: develop
 
-      # this is required, check golangci-lint-action docs
+        # this is required, check golangci-lint-action docs
       - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
         with:
           go-version: '1.23'
@@ -129,7 +162,7 @@ jobs:
         id: prepare-for-downloads
         run: |
           mkdir ~/artifacts
-
+  
       - name: Download Linux Build Artifacts
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         if: ${{ matrix.platform == 'ubuntu-latest' }}
@@ -155,7 +188,7 @@ jobs:
         run: |
           mkdir ~/build
           tar -xf ~/artifacts/linux.tar.gz -C ~/build
-
+      
       - name: Install Steampipe(Darwin)
         if: ${{ matrix.platform == 'macos-latest' }}
         run: |
@@ -167,7 +200,7 @@ jobs:
         run: |
           sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
           steampipe -v
-
+      
       - name: Set PATH
         run: |
           echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV
@@ -220,13 +253,13 @@ jobs:
         with:
           name: build-artifact-linux
           path: ./artifacts
-
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-
+  
       - name: Pull Ubuntu latest Image
         run: docker pull ubuntu:latest
-
+  
       - name: Create and Start Ubuntu latest Container
         run: |
           docker run -d --name ubuntu-24-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts ubuntu:latest tail -f /dev/null
@@ -234,7 +267,7 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec ubuntu-24-test /scripts/linux_container_info.sh
-
+  
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec ubuntu-24-test /scripts/prepare_ubuntu_container.sh
@@ -242,7 +275,7 @@ jobs:
       - name: Run smoke tests
         run: |
           docker exec -u steampipe ubuntu-24-test /scripts/smoke_test.sh
-
+  
       - name: Stop and Remove Container
         run: |
           docker stop ubuntu-24-test
@@ -255,19 +288,19 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
-
+  
       - name: Download Linux Build Artifact
         uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
         with:
           name: build-artifact-linux
           path: ./artifacts
-
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-
+  
       - name: Pull CentOS Stream 9 image
         run: docker pull quay.io/centos/centos:stream9
-
+  
       - name: Create and Start CentOS stream9 Container
         run: |
           docker run -d --name centos-stream9-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts quay.io/centos/centos:stream9 tail -f /dev/null
@@ -275,15 +308,15 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec centos-stream9-test /scripts/linux_container_info.sh
-
+  
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec centos-stream9-test /scripts/prepare_centos_container.sh
-
+        
       - name: Run smoke tests
         run: |
           docker exec -u steampipe centos-stream9-test /scripts/smoke_test.sh
-
+  
       - name: Stop and Remove Container
         run: |
           docker stop centos-stream9-test
@@ -302,13 +335,13 @@ jobs:
         with:
           name: build-artifact-linux
           path: ./artifacts
-
+  
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@b5ca514318bd6ebac0fb2aedd5d36ec1b5c232a2 # v3.10.0
-
+  
       - name: Pull Amazon Linux 2023 Image
         run: docker pull amazonlinux:2023
-
+  
       - name: Create and Start Amazon Linux 2023 Container
         run: |
           docker run -d --name amazonlinux-2023-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts amazonlinux:2023 tail -f /dev/null
@@ -316,7 +349,7 @@ jobs:
       - name: Get runner/container info
         run: |
           docker exec amazonlinux-2023-test /scripts/linux_container_info.sh
-
+  
       - name: Install dependencies, create user, and assign necessary permissions
         run: |
           docker exec amazonlinux-2023-test /scripts/prepare_amazonlinux_container.sh
@@ -324,7 +357,7 @@ jobs:
       - name: Run smoke tests
         run: |
           docker exec -u steampipe amazonlinux-2023-test /scripts/smoke_test.sh
-
+  
       - name: Stop and Remove Container
         run: |
           docker stop amazonlinux-2023-test
@@ -339,27 +372,27 @@ jobs:
   #       uses: actions/checkout@v4
 
   #     - name: Download Linux Build Artifact
-  #       uses: actions/download-artifact@v3
+  #       uses: actions/download-artifact@v4
   #       with:
   #         name: build-artifact-linux-arm
   #         path: ./artifacts
-
+  
   #     - name: Set up Docker Buildx
   #       uses: docker/setup-buildx-action@v3
-
+  
   #     - name: Set up QEMU
   #       uses: docker/setup-qemu-action@v3
   #       with:
   #         platforms: arm64
-
+  
   #     - name: Create Buildx Builder
   #       run: |
   #         docker buildx create --use --name mybuilder
   #         docker buildx inspect --bootstrap
-
+  
   #     - name: Pull Ubuntu 24 ARM64 Image
   #       run: docker pull arm64v8/ubuntu:latest
-
+  
   #     - name: Create and Start Ubuntu 24 ARM64 Container
   #       run: |
   #         docker run -d --name ubuntu-24-arm64-test -v ${{ github.workspace }}/artifacts:/artifacts -v ${{ github.workspace }}/scripts:/scripts arm64v8/ubuntu:latest tail -f /dev/null
@@ -375,53 +408,53 @@ jobs:
   #     - name: Run smoke tests
   #       run: |
   #         docker exec -u steampipe ubuntu-24-arm64-test /scripts/smoke_test.sh
-
+  
   #     - name: Stop and Remove Container
   #       run: |
   #         docker stop ubuntu-24-arm64-test
   #         docker rm ubuntu-24-arm64-test
 
-  smoke_test_darwin_amd:
-    name: Smoke test (MacOS 13, x86_64)
-    runs-on: macos-13
-    needs: [goreleaser]
-    steps:
-      - name: Checkout
-        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+  # smoke_test_darwin_amd:
+  #   name: Smoke test (MacOS 13, x86_64)
+  #   runs-on: macos-13
+  #   needs: [goreleaser]
+  #   steps:
+  #     - name: Checkout
+  #       uses: actions/checkout@v4
 
-      - name: Download Darwin Build Artifact
-        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
-        with:
-          name: build-artifact-darwin
-          path: ~/artifacts
+  #     - name: Download Darwin Build Artifact
+  #       uses: actions/download-artifact@v4
+  #       with:
+  #         name: build-artifact-darwin
+  #         path: ~/artifacts
 
-      - name: Extract Darwin Artifacts and Install Binary
-        run: |
-          tar -xf ~/artifacts/darwin.tar.gz -C /usr/local/bin/
+  #     - name: Extract Darwin Artifacts and Install Binary
+  #       run: |
+  #         tar -xf ~/artifacts/darwin.tar.gz -C /usr/local/bin/
 
-      - name: Install Steampipe(Darwin)
-        run: |
-          sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
-          steampipe -v
+  #     - name: Install Steampipe(Darwin)
+  #       run: |
+  #         sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+  #         steampipe -v
 
-      - name: Install jq
-        run: |
-          brew install jq
+  #     - name: Install jq
+  #       run: |
+  #         brew install jq
 
-      - name: Get runner/container info
-        run: |
-          uname -a
-          sw_vers
+  #     - name: Get runner/container info
+  #       run: |
+  #         uname -a
+  #         sw_vers
 
-      - name: Run Smoke tests
-        run: |
-          ls -al $GITHUB_WORKSPACE/scripts
-          chmod +x $GITHUB_WORKSPACE/scripts/smoke_test.sh
-          $GITHUB_WORKSPACE/scripts/smoke_test.sh
+  #     - name: Run Smoke tests
+  #       run: |
+  #         ls -al $GITHUB_WORKSPACE/scripts
+  #         chmod +x $GITHUB_WORKSPACE/scripts/smoke_test.sh
+  #         $GITHUB_WORKSPACE/scripts/smoke_test.sh        
 
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: [acceptance_test, smoke_test_ubuntu_24, smoke_test_centos_9, smoke_test_amazonlinux, smoke_test_darwin_amd]
+    needs: [acceptance_test, smoke_test_ubuntu_24, smoke_test_centos_9, smoke_test_amazonlinux]
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
@@ -431,23 +464,6 @@ jobs:
         with:
           path: powerpipe
           ref: ${{ github.event.ref }}
-
-      - name: Calculate version
-        id: calculate_version
-        run: |
-          VERSION_JSON=$(cat powerpipe/internal/version/version.json)
-          MAJOR=$(echo $VERSION_JSON | jq '.major')
-          MINOR=$(echo $VERSION_JSON | jq '.minor')
-          PATCH=$(echo $VERSION_JSON | jq '.patch')
-          VERSION="v$MAJOR.$MINOR.$PATCH"
-
-          if [ "${{ github.event.inputs.pre_release_identifier }}" = "alpha" ]; then
-            echo "VERSION=${VERSION}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "beta" ]; then
-            echo "VERSION=${VERSION}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          elif [ "${{ github.event.inputs.pre_release_identifier }}" = "rc" ]; then
-            echo "VERSION=${VERSION}-rc.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
-          fi
 
       - name: Set VERSION as output
         run: echo "::set-output name=version::$VERSION"
@@ -540,6 +556,30 @@ jobs:
           name: dashboard-ui-assets-archive
           path: dashboard_ui_assets.tar.gz
 
+  ensure_branch_in_homebrew:
+    name: Ensure branch exists in homebrew-tap
+    needs: [build_assets]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Delete base branch if exists
+        run: |
+          git fetch --all
+          git push origin --delete powerpipe-brew
+          git push origin --delete $VERSION
+        continue-on-error: true
+
+      - name: Create base branch
+        run: |
+          git checkout -b powerpipe-brew
+          git push --set-upstream origin powerpipe-brew
+
   build_and_release:
     name: Build and Release Powerpipe
     needs: [build_assets]
@@ -558,7 +598,6 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
-          ref: develop
 
       - name: Tag Release
         run: |
@@ -595,3 +634,95 @@ jobs:
         run: |-
           cd powerpipe
           make release
+
+  create_pr_in_homebrew:
+    name: Create PR in homebrew-tap
+    needs: [ensure_branch_in_homebrew, build_and_release]
+    runs-on: ubuntu-latest
+    env:
+      Version: ${{ github.event.inputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Create a new branch off the base branch
+        run: |
+          git fetch --all
+          git checkout powerpipe-brew
+          git checkout -b $VERSION
+          git push --set-upstream origin $VERSION
+
+      - name: Close pull request if already exists
+        run: |
+          gh pr close $VERSION
+        continue-on-error: true
+
+      - name: Create pull request
+        run: |
+          gh pr create --base main --head $VERSION --title "Powerpipe $Version" --body "Update formula"
+
+  update_pr_for_versioning:
+    name: Update PR
+    needs: [create_pr_in_homebrew]
+    runs-on: ubuntu-latest
+    env:
+      Version: ${{ github.event.inputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Update live version
+        run: |
+          scripts/formula_versioning_powerpipe.sh
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "Powerpipe GitHub Actions Bot"
+          git add .
+          git commit -m "Versioning brew formulas"
+          git push origin $VERSION
+
+  update_homebrew_tap:
+    name: Update homebrew-tap formula
+    needs: [update_pr_for_versioning]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Get pull request title
+        id: pr_title
+        run: >-
+          echo "PR_TITLE=$(
+            gh pr view $VERSION --json title | jq .title | tr -d '"'
+          )" >> $GITHUB_OUTPUT
+
+      - name: Output
+        run: |
+          echo ${{ steps.pr_title.outputs.PR_TITLE }}
+          echo ${{ env.VERSION }}
+
+      - name: Fail if PR title does not match with version
+        run: |
+          if [[ "${{ steps.pr_title.outputs.PR_TITLE }}" == "Powerpipe ${{ env.VERSION }}" ]]; then
+            echo "Correct version"
+          else
+              echo "Incorrect version"
+              exit 1
+          fi
+
+      - name: Merge pull request to update brew formula
+        run: |
+          git fetch --all
+          gh pr merge $VERSION --squash --delete-branch
+          git push origin --delete powerpipe-brew
