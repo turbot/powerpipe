@@ -1,4 +1,4 @@
-name: "01 - Powerpipe: Release"
+name: "02 - Powerpipe: Release"
 
 on:
   workflow_dispatch:
