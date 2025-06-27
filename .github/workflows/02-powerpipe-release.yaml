@@ -66,7 +66,7 @@ jobs:
 
   build_assets:
     name: Build and Release Dashboard Assets
-    needs: goreleaser
+    needs: ensure_branch_in_homebrew
     runs-on: ubuntu-latest
     outputs:
       version: ${{ steps.set_version.outputs.version }}
@@ -170,7 +170,7 @@ jobs:
 
   build_and_release:
     name: Build and Release Powerpipe
-    needs: [ensure_branch_in_homebrew]
+    needs: build_assets
     runs-on: ubuntu-latest
     env:
       VERSION: ${{ needs.ensure_branch_in_homebrew.outputs.version }}
