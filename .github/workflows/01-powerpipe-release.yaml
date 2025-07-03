@@ -1,0 +1,356 @@
+name: "01 - Powerpipe: Release"
+
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        type: choice
+        description: "Select Release Type"
+        options:
+          # to change the values in this option, we also need to update the condition test below in at least 3 location. Search for github.event.inputs.environment
+          - Development (alpha)
+          - Development (beta)
+          - Final (RC and final release)
+        required: true
+      version:
+        description: "Version (without 'v')"
+        required: true
+        default: 0.2.\invalid
+      confirmDevelop:
+        description: Confirm running on develop branch
+        required: true
+        type: boolean
+
+env:
+  POWERPIPE_UPDATE_CHECK: false
+  VERSION: ${{ github.event.inputs.version }}
+
+jobs:
+  ensure_branch_in_homebrew:
+    name: Ensure branch exists in homebrew-tap
+    runs-on: ubuntu-latest
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@3576f3a20a39f8752fe0d8195f5ed384090285dc # v1.3.0
+        with:
+          input_string: ${{ github.event.inputs.version }}
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Delete base branch if exists
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git fetch --all
+          git push origin --delete powerpipe-brew
+          git push origin --delete $VERSION
+        continue-on-error: true
+
+      - name: Create base branch
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git checkout -b tailpipe-brew
+          git push --set-upstream origin powerpipe-brew
+
+  build_assets:
+    name: Build and Release Dashboard Assets
+    needs: ensure_branch_in_homebrew
+    runs-on: ubuntu-latest
+    outputs:
+      version: ${{ steps.set_version.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Set VERSION as output
+        run: echo "::set-output name=version::$VERSION"
+        id: set_version
+
+      - name: Trim asset version prefix and Validate
+        run: |-
+          echo $VERSION
+          trim=${VERSION#"v"}
+          echo $trim
+          if [[ $trim =~  ^[0-9]+\.[0-9]+\.[0-9]+(-.+)?$ ]]; then
+            echo "Version OK: $trim"
+          else
+            echo "Invalid version: $trim"
+            exit 1
+          fi
+          echo "VERSION=${trim}" >> $GITHUB_ENV
+
+      - name: Setup Node
+        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        with:
+          node-version: ">=18.12.0"
+
+      - name: Setup Yarn
+        working-directory: ./powerpipe/ui/dashboard
+        run: |-
+          rm -rf ./build
+
+      # Cache node modules to speed up builds
+      - name: Cache node modules
+        id: cache-npm
+        uses: actions/cache@5a3ec84eff668545956fd18022155c47e93e2684 # v4.2.3
+        env:
+          cache-name: cache-node-modules
+        with:
+          # npm cache files are stored in `~/.npm` on Linux/macOS
+          path: ~/.npm
+          key: ${{ runner.os }}-build-${{ env.cache-name }}-${{ hashFiles('**/package-lock.json') }}
+
+      - name: YARN Install
+        working-directory: ./powerpipe/ui/dashboard
+        run: |-
+          unset CI
+          corepack enable
+          yarn install
+
+      - name: Generate dashboard UI icons
+        working-directory: ./powerpipe/ui/dashboard
+        run: |-
+          make setup-icons
+
+      - name: Run Unit Tests
+        working-directory: ./powerpipe/ui/dashboard
+        run: |
+          CI=true yarn test
+
+      - name: YARN Build
+        working-directory: ./powerpipe/ui/dashboard
+        run: |-
+          unset CI
+          yarn build
+        env:
+          REACT_APP_HEAP_ID: ${{ secrets.HEAP_ANALYTICS_PRODUCTION_ID }}
+          REACT_APP_VERSION: ${{ env.VERSION }}
+
+      - name: Move Build Assets
+        run: |-
+          mkdir -p dashboard_ui_build
+          mv ./powerpipe/ui/dashboard/build/* dashboard_ui_build/
+          ls -la dashboard_ui_build
+
+      - name: Create a version file
+        run: |-
+          JSON_STRING=$( jq -n \
+              --arg version "$VERSION" \
+            '{
+                "version":$version,
+            }' )
+
+            echo $JSON_STRING > ./dashboard_ui_build/version.json
+
+      - name: Archive built dashboard assets
+        run: |
+          cd dashboard_ui_build
+          tar -czvf ../dashboard_ui_assets.tar.gz *
+
+      - name: Upload dashboard assets artifact
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: dashboard-ui-assets-archive
+          path: dashboard_ui_assets.tar.gz
+
+  build_and_release:
+    name: Build and Release Powerpipe
+    needs: build_assets
+    runs-on: ubuntu-latest
+    env:
+      VERSION: ${{ needs.ensure_branch_in_homebrew.outputs.version }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          path: powerpipe
+          ref: ${{ github.event.ref }}
+
+      - name: Checkout Pipe Fittings Components repository
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/pipe-fittings
+          path: pipe-fittings
+
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          if [ "${{ github.event.inputs.environment }}" = "Development (alpha)" ]; then
+            echo "VERSION=v${{ github.event.inputs.version }}-alpha.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          elif [ "${{ github.event.inputs.environment }}" = "Development (beta)" ]; then
+            echo "VERSION=v${{ github.event.inputs.version }}-beta.$(date +'%Y%m%d%H%M')" >> $GITHUB_ENV
+          else
+            echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+          fi
+
+      - name: Tag Release
+        run: |
+          cd powerpipe
+          git config user.name "Powerpipe GitHub Actions Bot"
+          git config user.email noreply@github.com
+          git tag $VERSION
+          git push origin $VERSION
+
+      # this is required, check golangci-lint-action docs
+      - uses: actions/setup-go@0aaccfd150d50ccaeb58ebd88d36e91967a5f35b # v5.4.0
+        with:
+          go-version: "1.23"
+          cache: false # setup-go v4 caches by default, do not change this parameter, check golangci-lint-action doc: https://github.com/golangci/golangci-lint-action/pull/704
+
+      - name: Download Dashboard UI Assets Artifact
+        uses: actions/download-artifact@95815c38cf2ff2164869cbab79da8d1f422bc89e # v4.2.1
+        with:
+          name: dashboard-ui-assets-archive
+          path: powerpipe/internal/dashboardassets
+
+      - name: Check assets location
+        run: |
+          ls -la powerpipe/internal/dashboardassets
+          mv powerpipe/internal/dashboardassets/dashboard_ui_assets.tar.gz powerpipe/internal/dashboardassets/assets.tar.gz
+          ls -la powerpipe/internal/dashboardassets
+
+      - name: Setup release environment
+        run: |-
+          cd powerpipe
+          echo 'GITHUB_TOKEN=${{secrets.GH_ACCESS_TOKEN}}' > .release-env
+
+      - name: Release publish
+        run: |-
+          cd powerpipe
+          make release
+
+  create_pr_in_homebrew:
+    name: Create PR in homebrew-tap
+    if: ${{ github.event.inputs.environment == 'Final (RC and final release)' }}
+    needs: [ensure_branch_in_homebrew, build_and_release]
+    runs-on: ubuntu-latest
+    env:
+      Version: ${{ github.event.inputs.version }}
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@3576f3a20a39f8752fe0d8195f5ed384090285dc # v1.3.0
+        with:
+          input_string: ${{ github.event.inputs.version }}
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Create a new branch off the base branch
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          git fetch --all
+          git checkout powerpipe-brew
+          git checkout -b $VERSION
+          git push --set-upstream origin $VERSION
+
+      - name: Close pull request if already exists
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          gh pr close $VERSION
+        continue-on-error: true
+
+      - name: Create pull request
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          gh pr create --base main --head $VERSION --title "Powerpipe $Version" --body "Update formula"
+
+  update_pr_for_versioning:
+    name: Update PR
+    if: ${{ github.event.inputs.environment == 'Final (RC and final release)' }}
+    needs: [create_pr_in_homebrew]
+    runs-on: ubuntu-latest
+    env:
+      Version: ${{ github.event.inputs.version }}
+    steps:
+      - name: Calculate version
+        id: calculate_version
+        run: |
+          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
+      - name: Parse semver string
+        id: semver_parser
+        uses: booxmedialtd/ws-action-parse-semver@3576f3a20a39f8752fe0d8195f5ed384090285dc # v1.3.0
+        with:
+          input_string: ${{ github.event.inputs.version }}
+
+      - name: Checkout
+        if: steps.semver_parser.outputs.prerelease == ''
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: ${{ github.event.inputs.version }}
+
+      - name: Update live version
+        if: steps.semver_parser.outputs.prerelease == ''
+        run: |
+          scripts/formula_versioning_powerpipe.sh
+          git config --global user.email "noreply@github.com"
+          git config --global user.name "Powerpipe GitHub Actions Bot"
+          git add .
+          git commit -m "Versioning brew formulas"
+          git push origin $VERSION
+
+  update_homebrew_tap:
+    name: Update homebrew-tap formula
+    needs: [update_pr_for_versioning]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: turbot/homebrew-tap
+          token: ${{ secrets.GH_ACCESS_TOKEN }}
+          ref: main
+
+      - name: Get pull request title
+        id: pr_title
+        run: >-
+          echo "PR_TITLE=$(
+            gh pr view $VERSION --json title | jq .title | tr -d '"'
+          )" >> $GITHUB_OUTPUT
+
+      - name: Output
+        run: |
+          echo ${{ steps.pr_title.outputs.PR_TITLE }}
+          echo ${{ env.VERSION }}
+
+      - name: Fail if PR title does not match with version
+        run: |
+          if [[ "${{ steps.pr_title.outputs.PR_TITLE }}" == "Powerpipe ${{ env.VERSION }}" ]]; then
+            echo "Correct version"
+          else
+              echo "Incorrect version"
+              exit 1
+          fi
+
+      - name: Merge pull request to update brew formula
+        run: |
+          git fetch --all
+          gh pr merge $VERSION --squash --delete-branch
+          git push origin --delete powerpipe-brew
