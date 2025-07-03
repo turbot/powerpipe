@@ -53,7 +53,7 @@ jobs:
         if: steps.semver_parser.outputs.prerelease == ''
         run: |
           git fetch --all
-          git push origin --delete tailpipe-brew
+          git push origin --delete powerpipe-brew
           git push origin --delete $VERSION
         continue-on-error: true
 
@@ -61,7 +61,7 @@ jobs:
         if: steps.semver_parser.outputs.prerelease == ''
         run: |
           git checkout -b tailpipe-brew
-          git push --set-upstream origin tailpipe-brew
+          git push --set-upstream origin powerpipe-brew
 
   build_assets:
     name: Build and Release Dashboard Assets
