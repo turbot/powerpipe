@@ -7,10 +7,12 @@ on:
         description: "Version to test (with 'v' prefix, e.g., v1.0.0)"
         required: true
         type: string
+  repository_dispatch:
+    types: [trigger-smoke-tests]
 
 env:
   # Version from input, used to download the correct release artifacts
-  VERSION: ${{ github.event.inputs.version }}
+  VERSION: ${{ github.event.inputs.version || github.event.client_payload.version }}
   # Disable update checks during smoke tests
   POWERPIPE_UPDATE_CHECK: false
 

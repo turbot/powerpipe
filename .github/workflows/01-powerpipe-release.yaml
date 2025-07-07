@@ -375,10 +375,10 @@ jobs:
       - name: Trigger smoke test workflow
         # if: steps.semver_parser.outputs.prerelease == ''
         run: |
-          gh workflow run "02-powerpipe-smoke-tests.yaml" \
-            --ref refs/heads/smoke-tests \
-            --field version=$VERSION \
-            --repo ${{ github.repository }}
+          gh api repos/${{ github.repository }}/dispatches \
+            --method POST \
+            --field event_type="trigger-smoke-tests" \
+            --field client_payload='{"version":"'$VERSION'","ref":"refs/heads/smoke-tests"}'
         env:
           GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
 
