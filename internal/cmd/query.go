@@ -24,6 +24,7 @@ import (
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -141,6 +142,23 @@ func queryRun(cmd *cobra.Command, args []string) {
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
 		error_helpers.FailOnError(err)
+	}
+
+	// check here if the panels info in the snapshot has a field called 'status' and if the status is 'error'
+	// then we set the exit code to ExitCodeQueryExecutionFailed
+	// this means that the query execution failed, even if the snapshot was created successfully
+	if snap.Panels != nil {
+		for _, panel := range snap.Panels {
+			// type assert to access the Status field
+			if runPanel, ok := panel.(interface {
+				GetRunStatus() dashboardtypes.RunStatus
+			}); ok {
+				if runPanel.GetRunStatus().IsError() {
+					exitCode = constants.ExitCodeQueryExecutionFailed
+					break
+				}
+			}
+		}
 	}
 
 	// display the result
