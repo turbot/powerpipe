@@ -386,4 +386,4 @@ jobs:
         if: steps.semver_parser.outputs.prerelease == ''
         run: |
           echo "Smoke test workflow triggered for version $VERSION"
-          echo "You can monitor the progress at: https://github.com/${{ github.repository }}/actions/workflows/02-powerpipe-smoke-tests.yaml"
+          echo "You can monitor the progress at: https://github.com/${{ github.repository }}/actions/workflows/03-powerpipe-smoke-tests.yaml"
