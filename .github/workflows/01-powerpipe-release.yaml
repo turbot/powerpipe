@@ -328,6 +328,10 @@ jobs:
           token: ${{ secrets.GH_ACCESS_TOKEN }}
           ref: main
 
+      - name: Calculate version
+        run: |
+          echo "VERSION=v${{ github.event.inputs.version }}" >> $GITHUB_ENV
+
       - name: Get pull request title
         id: pr_title
         run: >-
@@ -342,7 +346,7 @@ jobs:
 
       - name: Fail if PR title does not match with version
         run: |
-          if [[ "${{ steps.pr_title.outputs.PR_TITLE }}" == "Powerpipe ${{ env.VERSION }}" ]]; then
+          if [[ "${{ steps.pr_title.outputs.PR_TITLE }}" == "Powerpipe ${{ github.event.inputs.version }}" ]]; then
             echo "Correct version"
           else
               echo "Incorrect version"
