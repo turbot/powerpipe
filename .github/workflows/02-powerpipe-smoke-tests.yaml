@@ -174,7 +174,9 @@ jobs:
 
       - name: Extract Linux Artifacts and Install Binary
         run: |
-          sudo unzip ./artifacts/linux.zip -d /usr/local/bin
+          mkdir -p /tmp/powerpipe
+          tar -xzf ./artifacts/linux.tar.gz -C /tmp/powerpipe
+          sudo cp /tmp/powerpipe/powerpipe /usr/local/bin/
           sudo chmod +x /usr/local/bin/powerpipe
 
       - name: Install Steampipe
