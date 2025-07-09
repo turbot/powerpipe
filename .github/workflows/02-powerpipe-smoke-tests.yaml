@@ -187,6 +187,10 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y jq
 
+      - name: Create steampipe user
+        run: |
+          sudo useradd -m steampipe
+
       - name: Get runner/container info
         run: |
           uname -a
