@@ -181,7 +181,7 @@ jobs:
 
       - name: Install Steampipe
         run: |
-          /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+          sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
           sudo chmod +x /usr/local/bin/steampipe
 
       - name: Install jq
