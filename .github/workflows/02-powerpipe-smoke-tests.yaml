@@ -174,15 +174,17 @@ jobs:
 
       - name: Extract Linux Artifacts and Install Binary
         run: |
-          mkdir -p /tmp/powerpipe
-          tar -xzf ./artifacts/linux.tar.gz -C /tmp/powerpipe
-          sudo cp /tmp/powerpipe/powerpipe /usr/local/bin/
+          sudo unzip ./artifacts/linux.zip -d /usr/local/bin
           sudo chmod +x /usr/local/bin/powerpipe
+
+      - name: Install Steampipe
+        run: |
+          /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
+          sudo chmod +x /usr/local/bin/steampipe
 
       - name: Install jq
         run: |
-          sudo apt-get update
-          sudo apt-get install -y jq
+          brew install jq
 
       - name: Get runner/container info
         run: |
