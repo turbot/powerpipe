@@ -51,8 +51,6 @@ func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMeta
 		cliVersion = versionFile.Version
 	}
 
-	// populate the backend support flags (supportsSearchPath, supportsTimeRange) from the default database
-	bs := newBackendSupport(s.defaultDatabase)
 
 	payload := ServerMetadataPayload{
 		Action: "server_metadata",
@@ -62,8 +60,7 @@ func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMeta
 			},
 			InstalledMods:      installedMods,
 			Telemetry:          viper.GetString(constants.ArgTelemetry),
-			SupportsSearchPath: bs.supportsSearchPath,
-			SupportsTimeRange:  bs.supportsTimeRange,
+
 		},
 	}
 
@@ -72,10 +69,16 @@ func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMeta
 		return nil, err
 	}
 	searchPath, err := getSearchPathMetadata(context.Background(), connectionString, s.defaultSearchPathConfig)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		// NOTE: getSearchPathMetadata may fail if the default database is not running - rhis is ok as we may actually not require the default db
+		payload.Metadata.SearchPath = searchPath
+
+		// only populate backend support if we were able to get the search path metadata
+		// populate the backend support flags (supportsSearchPath, supportsTimeRange) from the default database
+		bs := newBackendSupport(s.defaultDatabase)
+		payload.Metadata.SupportsSearchPath = bs.supportsSearchPath
+		payload.Metadata.SupportsTimeRange = bs.supportsTimeRange
 	}
-	payload.Metadata.SearchPath = searchPath
 
 	if mod := workspaceResources.Mod; mod != nil {
 		payload.Metadata.Mod = &ModMetadata{
@@ -93,7 +96,7 @@ func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMeta
 }
 
 func (s *Server) buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) ([]byte, error) {
-	slog.Debug("calling buildDashboardMetadataPayload")
+	slog.Info("calling buildDashboardMetadataPayload")
 
 	// walk the tree of resources and determine whether any of them are using a tailpipe/steampipe/postrgres
 	// and set the SupportsSearchPath and SupportsTimeRange flags accordingly
