@@ -192,30 +192,47 @@ func (i *InitData) GetDefaultClient(ctx context.Context) (*db_client.DbClient, e
 }
 
 func (i *InitData) validateModRequirements(ctx context.Context, mod *modconfig.Mod) ([]string, error) {
+	// try to get the plugin version map from the backend
+	// if the backend is not steampipe, or is not running, do not fail, just return an empty plugin version map
+	// - the validation code will handle this and just NOT validate the required plugins
+	pluginVersionMap, err := i.getPluginVersionMap(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	warnings := validateModRequirementsRecursively(mod, pluginVersionMap)
+	return warnings, nil
+}
+
+// try to connect to the default database to determine if it is a steampipe backend
+// if it is, retrieve the available plugins from the backend
+// NOTE: the default database will be steampipe but the steampipe server may not be running
+// (this may be valid, for example in the case of a tailpipe mod being installed - we do not need steampipe server)
+// So - if we fail to connect to the default database THIS IS NOT AN ERROR.
+// It just means we cannot populate the available plugins from the backend
+func (i *InitData) getPluginVersionMap(ctx context.Context) (*plugin.PluginVersionMap, error) {
 	connectionString, err := i.DefaultDatabase.GetConnectionString()
 	if err != nil {
 		return nil, err
 	}
-
 	b, err := backend.FromConnectionString(ctx, connectionString)
-	if err != nil {
-		return nil, err
+	if err == nil {
+		// if we successfully created the backend, determine whether it is a steampipe backend
+		if steampipeBackend, ok := b.(*backend.SteampipeBackend); ok {
+			return &plugin.PluginVersionMap{
+				Database:         connectionString,
+				Backend:          steampipeBackend.Name(),
+				AvailablePlugins: steampipeBackend.PluginVersions,
+			}, nil
+		}
 	}
-	warnings := validateModRequirementsRecursively(mod, connectionString, b)
-	return warnings, nil
+	// if we failed to create the backend, or it is not a steampipe backend, return an empty plugin version map
+	return nil, nil
 }
 
-func validateModRequirementsRecursively(mod *modconfig.Mod, connectionString string, be backend.Backend) []string {
+func validateModRequirementsRecursively(mod *modconfig.Mod, pluginVersionMap *plugin.PluginVersionMap) []string {
 	var validationErrors []string
 
-	var pluginVersionMap = &plugin.PluginVersionMap{
-		Database: connectionString,
-		Backend:  be.Name(),
-	}
-	// if the backend is steampipe, populate the available plugins
-	if steampipeBackend, ok := be.(*backend.SteampipeBackend); ok {
-		pluginVersionMap.AvailablePlugins = steampipeBackend.PluginVersions
-	}
 	// validate this mod
 	for _, err := range mod.ValidateRequirements(pluginVersionMap) {
 		validationErrors = append(validationErrors, err.Error())
@@ -227,7 +244,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, connectionString str
 			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
 			continue
 		}
-		childValidationErrors := validateModRequirementsRecursively(childMod, connectionString, be)
+		childValidationErrors := validateModRequirementsRecursively(childMod, pluginVersionMap)
 		validationErrors = append(validationErrors, childValidationErrors...)
 	}
 
