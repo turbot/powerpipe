@@ -23,6 +23,7 @@ on:
 
 env:
   POWERPIPE_UPDATE_CHECK: false
+  GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
   VERSION: ${{ github.event.inputs.version }}
 
 jobs:
@@ -60,7 +61,7 @@ jobs:
       - name: Create base branch
         if: steps.semver_parser.outputs.prerelease == ''
         run: |
-          git checkout -b tailpipe-brew
+          git checkout -b powerpipe-brew
           git push --set-upstream origin powerpipe-brew
 
   build_assets:
@@ -304,7 +305,7 @@ jobs:
         with:
           repository: turbot/homebrew-tap
           token: ${{ secrets.GH_ACCESS_TOKEN }}
-          ref: ${{ github.event.inputs.version }}
+          ref: main
 
       - name: Update live version
         if: steps.semver_parser.outputs.prerelease == ''
