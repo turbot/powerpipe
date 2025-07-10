@@ -60,7 +60,7 @@ jobs:
       - name: Create base branch
         if: steps.semver_parser.outputs.prerelease == ''
         run: |
-          git checkout -b tailpipe-brew
+          git checkout -b powerpipe-brew
           git push --set-upstream origin powerpipe-brew
 
   build_assets:
