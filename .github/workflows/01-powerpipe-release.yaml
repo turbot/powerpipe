@@ -23,6 +23,7 @@ on:
 
 env:
   POWERPIPE_UPDATE_CHECK: false
+  GH_TOKEN: ${{ secrets.GH_ACCESS_TOKEN }}
   VERSION: ${{ github.event.inputs.version }}
 
 jobs:
