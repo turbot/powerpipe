@@ -137,6 +137,7 @@ func resolveFormatter(arg string, target modconfig.ModTreeItem) (formatter contr
 }
 
 func initialiseCheckColorScheme() error {
+	// TODO kai remove themes and use standard color codes
 	theme := "dark"
 	if !viper.GetBool(constants.ConfigKeyIsTerminalTTY) {
 		// enforce plain output for non-terminals

@@ -1,3 +1,12 @@
+## v1.2.8 [2025-07-10]
+_Bug Fixes_
+- Fix regression where powerpipe was failing to run detections from dependant mods if steampipe service was not running. ([#824](https://github.com/turbot/powerpipe/issues/824))
+- Fix issue where powerpipe server was failing to resolve the default pipes token. ([#818](https://github.com/turbot/powerpipe/issues/818))
+- Fix issue where query run snapshot output was returning a 0 exit code even incase of query failures. ([#816](https://github.com/turbot/powerpipe/issues/816))
+
+_Dependencies_
+- Upgrade `pbkdf2` package to remediate critical vulnerabilities.
+
 ## v1.2.7 [2025-05-21]
 _Bug Fixes_
 * Fix issue where powerpipe was exposing the server port to the internet even when listen was local. ([#761](https://github.com/turbot/powerpipe/issues/761))

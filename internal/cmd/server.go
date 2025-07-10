@@ -36,6 +36,7 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 
 	cmdconfig.
 		OnCmd(cmd).
+		AddCloudFlags().
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddIntFlag(constants.ArgPort, dashboardserver.DashboardServerDefaultPort, "Web server port").
