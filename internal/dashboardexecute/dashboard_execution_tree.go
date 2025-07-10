@@ -54,7 +54,7 @@ func (e *DashboardExecutor) newDashboardExecutionTree(rootResource modconfig.Mod
 	executionTree := &DashboardExecutionTree{
 		dashboardName:    rootResource.Name(),
 		sessionId:        sessionId,
-		defaultClientMap: e.clientMap,
+		defaultClientMap: e.defaultClient,
 		clientMap:        db_client.NewClientMap(),
 		runs:             make(map[string]dashboardtypes.DashboardTreeRun),
 		workspace:        workspace,

@@ -36,6 +36,7 @@ type InitData struct {
 	ShutdownTelemetry func()
 	ExportManager     *export.Manager
 	Targets           []modconfig.ModTreeItem
+	DefaultClient     *db_client.DbClient
 
 	DefaultDatabase         connection.ConnectionStringProvider
 	DefaultSearchPathConfig backend.SearchPathConfig
@@ -166,54 +167,41 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 	i.DefaultDatabase = csp
 	i.DefaultSearchPathConfig = searchPathConfig
 
-	// validate mod requirements
-	validationWarnings, err := i.validateModRequirements(ctx, i.Workspace.Mod)
-	i.Result.AddWarnings(validationWarnings...)
+	// create client
+	var opts []backend.BackendOption
+	if !searchPathConfig.Empty() {
+		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
+	}
+	connectionString, err := csp.GetConnectionString()
 	if err != nil {
 		i.Result.Error = err
 		return
 	}
+	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
+	if err != nil {
+		i.Result.Error = err
+		return
+	}
+	i.DefaultClient = client
 
-	// create the dashboard executor
-	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(i.DefaultDatabase, i.DefaultSearchPathConfig)
+	// validate mod requirements
+	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
+	i.Result.AddWarnings(validationWarnings...)
+
+	// create the dashboard executor, passing the default client inside a client map
+	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
+	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
 }
 
-func (i *InitData) GetDefaultClient(ctx context.Context) (*db_client.DbClient, error) {
-	var opts []backend.BackendOption
-	if !i.DefaultSearchPathConfig.Empty() {
-		opts = append(opts, backend.WithSearchPathConfig(i.DefaultSearchPathConfig))
-	}
-
-	connectionString, err := i.DefaultDatabase.GetConnectionString()
-	if err != nil {
-		return nil, err
-	}
-	return db_client.NewDbClient(ctx, connectionString, opts...)
-}
-
-func (i *InitData) validateModRequirements(ctx context.Context, mod *modconfig.Mod) ([]string, error) {
-	connectionString, err := i.DefaultDatabase.GetConnectionString()
-	if err != nil {
-		return nil, err
-	}
-
-	b, err := backend.FromConnectionString(ctx, connectionString)
-	if err != nil {
-		return nil, err
-	}
-	warnings := validateModRequirementsRecursively(mod, connectionString, b)
-	return warnings, nil
-}
-
-func validateModRequirementsRecursively(mod *modconfig.Mod, connectionString string, be backend.Backend) []string {
+func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
 	var validationErrors []string
 
 	var pluginVersionMap = &plugin.PluginVersionMap{
-		Database: connectionString,
-		Backend:  be.Name(),
+		Database: client.Backend.ConnectionString(),
+		Backend:  client.Backend.Name(),
 	}
 	// if the backend is steampipe, populate the available plugins
-	if steampipeBackend, ok := be.(*backend.SteampipeBackend); ok {
+	if steampipeBackend, ok := client.Backend.(*backend.SteampipeBackend); ok {
 		pluginVersionMap.AvailablePlugins = steampipeBackend.PluginVersions
 	}
 	// validate this mod
@@ -227,7 +215,7 @@ func validateModRequirementsRecursively(mod *modconfig.Mod, connectionString str
 			// this is a reference to self - skip (otherwise we will end up with a recursion loop)
 			continue
 		}
-		childValidationErrors := validateModRequirementsRecursively(childMod, connectionString, be)
+		childValidationErrors := validateModRequirementsRecursively(childMod, client)
 		validationErrors = append(validationErrors, childValidationErrors...)
 	}
 
@@ -241,6 +229,10 @@ func (i *InitData) Cleanup(ctx context.Context) {
 	if i.Workspace != nil {
 		i.Workspace.Close()
 	}
+	if i.DefaultClient != nil {
+		i.DefaultClient.Close(ctx)
+	}
+
 }
 
 // GetSingleTarget validates there is only a single target and returns it
