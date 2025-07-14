@@ -28,19 +28,19 @@ type DashboardExecutor struct {
 	// i.e. inputs may be specified _after_ execution starts
 	// false when running a single dashboard in batch mode
 	interactive bool
-	// store a map of db clients, keyed by connection string ans search-path
-	// - this allows reuse of clients, rather than creating a new one for each resource
-	clientMap       *db_client.ClientMap
-	defaultDatabase connection.ConnectionStringProvider
+	// store the default client which is created during initData creation
+	// - this is to avoid creating a new client for each dashboard execution if the database/search path is NOT overridden
+	defaultClient           *db_client.ClientMap
+	defaultDatabase         connection.ConnectionStringProvider
 	defaultSearchPathConfig backend.SearchPathConfig
 }
 
-func NewDashboardExecutor(defaultDatabase connection.ConnectionStringProvider, defaultSearchPathConfig backend.SearchPathConfig) *DashboardExecutor {
+func NewDashboardExecutor(defaultClient *db_client.ClientMap, defaultDatabase connection.ConnectionStringProvider, defaultSearchPathConfig backend.SearchPathConfig) *DashboardExecutor {
 	return &DashboardExecutor{
 		executions: make(map[string]*DashboardExecutionTree),
 		// default to interactive execution
 		interactive:             true,
-		clientMap:               db_client.NewClientMap(),
+		defaultClient:           defaultClient,
 		defaultDatabase:         defaultDatabase,
 		defaultSearchPathConfig: defaultSearchPathConfig,
 	}
