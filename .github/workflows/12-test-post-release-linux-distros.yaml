@@ -73,11 +73,7 @@ jobs:
       - name: Download Linux Release Artifact
         run: |
           mkdir -p ./artifacts
-          gh release download ${{ env.VERSION }} \
-            --pattern "powerpipe.linux.amd64.tar.gz" \
-            --dir ./artifacts \
-            --repo ${{ github.repository }}
-          # Rename to expected format for scripts
+          
           mv ./artifacts/powerpipe.linux.amd64.tar.gz ./artifacts/linux.tar.gz
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -119,11 +115,7 @@ jobs:
       - name: Download Linux Release Artifact
         run: |
           mkdir -p ./artifacts
-          gh release download ${{ env.VERSION }} \
-            --pattern "powerpipe.linux.amd64.tar.gz" \
-            --dir ./artifacts \
-            --repo ${{ github.repository }}
-          # Rename to expected format for scripts
+          
           mv ./artifacts/powerpipe.linux.amd64.tar.gz ./artifacts/linux.tar.gz
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
