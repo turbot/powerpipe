@@ -1,0 +1,12 @@
+{
+  "local": {
+    "github.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections": {
+      "version": "0.3.0",
+      "name": "github.com/turbot/tailpipe-mod-aws-cloudtrail-log-detections",
+      "commit": "f447a647a992a105474689b1f12d0d0803cb6eea",
+      "git_ref": "refs/tags/v0.3.0",
+      "struct_version": 20240429,
+      "alias": "aws_cloudtrail_log_detections"
+    }
+  }
+}
