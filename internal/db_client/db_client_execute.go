@@ -21,29 +21,63 @@ import (
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
 func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*localqueryresult.Result, error) {
 	// acquire a connection
-	databaseConnection, err := c.db.Conn(ctx)
+	dbConn, err := c.getDbConnection(ctx)
 	if err != nil {
 		return nil, err
 	}
 
 	// define callback to close session when the async execution is complete
-	closeSessionCallback := func() { _ = databaseConnection.Close() }
-	return c.executeOnConnection(ctx, databaseConnection, closeSessionCallback, query, args...)
+	closeSessionCallback := func() { _ = dbConn.Close() }
+	return c.executeOnConnection(ctx, dbConn, closeSessionCallback, query, args...)
 }
 
 // ExecuteSync executes a query against this client and wait for the result
 func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*queryresult.SyncQueryResult, error) {
+	// acquire a connection
+	dbConn, err := c.getDbConnection(ctx)
+	if err != nil {
+		return nil, err
+	}
+	defer dbConn.Close()
+
+	return c.executeSyncOnConnection(ctx, dbConn, query, args...)
+}
+
+// startQuery runs query in a goroutine, so we can check for cancellation
+// in case the client becomes unresponsive and does not respect context cancellation
+func (c *DbClient) startQuery(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (rows *sql.Rows, err error) {
+	doneChan := make(chan bool)
+	go func() {
+		// start asynchronous query
+		//nolint: sqlclosecheck // rows is closed in readRows
+		rows, err = dbConn.QueryContext(ctx, query, args...)
+		close(doneChan)
+	}()
+
+	select {
+	case <-doneChan:
+	case <-ctx.Done():
+		err = ctx.Err()
+	}
+	return
+}
+
+// getDbConnection returns a database connection for the client, calling the onConnection callback if it exists.
+func (c *DbClient) getDbConnection(ctx context.Context) (*sql.Conn, error) {
 	// acquire a connection
 	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
 
-	defer func() {
-		dbConn.Close()
-
-	}()
-	return c.executeSyncOnConnection(ctx, dbConn, query, args...)
+	// call the onConnection callback if it exists
+	if c.onConnection != nil {
+		if err := c.onConnection(ctx, dbConn); err != nil {
+			_ = dbConn.Close()
+			return nil, fmt.Errorf("error executing OnConnection callback: %w", err)
+		}
+	}
+	return dbConn, nil
 }
 
 // execute a query against this client and wait for the result
@@ -104,7 +138,7 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 
 	// start query
 
-	rows, err := c.StartQuery(ctxExecute, dbConn, query, args...)
+	rows, err := c.startQuery(ctxExecute, dbConn, query, args...)
 	if err != nil {
 		return
 	}
@@ -143,25 +177,6 @@ func (c *DbClient) getExecuteContext(ctx context.Context) context.Context {
 	newCtx, _ := context.WithDeadline(ctx, shouldBeDoneBy)
 
 	return newCtx
-}
-
-// StartQuery runs query in a goroutine, so we can check for cancellation
-// in case the client becomes unresponsive and does not respect context cancellation
-func (c *DbClient) StartQuery(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (rows *sql.Rows, err error) {
-	doneChan := make(chan bool)
-	go func() {
-		// start asynchronous query
-		//nolint: sqlclosecheck // rows is closed in readRows
-		rows, err = dbConn.QueryContext(ctx, query, args...)
-		close(doneChan)
-	}()
-
-	select {
-	case <-doneChan:
-	case <-ctx.Done():
-		err = ctx.Err()
-	}
-	return
 }
 
 func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqueryresult.Result) {
