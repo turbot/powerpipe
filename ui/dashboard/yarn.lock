@@ -9225,12 +9225,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:12.0.6":
-  version: 12.0.6
-  resolution: "framer-motion@npm:12.0.6"
+"framer-motion@npm:12.23.11":
+  version: 12.23.11
+  resolution: "framer-motion@npm:12.23.11"
   dependencies:
-    motion-dom: "npm:^12.0.0"
-    motion-utils: "npm:^12.0.0"
+    motion-dom: "npm:^12.23.9"
+    motion-utils: "npm:^12.23.6"
     tslib: "npm:^2.4.0"
   peerDependencies:
     "@emotion/is-prop-valid": "*"
@@ -9243,7 +9243,7 @@ __metadata:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/06d01186a52163225ded9e60563b1aba9a52b14db2516bc7c87de0efd48bf149531d5f6ad4db254254e61ec142aed04e4b119d35063ef13b537c4da35aece762
+  checksum: 10c0/eb7df3d717a3a96ab125afa2615265dbc306f6f409e478eb1f019b1408f2dd19ad05227f532777952519f36816cd04da4174e342b065528def9729795b58f523
   languageName: node
   linkType: hard
 
@@ -13144,19 +13144,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "motion-dom@npm:12.0.0"
+"motion-dom@npm:^12.23.9":
+  version: 12.23.9
+  resolution: "motion-dom@npm:12.23.9"
   dependencies:
-    motion-utils: "npm:^12.0.0"
-  checksum: 10c0/d67209bc217f16b9a0305afa4bfc366997d02df76eea9ab29062f98beeff5fdfc60ae1b422ab397f525ae775c640ac9ba061c9f45aacd6cd71a23dce06661384
+    motion-utils: "npm:^12.23.6"
+  checksum: 10c0/a1d50490622eed75ef32d4fab1b97cbf45537fdfe37b6dcae8b5ca423de63a377a261552cb7527f5b70397e8b672df09342a4cae032e7fe6c4516c6c1d982043
   languageName: node
   linkType: hard
 
-"motion-utils@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "motion-utils@npm:12.0.0"
-  checksum: 10c0/ca6cc7542d00afab011130fcd940e5f5a412b21a4eaeb17c0a497dcb86de311dda90741eeca7de1276cc8c1dff7ac1e6a8df1e8cebb1191a2c43bfe8368dc70b
+"motion-utils@npm:^12.23.6":
+  version: 12.23.6
+  resolution: "motion-utils@npm:12.23.6"
+  checksum: 10c0/c058e8ba6423b3baa63e985bcc669877ee7d9579d938f5348b4e60c5ea1b4b33dd7f4877434436a4a5807f3cf00370d3fd4079a6fdd6309c5c87aa62b311a897
   languageName: node
   linkType: hard
 
@@ -14943,7 +14943,7 @@ __metadata:
     echarts-for-react: "npm:3.0.2"
     echarts-gl: "npm:2.0.9"
     file-saver: "npm:2.0.5"
-    framer-motion: "npm:12.0.6"
+    framer-motion: "npm:12.23.11"
     fs-extra: "npm:11.3.0"
     if-node-version: "npm:1.1.1"
     jq-wasm: "npm:1.0.1"
