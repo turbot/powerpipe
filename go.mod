@@ -48,7 +48,7 @@ require (
 	github.com/marcboeker/go-duckdb v1.8.5
 	github.com/mattn/go-sqlite3 v1.14.29
 	github.com/thediveo/enumflag/v2 v2.0.5
-	golang.org/x/sync v0.12.0
+	golang.org/x/sync v0.16.0
 	golang.org/x/text v0.23.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
