@@ -3,6 +3,7 @@ package controldisplay
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -34,12 +35,43 @@ func templateFuncs(renderContext TemplateRenderContext) template.FuncMap {
 	formatterTemplateFuncMap := template.FuncMap{
 		"durationInSeconds": durationInSeconds,
 		"toCsvCell":         toCSVCellFnFactory(renderContext.Config.Separator),
+		"toSafeJson":        toSafeJson,
 	}
 	for k, v := range formatterTemplateFuncMap {
 		funcs[k] = v
 	}
 
 	return funcs
+}
+
+// toSafeJson safely converts a value to JSON string, handling error cases gracefully
+func toSafeJson(v interface{}) string {
+	if v == nil {
+		return "null"
+	}
+
+	// For strings, handle them specially to avoid JSON encoding issues
+	if str, ok := v.(string); ok {
+		// If the string is empty, return null
+		if strings.TrimSpace(str) == "" {
+			return "null"
+		}
+
+		// Use json.Marshal to properly escape the string
+		bytes, err := json.Marshal(str)
+		if err != nil {
+			// If marshaling fails, return a safe fallback
+			return `"Error: Unable to serialize error message"`
+		}
+		return string(bytes)
+	}
+
+	// For other types, use the standard approach
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		return "null"
+	}
+	return string(bytes)
 }
 
 // toCsvCell escapes a value for csv

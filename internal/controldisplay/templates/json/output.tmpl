@@ -46,7 +46,7 @@
 	"tags": {{ toPrettyJson .Tags }},
 	"title": {{ toPrettyJson .Title }},
 	"run_status": {{ template "run_status_map" .RunStatus }},
-	"run_error": {{ toPrettyJson .RunErrorString }}
+	"run_error": {{ toSafeJson .RunErrorString }}
 } {{- end -}}
 
 {{/* sub template for control rows */}}
