@@ -233,3 +233,43 @@ func (e *ExecutionTree) GetAllTags() []string {
 	sort.Strings(tagColumns)
 	return tagColumns
 }
+
+// EnsureConsistentStateForExport ensures the execution tree is in a consistent state for export
+// This is called when execution fails but we still want to export the results
+func (e *ExecutionTree) EnsureConsistentStateForExport() {
+	// Set end time if not already set
+	if e.EndTime.IsZero() {
+		e.EndTime = time.Now()
+	}
+
+	// Ensure root exists and has basic structure
+	if e.Root == nil {
+		e.Root = &ResultGroup{
+			GroupId:     "error",
+			Title:       "Error",
+			Description: "Execution failed",
+			Tags:        make(map[string]string),
+			Summary:     NewGroupSummary(),
+			Groups:      []*ResultGroup{},
+			ControlRuns: []*ControlRun{},
+		}
+	}
+
+	// Ensure all control runs have consistent state
+	for _, controlRun := range e.ControlRuns {
+		// Ensure summary exists
+		if controlRun.Summary == nil {
+			controlRun.Summary = &controlstatus.StatusSummary{}
+		}
+
+		// Ensure run status is set if not already
+		if controlRun.RunStatus == "" {
+			controlRun.RunStatus = "error"
+		}
+
+		// Ensure run error string is set if there's an error
+		if controlRun.runError != nil && controlRun.RunErrorString == "" {
+			controlRun.RunErrorString = controlRun.runError.Error()
+		}
+	}
+}
