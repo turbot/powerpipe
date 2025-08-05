@@ -15,7 +15,7 @@ require (
 	github.com/go-playground/validator/v10 v10.21.0
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
-	github.com/hashicorp/hcl/v2 v2.20.1
+	github.com/hashicorp/hcl/v2 v2.24.0
 	github.com/jackc/pgconn v1.14.3 // indirect
 	github.com/karrick/gows v0.3.0
 	github.com/mattn/go-isatty v0.0.20
@@ -29,7 +29,7 @@ require (
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	github.com/zclconf/go-cty v1.14.4
+	github.com/zclconf/go-cty v1.16.3
 	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
 	sigs.k8s.io/yaml v1.4.0 // indirect
@@ -48,8 +48,8 @@ require (
 	github.com/marcboeker/go-duckdb v1.8.5
 	github.com/mattn/go-sqlite3 v1.14.29
 	github.com/thediveo/enumflag/v2 v2.0.5
-	golang.org/x/sync v0.12.0
-	golang.org/x/text v0.23.0
+	golang.org/x/sync v0.14.0
+	golang.org/x/text v0.25.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
 )
 
@@ -231,12 +231,12 @@ require (
 	go.opentelemetry.io/proto/otlp v1.2.0 // indirect
 	go.uber.org/multierr v1.10.0 // indirect
 	golang.org/x/arch v0.8.0 // indirect
-	golang.org/x/crypto v0.36.0 // indirect
+	golang.org/x/crypto v0.38.0 // indirect
 	golang.org/x/mod v0.22.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.27.0 // indirect
-	golang.org/x/sys v0.31.0 // indirect
-	golang.org/x/term v0.30.0 // indirect
+	golang.org/x/sys v0.33.0 // indirect
+	golang.org/x/term v0.32.0 // indirect
 	golang.org/x/time v0.5.0 // indirect
 	golang.org/x/tools v0.29.0 // indirect
 	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
