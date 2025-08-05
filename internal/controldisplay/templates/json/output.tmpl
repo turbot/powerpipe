@@ -1,5 +1,21 @@
 {{ define "output" -}}
-	{{- template "result_group_template" .Data.Root }}
+	{{- if .Data.Root -}}
+		{{- template "result_group_template" .Data.Root }}
+	{{- else -}}
+		{
+			"group_id": "error",
+			"title": "Error",
+			"description": "Execution failed",
+			"tags": {},
+			"summary": {
+				"status": {
+					"error": 1
+				}
+			},
+			"groups": [],
+			"controls": null
+		}
+	{{- end -}}
 {{ end }}
 
 {{/* sub template for result groups */}}
@@ -12,14 +28,14 @@
 	"description": {{ toPrettyJson .Description }},
 	"tags": {{ toPrettyJson .Tags }},
 	"summary": {{ toPrettyJson .Summary }},
-	"groups": {{ if .Groups }}[
+	"groups": {{ if and .Groups (gt (len .Groups) 0) }}[
 		{{- range .Groups -}}
 			{{ if $first_group_rendered -}},{{- end -}}
 			{{- template "result_group_template" . -}}
 			{{- $first_group_rendered = true -}}
 		{{ end }}
 	], {{ else }} [], {{ end }}
-	"controls": {{ if .ControlRuns }}[
+	"controls": {{ if and .ControlRuns (gt (len .ControlRuns) 0) }}[
 		{{- range .ControlRuns -}}
 			{{ if $first_control_rendered -}},{{- end -}}
 			{{- template "control_run_template" . -}}
@@ -33,7 +49,7 @@
 {{- $first_row_rendered := false -}}
 {
 	"summary": {{ toPrettyJson .Summary }},
-	"results": {{ if .Rows }}[
+	"results": {{ if and .Rows (gt (len .Rows) 0) }}[
 		{{- range .Rows -}}
 			{{ if $first_row_rendered -}},{{- end -}}
 			{{- template "control_row_template" . -}}
@@ -46,7 +62,7 @@
 	"tags": {{ toPrettyJson .Tags }},
 	"title": {{ toPrettyJson .Title }},
 	"run_status": {{ template "run_status_map" .RunStatus }},
-	"run_error": {{ toPrettyJson .RunErrorString }}
+	"run_error": {{ toSafeJson .RunErrorString }}
 } {{- end -}}
 
 {{/* sub template for control rows */}}
