@@ -3,6 +3,7 @@ package controldisplay
 import (
 	"bytes"
 	"encoding/csv"
+	"encoding/json"
 	"fmt"
 	"strings"
 	"sync"
@@ -34,12 +35,79 @@ func templateFuncs(renderContext TemplateRenderContext) template.FuncMap {
 	formatterTemplateFuncMap := template.FuncMap{
 		"durationInSeconds": durationInSeconds,
 		"toCsvCell":         toCSVCellFnFactory(renderContext.Config.Separator),
+		"toSafeJson":        toSafeJson,
 	}
 	for k, v := range formatterTemplateFuncMap {
 		funcs[k] = v
 	}
 
 	return funcs
+}
+
+// toSafeJson safely converts a value to JSON string, handling error cases gracefully
+func toSafeJson(v interface{}) string {
+	if v == nil {
+		return "null"
+	}
+
+	// For strings, handle them specially to avoid JSON encoding issues
+	if str, ok := v.(string); ok {
+		// Clean the string to remove problematic characters that could break JSON
+		// Replace newlines with spaces and escape any remaining problematic characters
+		cleanedStr := strings.ReplaceAll(str, "\n", " ")
+		cleanedStr = strings.ReplaceAll(cleanedStr, "\r", " ")
+		cleanedStr = strings.ReplaceAll(cleanedStr, "\t", " ")
+		// Remove any null bytes
+		cleanedStr = strings.ReplaceAll(cleanedStr, "\x00", "")
+
+		// Use json.Marshal to properly escape the cleaned string
+		bytes, err := json.Marshal(cleanedStr)
+		if err != nil {
+			// If marshaling fails, return a safe fallback
+			return `"Error: Unable to serialize error message"`
+		}
+		return string(bytes)
+	}
+
+	// For maps, handle them specially to ensure they're valid
+	if m, ok := v.(map[string]interface{}); ok {
+		// Create a safe copy of the map, filtering out any problematic values
+		safeMap := make(map[string]interface{})
+		for k, val := range m {
+			if val != nil {
+				safeMap[k] = val
+			}
+		}
+		bytes, err := json.Marshal(safeMap)
+		if err != nil {
+			return "{}"
+		}
+		return string(bytes)
+	}
+
+	// For slices, handle them specially to ensure they're valid
+	if slice, ok := v.([]interface{}); ok {
+		// Create a safe copy of the slice, filtering out any problematic values
+		safeSlice := make([]interface{}, 0, len(slice))
+		for _, val := range slice {
+			if val != nil {
+				safeSlice = append(safeSlice, val)
+			}
+		}
+		bytes, err := json.Marshal(safeSlice)
+		if err != nil {
+			return "[]"
+		}
+		return string(bytes)
+	}
+
+	// For other types, use the standard approach
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		// Try to convert to string as a fallback
+		return fmt.Sprintf("%q", fmt.Sprintf("%v", v))
+	}
+	return string(bytes)
 }
 
 // toCsvCell escapes a value for csv

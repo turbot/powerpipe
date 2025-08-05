@@ -198,22 +198,27 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 
 	for _, namedTree := range trees {
 		// execute controls synchronously (execute returns the number of alarms and errors)
-		err = executeTree(ctx, namedTree.tree, initData)
-		if err != nil {
+		executionErr := executeTree(ctx, namedTree.tree, initData)
+		if executionErr != nil {
 			totalErrors++
-			error_helpers.ShowError(ctx, err)
-			return
+			error_helpers.ShowError(ctx, executionErr)
+			// Ensure the tree is in a consistent state for export even if execution failed
+			namedTree.tree.EnsureConsistentStateForExport()
+			// Don't return here - continue to export even if execution failed
 		}
 
 		// append the total number of alarms and errors for multiple runs
-		totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
-		totalErrors = namedTree.tree.Root.Summary.Status.Error
+		// Only count if the tree has a valid root
+		if namedTree.tree.Root != nil && namedTree.tree.Root.Summary != nil {
+			totalAlarms = namedTree.tree.Root.Summary.Status.Alarm
+			totalErrors = namedTree.tree.Root.Summary.Status.Error
+		}
 
 		err = publishSnapshot(ctx, namedTree.tree, viper.GetBool(constants.ArgShare), viper.GetBool(constants.ArgSnapshot))
 		if err != nil {
 			error_helpers.ShowError(ctx, err)
 			totalErrors++
-			return
+			// Don't return here - continue to export even if snapshot publishing failed
 		}
 		if shouldPrintCheckTiming() {
 			display.PrintTiming(&localqueryresult.CheckTimingMetadata{
