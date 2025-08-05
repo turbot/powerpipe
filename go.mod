@@ -29,7 +29,7 @@ require (
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
-	github.com/zclconf/go-cty v1.14.4
+	github.com/zclconf/go-cty v1.16.3
 	github.com/zclconf/go-cty-yaml v1.0.3 // indirect
 	golang.org/x/exp v0.0.0-20250128182459-e0ece0dbea4c
 	sigs.k8s.io/yaml v1.4.0 // indirect
