@@ -1,3 +1,14 @@
+## v1.3.0 [2025-08-05]
+_Whats new_
+- Compiled with Go 1.24.
+
+_Bug Fixes_
+- Fix issue where the `--where` arg was not correctly filtering the benchmarks/controls when JSON path expressions were passed. ([#740](https://github.com/turbot/powerpipe/issues/740))
+- Fix error handling for JSON output/export incase of database failures. ([#665](https://github.com/turbot/powerpipe/issues/665))
+
+_Dependencies_
+- Upgrade `form-data` and `go-viper/mapstructure/v2` packages to remediate critical and high vulnerabilities.
+
 ## v1.2.8 [2025-07-10]
 _Bug Fixes_
 - Fix regression where powerpipe was failing to run detections from dependant mods if steampipe service was not running. ([#824](https://github.com/turbot/powerpipe/issues/824))
