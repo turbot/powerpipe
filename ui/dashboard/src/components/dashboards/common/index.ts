@@ -88,9 +88,17 @@ const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   const xAxisLabels: string[] = [];
   const seriesLabels: string[] = [];
   for (const row of data.rows) {
-    const xAxisLabel = row[data.columns[0].name];
-    const seriesName = row[data.columns[1].name];
+    let xAxisLabel = row[data.columns[0].name];
+    let seriesName = row[data.columns[1].name];
     const seriesValue = row[data.columns[2].name];
+    
+    // Convert boolean values to strings for proper chart rendering
+    if (typeof xAxisLabel === "boolean") {
+      xAxisLabel = xAxisLabel.toString();
+    }
+    if (typeof seriesName === "boolean") {
+      seriesName = seriesName.toString();
+    }
 
     if (!xAxis[xAxisLabel]) {
       xAxis[xAxisLabel] = {};
@@ -136,7 +144,14 @@ const defaultDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   return {
     dataset: [
       data.columns.map((col) => col.name),
-      ...data.rows.map((row) => data.columns.map((col) => row[col.name])),
+      ...data.rows.map((row) => data.columns.map((col) => {
+        const value = row[col.name];
+        // Convert boolean values to strings for proper chart rendering
+        if (typeof value === "boolean") {
+          return value.toString();
+        }
+        return value;
+      })),
     ],
     rowSeriesLabels: [],
     transform: "none",
