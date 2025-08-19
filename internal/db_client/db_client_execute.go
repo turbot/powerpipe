@@ -21,7 +21,7 @@ import (
 // NOTE: The returned Result MUST be fully read - otherwise the connection will block and will prevent further communication
 func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*localqueryresult.Result, error) {
 	// acquire a connection
-	dbConn, err := c.getDbConnection(ctx)
+	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -34,7 +34,7 @@ func (c *DbClient) Execute(ctx context.Context, query string, args ...any) (*loc
 // ExecuteSync executes a query against this client and wait for the result
 func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (*queryresult.SyncQueryResult, error) {
 	// acquire a connection
-	dbConn, err := c.getDbConnection(ctx)
+	dbConn, err := c.db.Conn(ctx)
 	if err != nil {
 		return nil, err
 	}
@@ -60,24 +60,6 @@ func (c *DbClient) startQuery(ctx context.Context, dbConn *sql.Conn, query strin
 		err = ctx.Err()
 	}
 	return
-}
-
-// getDbConnection returns a database connection for the client, calling the onConnection callback if it exists.
-func (c *DbClient) getDbConnection(ctx context.Context) (*sql.Conn, error) {
-	// acquire a connection
-	dbConn, err := c.db.Conn(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	// call the onConnection callback if it exists
-	if c.onConnection != nil {
-		if err := c.onConnection(ctx, dbConn); err != nil {
-			_ = dbConn.Close()
-			return nil, fmt.Errorf("error executing OnConnection callback: %w", err)
-		}
-	}
-	return dbConn, nil
 }
 
 // execute a query against this client and wait for the result

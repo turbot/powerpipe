@@ -18,8 +18,7 @@ type DbClient struct {
 	db *sql.DB
 
 	// the Backend
-	Backend      backend.Backend
-	onConnection func(context.Context, *sql.Conn) error
+	Backend backend.Backend
 }
 
 func NewDbClient(ctx context.Context, connectionString string, opts ...backend.BackendOption) (_ *DbClient, err error) {
@@ -52,11 +51,6 @@ func NewDbClient(ctx context.Context, connectionString string, opts ...backend.B
 			SearchPath:       viper.GetStringSlice(constants.ArgSearchPath),
 			SearchPathPrefix: viper.GetStringSlice(constants.ArgSearchPathPrefix),
 		}
-	}
-
-	// if the backend implements ConnectionInitializer, store the OnConnection function
-	if initializer, ok := b.(backend.ConnectionInitializer); ok {
-		client.onConnection = initializer.OnConnection
 	}
 
 	if err := client.connect(ctx, backend.WithConfig(config)); err != nil {
