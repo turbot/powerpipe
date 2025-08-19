@@ -79,11 +79,11 @@ type ChartDatasetResponse = {
   transform: ChartTransform;
 };
 
-const toStringIfBoolean = <T>(value: T): string | Exclude<T, boolean> => {
+const toStringIfBoolean = <T>(value: T): string | T => {
   if (typeof value === "boolean") {
     return value.toString();
   }
-  return value as Exclude<T, boolean>;
+  return value;
 };
 
 const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
