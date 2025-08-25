@@ -134,18 +134,14 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// use the same config paths for powerpipe config loading to ensure POWERPIPE_CONFIG_PATH is respected
 	var config *powerpipeconfig.PowerpipeConfig
 	var ew error_helpers.ErrorAndWarnings
-	if len(configPaths) > 0 {
-		// use all config paths for powerpipe config loading to maintain proper precedence
-		config, ew = powerpipeconfig.LoadPowerpipeConfig(configPaths...)
-		if ew.GetError() != nil {
-			return ew
-		}
-	} else {
-		// fallback to default behavior if no config paths are available
-		config, ew = powerpipeconfig.LoadPowerpipeConfig(filepaths.EnsureConfigDir())
-		if ew.GetError() != nil {
-			return ew
-		}
+	if len(configPaths) == 0 {
+		configPaths = []string{filepaths.EnsureConfigDir()}
+	}
+	// use all config paths for powerpipe config loading to maintain proper precedence
+	config, ew = powerpipeconfig.LoadPowerpipeConfig(configPaths...)
+
+	if ew.GetError() != nil {
+		return ew
 	}
 
 	powerpipeconfig.GlobalConfig = config

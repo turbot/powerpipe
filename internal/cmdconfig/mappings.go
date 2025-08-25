@@ -67,7 +67,6 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		app_specific.EnvMemoryMaxMb:       {ConfigVar: []string{constants.ArgMemoryMaxMb}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvMemoryMaxMbPlugin: {ConfigVar: []string{constants.ArgMemoryMaxMbPlugin}, VarType: cmdconfig.EnvVarTypeInt},
 		app_specific.EnvCacheEnabled:      {ConfigVar: []string{constants.ArgClientCacheEnabled, constants.ArgServiceCacheEnabled}, VarType: cmdconfig.EnvVarTypeBool},
-		app_specific.EnvConfigPath:        {ConfigVar: []string{constants.ArgConfigPath}, VarType: cmdconfig.EnvVarTypeString},
 		// common pipes env vars
 		constants.EnvPipesInstallDir: {ConfigVar: []string{constants.ArgPipesInstallDir}, VarType: cmdconfig.EnvVarTypeString},
 		constants.EnvPipesHost:       {ConfigVar: []string{constants.ArgPipesHost}, VarType: cmdconfig.EnvVarTypeString},
