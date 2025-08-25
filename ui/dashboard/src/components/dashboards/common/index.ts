@@ -79,6 +79,13 @@ type ChartDatasetResponse = {
   transform: ChartTransform;
 };
 
+const toStringIfBoolean = <T>(value: T): string | T => {
+  if (typeof value === "boolean") {
+    return value.toString();
+  }
+  return value;
+};
+
 const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   if (data.columns.length < 3) {
     return { dataset: [], rowSeriesLabels: [], transform: "none" };
@@ -88,8 +95,9 @@ const crosstabDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   const xAxisLabels: string[] = [];
   const seriesLabels: string[] = [];
   for (const row of data.rows) {
-    const xAxisLabel = row[data.columns[0].name];
-    const seriesName = row[data.columns[1].name];
+    // Convert boolean values to strings for proper chart rendering
+    const xAxisLabel = toStringIfBoolean(row[data.columns[0].name]);
+    const seriesName = toStringIfBoolean(row[data.columns[1].name]);
     const seriesValue = row[data.columns[2].name];
 
     if (!xAxis[xAxisLabel]) {
@@ -136,7 +144,10 @@ const defaultDataTransform = (data: LeafNodeData): ChartDatasetResponse => {
   return {
     dataset: [
       data.columns.map((col) => col.name),
-      ...data.rows.map((row) => data.columns.map((col) => row[col.name])),
+      ...data.rows.map((row) =>
+        // Convert boolean values to strings for proper chart rendering
+        data.columns.map((col) => toStringIfBoolean(row[col.name])),
+      ),
     ],
     rowSeriesLabels: [],
     transform: "none",
