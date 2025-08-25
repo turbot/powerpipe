@@ -75,6 +75,7 @@ jobs:
       matrix:
         platform: [ubuntu-latest]
         test_block:
+          - "config_path"
           - "check"
           - "resource_show_outputs"
           - "dashboard"
