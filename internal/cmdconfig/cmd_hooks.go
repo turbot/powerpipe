@@ -135,8 +135,8 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	var config *powerpipeconfig.PowerpipeConfig
 	var ew error_helpers.ErrorAndWarnings
 	if len(configPaths) > 0 {
-		// Use the first config path (highest precedence) for powerpipe config loading
-		config, ew = powerpipeconfig.LoadPowerpipeConfig(configPaths[0])
+		// use all config paths for powerpipe config loading to maintain proper precedence
+		config, ew = powerpipeconfig.LoadPowerpipeConfig(configPaths...)
 		if ew.GetError() != nil {
 			return ew
 		}

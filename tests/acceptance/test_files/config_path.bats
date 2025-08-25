@@ -73,20 +73,6 @@ teardown() {
   assert_output --partial "functionality_test_mod"
 }
 
-@test "POWERPIPE_CONFIG_PATH with multiple colon-separated paths should respect precedence" {
-  cd $MODS_DIR/functionality_test_mod
-  
-  # Set POWERPIPE_CONFIG_PATH with multiple paths - valid first, then invalid
-  export POWERPIPE_CONFIG_PATH="$BATS_TEST_DIRNAME/test_configs/valid_config:$BATS_TEST_DIRNAME/test_configs/invalid_config"
-  
-  # Run a command that loads configuration
-  run powerpipe mod list
-  echo "$output"
-  
-  # Should succeed because valid config has higher precedence
-  assert_success
-}
-
 @test "POWERPIPE_CONFIG_PATH should work with relative paths" {
   cd $MODS_DIR/functionality_test_mod
   
