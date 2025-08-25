@@ -117,6 +117,12 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	utils.LogTime("cmdconfig.initGlobalConfig start")
 	defer utils.LogTime("cmdconfig.initGlobalConfig end")
 
+	// get the config paths that respect POWERPIPE_CONFIG_PATH environment variable
+	configPaths, err := cmdconfig.GetConfigPath()
+	if err != nil {
+		return error_helpers.NewErrorsAndWarning(err)
+	}
+
 	// load workspace profile from the configured install dir
 	loader, err := cmdconfig.GetWorkspaceProfileLoader[*workspace_profile.PowerpipeWorkspaceProfile]()
 	if err != nil {
@@ -125,7 +131,17 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 
 	var cmd = viper.Get(constants.ConfigKeyActiveCommand).(*cobra.Command)
 
-	var config, ew = powerpipeconfig.LoadPowerpipeConfig(filepaths.EnsureConfigDir())
+	// use the same config paths for powerpipe config loading to ensure POWERPIPE_CONFIG_PATH is respected
+	var config *powerpipeconfig.PowerpipeConfig
+	var ew error_helpers.ErrorAndWarnings
+	// if no config paths are available, the default config path is the mod location, followed by the config
+	// directory in the $POWERPIPE_INSTALL_DIR
+	if len(configPaths) == 0 {
+		configPaths = []string{filepaths.EnsureConfigDir()}
+	}
+	// use all config paths for powerpipe config loading to maintain proper precedence
+	config, ew = powerpipeconfig.LoadPowerpipeConfig(configPaths...)
+
 	if ew.GetError() != nil {
 		return ew
 	}

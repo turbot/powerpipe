@@ -1,3 +1,12 @@
+## v1.3.1 [2025-08-25]
+_Bug Fixes_
+- Fix issue where the `database` argument from a query resource was not respected. ([#829](https://github.com/turbot/powerpipe/issues/829))
+- Fix issue where the default config path was not resolved correctly. The default is the `mod-location`, followed by the `$POWERPIPE_INSTALL_DIR/config`. Also the `POWERPIPE_CONFIG_PATH` environment variable was not respected. ([#898](https://github.com/turbot/powerpipe/issues/898))
+- Fix issue where `pie/donut` charts were not rendering correctly on boolean values. ([#433](https://github.com/turbot/powerpipe/issues/433))
+
+_Dependencies_
+- Upgrade `hashicorp/go-getter`, `sha.js` and `cipher-base` to remediate critical and high vulnerabilities.
+
 ## v1.3.0 [2025-08-05]
 _Whats new_
 - Compiled with Go 1.24.

@@ -6,6 +6,7 @@ import (
 
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/cty_helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/printers"
@@ -307,4 +308,24 @@ func (b *QueryProviderImpl) GetNestedStructs() []modconfig.CtyValueProvider {
 	// return all nested structs - this is used to get the nested structs for the cty serialisation
 	// we return ourselves and our base structs
 	return append([]modconfig.CtyValueProvider{b}, b.RuntimeDependencyProviderImpl.GetNestedStructs()...)
+}
+
+// GetDatabase implements DatabaseItem
+// If the resource does not have an inline database specified, but the resource specifies a query and the query
+// specifies its own database, inherit the query's database
+func (q *QueryProviderImpl) GetDatabase() connection.ConnectionStringProvider {
+	// first check if we have our own database set
+	if q.ModTreeItemImpl.Database != nil {
+		return q.ModTreeItemImpl.Database
+	}
+
+	// if we have a referenced query, inherit its database configuration
+	if q.Query != nil {
+		if queryDatabase := q.Query.GetDatabase(); queryDatabase != nil {
+			return queryDatabase
+		}
+	}
+
+	// fall back to parent inheritance (from ModTreeItemImpl)
+	return q.ModTreeItemImpl.GetDatabase()
 }
