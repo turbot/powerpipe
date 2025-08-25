@@ -134,6 +134,7 @@ func initGlobalConfig() error_helpers.ErrorAndWarnings {
 	// use the same config paths for powerpipe config loading to ensure POWERPIPE_CONFIG_PATH is respected
 	var config *powerpipeconfig.PowerpipeConfig
 	var ew error_helpers.ErrorAndWarnings
+	// if no config paths are available, use the default config dir
 	if len(configPaths) == 0 {
 		configPaths = []string{filepaths.EnsureConfigDir()}
 	}
