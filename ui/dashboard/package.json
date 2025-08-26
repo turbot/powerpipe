@@ -46,7 +46,7 @@
     "react-router-dom": "6.28.2",
     "react-router-hash-link": "2.4.3",
     "react-select": "5.10.0",
-    "react-syntax-highlighter": "15.6.1",
+    "react-syntax-highlighter": "15.6.6",
     "react-time-picker": "7.0.0",
     "react-use-websocket": "4.11.1",
     "reactflow": "11.11.4",
