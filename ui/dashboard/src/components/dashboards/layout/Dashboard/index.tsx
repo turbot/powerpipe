@@ -19,11 +19,13 @@ type DashboardProps = {
   definition: DashboardDefinition;
   isRoot?: boolean;
   showPanelControls?: boolean;
+  showTitle?: boolean;
   withPadding?: boolean;
 };
 
 type DashboardWrapperProps = {
   showPanelControls?: boolean;
+  showTitle?: boolean;
 };
 
 type SplitPaneProps = {
@@ -127,6 +129,7 @@ const Dashboard = ({
   definition,
   isRoot = true,
   showPanelControls = true,
+  showTitle = true,
 }: DashboardProps) => {
   const {
     components: { SnapshotHeader },
@@ -135,7 +138,7 @@ const Dashboard = ({
   const grid = (
     <Grid name={definition.name} width={isRoot ? 12 : definition.width}>
       <SnapshotHeader />
-      {isRoot && !definition.artificial && (
+      {isRoot && showTitle && !definition.artificial && (
         <DashboardTitle title={definition.title} />
       )}
       <Children
@@ -176,6 +179,7 @@ const Dashboard = ({
 
 const DashboardWrapper = ({
   showPanelControls = true,
+  showTitle = true,
 }: DashboardWrapperProps) => {
   const { dashboard, dataMode, selectedDashboard } = useDashboardState();
   const { selectedPanel } = useDashboardPanelDetail();
@@ -204,6 +208,7 @@ const DashboardWrapper = ({
     <Dashboard
       definition={dashboard}
       showPanelControls={showPanelControls}
+      showTitle={showTitle}
       withPadding={true}
     />
   );
