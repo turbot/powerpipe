@@ -192,7 +192,10 @@ const reducer = (state: IDashboardContext, action) => {
     case DashboardActions.CLEAR_DASHBOARD:
       return {
         ...state,
-        dataMode: DashboardDataModeLive,
+        dataMode:
+          state.dataMode === "cloud_snapshot"
+            ? state.dataMode
+            : DashboardDataModeLive,
         dashboard: null,
         error: null,
         execution_id: null,
@@ -226,7 +229,10 @@ const reducer = (state: IDashboardContext, action) => {
       return {
         ...state,
         dashboard,
-        dataMode: DashboardDataModeCLISnapshot,
+        dataMode:
+          state.dataMode === DashboardDataModeCloudSnapshot
+            ? DashboardDataModeCloudSnapshot
+            : DashboardDataModeCLISnapshot,
         error: null,
         panelsLog: updatePanelsLogFromCompletedPanels(
           state.panelsLog,
@@ -244,7 +250,10 @@ const reducer = (state: IDashboardContext, action) => {
         ...state,
         dataMode: action.dataMode,
       };
-      if (action.dataMode === DashboardDataModeCLISnapshot) {
+      if (
+        action.dataMode === DashboardDataModeCLISnapshot ||
+        action.dataMode === DashboardDataModeCloudSnapshot
+      ) {
         newState.snapshotFileName = action.snapshotFileName;
       } else if (
         state.dataMode !== DashboardDataModeLive &&
@@ -264,7 +273,10 @@ const reducer = (state: IDashboardContext, action) => {
       if (action.dashboard && action.dashboard.type === "snapshot") {
         return {
           ...state,
-          dataMode: DashboardDataModeCLISnapshot,
+          dataMode:
+            state.dataMode === DashboardDataModeCloudSnapshot
+              ? DashboardDataModeCloudSnapshot
+              : DashboardDataModeCLISnapshot,
           selectedDashboard: action.dashboard,
         };
       }
@@ -282,7 +294,10 @@ const reducer = (state: IDashboardContext, action) => {
 
       return {
         ...state,
-        dataMode: DashboardDataModeLive,
+        dataMode:
+          state.dataMode === DashboardDataModeCloudSnapshot
+            ? DashboardDataModeCloudSnapshot
+            : DashboardDataModeLive,
         dashboard: null,
         execution_id: null,
         panelsMap: {},

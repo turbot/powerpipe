@@ -16,6 +16,7 @@ import {
 import {
   DashboardActions,
   DashboardDataModeCLISnapshot,
+  DashboardDataModeCloudSnapshot,
   DashboardDataModeLive,
   DashboardExecutionCompleteEvent,
 } from "@powerpipe/types";
@@ -105,11 +106,14 @@ export const DashboardExecutionProvider = ({
   };
 
   useEffect(() => {
-    if (pathname !== rootPathname) {
+    if (
+      dataMode === DashboardDataModeCloudSnapshot ||
+      pathname !== rootPathname
+    ) {
       return;
     }
     clearDashboard(autoNavigate);
-  }, [dispatch, autoNavigate, pathname, rootPathname, search]);
+  }, [dataMode, dispatch, autoNavigate, pathname, rootPathname, search]);
 
   const loadSnapshot = useCallback(
     (
@@ -200,7 +204,8 @@ export const DashboardExecutionProvider = ({
 
   const executeDashboard = (dashboardFullName: string | null | undefined) => {
     if (
-      dataMode === DashboardDataModeCLISnapshot &&
+      (dataMode === DashboardDataModeCLISnapshot ||
+        dataMode === DashboardDataModeCloudSnapshot) &&
       snapshotFileName &&
       pathname.startsWith("/snapshot/")
     ) {
