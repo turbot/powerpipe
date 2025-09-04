@@ -35,7 +35,7 @@ require (
 	sigs.k8s.io/yaml v1.4.0 // indirect
 )
 
-require github.com/sethvargo/go-retry v0.3.0 // indirect
+require github.com/sethvargo/go-retry v0.3.0
 
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3

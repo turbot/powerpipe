@@ -7,8 +7,6 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/sethvargo/go-retry"
-	"github.com/turbot/pipe-fittings/v2/queryresult"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 
 	"github.com/turbot/pipe-fittings/v2/backend"
@@ -206,21 +204,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-	var queryResult *queryresult.SyncQueryResult
-
-	// ducklake sometimes gives db locked when using sqlite backend with concurrent reads - a retry fixes this
-	retry.Do(ctx, retry.WithMaxRetries(5, retry.NewConstant(100*time.Millisecond)), func(ctx context.Context) error {
-		queryResult, err = client.ExecuteSync(ctx, r.executeSQL, r.Args...)
-		if err == nil {
-			return nil
-		}
-		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
-			// do not retry context errors
-			return err
-		}
-		return retry.RetryableError(err)
-	})
-
+	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
 	if err != nil {
 		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
@@ -228,7 +212,6 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 		slog.Warn("DetectionRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
 	}
-
 	slog.Debug("DetectionRun complete", "name", r.resource.Name())
 
 	r.Data, err = dashboardtypes.NewLeafData(queryResult)
