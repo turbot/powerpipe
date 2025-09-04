@@ -519,7 +519,7 @@ const CellValue = ({
       ref={setReferenceElement}
       className="w-full"
       onMouseEnter={
-        !panel?.properties?.embedded
+        !panel?.properties?.disable_controls
           ? () => setShowCellControls(true)
           : undefined
       }
@@ -678,6 +678,7 @@ export type TableProps = PanelDefinition &
     properties?: TableProperties;
     isDetectionTable?: boolean;
     embedded?: boolean;
+    disable_controls?: boolean;
   };
 
 const useTableFilters = (panelName: string) => {

@@ -86,7 +86,7 @@ const Panel = ({
       id={definition.name}
       className={baseStyles}
       onMouseEnter={
-        !definition.properties?.embedded && showControls
+        !definition.properties?.disable_controls && showControls
           ? () => setShowPanelControls(true)
           : undefined
       }
