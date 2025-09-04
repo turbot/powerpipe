@@ -26,6 +26,7 @@ type DashboardProps = {
 type DashboardWrapperProps = {
   showPanelControls?: boolean;
   showTitle?: boolean;
+  withPadding?: boolean;
 };
 
 type SplitPaneProps = {
@@ -130,6 +131,7 @@ const Dashboard = ({
   isRoot = true,
   showPanelControls = true,
   showTitle = true,
+  withPadding = true,
 }: DashboardProps) => {
   const {
     components: { SnapshotHeader },
@@ -160,7 +162,14 @@ const Dashboard = ({
           {isRoot ? (
             <div className="flex flex-col flex-1 h-full overflow-y-hidden">
               <DashboardProgress />
-              <div className="h-full w-full overflow-y-auto p-4">{grid}</div>
+              <div
+                className={classNames(
+                  "h-full w-full overflow-y-auto",
+                  withPadding ? "p-4" : null,
+                )}
+              >
+                {grid}
+              </div>
             </div>
           ) : (
             <div className="w-full">{grid}</div>
@@ -180,6 +189,7 @@ const Dashboard = ({
 const DashboardWrapper = ({
   showPanelControls = true,
   showTitle = true,
+  withPadding = true,
 }: DashboardWrapperProps) => {
   const { dashboard, dataMode, selectedDashboard } = useDashboardState();
   const { selectedPanel } = useDashboardPanelDetail();
@@ -209,7 +219,7 @@ const DashboardWrapper = ({
       definition={dashboard}
       showPanelControls={showPanelControls}
       showTitle={showTitle}
-      withPadding={true}
+      withPadding={withPadding}
     />
   );
 };
