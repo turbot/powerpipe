@@ -117,7 +117,8 @@ func (s *Server) buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) 
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
 	// if backend supports search path, get it
-	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)
+	// (no need to pass a filter here)
+	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig, nil)
 	if err != nil {
 		return nil, err
 

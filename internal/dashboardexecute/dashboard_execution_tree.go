@@ -383,12 +383,12 @@ func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.C
 		return nil, err
 	}
 	// if the default map already contains a client for this connection string, use that
-	if client := e.defaultClientMap.Get(cs, searchPathConfig); client != nil {
+	if client := e.defaultClientMap.Get(cs, searchPathConfig, filter); client != nil {
 		return client, nil
 	}
 
 	// otherwise get or create one
-	client, err := e.clientMap.GetOrCreate(ctx, cs, searchPathConfig)
+	client, err := e.clientMap.GetOrCreate(ctx, cs, searchPathConfig, filter)
 	if err != nil {
 		return nil, err
 	}

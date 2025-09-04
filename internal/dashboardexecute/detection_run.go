@@ -2,10 +2,14 @@ package dashboardexecute
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"log/slog"
 	"time"
+
+	"github.com/sethvargo/go-retry"
+	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
@@ -155,7 +159,7 @@ func (r *DetectionRun) Execute(ctx context.Context) {
 		slog.Debug("children complete", "name", r.resource.Name())
 
 		// aggregate our child data
-		//r.combineChildData()
+		// r.combineChildData()
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
@@ -188,7 +192,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 
 	// check for context errors
 	if err := ctx.Err(); err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("dashboard execution timed out before execution of this node started")
 		}
 		return err
@@ -202,14 +206,29 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
+	var queryResult *queryresult.SyncQueryResult
+
+	// ducklake sometimes gives db locked when using sqlite backend with concurrent reads - a retry fixes this
+	retry.Do(ctx, retry.WithMaxRetries(5, retry.NewConstant(100*time.Millisecond)), func(ctx context.Context) error {
+		queryResult, err = client.ExecuteSync(ctx, r.executeSQL, r.Args...)
+		if err == nil {
+			return nil
+		}
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			// do not retry context errors
+			return err
+		}
+		return retry.RetryableError(err)
+	})
+
 	if err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
 		}
 		slog.Warn("DetectionRun query failed", "name", r.resource.Name(), "error", err.Error())
 		return err
 	}
+
 	slog.Debug("DetectionRun complete", "name", r.resource.Name())
 
 	r.Data, err = dashboardtypes.NewLeafData(queryResult)
@@ -221,7 +240,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 }
 
 //
-//func (r *DetectionRun) combineChildData() {
+// func (r *DetectionRun) combineChildData() {
 //	// we either have children OR a query
 //	// if there are no children, do nothing
 //	if len(r.children) == 0 {
@@ -246,7 +265,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 //		r.Data.Rows = append(r.Data.Rows, data.Rows...)
 //	}
 //	r.Data.Columns = maps.Values(schemaMap)
-//}
+// }
 
 func (r *DetectionRun) populateProperties() error {
 	if r.resource == nil {

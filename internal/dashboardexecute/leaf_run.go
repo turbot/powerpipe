@@ -2,12 +2,12 @@ package dashboardexecute
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
-	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
 
+	"github.com/sethvargo/go-retry"
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
@@ -17,7 +17,9 @@ import (
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/snapshot"
+	"golang.org/x/exp/maps"
 )
 
 // LeafRun is a struct representing the execution of a leaf dashboard node
@@ -216,7 +218,7 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 
 	// check for context errors
 	if err := ctx.Err(); err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("dashboard execution timed out before execution of this node started")
 		}
 		return err
@@ -230,9 +232,21 @@ func (r *LeafRun) executeQuery(ctx context.Context) error {
 	}
 
 	startTime := time.Now()
-	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
+	var queryResult *queryresult.SyncQueryResult
+	retry.Do(ctx, retry.WithMaxRetries(5, retry.NewConstant(100*time.Millisecond)), func(ctx context.Context) error {
+		queryResult, err = client.ExecuteSync(ctx, r.executeSQL, r.Args...)
+		if err == nil {
+			return nil
+		}
+		if errors.Is(err, context.DeadlineExceeded) || errors.Is(err, context.Canceled) {
+			// do not retry context errors
+			return err
+		}
+		return retry.RetryableError(err)
+	})
+
 	if err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
 		}
 		slog.Debug("LeafRun query failed", "name", r.resource.Name(), "error", err.Error())
