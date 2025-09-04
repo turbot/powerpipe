@@ -100,6 +100,9 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
+	if filter != nil {
+		opts = append(opts, backend.WithFilter(filter))
+	}
 
 	// create client
 	client, err := NewDbClient(ctx, connectionString, opts...)
