@@ -30,12 +30,12 @@ func NewClientMap() *ClientMap {
 // Add stores a database client in the map using the provided configuration.
 // Generates a composite cache key from connection string, search path, and filters.
 // The filter parameter may be nil. Returns the ClientMap for method chaining.
-func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathConfig, filter *backend.DatabaseFilters) *ClientMap {
+func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathConfig) *ClientMap {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()
 
 	// build map key to store client
-	key := buildClientMapKey(client.connectionString, searchPathConfig, filter)
+	key := buildClientMapKey(client.connectionString, searchPathConfig)
 	e.clients[key] = client
 
 	return e
@@ -59,8 +59,8 @@ func (e *ClientMap) Close(ctx context.Context) error {
 // Get retrieves an existing database client from the map based on configuration.
 // Generates a composite cache key to lookup the client. The filter parameter may be nil.
 // Returns nil if no matching client is found.
-func (e *ClientMap) Get(connectionString string, searchPathConfig backend.SearchPathConfig, filter *backend.DatabaseFilters) *DbClient {
-	key := buildClientMapKey(connectionString, searchPathConfig, filter)
+func (e *ClientMap) Get(connectionString string, searchPathConfig backend.SearchPathConfig) *DbClient {
+	key := buildClientMapKey(connectionString, searchPathConfig)
 
 	// get read lock
 	e.clientsMut.RLock()
@@ -73,8 +73,8 @@ func (e *ClientMap) Get(connectionString string, searchPathConfig backend.Search
 // GetOrCreate retrieves an existing client or creates a new one if it doesn't exist.
 // Generates a composite cache key for lookup and uses double-checked locking to prevent
 // race conditions during concurrent access. The filter parameter may be nil.
-func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig, filter *backend.DatabaseFilters) (*DbClient, error) {
-	key := buildClientMapKey(connectionString, searchPathConfig, filter)
+func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*DbClient, error) {
+	key := buildClientMapKey(connectionString, searchPathConfig)
 
 	// get read lock
 	e.clientsMut.RLock()
@@ -100,9 +100,6 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 	if !searchPathConfig.Empty() {
 		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
 	}
-	if filter != nil {
-		opts = append(opts, backend.WithFilter(filter))
-	}
 
 	// create client
 	client, err := NewDbClient(ctx, connectionString, opts...)
@@ -119,10 +116,6 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 // buildClientMapKey creates a unique composite cache key by combining connection string,
 // search path config, and filters. Uses pipe separators to ensure proper key differentiation
 // and prevent key collisions between different configurations. The filter parameter may be nil.
-func buildClientMapKey(connectionString string, config backend.SearchPathConfig, filter *backend.DatabaseFilters) string {
-	key := connectionString + "|" + config.String()
-	if filter != nil {
-		key += "|" + filter.String()
-	}
-	return key
+func buildClientMapKey(connectionString string, config backend.SearchPathConfig) string {
+	return connectionString + config.String()
 }

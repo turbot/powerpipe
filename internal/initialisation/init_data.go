@@ -189,8 +189,7 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 	i.Result.AddWarnings(validationWarnings...)
 
 	// create the dashboard executor, passing the default client inside a client map
-	// (default client is always created with no filter)
-	clientMap := db_client.NewClientMap().Add(client, searchPathConfig, nil)
+	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
 	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
 }
 

@@ -7,12 +7,11 @@ import (
 	"log/slog"
 	"time"
 
-	"github.com/turbot/powerpipe/internal/controlexecute"
-
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/resources"

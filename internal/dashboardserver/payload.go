@@ -127,8 +127,7 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 		return nil, nil
 	}
 	// if backend supports search path, get it
-	// (no need to pass a filter here)
-	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig, nil)
+	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)
 	if err != nil {
 		return nil, err
 
