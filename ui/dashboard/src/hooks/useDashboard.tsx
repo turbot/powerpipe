@@ -27,6 +27,7 @@ type DashboardProviderProps = {
   };
   themeContext: any;
   versionMismatchCheck?: boolean;
+  autoNavigate?: boolean;
 };
 
 const DashboardProvider = ({
@@ -40,6 +41,7 @@ const DashboardProvider = ({
   socketUrlFactory,
   stateDefaults = {},
   versionMismatchCheck = false,
+  autoNavigate = true,
   themeContext,
 }: DashboardProviderProps) => {
   return (
@@ -61,6 +63,7 @@ const DashboardProvider = ({
                   <DashboardExecutionProvider
                     eventHooks={eventHooks}
                     socketUrlFactory={socketUrlFactory}
+                    autoNavigate={autoNavigate}
                   >
                     {children}
                   </DashboardExecutionProvider>

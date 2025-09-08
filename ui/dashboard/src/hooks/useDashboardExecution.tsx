@@ -16,6 +16,7 @@ import {
 import {
   DashboardActions,
   DashboardDataModeCLISnapshot,
+  DashboardDataModeCloudSnapshot,
   DashboardDataModeLive,
   DashboardExecutionCompleteEvent,
 } from "@powerpipe/types";
@@ -40,10 +41,12 @@ export const DashboardExecutionProvider = ({
   children,
   eventHooks,
   socketUrlFactory,
+  autoNavigate = true,
 }: {
   children: ReactNode;
   eventHooks?: {};
   socketUrlFactory?: () => Promise<string>;
+  autoNavigate?: boolean;
 }) => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
@@ -85,14 +88,16 @@ export const DashboardExecutionProvider = ({
     }
   }, [dashboard_name]);
 
-  const clearDashboard = () => {
+  const clearDashboard = (withNavigate = true) => {
     // Clear any existing executions
     sendMessage({
       action: SocketActions.CLEAR_DASHBOARD,
     });
-    navigate(`${rootPathname}${search ? `?${search}` : ""}`, {
-      replace: true,
-    });
+    if (withNavigate) {
+      navigate(`${rootPathname}${search ? `?${search}` : ""}`, {
+        replace: true,
+      });
+    }
     setLastChangedInput(null);
     closeSidePanel();
     dispatch({
@@ -101,16 +106,20 @@ export const DashboardExecutionProvider = ({
   };
 
   useEffect(() => {
-    if (pathname !== rootPathname) {
+    if (
+      dataMode === DashboardDataModeCloudSnapshot ||
+      pathname !== rootPathname
+    ) {
       return;
     }
-    clearDashboard();
-  }, [dispatch, pathname, rootPathname, search]);
+    clearDashboard(autoNavigate);
+  }, [dataMode, dispatch, autoNavigate, pathname, rootPathname, search]);
 
   const loadSnapshot = useCallback(
     (
       executionCompleteEvent: DashboardExecutionCompleteEvent,
       snapshotFileName: string,
+      withNavigate = true,
     ) => {
       // Clear any existing executions
       sendMessage({
@@ -175,12 +184,14 @@ export const DashboardExecutionProvider = ({
       const snapshotSearchParamsString = snapshotSearchParams.toString();
 
       // Navigate to the snapshot page
-      navigate(
-        path.join(
-          rootPathname,
-          `/snapshot/${snapshotFileName}${snapshotSearchParamsString ? `?${snapshotSearchParamsString}` : ""}`,
-        ),
-      );
+      if (withNavigate) {
+        navigate(
+          path.join(
+            rootPathname,
+            `/snapshot/${snapshotFileName}${snapshotSearchParamsString ? `?${snapshotSearchParamsString}` : ""}`,
+          ),
+        );
+      }
 
       dispatch({
         type: DashboardActions.LOAD_SNAPSHOT,
@@ -193,7 +204,8 @@ export const DashboardExecutionProvider = ({
 
   const executeDashboard = (dashboardFullName: string | null | undefined) => {
     if (
-      dataMode === DashboardDataModeCLISnapshot &&
+      (dataMode === DashboardDataModeCLISnapshot ||
+        dataMode === DashboardDataModeCloudSnapshot) &&
       snapshotFileName &&
       pathname.startsWith("/snapshot/")
     ) {
