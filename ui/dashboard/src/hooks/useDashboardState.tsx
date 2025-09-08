@@ -193,7 +193,7 @@ const reducer = (state: IDashboardContext, action) => {
       return {
         ...state,
         dataMode:
-          state.dataMode === "cloud_snapshot"
+          state.dataMode === DashboardDataModeCloudSnapshot
             ? state.dataMode
             : DashboardDataModeLive,
         dashboard: null,
