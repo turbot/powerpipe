@@ -232,7 +232,12 @@ func (i *InitData) Cleanup(ctx context.Context) {
 	if i.DefaultClient != nil {
 		i.DefaultClient.Close(ctx)
 	}
-
+	// if any connections support Close, call it
+	for _, c := range powerpipeconfig.GlobalConfig.PipelingConnections {
+		if closer, ok := c.(interface{ Close() }); ok {
+			closer.Close()
+		}
+	}
 }
 
 // GetSingleTarget validates there is only a single target and returns it
