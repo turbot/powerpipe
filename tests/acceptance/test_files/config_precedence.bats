@@ -4,7 +4,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 ## workspace tests
 
 @test "generic config precedence test" {
-  cp $SOURCE_FILES_DIR/config_tests/workspaces.tpc $POWERPIPE_INSTALL_DIR/config/workspaces.tpc
+  cp $SOURCE_FILES_DIR/config_tests/workspaces.ppc $POWERPIPE_INSTALL_DIR/config/workspaces.ppc
   # setup test folder and read the test-cases file
   cd $SOURCE_FILES_DIR/config_tests
   tests=$(cat workspace_tests.json)
@@ -26,8 +26,10 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
     # command accordingly
     cmd=$(echo $tests | jq -c ".[${i}]" | jq ".cmd")
-    if [[ $cmd == '"query"' ]]; then
+    if [[ $cmd == '"server"' ]]; then
       tp_cmd='powerpipe server'
+    elif [[ $cmd == '"benchmark"' ]]; then
+      tp_cmd='powerpipe benchmark run steampipe-mod-aws-tags'
     fi
     # echo $tp_cmd
 
@@ -45,19 +47,19 @@ load "$LIB_BATS_SUPPORT/load.bash"
       export $e
     done
 
-    # args to run with tailpipe query command
+    # args to run with powerpipe query command
     args=$(echo $tests | jq -c ".[${i}]" | jq ".setup.args")
     echo $args
 
-    # construct the tailpipe command to be run with the args
+    # construct the powerpipe command to be run with the args
     for arg in $(echo "${args}" | jq -r '.[]'); do
       tp_cmd="${tp_cmd} ${arg}"
     done
-    echo "tailpipe command: $tp_cmd" # help debugging in case of failures
+    echo "powerpipe command: $tp_cmd" # help debugging in case of failures
 
-    # get the actual config by running the constructed tailpipe command
+    # get the actual config by running the constructed powerpipe command
     run $tp_cmd
-    echo "output from tailpipe command: $output" # help debugging in case of failures
+    echo "output from powerpipe command: $output" # help debugging in case of failures
     
     # The output contains log lines followed by a JSON object
     # Find the start of the JSON (line starting with '{') and extract from there to the end

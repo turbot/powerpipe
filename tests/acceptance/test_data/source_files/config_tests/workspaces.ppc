@@ -1,9 +1,7 @@
-
 workspace "comprehensive_dev" {
-  benchmark_timeout     = "5m"
-  dashboard_timeout     = "30s"
-  database             = "postgres://localhost:5432/powerpipe"
-  header               = "off"
+  benchmark_timeout     = 900
+  dashboard_timeout     = 300
+  header               = 	true
   input                = true
   listen               = "local"
   log_level            = "info"
@@ -14,8 +12,8 @@ workspace "comprehensive_dev" {
   pipes_token          = "tpt_c123456789abcdef"
   port                 = 9033
   progress             = true
-  query_timeout        = "300s"
-  search_path          = ["aws", "azure", "gcp"]
+  query_timeout        = 300
+  search_path          = "aws,azure,gcp"
   search_path_prefix   = "powerpipe"
   separator            = ","
   snapshot_location    = "~/.powerpipe/snapshots"
@@ -26,10 +24,9 @@ workspace "comprehensive_dev" {
 }
 
 workspace "production_ready" {
-  benchmark_timeout     = "15m"
-  dashboard_timeout     = "60s"
-  database             = "sqlite:./powerpipe.db"
-  header               = "on"
+  benchmark_timeout     = 800
+  dashboard_timeout     = 600
+  header               = true
   input                = false
   listen               = "network"
   log_level            = "warn"
@@ -40,8 +37,8 @@ workspace "production_ready" {
   pipes_token          = "tpt_d987654321fedcba"
   port                 = 9034
   progress             = false
-  query_timeout        = "600s"
-  search_path          = ["aws", "azure", "gcp", "kubernetes"]
+  query_timeout        = 400
+  search_path          = "gcp,kubernetes,oci"
   search_path_prefix   = "prod"
   separator            = "|"
   snapshot_location    = "/var/lib/powerpipe/snapshots"
