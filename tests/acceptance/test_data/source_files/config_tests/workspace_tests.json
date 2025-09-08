@@ -112,6 +112,65 @@
     }
   },
   {
+    "test": "All env variables set and command line argument set",
+    "description": "",
+    "cmd": "benchmark",
+    "setup": {
+      "env": [
+        "POWERPIPE_BENCHMARK_TIMEOUT=900",
+        "POWERPIPE_DASHBOARD_TIMEOUT=300",
+        "POWERPIPE_DATABASE=sqlite:/tmp/powerpipe.db",
+        "POWERPIPE_LISTEN=local",
+        "POWERPIPE_MAX_PARALLEL=8",
+        "POWERPIPE_MEMORY_MAX_MB=16384",
+        "PIPES_HOST=custom.pipes.example.com",
+        "PIPES_TOKEN=tpt_test_token_123",
+        "POWERPIPE_PORT=9042",
+        "POWERPIPE_QUERY_TIMEOUT=120",
+        "POWERPIPE_SNAPSHOT_LOCATION=/tmp/powerpipe/snaps",
+        "POWERPIPE_TELEMETRY=info",
+        "POWERPIPE_UPDATE_CHECK=false"
+      ],
+      "args": [
+        "--benchmark-timeout=600",
+        "--search-path=aws,azure",
+        "--database=sqlite:/tmp/cli.db",
+        "--header=false",
+        "--input=false",
+        "--max-parallel=16",
+        "--output=json",
+        "--pipes-host=cli.pipes.example.com",
+        "--pipes-token=tpt_cli_token_123",
+        "--progress=false",
+        "--query-timeout=750",
+        "--separator=|",
+        "--snapshot-location=/tmp/cli_snaps",
+        "--timing=true"
+      ]
+    },
+    "expected": {
+      "benchmark-timeout": 600,
+      "search-path": ["aws", "azure"],
+      "database": "sqlite:/tmp/cli.db",
+      "listen": "local",
+      "header": false,
+      "input": false,
+      "max-parallel": 16,
+      "memory-max-mb": 16384,
+      "output": "json",
+      "pipes-host": "cli.pipes.example.com",
+      "pipes-token": "tpt_cli_token_123",
+      "port": 9042,
+      "progress": false,
+      "query-timeout": 750,
+      "separator": "|",
+      "snapshot-location": "/tmp/cli_snaps",
+      "telemetry": "info",
+      "timing": true,
+      "update-check": false
+    }
+  },
+  {
     "test": "workspace env variable set and no command line arguments set",
     "description": "",
     "cmd": "server",
