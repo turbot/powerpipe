@@ -65,9 +65,18 @@ func (c *DbClient) GetConnectionString() string {
 }
 
 // Close closes the connection to the database and shuts down the Backend
-func (c *DbClient) Close(context.Context) error {
+func (c *DbClient) Close(_ context.Context) error {
+
 	if c.db != nil {
-		return c.db.Close()
+		if err :=  c.db.Close(); err != nil {
+			return err
+		}
+	}
+	// if the backend has a cleanup method, call it
+	if cleaner, ok := c.Backend.(interface { Cleanup() error }); ok {
+		if err := cleaner.Cleanup(); err != nil {
+			return err
+		}
 	}
 	return nil
 }

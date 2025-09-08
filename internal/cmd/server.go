@@ -78,6 +78,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	// initialise the workspace
 	modInitData := initialisation.NewInitData[*resources.Dashboard](ctx, cmd)
 	error_helpers.FailOnError(modInitData.Result.Error)
+	defer modInitData.Cleanup(ctx)
 
 	// ensure dashboard assets
 	err := dashboardassets.Ensure(ctx)
