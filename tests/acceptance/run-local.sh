@@ -14,7 +14,6 @@ cd "$WD"
 echo "Working directory: $WD"
 # setup a powerpipe installation
 echo "Install directory: $POWERPIPE_INSTALL_DIR"
-mkdir -p "$POWERPIPE_INSTALL_DIR/config"
 
 # Temporarily disable 'exit on error' since we want to run the check command and not exit if it fails
 set +e

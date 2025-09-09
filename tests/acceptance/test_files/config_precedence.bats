@@ -4,6 +4,7 @@ load "$LIB_BATS_SUPPORT/load.bash"
 ## workspace tests
 
 @test "generic config precedence test" {
+  mkdir -p "$POWERPIPE_INSTALL_DIR/config"
   cp $SOURCE_FILES_DIR/config_tests/workspaces.ppc $POWERPIPE_INSTALL_DIR/config/workspaces.ppc
   # setup test folder and read the test-cases file
   cd $SOURCE_FILES_DIR/config_tests
