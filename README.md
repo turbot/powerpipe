@@ -1,7 +1,7 @@
 <a href="https://powerpipe.io"><img width="67%" src="https://powerpipe.io/images/powerpipe_wordmark_white_outline.svg"></a>
 
-[![mods](https://img.shields.io/badge/mods-52-blue)](https://hub.powerpipe.io) &nbsp;
-[![slack](https://img.shields.io/badge/slack-2695-blue)](https://turbot.com/community/join) &nbsp;
+[![mods](https://img.shields.io/endpoint?url=https://turbot.com/api/badge-stats?stat=mods)](https://hub.powerpipe.io) &nbsp;
+[![slack](https://img.shields.io/endpoint?url=https://turbot.com/api/badge-stats?stat=slack)](https://turbot.com/community/join) &nbsp;
 [![maintained by](https://img.shields.io/badge/maintained%20by-Turbot-blue)](https://turbot.com)
 
 ## Dashboards for DevOps
