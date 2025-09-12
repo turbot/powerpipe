@@ -15,7 +15,7 @@
     "build-storybook": "storybook build -s public"
   },
   "dependencies": {
-    "@headlessui/react": "1.7.19",
+    "@headlessui/react": "2.2.8",
     "@heroicons/react": "2.2.0",
     "@material-symbols/svg-300": "0.28.1",
     "@popperjs/core": "2.11.8",
