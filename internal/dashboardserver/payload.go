@@ -117,7 +117,7 @@ func (s *Server) buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) 
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
 	// create an empty backend for this connection string to determine if it supports search path
-	// (we do this rather thna create the real backend as it is expensive to create some backend)
+	// (we do this rather than create the real backend as it is expensive to create some backend)
 	emptyBackend, err := backend.FromConnectionString(ctx, database)
 	if err != nil {
 		return nil, err
