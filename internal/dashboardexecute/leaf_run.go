@@ -3,7 +3,6 @@ package dashboardexecute
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/resources"
 	"golang.org/x/exp/maps"
 	"log/slog"
 	"time"
@@ -17,6 +16,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/snapshot"
 )
 

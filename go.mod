@@ -2,9 +2,9 @@ module github.com/turbot/powerpipe
 
 go 1.24
 
-toolchain go1.24.0
+toolchain go1.24.1
 
-// replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+//replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
@@ -25,7 +25,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.0
-	github.com/turbot/pipe-fittings/v2 v2.6.3
+	github.com/turbot/pipe-fittings/v2 v2.7.0-rc.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -45,8 +45,8 @@ require (
 	github.com/go-sql-driver/mysql v1.8.1
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/marcboeker/go-duckdb v1.8.5
-	github.com/mattn/go-sqlite3 v1.14.29
+	github.com/marcboeker/go-duckdb/v2 v2.3.3
+	github.com/mattn/go-sqlite3 v1.14.22
 	github.com/thediveo/enumflag/v2 v2.0.5
 	golang.org/x/sync v0.12.0
 	golang.org/x/text v0.23.0
@@ -103,6 +103,12 @@ require (
 	github.com/cyphar/filepath-securejoin v0.2.5 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dgraph-io/ristretto v0.2.0 // indirect
+	github.com/duckdb/duckdb-go-bindings v0.1.17 // indirect
+	github.com/duckdb/duckdb-go-bindings/darwin-amd64 v0.1.12 // indirect
+	github.com/duckdb/duckdb-go-bindings/darwin-arm64 v0.1.12 // indirect
+	github.com/duckdb/duckdb-go-bindings/linux-amd64 v0.1.12 // indirect
+	github.com/duckdb/duckdb-go-bindings/linux-arm64 v0.1.12 // indirect
+	github.com/duckdb/duckdb-go-bindings/windows-amd64 v0.1.12 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/eko/gocache/lib/v4 v4.1.6 // indirect
 	github.com/eko/gocache/store/bigcache/v4 v4.2.1 // indirect
@@ -123,7 +129,7 @@ require (
 	github.com/go-pkgz/expirable-cache/v3 v3.0.0 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-viper/mapstructure/v2 v2.3.0 // indirect
+	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
 	github.com/goccy/go-json v0.10.5 // indirect
 	github.com/goccy/go-yaml v1.11.2 // indirect
 	github.com/golang/groupcache v0.0.0-20210331224755-41bb18bfe9da // indirect
@@ -168,6 +174,8 @@ require (
 	github.com/klauspost/cpuid/v2 v2.2.9 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
 	github.com/magiconair/properties v1.8.7 // indirect
+	github.com/marcboeker/go-duckdb/arrowmapping v0.0.10 // indirect
+	github.com/marcboeker/go-duckdb/mapping v0.0.11 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-runewidth v0.0.15 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
@@ -213,7 +221,7 @@ require (
 	github.com/turbot/pipes-sdk-go v0.12.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
-	github.com/ulikunitz/xz v0.5.10 // indirect
+	github.com/ulikunitz/xz v0.5.14 // indirect
 	github.com/xanzy/ssh-agent v0.3.3 // indirect
 	github.com/yusufpapurcu/wmi v1.2.2 // indirect
 	github.com/zeebo/xxh3 v1.0.2 // indirect

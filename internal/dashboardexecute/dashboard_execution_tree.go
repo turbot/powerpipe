@@ -377,8 +377,7 @@ func (*DashboardExecutionTree) GetResource() resources.DashboardLeafNode {
 // function to get a client from one of the client maps
 func (e *DashboardExecutionTree) getClient(ctx context.Context, csp connection.ConnectionStringProvider, searchPathConfig backend.SearchPathConfig) (*db_client.DbClient, error) {
 	// ask the provider for the connection string, passing the filter
-	// TODO check connection type is tailpipe???
-	filter := &connection.TailpipeDatabaseFilters{From: e.DateTimeRange.From, To: e.DateTimeRange.To}
+	filter := &backend.DatabaseFilters{From: e.DateTimeRange.From, To: e.DateTimeRange.To}
 	cs, err := csp.GetConnectionString(connection.WithFilter(filter))
 	if err != nil {
 		return nil, err

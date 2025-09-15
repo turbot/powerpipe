@@ -1,6 +1,6 @@
 OUTPUT_DIR?=/usr/local/bin
 PACKAGE_NAME          := github.com/turbot/powerpipe
-GOLANG_CROSS_VERSION  ?= v1.22.4
+GOLANG_CROSS_VERSION  ?= gcc13-osxcross-20250912194615
 
 .PHONY: build
 build:
@@ -26,7 +26,7 @@ release-dry-run:
 		-v `pwd`:/go/src/powerpipe \
 		-v `pwd`/../pipe-fittings:/go/src/pipe-fittings \
 		-w /go/src/powerpipe \
-		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
+		ghcr.io/turbot/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		--clean --skip=validate --skip=publish --snapshot
 
 
@@ -44,7 +44,7 @@ release:
 		-v `pwd`:/go/src/powerpipe \
 		-v `pwd`/../pipe-fittings:/go/src/pipe-fittings \
 		-w /go/src/powerpipe \
-		ghcr.io/goreleaser/goreleaser-cross:${GOLANG_CROSS_VERSION} \
+		ghcr.io/turbot/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release --clean --skip=validate
 
 # Run the test generator to create the acceptance tests(update the paths in main function in tests/acceptance/test_generator/generate.go)

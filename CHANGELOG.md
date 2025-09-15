@@ -1,3 +1,11 @@
+v1.4.0
+_Whats new_
+- Add support for ducklake backend. Update pipe-fittings to v2.7.0. ([#760](https://github.com/turbot/pipe-fittings/issues/760))
+- DbClient.Close calls Backend.Close if it supports it
+- Update server command to call initData.Cleanup
+- Optimise getSearchPathMetadata to not connect to backend unless needed
+
+
 ## v1.3.1 [2025-08-25]
 _Bug Fixes_
 - Fix issue where the `database` argument from a query resource was not respected. ([#829](https://github.com/turbot/powerpipe/issues/829))

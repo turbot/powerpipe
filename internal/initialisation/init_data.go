@@ -232,7 +232,6 @@ func (i *InitData) Cleanup(ctx context.Context) {
 	if i.DefaultClient != nil {
 		i.DefaultClient.Close(ctx)
 	}
-
 }
 
 // GetSingleTarget validates there is only a single target and returns it
