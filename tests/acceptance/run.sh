@@ -17,6 +17,7 @@ export TEST_SCRIPTS_DIR=$MY_PATH/test_data/scripts
 export MODS_DIR=$MY_PATH/test_data/mods
 export SNAPSHOTS_DIR=$MY_PATH/test_data/snapshots
 export SRC_DATA_DIR=$MY_PATH/test_data/source_files
+export SOURCE_FILES_DIR=$MY_PATH/test_data/source_files
 export WORKSPACE_DIR=$MY_PATH/test_data/mods/sample_workspace
 export BAD_TEST_MOD_DIR=$MY_PATH/test_data/mods/failure_test_mod
 export TIME_TO_QUERY=$TIME_TO_QUERY

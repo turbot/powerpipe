@@ -24,6 +24,7 @@ set -e
 echo "Installation complete at $POWERPIPE_INSTALL_DIR"
 
 echo "Starting steampipe service..."
+steampipe service stop --force > /dev/null 2>&1 || true
 steampipe service start > /dev/null 2>&1
 
 if [ $# -eq 0 ]; then

@@ -1,0 +1,332 @@
+[
+  {
+    "test": "only --workspace command line argument set",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": [],
+      "args": ["--workspace=comprehensive_dev"]
+    },
+    "expected": {
+      "workspace": "comprehensive_dev",
+      "log-level": "info",
+      "update-check": "true",
+      "memory-max-mb": 1024,
+      "benchmark-timeout": 900,
+      "dashboard-timeout": 300,
+      "header": true,
+      "input": true,
+      "listen": "local",
+      "max-parallel": 10,
+      "output": "table",
+      "pipes-host": "pipes.turbot.com",
+      "pipes-token": "tpt_c123456789abcdef",
+      "port": 9033,
+      "progress": true,
+      "query-timeout": 300,
+      "search-path": ["aws", "azure", "gcp"],
+      "search-path-prefix": ["powerpipe"],
+      "separator": ",",
+      "snapshot-location": "~/.powerpipe/snapshots",
+      "telemetry": "info",
+      "timing": false,
+      "watch": true
+    }
+  },
+  {
+    "test": "all benchmark CLI arguments set except workspace arg and no env variables set",
+    "description": "Validate all CLI flags map to expected config values",
+    "cmd": "benchmark",
+    "setup": {
+      "env": [],
+      "args": [
+        "--benchmark-timeout=600",
+        "--database=sqlite:/tmp/cli.db",
+        "--header=false",
+        "--input=false",
+        "--max-parallel=16",
+        "--output=json",
+        "--pipes-host=cli.pipes.example.com",
+        "--pipes-token=tpt_cli_token_123",
+        "--progress=false",
+        "--query-timeout=750",
+        "--search-path=aws,azure",
+        "--separator=|",
+        "--snapshot-location=/tmp/cli_snaps",
+        "--timing=true"
+      ]
+    },
+    
+    "expected": {
+      "benchmark-timeout": 600,
+      "database": "sqlite:/tmp/cli.db",
+      "header": false,
+      "input": false,
+      "max-parallel": 16,
+      "output": "json",
+      "pipes-host": "cli.pipes.example.com",
+      "pipes-token": "tpt_cli_token_123",
+      "progress": false,
+      "query-timeout": 750,
+      "search-path": ["aws", "azure"],
+      "separator": "|",
+      "snapshot-location": "/tmp/cli_snaps",
+      "timing": true
+    }
+  },
+  {
+    "test": "all dashboard cli arguments with workspace arg and no env variables set",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": [
+      ],
+      "args": [
+        "--workspace=production_ready",
+        "--dashboard-timeout=800",
+        "--listen=local",
+        "--port=9036",
+        "--watch=true"
+      ]
+    },
+    "expected": {
+      "workspace": "production_ready",
+      "benchmark-timeout": 800,
+      "dashboard-timeout": 800,
+      "header": true,
+      "input": false,
+      "listen": "local",
+      "log-level": "warn",
+      "max-parallel": 20,
+      "memory-max-mb": 2048,
+      "output": "json",
+      "pipes-host": "pipes.turbot.com",
+      "pipes-token": "tpt_d987654321fedcba",
+      "port": 9036,
+      "progress": false,
+      "query-timeout": 400,
+      "search-path": ["gcp", "kubernetes", "oci"],
+      "search-path-prefix": ["prod"],
+      "separator": "|",
+      "snapshot-location": "/var/lib/powerpipe/snapshots",
+      "telemetry": "none",
+      "timing": true,
+      "update-check": false,
+      "watch": true
+    }
+  },
+  {
+    "test": "env variables set, no command line arguments set and no workspace env variable set",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": [
+        "POWERPIPE_BENCHMARK_TIMEOUT=900",
+        "POWERPIPE_DASHBOARD_TIMEOUT=300",
+        "POWERPIPE_DATABASE=sqlite:/tmp/powerpipe.db",
+        "POWERPIPE_LISTEN=local",
+        "POWERPIPE_MAX_PARALLEL=8",
+        "POWERPIPE_MEMORY_MAX_MB=16384",
+        "PIPES_HOST=custom.pipes.example.com",
+        "PIPES_TOKEN=tpt_test_token_123",
+        "POWERPIPE_PORT=9042",
+        "POWERPIPE_QUERY_TIMEOUT=120",
+        "POWERPIPE_SNAPSHOT_LOCATION=/tmp/powerpipe/snaps",
+        "POWERPIPE_TELEMETRY=info",
+        "POWERPIPE_UPDATE_CHECK=false"
+      ],
+      "args": []
+    },
+    "expected": {
+      "benchmark-timeout": "900",
+      "dashboard-timeout": "300",
+      "database": "sqlite:/tmp/powerpipe.db",
+      "listen": "local",
+      "max-parallel": 8,
+      "memory-max-mb": 16384,
+      "pipes-host": "custom.pipes.example.com",
+      "pipes-token": "tpt_test_token_123",
+      "port": 9042,
+      "query-timeout": "120",
+      "snapshot-location": "/tmp/powerpipe/snaps",
+      "telemetry": "info",
+      "update-check": "false"
+    }
+  },
+  {
+    "test": "All env variables set and command line argument set",
+    "description": "",
+    "cmd": "benchmark",
+    "setup": {
+      "env": [
+        "POWERPIPE_BENCHMARK_TIMEOUT=900",
+        "POWERPIPE_DASHBOARD_TIMEOUT=300",
+        "POWERPIPE_DATABASE=sqlite:/tmp/powerpipe.db",
+        "POWERPIPE_LISTEN=local",
+        "POWERPIPE_MAX_PARALLEL=8",
+        "POWERPIPE_MEMORY_MAX_MB=16384",
+        "PIPES_HOST=custom.pipes.example.com",
+        "PIPES_TOKEN=tpt_test_token_123",
+        "POWERPIPE_PORT=9042",
+        "POWERPIPE_QUERY_TIMEOUT=120",
+        "POWERPIPE_SNAPSHOT_LOCATION=/tmp/powerpipe/snaps",
+        "POWERPIPE_TELEMETRY=info",
+        "POWERPIPE_UPDATE_CHECK=false"
+      ],
+      "args": [
+        "--benchmark-timeout=600",
+        "--search-path=aws,azure",
+        "--database=sqlite:/tmp/cli.db",
+        "--header=false",
+        "--input=false",
+        "--max-parallel=16",
+        "--output=json",
+        "--pipes-host=cli.pipes.example.com",
+        "--pipes-token=tpt_cli_token_123",
+        "--progress=false",
+        "--query-timeout=750",
+        "--separator=|",
+        "--snapshot-location=/tmp/cli_snaps",
+        "--timing=true"
+      ]
+    },
+    "expected": {
+      "benchmark-timeout": 600,
+      "search-path": ["aws", "azure"],
+      "database": "sqlite:/tmp/cli.db",
+      "listen": "local",
+      "header": false,
+      "input": false,
+      "max-parallel": 16,
+      "memory-max-mb": 16384,
+      "output": "json",
+      "pipes-host": "cli.pipes.example.com",
+      "pipes-token": "tpt_cli_token_123",
+      "port": 9042,
+      "progress": false,
+      "query-timeout": 750,
+      "separator": "|",
+      "snapshot-location": "/tmp/cli_snaps",
+      "telemetry": "info",
+      "timing": true,
+      "update-check": false
+    }
+  },
+  {
+    "test": "workspace env variable set and no command line arguments set",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": ["POWERPIPE_WORKSPACE=production_ready"],
+      "args": []
+    },
+    "expected": {
+      "workspace": "production_ready",
+      "benchmark-timeout": 800,
+      "dashboard-timeout": 600,
+      "header": true,
+      "input": false,
+      "listen": "network",
+      "log-level": "warn",
+      "max-parallel": 20,
+      "memory-max-mb": 2048,
+      "output": "json",
+      "pipes-host": "pipes.turbot.com",
+      "pipes-token": "tpt_d987654321fedcba",
+      "port": 9034,
+      "progress": false,
+      "query-timeout": 400,
+      "search-path": ["gcp", "kubernetes", "oci"],
+      "search-path-prefix": ["prod"],
+      "separator": "|",
+      "snapshot-location": "/var/lib/powerpipe/snapshots",
+      "telemetry": "none",
+      "timing": true,
+      "update-check": "false",
+      "watch": false
+    }
+  },
+  {
+    "test": "workspace env variable set and --workspace arg passed",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": ["POWERPIPE_WORKSPACE=production_ready"],
+      "args": ["--workspace=comprehensive_dev"]
+    },
+    "expected": {
+      "workspace": "comprehensive_dev",
+      "log-level": "info",
+      "update-check": "true",
+      "memory-max-mb": 1024,
+      "benchmark-timeout": 900,
+      "dashboard-timeout": 300,
+      "header": true,
+      "input": true,
+      "listen": "local",
+      "max-parallel": 10,
+      "output": "table",
+      "pipes-host": "pipes.turbot.com",
+      "pipes-token": "tpt_c123456789abcdef",
+      "port": 9033,
+      "progress": true,
+      "query-timeout": 300,
+      "search-path": ["aws", "azure", "gcp"],
+      "search-path-prefix": ["powerpipe"],
+      "separator": ",",
+      "snapshot-location": "~/.powerpipe/snapshots",
+      "telemetry": "info",
+      "timing": false,
+      "watch": true
+    }
+  },
+  {
+    "test": "all env variables set including workspace env variable and no command line arguments set",
+    "description": "",
+    "cmd": "server",
+    "setup": {
+      "env": [
+        "POWERPIPE_WORKSPACE=production_ready",
+        "POWERPIPE_BENCHMARK_TIMEOUT=900",
+        "POWERPIPE_DASHBOARD_TIMEOUT=300",
+        "POWERPIPE_DATABASE=sqlite:/tmp/powerpipe.db",
+        "POWERPIPE_LISTEN=local",
+        "POWERPIPE_MAX_PARALLEL=8",
+        "POWERPIPE_MEMORY_MAX_MB=16384",
+        "PIPES_HOST=custom.pipes.example.com",
+        "PIPES_TOKEN=tpt_test_token_123",
+        "POWERPIPE_PORT=9042",
+        "POWERPIPE_QUERY_TIMEOUT=120",
+        "POWERPIPE_SNAPSHOT_LOCATION=/tmp/powerpipe/snaps",
+        "POWERPIPE_TELEMETRY=info",
+        "POWERPIPE_UPDATE_CHECK=false"
+      ],
+      "args": []
+    },
+    "expected": {
+      "workspace": "production_ready",
+      "benchmark-timeout": 800,
+      "dashboard-timeout": 600,
+      "header": true,
+      "input": false,
+      "listen": "network",
+      "log-level": "warn",
+      "max-parallel": 20,
+      "memory-max-mb": 2048,
+      "output": "json",
+      "pipes-host": "pipes.turbot.com",
+      "pipes-token": "tpt_d987654321fedcba",
+      "port": 9034,
+      "progress": false,
+      "query-timeout": 400,
+      "search-path": ["gcp", "kubernetes", "oci"],
+      "search-path-prefix": ["prod"],
+      "separator": "|",
+      "snapshot-location": "/var/lib/powerpipe/snapshots",
+      "telemetry": "none",
+      "timing": true,
+      "update-check": false,
+      "watch": false
+    }
+  }
+]
