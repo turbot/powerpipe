@@ -42,7 +42,7 @@ require (
 	github.com/didip/tollbooth/v7 v7.0.2
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/size v1.0.1
-	github.com/go-sql-driver/mysql v1.8.1
+	github.com/go-sql-driver/mysql v1.9.3
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb/v2 v2.3.3
