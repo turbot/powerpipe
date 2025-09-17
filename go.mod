@@ -11,7 +11,7 @@ require (
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.17.0
 	github.com/gin-contrib/static v1.1.2
-	github.com/gin-gonic/gin v1.10.0
+	github.com/gin-gonic/gin v1.10.1
 	github.com/go-playground/validator/v10 v10.21.0
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-version v1.7.0 // indirect
