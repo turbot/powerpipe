@@ -518,7 +518,11 @@ const CellValue = ({
     <div
       ref={setReferenceElement}
       className="w-full"
-      onMouseEnter={() => setShowCellControls(true)}
+      onMouseEnter={
+        !panel?.properties?.disable_controls
+          ? () => setShowCellControls(true)
+          : undefined
+      }
       onMouseLeave={() => setShowCellControls(false)}
     >
       {cellContent}
@@ -673,6 +677,8 @@ export type TableProps = PanelDefinition &
     display_type?: TableType;
     properties?: TableProperties;
     isDetectionTable?: boolean;
+    embedded?: boolean;
+    disable_controls?: boolean;
   };
 
 const useTableFilters = (panelName: string) => {
@@ -1011,7 +1017,10 @@ const TableViewVirtualizedRows = (props: TableProps) => {
       )}
       <div
         ref={parentRef}
-        className="relative overflow-auto min-h-[46.5px] max-h-[800px]"
+        className={classNames(
+          "relative overflow-auto min-h-[46.5px]",
+          !props?.properties?.embedded ? "max-h-[800px]" : null,
+        )}
       >
         <div className={`h-[${virtualizer.getTotalSize()}px}]`}>
           <table

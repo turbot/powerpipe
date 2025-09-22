@@ -85,7 +85,11 @@ const Panel = ({
       ref={setReferenceElement}
       id={definition.name}
       className={baseStyles}
-      onMouseEnter={showControls ? () => setShowPanelControls(true) : undefined}
+      onMouseEnter={
+        !definition.properties?.disable_controls && showControls
+          ? () => setShowPanelControls(true)
+          : undefined
+      }
       onMouseLeave={() => setShowPanelControls(false)}
     >
       <section
@@ -93,7 +97,8 @@ const Panel = ({
           definition.title ? `${definition.name}-title` : undefined
         }
         className={classNames(
-          "col-span-12 m-0.5",
+          "col-span-12",
+          definition?.properties?.embedded ? null : "m-0.5",
           forceBackground ||
             (definition.panel_type !== "image" &&
               definition.panel_type !== "card" &&
@@ -104,6 +109,7 @@ const Panel = ({
               definition.display_type === "table")
             ? "bg-dashboard-panel print:bg-white shadow-sm rounded-md"
             : null,
+          definition?.properties?.embedded ? "shadow-none rounded-none" : null,
         )}
       >
         {showPanelControls && (
