@@ -27,6 +27,7 @@ type DashboardWrapperProps = {
   showPanelControls?: boolean;
   showTitle?: boolean;
   withPadding?: boolean;
+  withPageTitle?: boolean;
 };
 
 type SplitPaneProps = {
@@ -190,17 +191,21 @@ const DashboardWrapper = ({
   showPanelControls = true,
   showTitle = true,
   withPadding = true,
+  withPageTitle = true,
 }: DashboardWrapperProps) => {
   const { dashboard, dataMode, selectedDashboard } = useDashboardState();
   const { selectedPanel } = useDashboardPanelDetail();
   const { search } = useDashboardSearch();
 
-  usePageTitle([
-    selectedDashboard
-      ? selectedDashboard.title || selectedDashboard.full_name
-      : null,
-    "Dashboards",
-  ]);
+  usePageTitle(
+    [
+      selectedDashboard
+        ? selectedDashboard.title || selectedDashboard.full_name
+        : null,
+      "Dashboards",
+    ],
+    !withPageTitle,
+  );
 
   if (
     search.value ||
