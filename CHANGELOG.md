@@ -1,10 +1,8 @@
-v1.4.0
-_Whats new_
-- Add support for ducklake backend. Update pipe-fittings to v2.7.0. ([#760](https://github.com/turbot/pipe-fittings/issues/760))
-- DbClient.Close calls Backend.Close if it supports it
-- Update server command to call initData.Cleanup
-- Optimise getSearchPathMetadata to not connect to backend unless needed
-
+## v1.4.0 [2025-09-22]
+_What's new_
+- Updated the `tailpipe` connection to support the new Tailpipe v0.7.0 DuckLake backend. ([#889](https://github.com/turbot/powerpipe/issues/889))  
+  **Note:** When using Powerpipe with Tailpipe v0.7.0, existing Tailpipe data must be migrated to DuckLake **before** running a dashboard that uses a Tailpipe backend. Data can be migrated by running `tailpipe query`.
+- Updated pipe-fittings to v2.7.0. ([#760](https://github.com/turbot/pipe-fittings/issues/760))
 
 ## v1.3.1 [2025-08-25]
 _Bug Fixes_
