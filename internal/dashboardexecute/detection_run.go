@@ -2,8 +2,8 @@ package dashboardexecute
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/turbot/powerpipe/internal/controlexecute"
 	"log/slog"
 	"time"
 
@@ -11,6 +11,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
+	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/resources"
@@ -155,7 +156,7 @@ func (r *DetectionRun) Execute(ctx context.Context) {
 		slog.Debug("children complete", "name", r.resource.Name())
 
 		// aggregate our child data
-		//r.combineChildData()
+		// r.combineChildData()
 		// set complete status on dashboard
 		r.SetComplete(ctx)
 	} else {
@@ -188,7 +189,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 
 	// check for context errors
 	if err := ctx.Err(); err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("dashboard execution timed out before execution of this node started")
 		}
 		return err
@@ -204,7 +205,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 	startTime := time.Now()
 	queryResult, err := client.ExecuteSync(ctx, r.executeSQL, r.Args...)
 	if err != nil {
-		if err.Error() == context.DeadlineExceeded.Error() {
+		if errors.Is(err, context.DeadlineExceeded) {
 			err = fmt.Errorf("query execution timed out after running for %0.2fs", time.Since(startTime).Seconds())
 		}
 		slog.Warn("DetectionRun query failed", "name", r.resource.Name(), "error", err.Error())
@@ -221,7 +222,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 }
 
 //
-//func (r *DetectionRun) combineChildData() {
+// func (r *DetectionRun) combineChildData() {
 //	// we either have children OR a query
 //	// if there are no children, do nothing
 //	if len(r.children) == 0 {
@@ -246,7 +247,7 @@ func (r *DetectionRun) executeQuery(ctx context.Context) error {
 //		r.Data.Rows = append(r.Data.Rows, data.Rows...)
 //	}
 //	r.Data.Columns = maps.Values(schemaMap)
-//}
+// }
 
 func (r *DetectionRun) populateProperties() error {
 	if r.resource == nil {

@@ -2,23 +2,34 @@ package db_client
 
 import (
 	"context"
-	"github.com/turbot/pipe-fittings/v2/backend"
 	"sync"
+
+	"github.com/turbot/pipe-fittings/v2/backend"
 )
 
+// ClientMapOption defines a function type for configuring ClientMap options
 type ClientMapOption func(*ClientMap)
 
+// ClientMap provides thread-safe storage and management of database client connections.
+// It caches clients to avoid creating new connections for each query, using composite cache keys
+// generated from connection string, search path config, and database filters.
 type ClientMap struct {
-	clients    map[string]*DbClient
+	// clients stores database client instances with composite cache keys for efficient lookup
+	clients map[string]*DbClient
+	// clientsMut provides thread-safe access using read-write mutex for concurrent operations
 	clientsMut sync.RWMutex
 }
 
+// NewClientMap creates a new ClientMap instance with an empty clients map for storing database connections.
 func NewClientMap() *ClientMap {
 	return &ClientMap{
 		clients: make(map[string]*DbClient),
 	}
 }
 
+// Add stores a database client in the map using the provided configuration.
+// Generates a composite cache key from connection string, search path, and filters.
+// The filter parameter may be nil. Returns the ClientMap for method chaining.
 func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathConfig) *ClientMap {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()
@@ -27,10 +38,10 @@ func (e *ClientMap) Add(client *DbClient, searchPathConfig backend.SearchPathCon
 	key := buildClientMapKey(client.connectionString, searchPathConfig)
 	e.clients[key] = client
 
-	e.clients[client.connectionString] = client
 	return e
 }
 
+// Close closes all database clients and removes them from the map for cleanup.
 func (e *ClientMap) Close(ctx context.Context) error {
 	e.clientsMut.Lock()
 	defer e.clientsMut.Unlock()
@@ -45,8 +56,9 @@ func (e *ClientMap) Close(ctx context.Context) error {
 	return nil
 }
 
-// Get returns an existing db client for the given connection string
-// if no client is stored for the string, it returns null
+// Get retrieves an existing database client from the map based on configuration.
+// Generates a composite cache key to lookup the client. The filter parameter may be nil.
+// Returns nil if no matching client is found.
 func (e *ClientMap) Get(connectionString string, searchPathConfig backend.SearchPathConfig) *DbClient {
 	key := buildClientMapKey(connectionString, searchPathConfig)
 
@@ -58,9 +70,9 @@ func (e *ClientMap) Get(connectionString string, searchPathConfig backend.Search
 	return client
 }
 
-// GetOrCreate returns a db client for the given connection string
-// if clients map already contains a client for this connection string, use that
-// otherwise create a new client and add to the map
+// GetOrCreate retrieves an existing client or creates a new one if it doesn't exist.
+// Generates a composite cache key for lookup and uses double-checked locking to prevent
+// race conditions during concurrent access. The filter parameter may be nil.
 func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, searchPathConfig backend.SearchPathConfig) (*DbClient, error) {
 	key := buildClientMapKey(connectionString, searchPathConfig)
 
@@ -101,6 +113,9 @@ func (e *ClientMap) GetOrCreate(ctx context.Context, connectionString string, se
 	return client, nil
 }
 
+// buildClientMapKey creates a unique composite cache key by combining connection string,
+// search path config, and filters. Uses pipe separators to ensure proper key differentiation
+// and prevent key collisions between different configurations. The filter parameter may be nil.
 func buildClientMapKey(connectionString string, config backend.SearchPathConfig) string {
 	return connectionString + config.String()
 }

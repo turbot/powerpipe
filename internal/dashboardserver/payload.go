@@ -116,6 +116,16 @@ func (s *Server) buildDashboardMetadataPayload(dashboard modconfig.ModTreeItem) 
 }
 
 func getSearchPathMetadata(ctx context.Context, database string, searchPathConfig backend.SearchPathConfig) (*SearchPathMetadata, error) {
+	// create an empty backend for this connection string to determine if it supports search path
+	// (we do this rather than create the real backend as it is expensive to create some backend)
+	emptyBackend, err := backend.FromConnectionString(ctx, database)
+	if err != nil {
+		return nil, err
+	}
+	if _, ok := emptyBackend.(backend.SearchPathProvider); !ok {
+		// backend does not support search path
+		return nil, nil
+	}
 	// if backend supports search path, get it
 	client, err := db_client.NewClientMap().GetOrCreate(ctx, database, searchPathConfig)
 	if err != nil {
@@ -124,17 +134,16 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 	}
 	//  close the client after we are done
 	defer client.Close(ctx)
+	// ok we know the backend supports search path, so get the search path metadata
+	sp := client.Backend.(backend.SearchPathProvider)
 
-	if sp, ok := client.Backend.(backend.SearchPathProvider); ok {
-		return &SearchPathMetadata{
-			OriginalSearchPath:   sp.OriginalSearchPath(),
-			ResolvedSearchPath:   sp.ResolvedSearchPath(),
-			ConfiguredSearchPath: searchPathConfig.SearchPath,
-			SearchPathPrefix:     searchPathConfig.SearchPathPrefix,
-		}, nil
-	}
+	return &SearchPathMetadata{
+		OriginalSearchPath:   sp.OriginalSearchPath(),
+		ResolvedSearchPath:   sp.ResolvedSearchPath(),
+		ConfiguredSearchPath: searchPathConfig.SearchPath,
+		SearchPathPrefix:     searchPathConfig.SearchPathPrefix,
+	}, nil
 
-	return nil, nil
 }
 
 func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {

@@ -3,10 +3,11 @@ package db_client
 import (
 	"context"
 	"database/sql"
-	"github.com/spf13/viper"
-	"github.com/turbot/pipe-fittings/v2/constants"
+	"log/slog"
 
+	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/utils"
 )
 
@@ -64,10 +65,20 @@ func (c *DbClient) GetConnectionString() string {
 	return c.connectionString
 }
 
-// Close closes the connection to the database and shuts down the Backend
+// Close closes the connection to the database
 func (c *DbClient) Close(context.Context) error {
 	if c.db != nil {
-		return c.db.Close()
+		if err := c.db.Close(); err != nil {
+			return err
+		}
 	}
+	// if the backend hags a cleanup method, call it
+	if closer, ok := c.Backend.(interface{ Close() error }); ok {
+		if err := closer.Close(); err != nil {
+			slog.Warn("Failed to close backend", "backend", c.Backend.Name(), "error", err)
+			return err
+		}
+	}
+
 	return nil
 }
