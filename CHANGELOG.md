@@ -1,3 +1,7 @@
+## v1.4.1 [TBD]
+_Bug Fixes_
+- Fix filtering by false boolean values in tables. ([#946](https://github.com/turbot/powerpipe/issues/946))
+
 ## v1.4.0 [2025-09-22]
 _What's new_
 - Updated the `tailpipe` connection to support the new Tailpipe v0.7.0 DuckLake backend. ([#889](https://github.com/turbot/powerpipe/issues/889))  

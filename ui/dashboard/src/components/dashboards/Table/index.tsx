@@ -693,14 +693,14 @@ const useTableFilters = (panelName: string) => {
         expression.operator === "equal" &&
         expression.type === "dimension" &&
         !!expression.key &&
-        !!expression.value
+        expression.value !== undefined
       ) {
         filters.push(expression);
       } else if (
         expression.operator === "not_equal" &&
         expression.type === "dimension" &&
         !!expression.key &&
-        !!expression.value
+        expression.value !== undefined
       ) {
         filters.push(expression);
       } else if (
@@ -779,7 +779,8 @@ const useTableFilters = (panelName: string) => {
         index !== undefined
           ? [...expressions.slice(0, index), ...expressions.slice(index + 1)]
           : expressions;
-      if (newFilters.length === 0) {
+      let emptyPanelFilters = newFilters.length === 0;
+      if (emptyPanelFilters) {
         newFilters = [{ operator: "equal" }];
       }
       newUrlFilters.expressions = newFilters;
@@ -787,7 +788,17 @@ const useTableFilters = (panelName: string) => {
         ...allFilters,
         [panelName]: newUrlFilters,
       };
-      searchParams.set("where", JSON.stringify(newPanelFilters));
+      // Remove if no filters left for this panel
+      if (emptyPanelFilters) {
+        delete newPanelFilters[panelName];
+      }
+
+      // If there are no filters left at all, remove the where param
+      if (!Object.keys(newPanelFilters).length) {
+        searchParams.delete("where");
+      } else {
+        searchParams.set("where", JSON.stringify(newPanelFilters));
+      }
       setSearchParams(searchParams);
     },
     [urlFilters, searchParams, setSearchParams],
