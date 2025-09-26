@@ -187,7 +187,7 @@ const CheckSummaryChart = ({
     const alertsContainerWidth = alertsContainerRef.current.clientWidth;
     const nonAlertsContainerWidth = nonAlertsContainerRef.current.clientWidth;
 
-    function getRawAlarmPx(value, divisor, containerWidth) {
+    function getSegmentPixelWidth(value, divisor, containerWidth) {
       if (!value || !divisor || !containerWidth) {
         return 0;
       }
@@ -196,27 +196,27 @@ const CheckSummaryChart = ({
       return Math.max(Math.round(percent * containerWidth), 1);
     }
 
-    const rawAlarm = getRawAlarmPx(
+    const rawAlarm = getSegmentPixelWidth(
       summary.alarm,
       maxAlerts,
       alertsContainerWidth,
     );
-    const rawError = getRawAlarmPx(
+    const rawError = getSegmentPixelWidth(
       summary.error,
       maxAlerts,
       alertsContainerWidth,
     );
-    const rawOk = getRawAlarmPx(
+    const rawOk = getSegmentPixelWidth(
       summary.ok,
       maxNonAlerts,
       nonAlertsContainerWidth,
     );
-    const rawInfo = getRawAlarmPx(
+    const rawInfo = getSegmentPixelWidth(
       summary.info,
       maxNonAlerts,
       nonAlertsContainerWidth,
     );
-    const rawSkip = getRawAlarmPx(
+    const rawSkip = getSegmentPixelWidth(
       summary.skip,
       maxNonAlerts,
       nonAlertsContainerWidth,
@@ -236,8 +236,6 @@ const CheckSummaryChart = ({
 
   const widths = calculateWidths();
 
-  console.log({ alertsWidth, nonAlertsWidth, ...widths });
-
   return (
     <div className="flex items-center" title={getSummaryTitle(summary)}>
       <div
@@ -254,8 +252,13 @@ const CheckSummaryChart = ({
           />
           <ProgressBar
             className={classNames(
-              "border border-alert",
-              status === "running" ? "summary-chart-error-animate" : null,
+              "border-alert",
+
+              status === "running"
+                ? "border summary-chart-error-animate"
+                : widths.error < 2
+                  ? "border-l"
+                  : "border",
             )}
             width={widths.error}
           />
