@@ -1,7 +1,7 @@
 import IntegerDisplay from "../../../IntegerDisplay";
 import { CheckNodeStatus, CheckSummary } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import { ReactNode } from "react";
+import { ReactNode, useRef } from "react";
 
 type ProgressBarGroupProps = {
   children: ReactNode;
@@ -10,7 +10,7 @@ type ProgressBarGroupProps = {
 
 type ProgressBarProps = {
   className?: string;
-  percent: number;
+  width: number;
 };
 
 type CheckSummaryChartProps = {
@@ -115,18 +115,15 @@ export const ProgressBarGroup = ({
   </div>
 );
 
-export const ProgressBar = ({ className, percent }: ProgressBarProps) => {
-  if (!percent) {
+export const ProgressBar = ({ className, width }: ProgressBarProps) => {
+  if (!width) {
     return null;
   }
 
   return (
     <div
-      className={classNames("h-3", className)}
-      aria-valuenow={percent}
-      aria-valuemin={0}
-      aria-valuemax={100}
-      style={{ display: "inline-block", width: `${percent}%` }}
+      className={classNames("flex-shrink-0 h-3", className)}
+      style={{ display: "inline-block", width: `${width}px` }}
     />
   );
 };
@@ -136,8 +133,7 @@ export const getCheckSummaryChartPercent = (value, total) => {
     return 0;
   }
   const percentOfTotal = value / total;
-  const rounded = Math.floor(percentOfTotal * 100);
-  return Math.max(rounded, 3);
+  return percentOfTotal * 100;
 };
 
 const CheckSummaryChart = ({
@@ -145,6 +141,8 @@ const CheckSummaryChart = ({
   summary,
   firstChildSummaries,
 }: CheckSummaryChartProps) => {
+  const alertsContainerRef = useRef<HTMLDivElement>(null);
+  const nonAlertsContainerRef = useRef<HTMLDivElement>(null);
   let maxAlerts = 0;
   let maxNonAlerts = 0;
   for (const firstChildSummary of firstChildSummaries) {
@@ -165,63 +163,136 @@ const CheckSummaryChart = ({
   //   summary.info,
   //   summary.skip,
   // ]);
-  let alertsWidth = getWidth(maxAlerts, maxNonAlerts);
-  let nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts);
-  if (alertsWidth > nonAlertsWidth) {
-    alertsWidth -= 2;
-  } else {
-    nonAlertsWidth -= 2;
-  }
+  let alertsWidth = getWidth(maxAlerts, maxNonAlerts) * 0.9;
+  let nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts) * 0.9;
+
+  // if (alertsWidth > nonAlertsWidth) {
+  //   alertsWidth -= 2;
+  // } else {
+  //   nonAlertsWidth -= 2;
+  // }
+
+  const calculateWidths = () => {
+    if (!alertsContainerRef.current || !nonAlertsContainerRef.current) {
+      return {
+        renderDivider: false,
+        alarm: 0,
+        error: 0,
+        ok: 0,
+        info: 0,
+        skip: 0,
+      };
+    }
+
+    const alertsContainerWidth = alertsContainerRef.current.clientWidth;
+    const nonAlertsContainerWidth = nonAlertsContainerRef.current.clientWidth;
+
+    function getRawAlarmPx(value, divisor, containerWidth) {
+      if (!value || !divisor || !containerWidth) {
+        return 0;
+      }
+
+      const percent = value / divisor;
+      return Math.max(Math.round(percent * containerWidth), 1);
+    }
+
+    const rawAlarm = getRawAlarmPx(
+      summary.alarm,
+      maxAlerts,
+      alertsContainerWidth,
+    );
+    const rawError = getRawAlarmPx(
+      summary.error,
+      maxAlerts,
+      alertsContainerWidth,
+    );
+    const rawOk = getRawAlarmPx(
+      summary.ok,
+      maxNonAlerts,
+      nonAlertsContainerWidth,
+    );
+    const rawInfo = getRawAlarmPx(
+      summary.info,
+      maxNonAlerts,
+      nonAlertsContainerWidth,
+    );
+    const rawSkip = getRawAlarmPx(
+      summary.skip,
+      maxNonAlerts,
+      nonAlertsContainerWidth,
+    );
+
+    return {
+      alertsContainerWidth,
+      nonAlertsContainerWidth,
+      renderDivider: true,
+      alarm: rawAlarm,
+      error: rawError,
+      ok: rawOk,
+      info: rawInfo,
+      skip: rawSkip,
+    };
+  };
+
+  const widths = calculateWidths();
+
+  console.log({ alertsWidth, nonAlertsWidth, ...widths });
 
   return (
     <div className="flex items-center" title={getSummaryTitle(summary)}>
-      <div className="my-auto px-0" style={{ width: `${alertsWidth}%` }}>
+      <div
+        ref={alertsContainerRef}
+        className="my-auto px-0"
+        style={{ width: `${alertsWidth}%` }}
+      >
         <ProgressBarGroup className="flex-row-reverse">
           <ProgressBar
             className={classNames(
-              "border border-alert",
               status === "running" ? "summary-chart-alarm-animate" : "bg-alert",
             )}
-            percent={getCheckSummaryChartPercent(summary.alarm, maxAlerts)}
+            width={widths.alarm}
           />
           <ProgressBar
             className={classNames(
               "border border-alert",
               status === "running" ? "summary-chart-error-animate" : null,
             )}
-            percent={getCheckSummaryChartPercent(summary.error, maxAlerts)}
+            width={widths.error}
           />
           <AlertProgressBarGroupTotal className="mr-2" summary={summary} />
         </ProgressBarGroup>
       </div>
+      {widths.renderDivider && (
+        <div
+          className={classNames(
+            "h-6 w-0 border-l border-black-scale-4",
+            status === "running" ? "subtle-ping" : null,
+          )}
+        />
+      )}
       <div
-        className={classNames(
-          "h-6 w-0 border-l border-black-scale-4",
-          status === "running" ? "subtle-ping" : null,
-        )}
-      />
-      <div className="my-auto px-0" style={{ width: `${nonAlertsWidth}%` }}>
+        ref={nonAlertsContainerRef}
+        className="my-auto px-0"
+        style={{ width: `${nonAlertsWidth}%` }}
+      >
         <ProgressBarGroup>
           <ProgressBar
             className={classNames(
-              "border border-ok",
               status === "running" ? "summary-chart-ok-animate" : "bg-ok",
             )}
-            percent={getCheckSummaryChartPercent(summary.ok, maxNonAlerts)}
+            width={widths.ok}
           />
           <ProgressBar
             className={classNames(
-              "border border-info",
               status === "running" ? "summary-chart-info-animate" : "bg-info",
             )}
-            percent={getCheckSummaryChartPercent(summary.info, maxNonAlerts)}
+            width={widths.info}
           />
           <ProgressBar
             className={classNames(
-              "border border-skip",
               status === "running" ? "summary-chart-skip-animate" : "bg-skip",
             )}
-            percent={getCheckSummaryChartPercent(summary.skip, maxNonAlerts)}
+            width={widths.skip}
           />
           <NonAlertProgressBarGroupTotal className="ml-2" summary={summary} />
         </ProgressBarGroup>
