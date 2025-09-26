@@ -34,7 +34,7 @@ type ProgressBarGroupTotalProps = {
   total: number;
 };
 
-const getWidth = (x, y) => {
+const getWidth = (x: number, y: number) => {
   const percent = (x / (x + y)) * 100;
   return percent >= 0.5 ? Math.round(percent) : 1;
 };
@@ -89,7 +89,7 @@ const NonAlertProgressBarGroupTotal = ({
   summary,
 }: NonAlertProgressBarGroupTotalProps) => {
   const nonAlertTotal = summary.ok + summary.info + summary.skip;
-  let textClassName;
+  let textClassName: string;
   if (nonAlertTotal === 0) {
     textClassName = "text-foreground-lightest";
   } else if (summary.skip > summary.info && summary.skip > summary.ok) {
@@ -128,14 +128,6 @@ export const ProgressBar = ({ className, width }: ProgressBarProps) => {
   );
 };
 
-export const getCheckSummaryChartPercent = (value, total) => {
-  if (!value) {
-    return 0;
-  }
-  const percentOfTotal = value / total;
-  return percentOfTotal * 100;
-};
-
 const CheckSummaryChart = ({
   status,
   summary,
@@ -156,21 +148,8 @@ const CheckSummaryChart = ({
       maxNonAlerts = currentMaxNonAlerts;
     }
   }
-  // const [alarm, error, ok, info, skip] = ensureMinPercentages(name, [
-  //   summary.alarm,
-  //   summary.error,
-  //   summary.ok,
-  //   summary.info,
-  //   summary.skip,
-  // ]);
-  let alertsWidth = getWidth(maxAlerts, maxNonAlerts) * 0.9;
-  let nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts) * 0.9;
-
-  // if (alertsWidth > nonAlertsWidth) {
-  //   alertsWidth -= 2;
-  // } else {
-  //   nonAlertsWidth -= 2;
-  // }
+  const alertsWidth = getWidth(maxAlerts, maxNonAlerts) * 0.9;
+  const nonAlertsWidth = getWidth(maxNonAlerts, maxAlerts) * 0.9;
 
   const calculateWidths = () => {
     if (!alertsContainerRef.current || !nonAlertsContainerRef.current) {
@@ -187,7 +166,11 @@ const CheckSummaryChart = ({
     const alertsContainerWidth = alertsContainerRef.current.clientWidth;
     const nonAlertsContainerWidth = nonAlertsContainerRef.current.clientWidth;
 
-    function getSegmentPixelWidth(value, divisor, containerWidth) {
+    function getSegmentPixelWidth(
+      value: number,
+      divisor: number,
+      containerWidth: number,
+    ) {
       if (!value || !divisor || !containerWidth) {
         return 0;
       }
