@@ -1,7 +1,8 @@
 import IntegerDisplay from "../../../IntegerDisplay";
+import usePrevious from "@powerpipe/hooks/usePrevious";
 import { CheckNodeStatus, CheckSummary } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import { ReactNode, useRef } from "react";
+import { ReactNode, useEffect, useRef, useState } from "react";
 
 type ProgressBarGroupProps = {
   children: ReactNode;
@@ -128,13 +129,49 @@ export const ProgressBar = ({ className, width }: ProgressBarProps) => {
   );
 };
 
+const getSegmentPixelWidth = (
+  value: number,
+  divisor: number,
+  containerWidth: number,
+) => {
+  if (!value || !divisor || !containerWidth) {
+    return 0;
+  }
+
+  const percent = value / divisor;
+  return Math.max(Math.round(percent * containerWidth), 1);
+};
+
 const CheckSummaryChart = ({
   status,
   summary,
   firstChildSummaries,
 }: CheckSummaryChartProps) => {
+  const [, setVersion] = useState(0);
   const alertsContainerRef = useRef<HTMLDivElement>(null);
   const nonAlertsContainerRef = useRef<HTMLDivElement>(null);
+  const previousContainers = usePrevious<{
+    alerts: HTMLDivElement | null;
+    nonAlerts: HTMLDivElement | null;
+  }>({
+    alerts: alertsContainerRef.current,
+    nonAlerts: nonAlertsContainerRef.current,
+  });
+
+  useEffect(() => {
+    if (
+      (!previousContainers &&
+        (alertsContainerRef.current || nonAlertsContainerRef.current)) ||
+      (previousContainers &&
+        (previousContainers.alerts !== alertsContainerRef.current ||
+          previousContainers.nonAlerts !== nonAlertsContainerRef.current))
+    ) {
+      // Trigger a re-render when the container refs change
+      // This is necessary to recalculate widths based on new container sizes
+      setVersion((v) => v + 1);
+    }
+  }, [previousContainers]);
+
   let maxAlerts = 0;
   let maxNonAlerts = 0;
   for (const firstChildSummary of firstChildSummaries) {
@@ -163,21 +200,9 @@ const CheckSummaryChart = ({
       };
     }
 
-    const alertsContainerWidth = alertsContainerRef.current.clientWidth;
-    const nonAlertsContainerWidth = nonAlertsContainerRef.current.clientWidth;
-
-    function getSegmentPixelWidth(
-      value: number,
-      divisor: number,
-      containerWidth: number,
-    ) {
-      if (!value || !divisor || !containerWidth) {
-        return 0;
-      }
-
-      const percent = value / divisor;
-      return Math.max(Math.round(percent * containerWidth), 1);
-    }
+    const alertsContainerWidth = alertsContainerRef.current?.clientWidth ?? 0;
+    const nonAlertsContainerWidth =
+      nonAlertsContainerRef.current?.clientWidth ?? 0;
 
     const rawAlarm = getSegmentPixelWidth(
       summary.alarm,
@@ -251,7 +276,7 @@ const CheckSummaryChart = ({
       {widths.renderDivider && (
         <div
           className={classNames(
-            "h-6 w-0 border-l border-black-scale-4",
+            "h-6 w-px bg-black-scale-4",
             status === "running" ? "subtle-ping" : null,
           )}
         />
