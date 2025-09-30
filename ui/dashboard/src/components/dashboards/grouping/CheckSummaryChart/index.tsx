@@ -261,7 +261,6 @@ const CheckSummaryChart = ({
           <ProgressBar
             className={classNames(
               "border-alert",
-
               status === "running"
                 ? "border summary-chart-error-animate"
                 : widths.error < 2
