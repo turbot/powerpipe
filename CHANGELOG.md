@@ -1,5 +1,6 @@
-## v1.4.1 [TBD]
+## v1.4.1 [2025-10-07]
 _Bug Fixes_
+- Build: Restored CentOS/RHEL 9 compatibility by pinning the build image to an older libstdc++/GCC baseline. Previous build linked against newer GLIBCXX symbols, causing Powerpipe to fail on CentOS/RHEL 9.
 - Improve benchmark/detection summary chart width calculations. ([#945](https://github.com/turbot/powerpipe/issues/945))
 - Fix filtering by false boolean values in tables. ([#946](https://github.com/turbot/powerpipe/issues/946))
 
