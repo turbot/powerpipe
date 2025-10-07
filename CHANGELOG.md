@@ -1,5 +1,6 @@
 ## v1.4.1 [TBD]
 _Bug Fixes_
+- Improve benchmark/detection summary chart width calculations. ([#945](https://github.com/turbot/powerpipe/issues/945))
 - Fix filtering by false boolean values in tables. ([#946](https://github.com/turbot/powerpipe/issues/946))
 
 ## v1.4.0 [2025-09-22]
