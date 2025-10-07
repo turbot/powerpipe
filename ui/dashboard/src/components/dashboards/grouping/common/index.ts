@@ -241,7 +241,7 @@ export type Filter = {
   operator: FilterOperator;
   type?: FilterType;
   key?: string;
-  value?: string | string[];
+  value?: boolean | string | boolean[] | string[];
   title?: string;
   expressions?: Filter[];
 };

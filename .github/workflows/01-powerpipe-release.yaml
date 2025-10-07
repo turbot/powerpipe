@@ -171,7 +171,7 @@ jobs:
   build_and_release:
     name: Build and Release Powerpipe
     needs: build_assets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     env:
       VERSION: ${{ needs.ensure_branch_in_homebrew.outputs.version }}
     steps:
@@ -186,6 +186,20 @@ jobs:
         with:
           repository: turbot/pipe-fittings
           path: pipe-fittings
+
+      - name: Set up Docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Install Docker (if needed)
+        run: |
+          if ! command -v docker &> /dev/null; then
+            sudo apt-get update
+            sudo apt-get install -y docker.io
+          fi
+
+      - name: Verify Docker installation
+        run: |
+          docker --version
 
       - name: Calculate version
         id: calculate_version

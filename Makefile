@@ -1,6 +1,6 @@
 OUTPUT_DIR?=/usr/local/bin
 PACKAGE_NAME          := github.com/turbot/powerpipe
-GOLANG_CROSS_VERSION  ?= gcc13-osxcross-20250912194615
+GOLANG_CROSS_VERSION  ?= gcc13-osxcross-20251006102018
 
 .PHONY: build
 build:
@@ -21,6 +21,7 @@ all:
 release-dry-run:
 	@docker run \
 		--rm \
+		--platform=linux/arm64 \
 		-e CGO_ENABLED=1 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/powerpipe \
@@ -38,6 +39,7 @@ release:
 	fi
 	docker run \
 		--rm \
+		--platform=linux/arm64 \
 		-e CGO_ENABLED=1 \
 		--env-file .release-env \
 		-v /var/run/docker.sock:/var/run/docker.sock \
