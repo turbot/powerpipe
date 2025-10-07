@@ -21,6 +21,7 @@ all:
 release-dry-run:
 	@docker run \
 		--rm \
+		--platform=linux/arm64 \
 		-e CGO_ENABLED=1 \
 		-v /var/run/docker.sock:/var/run/docker.sock \
 		-v `pwd`:/go/src/powerpipe \

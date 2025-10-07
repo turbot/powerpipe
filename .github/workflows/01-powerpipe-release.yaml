@@ -171,7 +171,7 @@ jobs:
   build_and_release:
     name: Build and Release Powerpipe
     needs: build_assets
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04-arm
     env:
       VERSION: ${{ needs.ensure_branch_in_homebrew.outputs.version }}
     steps:
