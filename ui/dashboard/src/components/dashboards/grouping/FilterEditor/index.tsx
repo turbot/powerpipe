@@ -55,7 +55,7 @@ type FilterValueSelectProps = {
   item: Filter;
   type: FilterType;
   onChange: (value: string | string[]) => void;
-  value: string | string[] | undefined;
+  value: boolean | string | boolean[] | string[] | undefined;
 };
 
 const validateFilter = (filter: Filter): boolean => {
@@ -72,7 +72,9 @@ const validateFilter = (filter: Filter): boolean => {
   }
 
   if (filter.operator === "equal" || filter.operator === "not_equal") {
-    const valueExists = !!filter.value?.trim();
+    const valueExists =
+      filter.value !== undefined &&
+      (typeof filter.value === "boolean" || !!filter.value?.trim());
     const typeExists = !!filter.type?.trim();
     const keyExists = !!filter.key?.trim();
     if (!valueExists) return false;
@@ -321,8 +323,13 @@ const FilterValueSelect = ({
 
   const currentValue =
     item.operator === "in" || item.operator === "not_in"
-      ? values.filter((v) => value?.includes(v.value))
-      : values.find((v) => v.value === value);
+      ? // @ts-expect-error We only do strings here, not booleans
+        values.filter((v) => value?.includes(v.value))
+      : values.find((v) =>
+          typeof value === "boolean"
+            ? v.value === value.toString()
+            : v.value === value,
+        );
 
   return (
     <CreatableSelect
@@ -418,7 +425,7 @@ const FilterEditorItem = ({
       (operator === "in" || operator === "not_in") &&
       newValue !== undefined
     ) {
-      newValue = [newValue];
+      newValue = [newValue as string];
     } else if (
       (currentOperator === "in" || currentOperator === "not_in") &&
       (operator === "equal" || operator === "not_equal") &&
