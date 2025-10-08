@@ -1,3 +1,7 @@
+## v1.4.2 [TBD]
+_Bug Fixes_
+- Fixed: cell controls not appearing after scroll. ([#956](https://github.com/turbot/powerpipe/issues/956))
+
 ## v1.4.1 [2025-10-07]
 _Bug Fixes_
 - Build: Restored CentOS/RHEL 9 compatibility by pinning the build image to an older libstdc++/GCC baseline. Previous build linked against newer GLIBCXX symbols, causing Powerpipe to fail on CentOS/RHEL 9.
