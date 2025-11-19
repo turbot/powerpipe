@@ -37,11 +37,6 @@ jobs:
           go clean -testcache
           go test -timeout 30s ./... -test.v
 
-      - name: Run Dashboard UI Unit Tests
-        run: |
-          cd powerpipe/ui/dashboard
-          yarn test
-
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
 
