@@ -102,6 +102,7 @@ jobs:
           - "snapshot"
           - "dashboard_parsing_validation"
           - "database_precedence"
+          - "tag_filtering"
           - "config_precedence"
     runs-on: ${{ matrix.platform }}
     steps:
