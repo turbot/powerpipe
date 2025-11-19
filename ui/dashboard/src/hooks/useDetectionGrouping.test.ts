@@ -1,5 +1,4 @@
 import { includeDetectionResult } from "./useDetectionGrouping";
-import { Filter } from "@powerpipe/components/dashboards/grouping/common";
 import { PanelDefinition } from "@powerpipe/types";
 
 describe("includeResult detection_tag semantics", () => {
@@ -25,19 +24,19 @@ describe("includeResult detection_tag semantics", () => {
 
   it("includes missing tag for not_equal", () => {
     const filters = makeFilters("not_equal", "deprecated", "true");
-    expect(includeDetectionResult({ tags: {} }, panel, filters)).toBe(true);
+    expect(includeDetectionResult({ tags: {} } as any, panel, filters)).toBe(true);
   });
 
   it("includes missing tag for not_in", () => {
     const filters = makeFilters("not_in", "deprecated", ["true", "false"]);
-    expect(includeDetectionResult({ tags: {} }, panel, filters)).toBe(true);
+    expect(includeDetectionResult({ tags: {} } as any, panel, filters)).toBe(true);
   });
 
   it("excludes present disallowed value for not_equal", () => {
     const filters = makeFilters("not_equal", "deprecated", "true");
     expect(
       includeDetectionResult(
-        { tags: { deprecated: "true" } },
+        { tags: { deprecated: "true" } } as any,
         panel,
         filters,
       ),
@@ -48,7 +47,7 @@ describe("includeResult detection_tag semantics", () => {
     const filters = makeFilters("not_equal", "deprecated", "true");
     expect(
       includeDetectionResult(
-        { tags: { deprecated: "false" } },
+        { tags: { deprecated: "false" } } as any,
         panel,
         filters,
       ),
@@ -57,7 +56,7 @@ describe("includeResult detection_tag semantics", () => {
 
   it("requires match for equal", () => {
     const filters = makeFilters("equal", "deprecated", "true");
-    expect(includeDetectionResult({ tags: {} }, panel, filters)).toBe(false);
+    expect(includeDetectionResult({ tags: {} } as any, panel, filters)).toBe(false);
     expect(
       includeDetectionResult(
         { tags: { deprecated: "true" } },
