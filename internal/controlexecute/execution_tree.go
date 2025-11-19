@@ -177,7 +177,9 @@ func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, paralle
 
 func (e *ExecutionTree) populateControlFilterMap(controlFilter pworkspace.ResourceFilter) error {
 	// if we derived or were passed a where clause, run the filter
-	if controlFilter.Empty() {
+	// Note: WherePredicate can be set even when Tags/Where are empty (new tag filtering logic),
+	// so we must honor a custom predicate even if the filter appears "empty".
+	if controlFilter.Empty() && controlFilter.WherePredicate == nil {
 		return nil
 	}
 
