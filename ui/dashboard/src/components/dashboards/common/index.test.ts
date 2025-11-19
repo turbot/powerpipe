@@ -1795,4 +1795,194 @@ describe("common.foldNodesAndEdges", () => {
       },
     });
   });
+
+  test("Fold with different edge titles to different targets", () => {
+    // This test demonstrates bug #973 where edge titles were lost
+    // when collapsed nodes had multiple different edge titles to different targets
+    const graph = new Graph({ directed: true });
+    graph.setNode("c1-1");
+    graph.setNode("c2-1");
+    graph.setNode("c2-2");
+    graph.setNode("c3-1");
+    graph.setNode("c3-2");
+
+    // Source node edges (incoming to c2 nodes)
+    graph.setEdge("c1-1", "c2-1");
+    graph.setEdge("c1-1", "c2-2");
+
+    // Target node edges (outgoing from c2 nodes) with different titles
+    graph.setEdge("c2-1", "c3-1");
+    graph.setEdge("c2-1", "c3-2");
+    graph.setEdge("c2-2", "c3-1");
+    graph.setEdge("c2-2", "c3-2");
+
+    // Create nodes
+    const node_c1_1 = createNode({ id: "c1-1", category: "c1" });
+    const node_c2_1 = createNode({ id: "c2-1", category: "c2" });
+    const node_c2_2 = createNode({ id: "c2-2", category: "c2" });
+    const node_c3_1 = createNode({ id: "c3-1", category: "c3" });
+    const node_c3_2 = createNode({ id: "c3-2", category: "c3" });
+
+    // Create edges with different titles to different targets
+    const edge_c1_1_c2_1: Edge = {
+      ...createEdge({ id: "c1-1_c2-1", from_id: "c1-1", to_id: "c2-1" }),
+      title: "contains",
+      category: "hierarchy",
+    };
+    const edge_c1_1_c2_2: Edge = {
+      ...createEdge({ id: "c1-1_c2-2", from_id: "c1-1", to_id: "c2-2" }),
+      title: "contains",
+      category: "hierarchy",
+    };
+
+    // Outgoing edges with DIFFERENT titles to different targets
+    const edge_c2_1_c3_1: Edge = {
+      ...createEdge({ id: "c2-1_c3-1", from_id: "c2-1", to_id: "c3-1" }),
+      title: "manages",
+      category: "relationship",
+    };
+    const edge_c2_1_c3_2: Edge = {
+      ...createEdge({ id: "c2-1_c3-2", from_id: "c2-1", to_id: "c3-2" }),
+      title: "owns",
+      category: "relationship",
+    };
+    const edge_c2_2_c3_1: Edge = {
+      ...createEdge({ id: "c2-2_c3-1", from_id: "c2-2", to_id: "c3-1" }),
+      title: "manages",
+      category: "relationship",
+    };
+    const edge_c2_2_c3_2: Edge = {
+      ...createEdge({ id: "c2-2_c3-2", from_id: "c2-2", to_id: "c3-2" }),
+      title: "owns",
+      category: "relationship",
+    };
+
+    // Create categories - c2 will be folded at threshold 2
+    const category_1 = { id: "c1" };
+    const category_2 = { id: "c2", fold: { threshold: 2 } };
+    const category_3 = { id: "c3" };
+
+    const nodesAndEdgesInput = {
+      graph,
+      nodeCategoryMap: {
+        c1: { [node_c1_1.id]: node_c1_1 },
+        c2: {
+          [node_c2_1.id]: node_c2_1,
+          [node_c2_2.id]: node_c2_2,
+        },
+        c3: {
+          [node_c3_1.id]: node_c3_1,
+          [node_c3_2.id]: node_c3_2,
+        },
+      },
+      nodeMap: {
+        [node_c1_1.id]: node_c1_1,
+        [node_c2_1.id]: node_c2_1,
+        [node_c2_2.id]: node_c2_2,
+        [node_c3_1.id]: node_c3_1,
+        [node_c3_2.id]: node_c3_2,
+      },
+      nodes: [node_c1_1, node_c2_1, node_c2_2, node_c3_1, node_c3_2],
+      edgeMap: {
+        [edge_c1_1_c2_1.id]: edge_c1_1_c2_1,
+        [edge_c1_1_c2_2.id]: edge_c1_1_c2_2,
+        [edge_c2_1_c3_1.id]: edge_c2_1_c3_1,
+        [edge_c2_1_c3_2.id]: edge_c2_1_c3_2,
+        [edge_c2_2_c3_1.id]: edge_c2_2_c3_1,
+        [edge_c2_2_c3_2.id]: edge_c2_2_c3_2,
+      },
+      edges: [
+        edge_c1_1_c2_1,
+        edge_c1_1_c2_2,
+        edge_c2_1_c3_1,
+        edge_c2_1_c3_2,
+        edge_c2_2_c3_1,
+        edge_c2_2_c3_2,
+      ],
+      root_nodes: { [node_c1_1.id]: node_c1_1 },
+      categories: {
+        [category_1.id]: category_1,
+        [category_2.id]: category_2,
+        [category_3.id]: category_3,
+      },
+    };
+
+    // Run the folding logic
+    // @ts-ignore
+    const nodesAndEdges = foldNodesAndEdges(nodesAndEdgesInput);
+    delete nodesAndEdges.graph;
+
+    // Expected result: c2-1 and c2-2 should be collapsed into fold-c2-1
+    const foldedNode = {
+      id: "fold-c2-1",
+      category: "c2",
+      depth: null,
+      href: null,
+      icon: undefined,
+      isFolded: true,
+      foldedNodes: [
+        { id: node_c2_1.id, title: node_c2_1.title },
+        { id: node_c2_2.id, title: node_c2_2.title },
+      ],
+      row_data: null,
+      symbol: null,
+      title: null,
+    };
+
+    // Verify the fix: Each edge should preserve its specific title
+    // Check nodes are folded correctly
+    expect(nodesAndEdges.nodeCategoryMap).toEqual({
+      c1: { [node_c1_1.id]: node_c1_1 },
+      c2: { [foldedNode.id]: foldedNode },
+      c3: {
+        [node_c3_1.id]: node_c3_1,
+        [node_c3_2.id]: node_c3_2,
+      },
+    });
+    expect(nodesAndEdges.nodeMap).toEqual({
+      [node_c1_1.id]: node_c1_1,
+      [foldedNode.id]: foldedNode,
+      [node_c3_1.id]: node_c3_1,
+      [node_c3_2.id]: node_c3_2,
+    });
+
+    // The key assertion: edge titles should be preserved per target
+    expect(nodesAndEdges.edgeMap).toEqual({
+      "c1-1_fold-c2-1": {
+        id: "c1-1_fold-c2-1",
+        from_id: "c1-1",
+        to_id: "fold-c2-1",
+        category: "hierarchy",
+        title: "contains", // Incoming edges had same title, so it's preserved
+        isFolded: true,
+        row_data: null,
+      },
+      "fold-c2-1_c3-1": {
+        id: "fold-c2-1_c3-1",
+        from_id: "fold-c2-1",
+        to_id: "c3-1",
+        category: "relationship",
+        title: "manages", // Should preserve "manages" title
+        isFolded: true,
+        row_data: null,
+      },
+      "fold-c2-1_c3-2": {
+        id: "fold-c2-1_c3-2",
+        from_id: "fold-c2-1",
+        to_id: "c3-2",
+        category: "relationship",
+        title: "owns", // Should preserve "owns" title
+        isFolded: true,
+        row_data: null,
+      },
+    });
+
+    // Verify root nodes and categories are preserved
+    expect(nodesAndEdges.root_nodes).toEqual({ [node_c1_1.id]: node_c1_1 });
+    expect(nodesAndEdges.categories).toEqual({
+      [category_1.id]: category_1,
+      [category_2.id]: category_2,
+      [category_3.id]: category_3,
+    });
+  });
 });
