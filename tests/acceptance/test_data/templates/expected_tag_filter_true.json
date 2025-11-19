@@ -1,0 +1,62 @@
+{
+  "group_id": "root_result_group",
+  "title": "Tag filtering benchmark",
+  "description": "",
+  "tags": {},
+  "summary": {
+    "status": {
+      "alarm": 0,
+      "ok": 1,
+      "info": 0,
+      "skip": 0,
+      "error": 0
+    }
+  },
+  "groups": [
+    {
+      "group_id": "tag_filtering_mod.benchmark.tag_filtering_benchmark",
+      "title": "Tag filtering benchmark",
+      "description": "Contains controls with a mix of deprecated tags to validate tag filtering.",
+      "tags": {},
+      "summary": {
+        "status": {
+          "alarm": 0,
+          "ok": 1,
+          "info": 0,
+          "skip": 0,
+          "error": 0
+        }
+      },
+      "groups": [],
+      "controls": [
+        {
+          "summary": {
+            "alarm": 0,
+            "ok": 1,
+            "info": 0,
+            "skip": 0,
+            "error": 0
+          },
+          "results": [
+            {
+              "reason": "acceptance",
+              "resource": "dummy",
+              "status": "ok",
+              "dimensions": null
+            }
+          ],
+          "control_id": "control.deprecated_true",
+          "description": "Should be included when filtering deprecated=true, excluded otherwise.",
+          "severity": "",
+          "tags": {
+            "deprecated": "true"
+          },
+          "title": "Control with deprecated=true",
+          "run_status": 4,
+          "run_error": ""
+        }
+      ]
+    }
+  ],
+  "controls": null
+}
