@@ -1852,6 +1852,15 @@ __metadata:
   languageName: node
   linkType: hard
 
+"@emotion/is-prop-valid@npm:^1.4.0":
+  version: 1.4.0
+  resolution: "@emotion/is-prop-valid@npm:1.4.0"
+  dependencies:
+    "@emotion/memoize": "npm:^0.9.0"
+  checksum: 10c0/5f857814ec7d8c7e727727346dfb001af6b1fb31d621a3ce9c3edf944a484d8b0d619546c30899ae3ade2f317c76390ba4394449728e9bf628312defc2c41ac3
+  languageName: node
+  linkType: hard
+
 "@emotion/memoize@npm:^0.9.0":
   version: 0.9.0
   resolution: "@emotion/memoize@npm:0.9.0"
@@ -2934,13 +2943,6 @@ __metadata:
     react: ">=17"
     react-dom: ">=17"
   checksum: 10c0/cd29257969a11feb273849d3aa540d534513b292115ebf697db1357fae704426be899dcf882ea36e13a33d49073b6c2b44fc67c4ddbc779bf2dcd49ba87053a3
-  languageName: node
-  linkType: hard
-
-"@remix-run/router@npm:1.23.0":
-  version: 1.23.0
-  resolution: "@remix-run/router@npm:1.23.0"
-  checksum: 10c0/eaef5cb46a1e413f7d1019a75990808307e08e53a39d4cf69c339432ddc03143d725decef3d6b9b5071b898da07f72a4a57c4e73f787005fcf10162973d8d7d7
   languageName: node
   linkType: hard
 
@@ -6678,6 +6680,13 @@ __metadata:
   version: 0.7.1
   resolution: "cookie@npm:0.7.1"
   checksum: 10c0/5de60c67a410e7c8dc8a46a4b72eb0fe925871d057c9a5d2c0e8145c4270a4f81076de83410c4d397179744b478e33cd80ccbcc457abf40a9409ad27dcd21dde
+  languageName: node
+  linkType: hard
+
+"cookie@npm:^1.0.1":
+  version: 1.0.2
+  resolution: "cookie@npm:1.0.2"
+  checksum: 10c0/fd25fe79e8fbcfcaf6aa61cd081c55d144eeeba755206c058682257cb38c4bd6795c6620de3f064c740695bb65b7949ebb1db7a95e4636efb8357a335ad3f54b
   languageName: node
   linkType: hard
 
@@ -14936,6 +14945,7 @@ __metadata:
   dependencies:
     "@chromatic-com/storybook": "npm:^4.1.3"
     "@craco/craco": "npm:7.1.0"
+    "@emotion/is-prop-valid": "npm:^1.4.0"
     "@headlessui/react": "npm:1.7.19"
     "@heroicons/react": "npm:2.2.0"
     "@material-symbols/svg-300": "npm:0.36.0"
@@ -14993,7 +15003,8 @@ __metadata:
     react-papaparse: "npm:4.4.0"
     react-placeholder: "npm:4.1.0"
     react-popper: "npm:2.3.0"
-    react-router-dom: "npm:6.30.1"
+    react-router: "npm:^7.9.6"
+    react-router-dom: "npm:^7.9.6"
     react-router-hash-link: "npm:2.4.3"
     react-scripts: "npm:5.0.1"
     react-select: "npm:5.10.2"
@@ -15562,16 +15573,15 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.30.1":
-  version: 6.30.1
-  resolution: "react-router-dom@npm:6.30.1"
+"react-router-dom@npm:^7.9.6":
+  version: 7.9.6
+  resolution: "react-router-dom@npm:7.9.6"
   dependencies:
-    "@remix-run/router": "npm:1.23.0"
-    react-router: "npm:6.30.1"
+    react-router: "npm:7.9.6"
   peerDependencies:
-    react: ">=16.8"
-    react-dom: ">=16.8"
-  checksum: 10c0/e9e1297236b0faa864424ad7d51c392fc6e118595d4dad4cd542fd217c479a81601a81c6266d5801f04f9e154de02d3b094fc22ccb544e755c2eb448fab4ec6b
+    react: ">=18"
+    react-dom: ">=18"
+  checksum: 10c0/63984c46385da232655b9e3a8a99f6dd7b94c36827be6e954f246c362f83740b5f59b1de99cae81da3b0cef2220d701dcc22e4fafb4a84600541e1c0450b9d57
   languageName: node
   linkType: hard
 
@@ -15587,14 +15597,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.30.1":
-  version: 6.30.1
-  resolution: "react-router@npm:6.30.1"
+"react-router@npm:7.9.6, react-router@npm:^7.9.6":
+  version: 7.9.6
+  resolution: "react-router@npm:7.9.6"
   dependencies:
-    "@remix-run/router": "npm:1.23.0"
+    cookie: "npm:^1.0.1"
+    set-cookie-parser: "npm:^2.6.0"
   peerDependencies:
-    react: ">=16.8"
-  checksum: 10c0/0414326f2d8e0c107fb4603cf4066dacba6a1f6f025c6e273f003e177b2f18888aca3de06d9b5522908f0e41de93be1754c37e82aa97b3a269c4742c08e82539
+    react: ">=18"
+    react-dom: ">=18"
+  peerDependenciesMeta:
+    react-dom:
+      optional: true
+  checksum: 10c0/2a177bbe19021e3b8211df849ea5b3f3a4f482327e6de3341aaeaa4f1406dc9be7b675b229eefea6761e04a59a40ccaaf8188f2ee88eb2d0b2a6b6448daea368
   languageName: node
   linkType: hard
 
@@ -16564,6 +16579,13 @@ __metadata:
     parseurl: "npm:~1.3.3"
     send: "npm:0.19.0"
   checksum: 10c0/528fff6f5e12d0c5a391229ad893910709bc51b5705962b09404a1d813857578149b8815f35d3ee5752f44cd378d0f31669d4b1d7e2d11f41e08283d5134bd1f
+  languageName: node
+  linkType: hard
+
+"set-cookie-parser@npm:^2.6.0":
+  version: 2.7.2
+  resolution: "set-cookie-parser@npm:2.7.2"
+  checksum: 10c0/4381a9eb7ee951dfe393fe7aacf76b9a3b4e93a684d2162ab35594fa4053cc82a4d7d7582bf397718012c9adcf839b8cd8f57c6c42901ea9effe33c752da4a45
   languageName: node
   linkType: hard
 
