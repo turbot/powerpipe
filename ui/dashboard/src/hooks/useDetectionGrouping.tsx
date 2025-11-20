@@ -576,7 +576,7 @@ function recordFilterValues(
   }
 }
 
-const includeResult = (
+export const includeDetectionResult = (
   result: DetectionResult,
   panel: PanelDefinition,
   allFilters: KeyValuePairs<Filter>,
@@ -658,8 +658,21 @@ const includeResult = (
           break;
         }
         case "detection_tag": {
+          // Treat missing tags as a "pass" for not_equal/not_in (align with CLI behavior),
+          // but require presence + match for equal/in.
+          const tags = result.tags || {};
+          const tagValue = tags[expression.key];
+          if (
+            (expression.operator === "not_equal" ||
+              expression.operator === "not_in") &&
+            tagValue === undefined
+          ) {
+            matches.push(true);
+            break;
+          }
+
           let matchesTags = false;
-          for (const [tagKey, tagValue] of Object.entries(result.tags || {})) {
+          for (const [tagKey, tagValue] of Object.entries(tags)) {
             if (
               expression.key === tagKey &&
               applyFilter(expression, tagValue)
@@ -740,7 +753,7 @@ const useGroupingInternal = (
       recordFilterValues(filterValues, detectionResult);
 
       // See if the result needs to be filtered
-      if (!includeResult(detectionResult, definition, allFilters)) {
+      if (!includeDetectionResult(detectionResult, definition, allFilters)) {
         return;
       }
 

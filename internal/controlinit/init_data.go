@@ -10,10 +10,11 @@ import (
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
-	"github.com/turbot/pipe-fittings/v2/workspace"
+	pfworkspace "github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/controldisplay"
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 )
 
 type CheckTarget interface {
@@ -24,7 +25,7 @@ type CheckTarget interface {
 type InitData struct {
 	initialisation.InitData
 	OutputFormatter controldisplay.Formatter
-	ControlFilter   workspace.ResourceFilter
+	ControlFilter   pfworkspace.ResourceFilter
 }
 
 func (i *InitData) BaseInitData() *initialisation.InitData {
@@ -49,7 +50,7 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 
 	w := i.Workspace
 	if !w.ModfileExists() {
-		i.Result.Error = workspace.ErrorNoModDefinition
+		i.Result.Error = pfworkspace.ErrorNoModDefinition
 	}
 
 	if viper.GetString(constants.ArgOutput) == constants.OutputFormatNone {
@@ -105,13 +106,14 @@ func NewInitData[T CheckTarget](ctx context.Context, cmd *cobra.Command, args ..
 
 func (i *InitData) setControlFilter() {
 	if viper.IsSet(constants.ArgTag) {
-		// if '--tag' args were used, derive the whereClause from them
+		// if '--tag' args were used, build a predicate that supports both equality and inequality
+		// (key!=value includes resources missing the tag). This replaces the older tag-only map filter.
 		tags := viper.GetStringSlice(constants.ArgTag)
-		i.ControlFilter = workspace.ResourceFilterFromTags(tags)
+		i.ControlFilter = workspace.ResourceFilterFromTagArgs(tags)
 	} else if viper.IsSet(constants.ArgWhere) {
 		// if a 'where' arg was used, execute this sql to get a list of  control names
 		// use this list to build a name map used to determine whether to run a particular control
-		i.ControlFilter = workspace.ResourceFilter{
+		i.ControlFilter = pfworkspace.ResourceFilter{
 			Where: viper.GetString(constants.ArgWhere),
 		}
 	}

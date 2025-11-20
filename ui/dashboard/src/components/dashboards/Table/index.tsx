@@ -216,7 +216,7 @@ const CellValue = ({
     href: string | null;
     error: string | null;
   }>({ href: null, error: null });
-  const [referenceElement, setReferenceElement] = useState();
+  const [referenceElement, setReferenceElement] = useState<HTMLDivElement | null>(null);
   const [showCellControls, setShowCellControls] = useState(false);
 
   useEffect(() => {
@@ -512,7 +512,7 @@ const CellValue = ({
     >
       {cellContent} <ErrorIcon className="inline h-4 w-4 text-alert" />
     </span>
-  ) : isScrolling || !addFilter ? (
+  ) : !addFilter ? (
     cellContent
   ) : (
     <div
@@ -526,7 +526,7 @@ const CellValue = ({
       onMouseLeave={() => setShowCellControls(false)}
     >
       {cellContent}
-      {showCellControls && (
+      {showCellControls && !isScrolling && (
         <CellControls
           referenceElement={referenceElement}
           column={column}
@@ -812,35 +812,33 @@ const useTableFilters = (panelName: string) => {
 };
 
 const useDisableHoverOnScroll = (scrollElement: HTMLDivElement | null) => {
-  const isScrolling = useRef<boolean>(false);
+  const [isScrolling, setIsScrolling] = useState(false);
   const scrollTimeout = useRef<NodeJS.Timeout | undefined>(undefined);
-
-  const handleScroll = () => {
-    if (!isScrolling.current) {
-      isScrolling.current = true;
-    }
-
-    clearTimeout(scrollTimeout.current);
-    scrollTimeout.current = setTimeout(() => {
-      isScrolling.current = false;
-    }, 200); // Wait for 200ms after scrolling stops
-  };
 
   useEffect(() => {
     if (!scrollElement) {
       return;
     }
 
+    const handleScroll = () => {
+      setIsScrolling(true);
+
+      clearTimeout(scrollTimeout.current);
+      scrollTimeout.current = setTimeout(() => {
+        setIsScrolling(false);
+      }, 200); // Wait for 200ms after scrolling stops
+    };
+
     scrollElement.addEventListener("scroll", handleScroll, { passive: true });
 
     return () => {
       scrollElement.removeEventListener("scroll", handleScroll);
-      isScrolling.current = false;
+      setIsScrolling(false);
       clearTimeout(scrollTimeout.current);
     };
   }, [scrollElement]);
 
-  return isScrolling.current;
+  return isScrolling;
 };
 
 const TableViewVirtualizedRows = (props: TableProps) => {
