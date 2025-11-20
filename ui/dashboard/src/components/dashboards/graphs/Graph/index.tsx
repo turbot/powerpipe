@@ -411,6 +411,7 @@ const CustomControls = () => {
 };
 
 const useNodeAndEdgePanelInformation = (
+  panel: GraphProps,
   nodeAndEdgeStatus: NodeAndEdgeStatus,
   dataFormat: NodeAndEdgeDataFormat,
   nodes: Node[],
@@ -566,6 +567,7 @@ const useNodeAndEdgePanelInformation = (
     // @ts-ignore
     setPanelInformation(() => (
       <NodeAndEdgePanelInformation
+        panel={panel}
         nodes={nodes}
         status={status}
         statuses={statuses}
@@ -573,6 +575,7 @@ const useNodeAndEdgePanelInformation = (
     ));
     setShowPanelInformation(true);
   }, [
+    panel,
     dataFormat,
     nodeAndEdgeStatus,
     nodes,
@@ -587,6 +590,7 @@ const Graph = (props) => {
   const { selectedPanel } = useDashboardPanelDetail();
   const graphOptions = useGraphOptions(props);
   useNodeAndEdgePanelInformation(
+    props,
     props.nodeAndEdgeStatus,
     props.dataFormat,
     graphOptions.nodes,
