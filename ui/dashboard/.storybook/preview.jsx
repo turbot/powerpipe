@@ -1,8 +1,8 @@
 import StoryWrapper from "./StoryWrapper";
 import { ThemeProvider } from "../src/hooks/useStorybookTheme";
 import { themes } from "storybook/theming";
-// Temporarily disabled for Storybook 9 - addon incompatible
-// import { withRouter } from "storybook-addon-react-router-v6";
+import { withThemeByDataAttribute } from "@storybook/addon-themes";
+import { withRouter } from "storybook-addon-remix-react-router";
 import "../src/styles/index.css";
 
 const viewports = {
@@ -57,8 +57,15 @@ const viewports = {
 };
 
 export const decorators = [
-  // Temporarily disabled for Storybook 9 - addon incompatible
-  // withRouter,
+  withRouter,
+  withThemeByDataAttribute({
+    themes: {
+      light: "light",
+      dark: "dark",
+    },
+    defaultTheme: "light",
+    attributeName: "data-mode",
+  }),
   (Story) => (
     <ThemeProvider>
       <StoryWrapper>

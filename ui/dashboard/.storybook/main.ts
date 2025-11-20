@@ -7,10 +7,8 @@ module.exports = {
   addons: [
     "@storybook/addon-links",
     "@storybook/preset-create-react-app",
-    // Temporarily disabled for Storybook 9 - incompatible with @storybook/types import
-    // "storybook-dark-mode",
-    // Temporarily disabled for Storybook 9 - incompatible with @storybook/preview-api import
-    // "storybook-addon-react-router-v6",
+    "@storybook/addon-themes",
+    "storybook-addon-remix-react-router",
     "@chromatic-com/storybook",
     "@storybook/addon-docs"
   ],
