@@ -84,6 +84,11 @@ export const PanelStoryDecorator = ({
             error: null,
             dashboards: [],
             dashboardsMap: {},
+            dashboardsMetadata: {
+              "storybook.dashboard.storybook_dashboard_wrapper": {
+                supports_search_path: false,
+              },
+            },
             selectedDashboard: {
               title: "Storybook Dashboard Wrapper",
               full_name: "storybook.dashboard.storybook_dashboard_wrapper",
