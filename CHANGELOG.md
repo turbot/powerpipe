@@ -1,3 +1,11 @@
+## v1.4.2 [2025-11-21]
+_Bug Fixes_
+- Fix issue where cell controls were not appearing after scrolling. ([#956](https://github.com/turbot/powerpipe/issues/956))
+- Align dashboard UI tag filters behaviour with CLI. ([#969](https://github.com/turbot/powerpipe/issues/969))
+
+_Dependencies_
+- Upgrade `containerd`, `webpack-dev-server`, `js-yaml`, `glob` packages to remediate vulnerabilities.
+
 ## v1.4.1 [2025-10-07]
 _Bug Fixes_
 - Build: Restored CentOS/RHEL 9 compatibility by pinning the build image to an older libstdc++/GCC baseline. Previous build linked against newer GLIBCXX symbols, causing Powerpipe to fail on CentOS/RHEL 9.
