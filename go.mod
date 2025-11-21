@@ -7,7 +7,7 @@ toolchain go1.24.1
 //replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.17.0
 	github.com/gin-contrib/static v1.1.2
