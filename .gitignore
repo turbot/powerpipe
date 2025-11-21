@@ -5,6 +5,9 @@
 .vscode/
 .DS_Store
 
+# Claude Code working files
+.claude/wip/
+
 # Binaries for programs and plugins
 *.exe
 *.exe~

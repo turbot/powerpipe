@@ -1,6 +1,6 @@
 import Text from "./index";
 import { PanelStoryDecorator } from "@powerpipe/utils/storybook";
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { ComponentMeta, ComponentStory } from "@storybook/react-webpack5";
 
 export default {
   title: "Primitives/Text",

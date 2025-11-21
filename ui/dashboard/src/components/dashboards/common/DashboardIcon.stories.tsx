@@ -1,5 +1,5 @@
 import DashboardIcon from "./DashboardIcon";
-import { ComponentMeta, ComponentStory } from "@storybook/react";
+import { ComponentMeta, ComponentStory } from "@storybook/react-webpack5";
 
 export default {
   title: "Dashboard Icon",

@@ -1,7 +1,8 @@
 import StoryWrapper from "./StoryWrapper";
 import { ThemeProvider } from "../src/hooks/useStorybookTheme";
-import { themes } from "@storybook/theming";
-import { withRouter } from "storybook-addon-react-router-v6";
+import { themes } from "storybook/theming";
+import { withThemeByDataAttribute } from "@storybook/addon-themes";
+import { withRouter } from "storybook-addon-remix-react-router";
 import "../src/styles/index.css";
 
 const viewports = {
@@ -57,6 +58,14 @@ const viewports = {
 
 export const decorators = [
   withRouter,
+  withThemeByDataAttribute({
+    themes: {
+      light: "light",
+      dark: "dark",
+    },
+    defaultTheme: "light",
+    attributeName: "data-mode",
+  }),
   (Story) => (
     <ThemeProvider>
       <StoryWrapper>
@@ -67,7 +76,6 @@ export const decorators = [
 ];
 
 export const parameters = {
-  actions: { argTypesRegex: "^on[A-Z].*" },
   darkMode: {
     // Override the default dark theme
     dark: {
@@ -78,6 +86,6 @@ export const parameters = {
     light: { ...themes.normal },
   },
   viewport: {
-    viewports,
+    options: viewports,
   },
 };

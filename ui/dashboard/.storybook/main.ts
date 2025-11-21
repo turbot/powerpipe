@@ -6,11 +6,11 @@ module.exports = {
 
   addons: [
     "@storybook/addon-links",
-    "@storybook/addon-essentials",
     "@storybook/preset-create-react-app",
-    "storybook-dark-mode",
-    "storybook-addon-react-router-v6",
+    "@storybook/addon-themes",
+    "storybook-addon-remix-react-router",
     "@chromatic-com/storybook",
+    "@storybook/addon-docs"
   ],
 
   typescript: {
@@ -32,7 +32,12 @@ module.exports = {
       ...config.resolve.alias,
       "@powerpipe": path.resolve(__dirname, "../src"),
     };
-    config = set(config, "resolve.fallback.fs", false);
+    // Webpack 5 no longer includes Node.js polyfills by default
+    config.resolve.fallback = {
+      ...config.resolve.fallback,
+      fs: false,
+      path: false,
+    };
     return config;
   },
 
