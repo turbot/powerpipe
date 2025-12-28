@@ -40,3 +40,9 @@
 /~/.Powerpipe
 
 powerpipe
+
+# Generated test mods for benchmarking
+/internal/testdata/mods/generated/
+
+# Benchmark results
+/benchmark_results/
