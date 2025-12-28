@@ -20,7 +20,7 @@
 | 3 | Create Performance Benchmark Tests | Complete | - | - | Measurement framework |
 | 4 | Baseline Performance Measurement | Complete | - | - | See baseline_results.md |
 | 5 | Parallelize File I/O | Complete | - | - | 34% improvement for 100 files |
-| 6 | Parallelize HCL Parsing | Pending | - | - | In pipe-fittings |
+| 6 | Parallelize HCL Parsing | Complete | - | - | 58% improvement for 50 files |
 | 7 | Optimize Database Client Creation | Pending | - | - | In Powerpipe |
 | 8 | Cache Available Dashboards Payload | Pending | - | - | In Powerpipe |
 | 9 | Final Performance Validation | Pending | - | - | Cumulative validation |
@@ -48,9 +48,11 @@
 Note: Powerpipe workspace benchmarks unchanged because test mods have only 5 files.
 
 #### After Task 6 (Parallel HCL Parsing)
-| Mod Size | Time | Improvement |
-|----------|------|-------------|
-| Large | - | - |
+| Benchmark | Sequential | Parallel | Improvement |
+|-----------|------------|----------|-------------|
+| ParseHclFiles (50 files) | 1,907,639 ns | 798,707 ns | 58% |
+
+Note: Improvement primarily benefits large mods with many HCL files. Test mods have only 5 files so workspace benchmarks unchanged.
 
 #### After Task 7 (Async DB Client)
 | Mod Size | Time | Improvement |
@@ -90,7 +92,8 @@ Note: Powerpipe workspace benchmarks unchanged because test mods have only 5 fil
 3. [x] Task 3: Create Performance Benchmark Tests - Complete
 4. [x] Task 4: Run Baseline Performance Measurement - Complete
 5. [x] Task 5: Parallelize File I/O (pipe-fittings) - Complete
-6. [ ] Task 6: Parallelize HCL Parsing (pipe-fittings)
+6. [x] Task 6: Parallelize HCL Parsing (pipe-fittings) - Complete
+7. [ ] Task 7: Optimize Database Client Creation (Powerpipe)
 
 ## Notes
 

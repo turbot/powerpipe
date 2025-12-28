@@ -373,16 +373,24 @@ go run scripts/compare_benchmarks.go \
 
 ## Acceptance Criteria
 
-- [ ] `ParseHclFiles()` uses parallel parsing for 4+ files
-- [ ] Sequential fallback for small file sets
-- [ ] Output is deterministic (same file order always)
-- [ ] Unit tests pass for parallel parsing
-- [ ] Unit tests verify determinism
-- [ ] Unit tests handle parse errors correctly
-- [ ] Mixed file formats (HCL, JSON, YAML) work correctly
-- [ ] No race conditions (verify with `go test -race`)
-- [ ] Benchmark shows improvement for many files
-- [ ] Performance results documented
+- [x] `ParseHclFiles()` uses parallel parsing for 4+ files
+- [x] Sequential fallback for small file sets
+- [x] Output is deterministic (same file order always)
+- [x] Unit tests pass for parallel parsing
+- [x] Unit tests verify determinism
+- [x] Unit tests handle parse errors correctly
+- [x] Mixed file formats (HCL, JSON, YAML) work correctly
+- [x] No race conditions (verify with `go test -race`)
+- [x] Benchmark shows improvement for many files
+- [x] Performance results documented
+
+## Results
+
+| Benchmark | Sequential | Parallel | Improvement |
+|-----------|------------|----------|-------------|
+| ParseHclFiles (50 files) | 1,907,639 ns | 798,707 ns | **58%** |
+
+All tests pass with race detector. Implementation complete.
 
 ## Expected Performance Improvement
 
