@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -29,6 +30,14 @@ import (
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
+
+// clientResult holds the async result of database client creation
+type clientResult struct {
+	client           *db_client.DbClient
+	csp              connection.ConnectionStringProvider
+	searchPathConfig backend.SearchPathConfig
+	err              error
+}
 
 type InitData struct {
 	Workspace *workspace.PowerpipeWorkspace
@@ -136,7 +145,47 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 
 	statushooks.SetStatus(ctx, "Initializing")
 
-	// initialise telemetry
+	// Start database client creation in background - this can run concurrently
+	// with telemetry init and mod installation
+	clientChan := make(chan clientResult, 1)
+	var clientWg sync.WaitGroup
+	clientWg.Add(1)
+
+	go func() {
+		defer clientWg.Done()
+		defer close(clientChan)
+		defer timing.Track("db_client.CreateAsync")()
+
+		// Get default database config
+		csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
+		if err != nil {
+			clientChan <- clientResult{err: err}
+			return
+		}
+
+		// Build backend options
+		var opts []backend.BackendOption
+		if !searchPathConfig.Empty() {
+			opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
+		}
+
+		connectionString, err := csp.GetConnectionString()
+		if err != nil {
+			clientChan <- clientResult{err: err}
+			return
+		}
+
+		// Create the client
+		client, err := db_client.NewDbClient(ctx, connectionString, opts...)
+		clientChan <- clientResult{
+			client:           client,
+			csp:              csp,
+			searchPathConfig: searchPathConfig,
+			err:              err,
+		}
+	}()
+
+	// Initialize telemetry concurrently with DB client creation
 	func() {
 		defer timing.Track("telemetry.Init")()
 		shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
@@ -147,8 +196,9 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 		}
 	}()
 
-	// install mod dependencies if needed (this defaults to true for dashboard and check commands
+	// Install mod dependencies if needed (this defaults to true for dashboard and check commands
 	// and will always be false for query command)
+	// This also runs concurrently with DB client creation
 	if viper.GetBool(constants.ArgModInstall) {
 		func() {
 			defer timing.Track("modinstaller.InstallWorkspaceDependencies")()
@@ -166,64 +216,37 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 			}
 		}()
 		if i.Result.Error != nil {
+			// Wait for DB goroutine to complete before returning
+			clientWg.Wait()
 			return
 		}
 	}
 
-	// create default client
-	// set the database and search patch config
-	var csp connection.ConnectionStringProvider
-	var searchPathConfig backend.SearchPathConfig
-	func() {
-		defer timing.Track("db_client.GetDefaultDatabaseConfig")()
-		var err error
-		csp, searchPathConfig, err = db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
-		if err != nil {
-			i.Result.Error = err
-		}
-	}()
-	if i.Result.Error != nil {
-		return
-	}
-	i.DefaultDatabase = csp
-	i.DefaultSearchPathConfig = searchPathConfig
+	// Now wait for database client creation to complete
+	statushooks.SetStatus(ctx, "Connecting to database")
+	result := <-clientChan
 
-	// create client
-	var opts []backend.BackendOption
-	if !searchPathConfig.Empty() {
-		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
-	}
-	connectionString, err := csp.GetConnectionString()
-	if err != nil {
-		i.Result.Error = err
+	if result.err != nil {
+		i.Result.Error = result.err
 		return
 	}
 
-	var client *db_client.DbClient
-	func() {
-		defer timing.Track("db_client.NewDbClient")()
-		var err error
-		client, err = db_client.NewDbClient(ctx, connectionString, opts...)
-		if err != nil {
-			i.Result.Error = err
-		}
-	}()
-	if i.Result.Error != nil {
-		return
-	}
-	i.DefaultClient = client
+	// Store results
+	i.DefaultClient = result.client
+	i.DefaultDatabase = result.csp
+	i.DefaultSearchPathConfig = result.searchPathConfig
 
-	// validate mod requirements
+	// Validate mod requirements - this needs the client
 	func() {
 		defer timing.Track("validateModRequirementsRecursively")()
-		validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
+		validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, i.DefaultClient)
 		i.Result.AddWarnings(validationWarnings...)
 	}()
 
-	// create the dashboard executor, passing the default client inside a client map
+	// Create the dashboard executor, passing the default client inside a client map
 	func() {
 		defer timing.Track("NewDashboardExecutor")()
-		clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
+		clientMap := db_client.NewClientMap().Add(i.DefaultClient, i.DefaultSearchPathConfig)
 		dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
 	}()
 }
