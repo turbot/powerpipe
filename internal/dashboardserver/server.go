@@ -21,6 +21,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
@@ -36,6 +37,7 @@ type Server struct {
 }
 
 func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket *melody.Melody) (*Server, error) {
+	defer timing.Track("dashboardserver.NewServer")()
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -329,6 +331,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 }
 
 func (s *Server) InitAsync(ctx context.Context) {
+	defer timing.Track("Server.InitAsync")()
 	go func() {
 		// Return list of dashboards on connect
 		s.webSocket.HandleConnect(func(session *melody.Session) {

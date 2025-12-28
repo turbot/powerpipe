@@ -19,10 +19,12 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	defer timing.Track("buildServerMetadataPayload")()
 	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
@@ -197,6 +199,7 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 }
 
 func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
+	defer timing.Track("buildAvailableDashboardsPayload")()
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),

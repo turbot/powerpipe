@@ -3,7 +3,6 @@ package initialisation
 import (
 	"context"
 	"fmt"
-	"github.com/turbot/pipe-fittings/v2/connection"
 	"log/slog"
 
 	"github.com/spf13/cobra"
@@ -11,6 +10,7 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
@@ -24,6 +24,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
@@ -51,6 +52,8 @@ func NewErrorInitData(err error) *InitData {
 }
 
 func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData {
+	defer timing.Track("NewInitData")()
+
 	modLocation := viper.GetString(constants.ArgModLocation)
 
 	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
@@ -111,6 +114,8 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 }
 
 func (i *InitData) Init(ctx context.Context, args ...string) {
+	defer timing.Track("InitData.Init")()
+
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -132,36 +137,52 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 	statushooks.SetStatus(ctx, "Initializing")
 
 	// initialise telemetry
-	shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
-	if err != nil {
-		i.Result.AddWarnings(err.Error())
-	} else {
-		i.ShutdownTelemetry = shutdownTelemetry
-	}
+	func() {
+		defer timing.Track("telemetry.Init")()
+		shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
+		if err != nil {
+			i.Result.AddWarnings(err.Error())
+		} else {
+			i.ShutdownTelemetry = shutdownTelemetry
+		}
+	}()
 
 	// install mod dependencies if needed (this defaults to true for dashboard and check commands
 	// and will always be false for query command)
 	if viper.GetBool(constants.ArgModInstall) {
-		statushooks.SetStatus(ctx, "Installing workspace dependencies")
-		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
-		// arg pull should always be set (to a default at least) if ArgModInstall is set
-		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
-		// use force install so that errors are ignored during installation
-		// (we are validating prereqs later)
-		opts.Force = true
-		_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
-		if err != nil {
-			i.Result.Error = err
+		func() {
+			defer timing.Track("modinstaller.InstallWorkspaceDependencies")()
+			statushooks.SetStatus(ctx, "Installing workspace dependencies")
+			slog.Info("Installing workspace dependencies")
+			opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
+			// arg pull should always be set (to a default at least) if ArgModInstall is set
+			opts.UpdateStrategy = viper.GetString(constants.ArgPull)
+			// use force install so that errors are ignored during installation
+			// (we are validating prereqs later)
+			opts.Force = true
+			_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+			if err != nil {
+				i.Result.Error = err
+			}
+		}()
+		if i.Result.Error != nil {
 			return
 		}
 	}
 
 	// create default client
 	// set the database and search patch config
-	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
-	if err != nil {
-		i.Result.Error = err
+	var csp connection.ConnectionStringProvider
+	var searchPathConfig backend.SearchPathConfig
+	func() {
+		defer timing.Track("db_client.GetDefaultDatabaseConfig")()
+		var err error
+		csp, searchPathConfig, err = db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
+		if err != nil {
+			i.Result.Error = err
+		}
+	}()
+	if i.Result.Error != nil {
 		return
 	}
 	i.DefaultDatabase = csp
@@ -177,20 +198,34 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 		i.Result.Error = err
 		return
 	}
-	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
-	if err != nil {
-		i.Result.Error = err
+
+	var client *db_client.DbClient
+	func() {
+		defer timing.Track("db_client.NewDbClient")()
+		var err error
+		client, err = db_client.NewDbClient(ctx, connectionString, opts...)
+		if err != nil {
+			i.Result.Error = err
+		}
+	}()
+	if i.Result.Error != nil {
 		return
 	}
 	i.DefaultClient = client
 
 	// validate mod requirements
-	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
-	i.Result.AddWarnings(validationWarnings...)
+	func() {
+		defer timing.Track("validateModRequirementsRecursively")()
+		validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
+		i.Result.AddWarnings(validationWarnings...)
+	}()
 
 	// create the dashboard executor, passing the default client inside a client map
-	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
-	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
+	func() {
+		defer timing.Track("NewDashboardExecutor")()
+		clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
+		dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
+	}()
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
