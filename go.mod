@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.1
 
-//replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
