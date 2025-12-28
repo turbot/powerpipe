@@ -273,15 +273,15 @@ go run scripts/compare_benchmarks.go \
 
 ## Acceptance Criteria
 
-- [ ] `LoadFileData()` uses parallel reads for 4+ files
-- [ ] Sequential fallback for small file sets
-- [ ] Worker pool limited to avoid too many open files
-- [ ] Unit tests pass for parallel loading
-- [ ] Unit tests pass for edge cases (missing files, empty paths)
-- [ ] No race conditions (verify with `go test -race`)
-- [ ] Benchmark shows improvement for large file sets
-- [ ] Performance results documented
-- [ ] Changes compatible with existing API
+- [x] `LoadFileData()` uses parallel reads for 4+ files
+- [x] Sequential fallback for small file sets
+- [x] Worker pool limited to avoid too many open files
+- [x] Unit tests pass for parallel loading
+- [x] Unit tests pass for edge cases (missing files, empty paths)
+- [x] No race conditions (verify with `go test -race`)
+- [x] Benchmark shows improvement for large file sets
+- [x] Performance results documented
+- [x] Changes compatible with existing API
 
 ## Expected Performance Improvement
 
@@ -290,6 +290,22 @@ go run scripts/compare_benchmarks.go \
 | Small | 5 | ~5ms | ~5ms | 0% (no change expected) |
 | Medium | 5 | ~15ms | ~15ms | 0% |
 | Large (many files) | 50+ | ~50ms | ~15ms | ~70% |
+
+## Actual Results
+
+### pipe-fittings LoadFileData Benchmark (100 files)
+
+| Method | Time (ns/op) | Memory (B/op) | Allocations |
+|--------|--------------|---------------|-------------|
+| Sequential | 882,939 | 227,066 | 504 |
+| Parallel | 579,267 | 235,609 | 518 |
+| **Improvement** | **34%** | -4% | -3% |
+
+### Notes on Powerpipe Benchmark Results
+
+The powerpipe workspace benchmarks show similar results because the test mods only generate 5 files (mod.pp, queries.pp, controls.pp, benchmarks.pp, dashboards.pp). Since the parallel threshold is 4 files, the parallel path is used but with minimal benefit on a fast SSD.
+
+Real-world mods like AWS compliance have 100+ files and will see more significant improvement.
 
 ## Notes
 
