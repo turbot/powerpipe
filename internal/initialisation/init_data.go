@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"os"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -50,6 +51,10 @@ type InitData struct {
 
 	DefaultDatabase         connection.ConnectionStringProvider
 	DefaultSearchPathConfig backend.SearchPathConfig
+
+	// LazyWorkspace is set when lazy loading is enabled
+	// It wraps the PowerpipeWorkspace with on-demand resource loading
+	LazyWorkspace *workspace.LazyWorkspace
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -65,30 +70,52 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 
 	modLocation := viper.GetString(constants.ArgModLocation)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
-		modLocation,
-		// pass connections
-		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
-		// disable late binding
-		workspace.WithLateBinding(false),
-	)
-	if errAndWarnings.GetError() != nil {
-		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
-	}
-
-	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
-		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
-	}
 	i := &InitData{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
 
-	i.Workspace = w
-	i.Result.Warnings = errAndWarnings.Warnings
+	// Check if lazy loading is enabled
+	lazyEnabled := isLazyLoadEnabled(cmd)
+
+	if lazyEnabled {
+		// Use lazy loading for faster startup and lower memory
+		slog.Debug("Loading workspace with lazy loading enabled")
+		lw, err := workspace.LoadLazy(ctx, modLocation,
+			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+		)
+		if err != nil {
+			return NewErrorInitData(fmt.Errorf("failed to load lazy workspace: %s", error_helpers.HandleCancelError(err).Error()))
+		}
+		i.LazyWorkspace = lw
+		i.Workspace = lw.PowerpipeWorkspace
+
+		// For lazy loading, we don't need to resolve targets at init time
+		// They will be resolved on-demand when accessed
+		// However, for backward compatibility, we still try to resolve them
+		// TODO: Consider deferring target resolution entirely for lazy loading
+	} else {
+		// Standard eager loading
+		w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
+			modLocation,
+			// pass connections
+			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+			// disable late binding
+			workspace.WithLateBinding(false),
+		)
+		if errAndWarnings.GetError() != nil {
+			return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+		}
+		i.Workspace = w
+		i.Result.Warnings = errAndWarnings.Warnings
+	}
+
+	if !i.Workspace.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
+		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
+	}
 
 	// resolve target resources
-	targets, err := cmdconfig.ResolveTargets[T](cmdArgs, w)
+	targets, err := cmdconfig.ResolveTargets[T](cmdArgs, i.Workspace)
 	if err != nil {
 		i.Result.Error = err
 		return i
@@ -99,6 +126,29 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	i.Init(ctx, cmdArgs...)
 
 	return i
+}
+
+// isLazyLoadEnabled checks if lazy loading should be used.
+// Priority: 1. CLI flag (--lazy-load), 2. Environment variable (POWERPIPE_LAZY_LOAD), 3. Default (false)
+func isLazyLoadEnabled(cmd *cobra.Command) bool {
+	const lazyLoadFlag = "lazy-load"
+	const envLazyLoad = "POWERPIPE_LAZY_LOAD"
+
+	// Check if flag exists on command and is set
+	if cmd != nil && cmd.Flags().Lookup(lazyLoadFlag) != nil {
+		if cmd.Flags().Changed(lazyLoadFlag) {
+			val, _ := cmd.Flags().GetBool(lazyLoadFlag)
+			return val
+		}
+	}
+
+	// Check environment variable
+	if envVal := os.Getenv(envLazyLoad); envVal != "" {
+		return envVal == "true" || envVal == "1" || envVal == "yes"
+	}
+
+	// Default: lazy loading disabled for backward compatibility
+	return false
 }
 
 func commandRequiresModfile(cmd *cobra.Command, args []string) bool {
@@ -284,12 +334,29 @@ func (i *InitData) Cleanup(ctx context.Context) {
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}
-	if i.Workspace != nil {
+	// Close lazy workspace if present (this also closes the embedded PowerpipeWorkspace)
+	if i.LazyWorkspace != nil {
+		i.LazyWorkspace.Close()
+	} else if i.Workspace != nil {
 		i.Workspace.Close()
 	}
 	if i.DefaultClient != nil {
 		i.DefaultClient.Close(ctx)
 	}
+}
+
+// IsLazy returns true if lazy loading is enabled for this init data
+func (i *InitData) IsLazy() bool {
+	return i.LazyWorkspace != nil
+}
+
+// GetWorkspaceProvider returns the workspace as a WorkspaceProvider interface,
+// which can be either a LazyWorkspace or PowerpipeWorkspace
+func (i *InitData) GetWorkspaceProvider() workspace.WorkspaceProvider {
+	if i.LazyWorkspace != nil {
+		return i.LazyWorkspace
+	}
+	return i.Workspace
 }
 
 // GetSingleTarget validates there is only a single target and returns it

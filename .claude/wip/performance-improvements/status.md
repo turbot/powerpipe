@@ -1,7 +1,7 @@
 # Performance Improvements Project - Status
 
 **Project Start Date**: 2025-12-28
-**Last Updated**: 2025-12-28
+**Last Updated**: 2025-12-29
 
 ## Overall Progress
 
@@ -106,6 +106,77 @@ Note: DB client creation now runs in parallel with telemetry init and mod instal
 Remaining work:
 - [ ] Create pipe-fittings PR for parallel I/O, parallel parsing, and getSourceDefinition fix
 - [ ] Optionally implement Task 8 (payload caching) for WebSocket performance
+
+## Additional Optimization Analysis (2025-12-28)
+
+See `additional_optimizations.md` for detailed analysis of further optimization opportunities.
+
+### New Top Memory Allocators (Post-Optimization)
+| Allocator | % of Memory | Priority |
+|-----------|-------------|----------|
+| cty.ObjectVal | 23.82% | HIGH |
+| hclsyntax.emitToken | 15.42% | MEDIUM |
+| cty.ObjectWithOptionalAttrs | 13.50% | HIGH |
+| bufio.Scanner.Scan | 8.03% | LOW |
+| gohcl.getFieldTags | 5.28% | MEDIUM |
+
+### HIGH Priority Optimizations Identified
+1. **CTY type reflection caching** (pipe-fittings) - 20-30% reduction in ObjectVal allocations
+2. **Connection value map optimization** (pipe-fittings) - Reduce ObjectVal per connection
+3. **Credential environment map caching** (pipe-fittings) - Eliminate repeated cty.StringVal
+
+### MEDIUM Priority Optimizations Identified
+4. PowerpipeModResources map pre-allocation
+5. Equals() function optimization with content hashing
+6. Incremental HCL parsing for workspace reload
+7. Execution tree object pooling
+8. Available dashboards payload caching (Task 8)
+
+### Expected Additional Impact (if all HIGH priority implemented)
+| Metric | Current | Expected |
+|--------|---------|----------|
+| Large Mod Load | 239.85 ms | ~160-180 ms |
+| Large Mod Memory | 413.70 MB | ~280-320 MB |
+
+**Combined total from baseline**: ~65-70% faster, ~75-80% less memory
+
+## Lazy Loading Dashboard Server Fix (2025-12-29)
+
+### Issue
+Dashboard server in lazy-load mode was showing blank dashboards with error:
+```
+does not define either a 'sql' property or a 'query' property
+```
+
+### Root Cause
+In `pipe-fittings/parse/decode_body.go`, the `resolveReferences` function wasn't properly handling nil pointer fields when resolving query references like `query = query.some_query`.
+
+The code checked:
+```go
+if fieldVal.Type().Kind() == reflect.Pointer && !fieldVal.IsNil() {
+    fieldVal = fieldVal.Elem()
+}
+if fieldVal.Kind() == reflect.Struct { // This failed for nil pointers
+```
+
+When `Query *Query` was nil, `fieldVal.Kind()` remained `reflect.Pointer`, so the reference resolution was skipped.
+
+### Fix
+Modified `resolveReferences` to check the TYPE rather than VALUE:
+- For pointer fields, check if pointed-to type is a struct implementing HclResource
+- For non-pointer struct fields, check if address type implements HclResource
+- This works regardless of whether the field value is nil
+
+### Additional Fixes Made
+1. **Nested block decoding** (`parser.go`): Added `decodeNestedBlocks` to parse inline children (card, table, container) in dashboards
+2. **Mod name mapping** (`index.go`, `lazy_workspace.go`): Added mapping from full mod paths (`github.com/turbot/...`) to short names (`aws_insights`)
+3. **Server error handling** (`api.go`): Fixed silent port binding failure that was using `log.Fatalf` in goroutine
+
+### Verification
+- ✅ Dashboard with inline SQL cards executes correctly
+- ✅ Dashboard with query references (`query = query.some_query`) resolves and executes
+- ✅ Nested containers with cards work properly
+- ✅ No errors in server logs
 
 ## Notes
 

@@ -59,6 +59,7 @@ The current mod is the working directory, or the directory specified by the --mo
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for query", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
+		AddBoolFlag(LazyLoadFlag, false, "Enable lazy loading of resources (reduces memory usage, faster startup)").
 		// Define the CLI flag parameters for wrapped enum flag.
 		AddVarFlag(enumflag.New(&queryOutputMode, constants.ArgOutput, localconstants.QueryOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,

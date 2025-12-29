@@ -110,3 +110,11 @@ func (n *DashboardNode) SetBaseProperties() {
 		n.Params = n.Base.Params
 	}
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (n *DashboardNode) ClearRemain() {
+	n.Remain = nil
+	n.ResourceWithMetadataImpl.ClearRemain()
+	n.QueryProviderImpl.ClearRemain()
+	n.DashboardLeafNodeImpl.ClearRemain()
+}

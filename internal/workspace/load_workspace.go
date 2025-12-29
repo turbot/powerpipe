@@ -6,10 +6,42 @@ import (
 	"time"
 
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/pipe-fittings/v2/workspace"
+	"github.com/turbot/powerpipe/internal/dashboardevents"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/timing"
 )
+
+// WorkspaceProvider is an interface that both PowerpipeWorkspace and LazyWorkspace implement.
+// This allows code to work with either workspace type.
+type WorkspaceProvider interface {
+	// GetResource retrieves a resource by parsed name
+	GetResource(parsedName *modconfig.ParsedResourceName) (modconfig.HclResource, bool)
+	// Close cleans up the workspace
+	Close()
+	// IsLazy returns true if this is a lazy-loading workspace
+	IsLazy() bool
+	// LoadDashboard loads a dashboard by name
+	LoadDashboard(ctx context.Context, name string) (*resources.Dashboard, error)
+	// LoadBenchmark loads a benchmark by name
+	LoadBenchmark(ctx context.Context, name string) (modconfig.ModTreeItem, error)
+}
+
+// DashboardServerWorkspace extends WorkspaceProvider with methods needed by the dashboard server.
+// Both PowerpipeWorkspace and LazyWorkspace implement this interface.
+type DashboardServerWorkspace interface {
+	WorkspaceProvider
+	// RegisterDashboardEventHandler registers a handler for dashboard events
+	RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler)
+	// SetupWatcher sets up file watching
+	SetupWatcher(ctx context.Context, errCallback func(context.Context, error)) error
+	// GetModResources returns the mod resources
+	GetModResources() modconfig.ModResources
+	// PublishDashboardEvent publishes a dashboard event
+	PublishDashboardEvent(ctx context.Context, event dashboardevents.DashboardEvent)
+}
 
 func LoadWorkspacePromptingForVariables(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (*PowerpipeWorkspace, error_helpers.ErrorAndWarnings) {
 	defer timing.Track("LoadWorkspacePromptingForVariables")()
@@ -86,4 +118,53 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 	}()
 
 	return w, ew
+}
+
+// LoadLazy creates a LazyWorkspace that loads resources on-demand.
+// This provides faster startup and lower memory usage than the standard Load().
+func LoadLazy(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (*LazyWorkspace, error) {
+	defer timing.Track("workspace.LoadLazy")()
+
+	t := time.Now()
+	defer func() {
+		slog.Debug("Lazy workspace load complete", "duration (ms)", time.Since(t).Milliseconds())
+	}()
+
+	cfg := newLoadPowerpipeWorkspaceConfig()
+	for _, o := range opts {
+		o(cfg)
+	}
+
+	utils.LogTime("w.LoadLazy start")
+	defer utils.LogTime("w.LoadLazy end")
+
+	lw, err := NewLazyWorkspace(ctx, workspacePath, cfg.lazyLoadConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set modfile exists flag on the embedded workspace
+	// This is needed for commands that require a modfile
+	lw.PowerpipeWorkspace.SetModfileExists()
+
+	return lw, nil
+}
+
+// LoadAuto loads a workspace, using lazy loading if enabled in options.
+// Returns a WorkspaceProvider interface that can be either type.
+func LoadAuto(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (WorkspaceProvider, error_helpers.ErrorAndWarnings) {
+	cfg := newLoadPowerpipeWorkspaceConfig()
+	for _, o := range opts {
+		o(cfg)
+	}
+
+	if cfg.lazyLoad {
+		lw, err := LoadLazy(ctx, workspacePath, opts...)
+		if err != nil {
+			return nil, error_helpers.NewErrorsAndWarning(err)
+		}
+		return lw, error_helpers.ErrorAndWarnings{}
+	}
+
+	return Load(ctx, workspacePath, opts...)
 }

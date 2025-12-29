@@ -18,8 +18,10 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resourceindex"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/timing"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -196,6 +198,62 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 		}
 	}
 	return children
+}
+
+// buildAvailableDashboardsPayloadFromIndex builds the available dashboards payload
+// from a lazy workspace's index without loading any HCL resources.
+// This is much faster than building from fully parsed resources.
+func buildAvailableDashboardsPayloadFromIndex(lazyWorkspace *workspace.LazyWorkspace) ([]byte, error) {
+	defer timing.Track("buildAvailableDashboardsPayloadFromIndex")()
+
+	// Get payload from index - no HCL parsing required!
+	indexPayload := lazyWorkspace.GetAvailableDashboardsFromIndex()
+
+	// Convert to server payload format
+	payload := AvailableDashboardsPayload{
+		Action:     "available_dashboards",
+		Dashboards: make(map[string]ModAvailableDashboard),
+		Benchmarks: make(map[string]ModAvailableBenchmark),
+		Snapshots:  nil, // Snapshots not supported in lazy mode for now
+	}
+
+	// Convert dashboards
+	for name, dash := range indexPayload.Dashboards {
+		payload.Dashboards[name] = ModAvailableDashboard{
+			Title:       dash.Title,
+			FullName:    dash.FullName,
+			ShortName:   dash.ShortName,
+			Tags:        dash.Tags,
+			ModFullName: dash.ModFullName,
+		}
+	}
+
+	// Convert benchmarks
+	for name, bench := range indexPayload.Benchmarks {
+		payload.Benchmarks[name] = convertIndexBenchmarkInfo(bench)
+	}
+
+	return json.Marshal(payload)
+}
+
+// convertIndexBenchmarkInfo converts a resourceindex.BenchmarkInfo to ModAvailableBenchmark.
+func convertIndexBenchmarkInfo(info resourceindex.BenchmarkInfo) ModAvailableBenchmark {
+	var children []ModAvailableBenchmark
+	for _, child := range info.Children {
+		children = append(children, convertIndexBenchmarkInfo(child))
+	}
+
+	return ModAvailableBenchmark{
+		Title:         info.Title,
+		FullName:      info.FullName,
+		ShortName:     info.ShortName,
+		BenchmarkType: info.BenchmarkType,
+		Tags:          info.Tags,
+		IsTopLevel:    info.IsTopLevel,
+		Children:      children,
+		Trunks:        info.Trunks,
+		ModFullName:   info.ModFullName,
+	}
 }
 
 func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {

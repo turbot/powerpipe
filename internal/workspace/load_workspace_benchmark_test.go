@@ -8,6 +8,7 @@ import (
 	"runtime"
 	"testing"
 
+	"github.com/turbot/powerpipe/internal/memprofile"
 	"github.com/turbot/powerpipe/internal/timing"
 )
 
@@ -35,7 +36,12 @@ func benchmarkLoadWorkspace(b *testing.B, size string) {
 	modPath := ensureGeneratedMod(b, size)
 	ctx := context.Background()
 
+	// Track memory
+	tracker := memprofile.NewMemoryTracker()
+	tracker.SnapshotAfterGC("before")
+
 	b.ResetTimer()
+	b.ReportAllocs()
 	for i := 0; i < b.N; i++ {
 		timing.Reset()
 		_, ew := Load(ctx, modPath, WithVariableValidation(false))
@@ -44,6 +50,13 @@ func benchmarkLoadWorkspace(b *testing.B, size string) {
 		}
 	}
 	b.StopTimer()
+
+	// Capture memory after load
+	tracker.SnapshotAfterGC("after")
+	report := tracker.Report()
+
+	// Report memory metrics
+	b.ReportMetric(float64(report.FinalHeapAlloc())/(1024*1024), "heap-MB")
 
 	// Report timing breakdown
 	if timing.IsEnabled() {

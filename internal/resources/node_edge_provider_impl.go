@@ -90,3 +90,10 @@ func (f *NodeAndEdgeProviderImpl) AddChild(child modconfig.HclResource) hcl.Diag
 
 	return diags
 }
+
+// ClearRemain clears the NodeEdgeProviderRemain field and nested Remain fields to free HCL AST memory after parsing
+func (f *NodeAndEdgeProviderImpl) ClearRemain() {
+	f.NodeEdgeProviderRemain = nil
+	f.WithProviderImpl.ClearRemain()
+	f.QueryProviderImpl.ClearRemain()
+}
