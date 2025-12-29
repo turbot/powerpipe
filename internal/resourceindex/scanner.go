@@ -406,17 +406,21 @@ func (s *Scanner) finalizeBlock(block *blockState, endLine int, filePath string,
 		internedModRoot = intern.Intern(s.modRoot)
 	}
 
+	// Build mod full name (mod.modname format)
+	internedModFullName := intern.Intern("mod." + internedModName)
+
 	entry := &IndexEntry{
-		Type:       internedType,
-		Name:       fullName,
-		ShortName:  internedShortName,
-		FileName:   internedFileName,
-		StartLine:  block.startLine,
-		EndLine:    endLine,
-		ByteOffset: byteOffset,
-		ByteLength: byteLen,
-		ModName:    internedModName,
-		ModRoot:    internedModRoot,
+		Type:        internedType,
+		Name:        fullName,
+		ShortName:   internedShortName,
+		FileName:    internedFileName,
+		StartLine:   block.startLine,
+		EndLine:     endLine,
+		ByteOffset:  byteOffset,
+		ByteLength:  byteLen,
+		ModName:     internedModName,
+		ModFullName: internedModFullName,
+		ModRoot:     internedModRoot,
 	}
 
 	// Extract common attributes

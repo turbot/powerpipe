@@ -35,6 +35,11 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 			ModFullName:   entry.ModFullName,
 		}
 
+		// Top-level benchmarks have their own trunk
+		if entry.IsTopLevel {
+			benchmarkTrunks[entry.Name] = [][]string{{entry.Name}}
+		}
+
 		// Build children recursively from index
 		info.Children = idx.buildBenchmarkChildren(entry, entry.IsTopLevel,
 			[]string{entry.Name}, benchmarkTrunks)
@@ -102,6 +107,7 @@ type DashboardInfo struct {
 	ShortName   string            `json:"short_name"`
 	Tags        map[string]string `json:"tags,omitempty"`
 	ModFullName string            `json:"mod_full_name,omitempty"`
+	Database    string            `json:"database,omitempty"`
 }
 
 // BenchmarkInfo contains benchmark metadata for the UI list.
