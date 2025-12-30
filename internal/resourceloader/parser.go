@@ -200,6 +200,12 @@ type remainClearer interface {
 func (l *Loader) createResource(block *hcl.Block, entry *resourceindex.IndexEntry) (modconfig.HclResource, error) {
 	mod := l.mod
 
+	// If the entry is from a different mod (dependency), create a mod with the correct short name.
+	// This ensures resources from dependency mods have the correct FullName.
+	if entry.ModName != "" && entry.ModName != l.mod.ShortName {
+		mod = modconfig.NewMod(entry.ModName, entry.ModRoot, hcl.Range{})
+	}
+
 	// Map of block types to factory functions
 	factoryFuncs := map[string]func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource{
 		schema.BlockTypeBenchmark: resources.NewBenchmark,

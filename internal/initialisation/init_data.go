@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"sync"
 
 	"github.com/spf13/cobra"
@@ -24,6 +25,7 @@ import (
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/powerpipe/internal/timing"
@@ -115,11 +117,25 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	}
 
 	// resolve target resources
-	targets, err := cmdconfig.ResolveTargets[T](cmdArgs, i.Workspace)
-	if err != nil {
-		i.Result.Error = err
-		return i
+	var targets []modconfig.ModTreeItem
+	var err error
+	if lazyEnabled {
+		// For lazy loading, resolve targets directly using LoadBenchmarkForExecution
+		// This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace
+		targets, err = i.resolveTargetsForLazyLoading(ctx, cmdArgs)
+		if err != nil {
+			i.Result.Error = err
+			return i
+		}
+	} else {
+		// Standard target resolution for eager loading
+		targets, err = cmdconfig.ResolveTargets[T](cmdArgs, i.Workspace)
+		if err != nil {
+			i.Result.Error = err
+			return i
+		}
 	}
+
 	i.Targets = targets
 
 	// now do the actual initialisation
@@ -368,4 +384,94 @@ func (i *InitData) GetSingleTarget() (modconfig.ModTreeItem, error) {
 		return nil, sperr.New("expected a single target")
 	}
 	return i.Targets[0], nil
+}
+
+// resolveTargetsForLazyLoading resolves benchmark targets for lazy loading mode.
+// This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace.
+// Instead, it uses the lazy workspace's index and LoadBenchmarkForExecution to resolve and load benchmarks.
+func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []string) ([]modconfig.ModTreeItem, error) {
+	if i.LazyWorkspace == nil {
+		return nil, fmt.Errorf("resolveTargetsForLazyLoading called but LazyWorkspace is nil")
+	}
+
+	if len(cmdArgs) == 0 {
+		return nil, nil
+	}
+
+	// Handle "all" argument
+	if len(cmdArgs) == 1 && cmdArgs[0] == "all" {
+		return i.resolveAllBenchmarksForLazyLoading(ctx)
+	}
+
+	targets := make([]modconfig.ModTreeItem, 0, len(cmdArgs))
+	for _, arg := range cmdArgs {
+		// Parse the resource name from the argument
+		fullName, err := i.parseTargetName(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		slog.Debug("Loading benchmark for execution (lazy)", "name", fullName)
+		benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, fullName)
+		if err != nil {
+			return nil, fmt.Errorf("failed to load benchmark %s: %w", fullName, err)
+		}
+
+		targets = append(targets, benchmark)
+	}
+
+	return targets, nil
+}
+
+// parseTargetName parses a target argument into a full resource name.
+// Handles formats: "name", "type.name", "mod.type.name"
+func (i *InitData) parseTargetName(arg string) (string, error) {
+	parts := strings.Split(arg, ".")
+	modName := i.LazyWorkspace.GetIndex().ModName
+
+	switch len(parts) {
+	case 1:
+		// Just name, assume benchmark type
+		return fmt.Sprintf("%s.benchmark.%s", modName, parts[0]), nil
+	case 2:
+		// type.name
+		return fmt.Sprintf("%s.%s.%s", modName, parts[0], parts[1]), nil
+	case 3:
+		// mod.type.name - use as-is
+		return arg, nil
+	default:
+		return "", fmt.Errorf("invalid target name format: %s", arg)
+	}
+}
+
+// resolveAllBenchmarksForLazyLoading resolves all top-level benchmarks for the "all" argument.
+func (i *InitData) resolveAllBenchmarksForLazyLoading(ctx context.Context) ([]modconfig.ModTreeItem, error) {
+	// Get all top-level benchmarks from the index
+	index := i.LazyWorkspace.GetIndex()
+	modName := index.ModName
+
+	var childTargets []modconfig.ModTreeItem
+
+	for _, entry := range index.List() {
+		// Only include top-level benchmarks from the current mod
+		if entry.Type == "benchmark" && entry.IsTopLevel {
+			// Check if this benchmark belongs to the current mod
+			if strings.HasPrefix(entry.Name, modName+".") {
+				slog.Debug("Loading benchmark for execution (lazy, all)", "name", entry.Name)
+				benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, entry.Name)
+				if err != nil {
+					return nil, fmt.Errorf("failed to load benchmark %s: %w", entry.Name, err)
+				}
+				childTargets = append(childTargets, benchmark)
+			}
+		}
+	}
+
+	if len(childTargets) == 0 {
+		return nil, nil
+	}
+
+	// Create a root benchmark to hold all the benchmarks (same as handleAllArg does)
+	resolvedItem := resources.NewRootBenchmarkWithChildren(i.Workspace.Mod, childTargets).(modconfig.ModTreeItem)
+	return []modconfig.ModTreeItem{resolvedItem}, nil
 }

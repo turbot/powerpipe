@@ -23,6 +23,9 @@ import (
 // LazyWorkspace wraps PowerpipeWorkspace with lazy loading capabilities.
 // Instead of loading all resources at startup, it builds an index of resource
 // metadata and loads resources on-demand when accessed.
+//
+// Hybrid Mode: Uses lazy loading for browsing (fast startup), but falls back
+// to eager loading when execution is needed (proper reference resolution).
 type LazyWorkspace struct {
 	*PowerpipeWorkspace
 
@@ -45,6 +48,14 @@ type LazyWorkspace struct {
 
 	// Lazy mod resources accessor
 	lazyResources *LazyModResources
+
+	// Eager workspace for execution (loaded on-demand when first execution is requested)
+	eagerWorkspace *PowerpipeWorkspace
+	eagerLoadOnce  sync.Once
+	eagerLoadErr   error
+
+	// Path for eager loading
+	workspacePath string
 }
 
 // LazyLoadConfig configures lazy loading behavior.
@@ -115,6 +126,7 @@ func NewLazyWorkspace(ctx context.Context, workspacePath string, config LazyLoad
 		loader:             loader,
 		resolver:           resolver,
 		config:             config,
+		workspacePath:      workspacePath,
 	}
 
 	// Create lazy mod resources accessor
@@ -129,6 +141,35 @@ func NewLazyWorkspace(ctx context.Context, workspacePath string, config LazyLoad
 	}
 
 	return lw, nil
+}
+
+// GetWorkspaceForExecution returns a fully-loaded workspace for execution.
+// This uses eager loading with proper reference resolution, which is needed
+// for controls that reference queries. The eager workspace is loaded once
+// on first request and cached for subsequent executions.
+func (lw *LazyWorkspace) GetWorkspaceForExecution(ctx context.Context) (*PowerpipeWorkspace, error) {
+	lw.eagerLoadOnce.Do(func() {
+		// Load the workspace eagerly using the standard Load function
+		// This does full HCL parsing with proper reference resolution
+		ew, errAndWarnings := Load(ctx, lw.workspacePath)
+		if errAndWarnings.GetError() != nil {
+			lw.eagerLoadErr = errAndWarnings.GetError()
+			return
+		}
+
+		// Copy event handlers from the lazy workspace to the eager workspace
+		// This ensures dashboard events from execution are properly routed to the server
+		for _, handler := range lw.PowerpipeWorkspace.dashboardEventHandlers {
+			ew.RegisterDashboardEventHandler(ctx, handler)
+		}
+
+		lw.eagerWorkspace = ew
+	})
+
+	if lw.eagerLoadErr != nil {
+		return nil, lw.eagerLoadErr
+	}
+	return lw.eagerWorkspace, nil
 }
 
 // buildResourceIndex scans the workspace and builds a resource index.
@@ -304,6 +345,7 @@ func matchPattern(pattern, name string) bool {
 
 // GetResource retrieves a resource by parsed name, loading it on-demand if needed.
 // This implements the modconfig.ResourceProvider interface.
+// For benchmarks, this resolves children so they're available for execution.
 func (lw *LazyWorkspace) GetResource(parsedName *modconfig.ParsedResourceName) (modconfig.HclResource, bool) {
 	ctx := context.Background()
 
@@ -318,6 +360,15 @@ func (lw *LazyWorkspace) GetResource(parsedName *modconfig.ParsedResourceName) (
 	modName = lw.index.ResolveModName(modName)
 
 	fullName := fmt.Sprintf("%s.%s.%s", modName, parsedName.ItemType, parsedName.Name)
+
+	// For benchmarks, use LoadBenchmarkForExecution to ensure children are resolved
+	if parsedName.ItemType == "benchmark" {
+		resource, err := lw.LoadBenchmarkForExecution(ctx, fullName)
+		if err != nil {
+			return nil, false
+		}
+		return resource.(modconfig.HclResource), true
+	}
 
 	// Try to load from cache or disk
 	resource, err := lw.loader.Load(ctx, fullName)
@@ -367,6 +418,80 @@ func (lw *LazyWorkspace) LoadDashboard(ctx context.Context, name string) (*resou
 // LoadBenchmark loads a benchmark and all its children on-demand.
 func (lw *LazyWorkspace) LoadBenchmark(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
 	return lw.loader.LoadBenchmark(ctx, name)
+}
+
+// LoadBenchmarkForExecution loads a benchmark with all children properly resolved
+// and associated with their parents. This is needed for execution because the standard
+// LoadBenchmark only caches resources but doesn't set the Children field on benchmarks.
+//
+// The key difference from LoadBenchmark:
+// - LoadBenchmark: loads resources into cache, but GetChildren() returns empty
+// - LoadBenchmarkForExecution: loads resources AND sets Children field properly
+func (lw *LazyWorkspace) LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
+	// First, load all resources into the cache using the standard loader
+	benchmark, err := lw.loader.LoadBenchmark(ctx, name)
+	if err != nil {
+		return nil, err
+	}
+
+	// Now resolve and set children on all benchmarks in the tree
+	if err := lw.resolveChildrenRecursively(ctx, benchmark); err != nil {
+		return nil, err
+	}
+
+	return benchmark, nil
+}
+
+// resolveChildrenRecursively walks the benchmark tree and sets the Children field
+// by resolving child names from the index and looking up resources from the cache.
+func (lw *LazyWorkspace) resolveChildrenRecursively(ctx context.Context, item modconfig.ModTreeItem) error {
+	// Get child names from the index
+	entry, ok := lw.index.Get(item.Name())
+	if !ok {
+		return nil // No index entry, nothing to resolve
+	}
+
+	if len(entry.ChildNames) == 0 {
+		return nil // No children to resolve
+	}
+
+	// Resolve each child from the cache and build the children slice
+	children := make([]modconfig.ModTreeItem, 0, len(entry.ChildNames))
+	for _, childName := range entry.ChildNames {
+		// Load child from cache (should already be loaded by LoadBenchmark)
+		childResource, err := lw.loader.Load(ctx, childName)
+		if err != nil {
+			return fmt.Errorf("failed to load child %s: %w", childName, err)
+		}
+
+		childItem, ok := childResource.(modconfig.ModTreeItem)
+		if !ok {
+			continue // Skip non-tree items
+		}
+
+		children = append(children, childItem)
+
+		// Set parent relationship
+		if err := childItem.AddParent(item); err != nil {
+			return err
+		}
+
+		// Recursively resolve children for benchmarks (both regular and detection)
+		switch childResource.(type) {
+		case *resources.Benchmark, *resources.DetectionBenchmark:
+			if err := lw.resolveChildrenRecursively(ctx, childItem); err != nil {
+				return err
+			}
+		}
+	}
+
+	// Set children on the item using the ModTreeItemImpl's SetChildren method
+	if impl := item.GetModTreeItemImpl(); impl != nil {
+		impl.SetChildren(children)
+		impl.ChildNameStrings = entry.ChildNames
+	}
+
+	return nil
 }
 
 // LoadResource loads a single resource by name.

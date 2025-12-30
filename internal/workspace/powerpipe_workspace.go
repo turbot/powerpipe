@@ -158,3 +158,9 @@ func (w *PowerpipeWorkspace) LoadBenchmark(ctx context.Context, name string) (mo
 	}
 	return nil, fmt.Errorf("benchmark not found: %s", name)
 }
+
+// LoadBenchmarkForExecution loads a benchmark with children properly resolved for execution.
+// For eager workspaces, this is the same as LoadBenchmark since children are already resolved during parsing.
+func (w *PowerpipeWorkspace) LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
+	return w.LoadBenchmark(ctx, name)
+}

@@ -27,6 +27,9 @@ type WorkspaceProvider interface {
 	LoadDashboard(ctx context.Context, name string) (*resources.Dashboard, error)
 	// LoadBenchmark loads a benchmark by name
 	LoadBenchmark(ctx context.Context, name string) (modconfig.ModTreeItem, error)
+	// LoadBenchmarkForExecution loads a benchmark with children properly resolved for execution.
+	// For lazy workspaces, this resolves child references. For eager workspaces, this is the same as LoadBenchmark.
+	LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error)
 }
 
 // DashboardServerWorkspace extends WorkspaceProvider with methods needed by the dashboard server.
