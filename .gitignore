@@ -46,3 +46,5 @@ powerpipe
 
 # Benchmark results
 /benchmark_results/
+# Claude Code WIP files
+.claude/wip/
