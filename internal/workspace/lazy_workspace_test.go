@@ -14,7 +14,7 @@ import (
 func TestLazyWorkspace_FastStartup(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "medium")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "medium")
 
 	start := time.Now()
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
@@ -42,7 +42,7 @@ func TestLazyWorkspace_FastStartup(t *testing.T) {
 func TestLazyWorkspace_OnDemandLoading(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -54,7 +54,7 @@ func TestLazyWorkspace_OnDemandLoading(t *testing.T) {
 	assert.Equal(t, 0, lw.cache.Stats().Entries)
 
 	// Load a dashboard
-	dash, err := lw.LoadDashboard(ctx, "small_test.dashboard.dashboard_0")
+	dash, err := lw.LoadDashboard(ctx, "lazy_small.dashboard.dashboard_0")
 	require.NoError(t, err)
 	assert.NotNil(t, dash)
 
@@ -65,7 +65,7 @@ func TestLazyWorkspace_OnDemandLoading(t *testing.T) {
 func TestLazyWorkspace_AvailableDashboards(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -84,7 +84,7 @@ func TestLazyWorkspace_AvailableDashboards(t *testing.T) {
 func TestLazyWorkspace_MemoryBounded(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "medium")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "medium")
 
 	config := LazyLoadConfig{
 		MaxCacheMemory: 1 * 1024 * 1024, // 1MB limit (small for testing)
@@ -117,7 +117,7 @@ func TestLazyWorkspace_MemoryBounded(t *testing.T) {
 func TestLazyWorkspace_GetResource(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -126,16 +126,16 @@ func TestLazyWorkspace_GetResource(t *testing.T) {
 	ctx := context.Background()
 
 	// Load a specific resource
-	resource, err := lw.LoadResource(ctx, "small_test.query.query_0")
+	resource, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 	assert.NotNil(t, resource)
-	assert.Equal(t, "small_test.query.query_0", resource.Name())
+	assert.Equal(t, "lazy_small.query.query_0", resource.Name())
 }
 
 func TestLazyWorkspace_IsLazy(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	// Test LazyWorkspace
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
@@ -152,7 +152,7 @@ func TestLazyWorkspace_IsLazy(t *testing.T) {
 func TestLazyModResources_Counts(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -182,7 +182,7 @@ func TestLazyModResources_Counts(t *testing.T) {
 func TestLazyModResources_ListNames(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -208,7 +208,7 @@ func TestLazyModResources_ListNames(t *testing.T) {
 func TestLoadLazy(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := LoadLazy(context.Background(), modPath)
 	require.NoError(t, err)
@@ -221,7 +221,7 @@ func TestLoadLazy(t *testing.T) {
 func TestLoadAuto_WithLazyLoading(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	wp, ew := LoadAuto(context.Background(), modPath, WithLazyLoading(true))
 	require.Nil(t, ew.GetError())
@@ -237,7 +237,7 @@ func TestLoadAuto_WithLazyLoading(t *testing.T) {
 func TestLazyWorkspace_CacheInvalidation(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -246,14 +246,14 @@ func TestLazyWorkspace_CacheInvalidation(t *testing.T) {
 	ctx := context.Background()
 
 	// Load a resource
-	_, err = lw.LoadResource(ctx, "small_test.query.query_0")
+	_, err = lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 
 	initialCount := lw.cache.Stats().Entries
 	assert.Greater(t, initialCount, 0)
 
 	// Invalidate it
-	lw.InvalidateResource("small_test.query.query_0")
+	lw.InvalidateResource("lazy_small.query.query_0")
 
 	// Should be gone (or fewer entries)
 	afterCount := lw.cache.Stats().Entries
@@ -267,7 +267,7 @@ func TestLazyWorkspace_CacheInvalidation(t *testing.T) {
 func TestLazyWorkspace_IndexStats(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "generated", "small")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)

@@ -40,19 +40,13 @@ func getTestModPath(t *testing.T, modName string) string {
 	return filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", modName)
 }
 
-// getGeneratedModPath returns the path to a test mod.
-// Note: Originally used generated/size paths, but those are gitignored.
-// Now maps to the committed lazy-loading-tests directory.
+// getGeneratedModPath returns the path to a generated test mod.
+// Uses lazy-loading-tests/generated/ which is committed (not the top-level generated/ which is gitignored).
 func getGeneratedModPath(t *testing.T, size string) string {
 	t.Helper()
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	// Map size to committed test mod: "small" -> "simple"
-	modName := "simple"
-	if size == "large" {
-		modName = "complex" // Use complex for large tests
-	}
-	return filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", modName)
+	return filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", size)
 }
 
 // =============================================================================

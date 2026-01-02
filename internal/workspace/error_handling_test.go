@@ -71,7 +71,7 @@ func TestError_EagerLoadFailureCached(t *testing.T) {
 func TestError_ResourceNotFoundInIndex(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -80,7 +80,7 @@ func TestError_ResourceNotFoundInIndex(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load non-existent resource
-	_, err = lw.LoadResource(ctx, "lazy_simple.query.nonexistent_resource")
+	_, err = lw.LoadResource(ctx, "lazy_small.query.nonexistent_resource")
 	assert.Error(t, err, "Should error for non-existent resource")
 	assert.Contains(t, err.Error(), "not found", "Error should indicate resource not found")
 }
@@ -88,7 +88,7 @@ func TestError_ResourceNotFoundInIndex(t *testing.T) {
 func TestError_DashboardNotFound(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -97,14 +97,14 @@ func TestError_DashboardNotFound(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load non-existent dashboard
-	_, err = lw.LoadDashboard(ctx, "lazy_simple.dashboard.nonexistent_dashboard")
+	_, err = lw.LoadDashboard(ctx, "lazy_small.dashboard.nonexistent_dashboard")
 	assert.Error(t, err, "Should error for non-existent dashboard")
 }
 
 func TestError_BenchmarkNotFound(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -113,14 +113,14 @@ func TestError_BenchmarkNotFound(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load non-existent benchmark
-	_, err = lw.LoadBenchmark(ctx, "lazy_simple.benchmark.nonexistent_benchmark")
+	_, err = lw.LoadBenchmark(ctx, "lazy_small.benchmark.nonexistent_benchmark")
 	assert.Error(t, err, "Should error for non-existent benchmark")
 }
 
 func TestError_GetResource_ParsedNameNil(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -180,7 +180,7 @@ func TestError_NoPanicOnEmptyWorkspace(t *testing.T) {
 func TestError_NoPanicOnNilResource(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -199,7 +199,7 @@ func TestError_NoPanicOnNilResource(t *testing.T) {
 func TestError_NoPanicOnConcurrentErrors(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -214,9 +214,9 @@ func TestError_NoPanicOnConcurrentErrors(t *testing.T) {
 		go func(id int) {
 			defer wg.Done()
 			// These should all error, but not panic
-			_, _ = lw.LoadResource(ctx, "lazy_simple.query.nonexistent")
-			_, _ = lw.LoadDashboard(ctx, "lazy_simple.dashboard.nonexistent")
-			_, _ = lw.LoadBenchmark(ctx, "lazy_simple.benchmark.nonexistent")
+			_, _ = lw.LoadResource(ctx, "lazy_small.query.nonexistent")
+			_, _ = lw.LoadDashboard(ctx, "lazy_small.dashboard.nonexistent")
+			_, _ = lw.LoadBenchmark(ctx, "lazy_small.benchmark.nonexistent")
 		}(i)
 	}
 
@@ -230,7 +230,7 @@ func TestError_NoPanicOnConcurrentErrors(t *testing.T) {
 func TestError_CacheLookupAfterInvalidation(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -239,7 +239,7 @@ func TestError_CacheLookupAfterInvalidation(t *testing.T) {
 	ctx := context.Background()
 
 	// Load a resource
-	resourceName := "lazy_simple.query.simple_count"
+	resourceName := "lazy_small.query.query_0"
 	resource1, err := lw.LoadResource(ctx, resourceName)
 	require.NoError(t, err)
 	assert.NotNil(t, resource1)
@@ -256,7 +256,7 @@ func TestError_CacheLookupAfterInvalidation(t *testing.T) {
 func TestError_CacheInvalidationOnNonexistent(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -336,7 +336,7 @@ func TestError_CircularDependencyInIndex(t *testing.T) {
 func TestError_IncludesResourceName(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -345,7 +345,7 @@ func TestError_IncludesResourceName(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load non-existent resource
-	resourceName := "lazy_simple.query.very_specific_name_for_test"
+	resourceName := "lazy_small.query.very_specific_name_for_test"
 	_, err = lw.LoadResource(ctx, resourceName)
 
 	assert.Error(t, err)
@@ -357,7 +357,7 @@ func TestError_IncludesResourceName(t *testing.T) {
 func TestError_NoInternalLeakage(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -366,7 +366,7 @@ func TestError_NoInternalLeakage(t *testing.T) {
 	ctx := context.Background()
 
 	// Try to load non-existent resource
-	_, err = lw.LoadResource(ctx, "lazy_simple.query.nonexistent")
+	_, err = lw.LoadResource(ctx, "lazy_small.query.nonexistent")
 
 	if err != nil {
 		errMsg := err.Error()
@@ -383,7 +383,7 @@ func TestError_NoInternalLeakage(t *testing.T) {
 func TestError_ContextCancellation(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -398,7 +398,7 @@ func TestError_ContextCancellation(t *testing.T) {
 	// The important thing is they don't panic
 
 	// Try loading - may or may not fail depending on implementation
-	resource, err := lw.LoadResource(ctx, "lazy_simple.query.simple_count")
+	resource, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	// Either succeeds (if context not checked) or fails with context error
 	if err != nil {
 		assert.True(t,
@@ -416,7 +416,7 @@ func TestError_ContextCancellation(t *testing.T) {
 func TestError_RecoveryAfterCacheClear(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -425,7 +425,7 @@ func TestError_RecoveryAfterCacheClear(t *testing.T) {
 	ctx := context.Background()
 
 	// Load some resources
-	resource1, err := lw.LoadResource(ctx, "lazy_simple.query.simple_count")
+	resource1, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 	assert.NotNil(t, resource1)
 
@@ -434,7 +434,7 @@ func TestError_RecoveryAfterCacheClear(t *testing.T) {
 	assert.Equal(t, 0, lw.CacheStats().Entries)
 
 	// Should be able to reload
-	resource2, err := lw.LoadResource(ctx, "lazy_simple.query.simple_count")
+	resource2, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 	assert.NotNil(t, resource2)
 }
@@ -442,7 +442,7 @@ func TestError_RecoveryAfterCacheClear(t *testing.T) {
 func TestError_SessionRecoveryAfterError(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -451,16 +451,16 @@ func TestError_SessionRecoveryAfterError(t *testing.T) {
 	ctx := context.Background()
 
 	// First, cause an error by trying to load non-existent
-	_, err = lw.LoadResource(ctx, "lazy_simple.query.nonexistent")
+	_, err = lw.LoadResource(ctx, "lazy_small.query.nonexistent")
 	assert.Error(t, err)
 
 	// Should be able to load valid resources afterwards
-	resource, err := lw.LoadResource(ctx, "lazy_simple.query.simple_count")
+	resource, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 	assert.NotNil(t, resource)
 
 	// And load dashboard
-	dash, err := lw.LoadDashboard(ctx, "lazy_simple.dashboard.simple")
+	dash, err := lw.LoadDashboard(ctx, "lazy_small.dashboard.dashboard_0")
 	require.NoError(t, err)
 	assert.NotNil(t, dash)
 }
@@ -472,7 +472,7 @@ func TestError_SessionRecoveryAfterError(t *testing.T) {
 func TestError_MultipleConsecutiveErrors(t *testing.T) {
 	_, currentFile, _, ok := runtime.Caller(0)
 	require.True(t, ok)
-	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "simple")
+	modPath := filepath.Join(filepath.Dir(currentFile), "..", "testdata", "mods", "lazy-loading-tests", "generated", "small")
 
 	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 	require.NoError(t, err)
@@ -482,7 +482,7 @@ func TestError_MultipleConsecutiveErrors(t *testing.T) {
 
 	// Generate many errors
 	for i := 0; i < 100; i++ {
-		_, _ = lw.LoadResource(ctx, "lazy_simple.query.nonexistent")
+		_, _ = lw.LoadResource(ctx, "lazy_small.query.nonexistent")
 	}
 
 	// Workspace should still be functional
@@ -490,7 +490,7 @@ func TestError_MultipleConsecutiveErrors(t *testing.T) {
 	assert.Greater(t, stats.TotalEntries, 0, "Index should still have entries")
 
 	// Should still be able to load valid resources
-	resource, err := lw.LoadResource(ctx, "lazy_simple.query.simple_count")
+	resource, err := lw.LoadResource(ctx, "lazy_small.query.query_0")
 	require.NoError(t, err)
 	assert.NotNil(t, resource)
 }
