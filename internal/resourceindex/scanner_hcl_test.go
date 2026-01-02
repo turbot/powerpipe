@@ -314,7 +314,7 @@ query "second" {
 `
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFileHCLWithOffsets(filePath)

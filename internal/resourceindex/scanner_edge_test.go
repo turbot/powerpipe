@@ -809,7 +809,7 @@ query "second" {
 `
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFileWithOffsets(filePath)
@@ -852,7 +852,7 @@ dashboard "after_unicode" {
 `
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFileWithOffsets(filePath)
@@ -893,7 +893,7 @@ query "at_end" {
 `
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFileWithOffsets(filePath)
@@ -1179,7 +1179,7 @@ func TestScanner_ModRoot(t *testing.T) {
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
 	content := `dashboard "test" { title = "Test" }`
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("mymod")
 	scanner.SetModRoot(tmpDir)
@@ -1360,7 +1360,7 @@ query "query_` + string(rune('a'+i)) + `" {
 }
 `)
 		filePath := filepath.Join(tmpDir, "file_"+string(rune('a'+i))+".pp")
-		require.NoError(t, os.WriteFile(filePath, content, 0644))
+		require.NoError(t, os.WriteFile(filePath, content, 0600))
 	}
 
 	scanner := NewScanner("testmod")
@@ -1458,8 +1458,8 @@ func TestScanner_OnlyNonPPFiles(t *testing.T) {
 	tmpDir := t.TempDir()
 
 	// Create non-.pp files
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "readme.md"), []byte("# README"), 0644))
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "config.json"), []byte("{}"), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "readme.md"), []byte("# README"), 0600))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "config.json"), []byte("{}"), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanDirectory(tmpDir)

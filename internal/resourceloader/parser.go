@@ -303,7 +303,7 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 		if childItem, ok := childResource.(modconfig.ModTreeItem); ok {
 			switch p := parent.(type) {
 			case *resources.Dashboard:
-				p.AddChild(childItem)
+				_ = p.AddChild(childItem)
 			case *resources.DashboardContainer:
 				p.AddChild(childItem)
 			}

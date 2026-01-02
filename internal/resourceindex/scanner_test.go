@@ -328,7 +328,7 @@ dashboard "file_test" {
     title = "File Test"
 }
 `
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFile(filePath)
@@ -357,7 +357,7 @@ control "nested_control" { sql = "SELECT 'ok'" }
 
 	for path, content := range files {
 		fullPath := filepath.Join(tmpDir, path)
-		require.NoError(t, os.WriteFile(fullPath, []byte(content), 0644))
+		require.NoError(t, os.WriteFile(fullPath, []byte(content), 0600))
 	}
 
 	scanner := NewScanner("testmod")
@@ -382,7 +382,7 @@ func TestScanner_SkipsHiddenDirectories(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(tmpDir, "visible.pp"),
 		[]byte(`dashboard "visible" { title = "Visible" }`),
-		0644,
+		0600,
 	))
 
 	// Create hidden directory with file
@@ -391,7 +391,7 @@ func TestScanner_SkipsHiddenDirectories(t *testing.T) {
 	require.NoError(t, os.WriteFile(
 		filepath.Join(hiddenDir, "hidden.pp"),
 		[]byte(`dashboard "hidden" { title = "Hidden" }`),
-		0644,
+		0600,
 	))
 
 	scanner := NewScanner("testmod")
@@ -422,7 +422,7 @@ query "query_%d" {
 }
 `, i, i, i, i)
 		filePath := filepath.Join(tmpDir, fmt.Sprintf("file_%d.pp", i))
-		require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+		require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 	}
 
 	scanner := NewScanner("testmod")
@@ -446,7 +446,7 @@ query "second" {
 `
 	tmpDir := t.TempDir()
 	filePath := filepath.Join(tmpDir, "test.pp")
-	require.NoError(t, os.WriteFile(filePath, []byte(content), 0644))
+	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
 	err := scanner.ScanFileWithOffsets(filePath)
@@ -482,7 +482,7 @@ query "query_%d_%d" {
 `, i, j, i, j, j, i, i, j, j))
 		}
 		filePath := filepath.Join(tmpDir, fmt.Sprintf("file_%d.pp", i))
-		require.NoError(t, os.WriteFile(filePath, []byte(content.String()), 0644))
+		require.NoError(t, os.WriteFile(filePath, []byte(content.String()), 0600))
 	}
 
 	// Time sequential scan
@@ -641,7 +641,7 @@ func TestScanner_NonPPFilesIgnored(t *testing.T) {
 	}
 
 	for name, content := range files {
-		require.NoError(t, os.WriteFile(filepath.Join(tmpDir, name), []byte(content), 0644))
+		require.NoError(t, os.WriteFile(filepath.Join(tmpDir, name), []byte(content), 0600))
 	}
 
 	scanner := NewScanner("testmod")

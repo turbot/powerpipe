@@ -747,7 +747,7 @@ func TestCLI_ServerPortConflict(t *testing.T) {
 				assert.NotEqual(t, 0, exitErr.ExitCode(), "Second server should fail due to port conflict")
 			}
 		case <-time.After(5 * time.Second):
-			cmd.Process.Kill()
+			_ = cmd.Process.Kill()
 			t.Error("Second server should have failed due to port conflict")
 		}
 	}
