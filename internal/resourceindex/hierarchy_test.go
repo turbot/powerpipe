@@ -157,7 +157,7 @@ func TestHierarchy_SiblingBenchmarks(t *testing.T) {
 // B0 → B1 → B2 → ... → B(depth-1) → Control
 func createDeepHierarchy(idx *ResourceIndex, depth int) {
 	for i := 0; i < depth; i++ {
-		childNames := []string{}
+		var childNames []string
 		if i < depth-1 {
 			// Not leaf, point to next benchmark
 			childNames = []string{fmt.Sprintf("mod.benchmark.b%d", i+1)}

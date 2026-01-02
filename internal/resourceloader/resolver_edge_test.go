@@ -99,10 +99,6 @@ func (b *testGraphBuilder) buildResolver() *DependencyResolver {
 	return NewDependencyResolver(b.index, loader)
 }
 
-func (b *testGraphBuilder) build() *resourceindex.ResourceIndex {
-	return b.index
-}
-
 // =============================================================================
 // Complex Dependency Graphs Tests
 // =============================================================================

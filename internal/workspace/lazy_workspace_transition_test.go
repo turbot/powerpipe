@@ -912,7 +912,7 @@ func TestLazyWorkspace_ConcurrentClose(t *testing.T) {
 			defer wg.Done()
 			defer func() {
 				// Recover from any panics
-				recover()
+				_ = recover()
 			}()
 			lw.Close()
 		}()

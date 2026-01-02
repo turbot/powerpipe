@@ -729,14 +729,13 @@ func TestConcurrent_SessionDataIntegrity(t *testing.T) {
 				state.expectedDash = newDash
 				state.mu.Unlock()
 
-				// Verify
+				// Verify - just check that we can access clients without panic
+				// Mismatches can happen due to race, which is expected
 				clients := server.getDashboardClients()
 				if client, ok := clients[state.sessionId]; ok {
 					state.mu.Lock()
-					if client.Dashboard != nil && *client.Dashboard != state.expectedDash {
-						// This can happen due to race, which is expected
-						// We're mainly checking for panics and corruption
-					}
+					// Access Dashboard to ensure no corruption - value mismatch is ok
+					_ = client.Dashboard
 					state.mu.Unlock()
 				}
 			}

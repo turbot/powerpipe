@@ -111,12 +111,10 @@ func (l *Loader) PreloadWithDependencies(ctx context.Context, names []string, op
 				case <-ctx.Done():
 					return ctx.Err()
 				default:
-					// Dependency may be missing - proceed anyway
-					if _, ok := l.index.Get(dep.To); !ok {
-						break
-					}
+					// Don't block indefinitely on dependencies - proceed anyway
+					break
 				}
-				break // Don't block indefinitely on dependencies
+				break
 			}
 		}
 

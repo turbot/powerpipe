@@ -52,26 +52,6 @@ func (m *mockSession) Write(data []byte) error {
 	return nil
 }
 
-func (m *mockSession) getWrittenData() [][]byte {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	result := make([][]byte, len(m.writtenData))
-	copy(result, m.writtenData)
-	return result
-}
-
-func (m *mockSession) clearWrittenData() {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.writtenData = make([][]byte, 0)
-}
-
-func (m *mockSession) close() {
-	m.mu.Lock()
-	defer m.mu.Unlock()
-	m.closed = true
-}
-
 // newTestServerEager creates an eager mode test server with the behavior_test_mod fixture
 func newTestServerEager(t *testing.T) (*Server, func()) {
 	t.Helper()

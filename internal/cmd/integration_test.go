@@ -10,7 +10,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"regexp"
 	"runtime"
 	"strings"
 	"sync"
@@ -68,14 +67,13 @@ func buildPowerpipe(t *testing.T) string {
 		cmd := exec.Command("make", "build")
 		cmd.Dir = projectRoot
 
-		output, err := cmd.CombinedOutput()
-		if err != nil {
+		if err := cmd.Run(); err != nil {
 			// Try direct go build as fallback
 			cmd = exec.Command("go", "build", "-o", powerpipeBinary, ".")
 			cmd.Dir = projectRoot
-			output, err = cmd.CombinedOutput()
-			if err != nil {
-				buildErr = fmt.Errorf("failed to build powerpipe: %v\nOutput: %s", err, output)
+			output, buildCmdErr := cmd.CombinedOutput()
+			if buildCmdErr != nil {
+				buildErr = fmt.Errorf("failed to build powerpipe: %v\nOutput: %s", buildCmdErr, output)
 			}
 		} else {
 			// make build installs to /usr/local/bin
@@ -120,9 +118,7 @@ func runPowerpipeWithTimeout(t *testing.T, workDir string, env []string, timeout
 
 	// Set environment
 	cmd.Env = os.Environ()
-	for _, e := range env {
-		cmd.Env = append(cmd.Env, e)
-	}
+	cmd.Env = append(cmd.Env, env...)
 
 	var outBuf, errBuf bytes.Buffer
 	cmd.Stdout = &outBuf
@@ -201,54 +197,20 @@ func startServer(t *testing.T, workDir string, port int, extraArgs ...string) (*
 
 	// Wait for server to be ready
 	if !waitForServer(t, port, 30*time.Second) {
-		cmd.Process.Kill()
+		_ = cmd.Process.Kill()
 		t.Fatalf("Server failed to start within timeout.\nStdout: %s\nStderr: %s", outBuf.String(), errBuf.String())
 	}
 
 	cleanup := func() {
 		if cmd.Process != nil {
-			cmd.Process.Kill()
-			cmd.Wait()
+			_ = cmd.Process.Kill()
+			_ = cmd.Wait()
 		}
 	}
 
 	return cmd, cleanup
 }
 
-// normalizeOutput normalizes output for comparison by removing timestamps, durations, etc.
-func normalizeOutput(output string) string {
-	// Remove ANSI color codes
-	ansiRegex := regexp.MustCompile(`\x1b\[[0-9;]*m`)
-	output = ansiRegex.ReplaceAllString(output, "")
-
-	// Remove timestamps like "2024-01-02 15:04:05"
-	tsRegex := regexp.MustCompile(`\d{4}-\d{2}-\d{2}[T ]\d{2}:\d{2}:\d{2}[.\d]*Z?`)
-	output = tsRegex.ReplaceAllString(output, "TIMESTAMP")
-
-	// Remove durations like "123ms" or "1.5s"
-	durationRegex := regexp.MustCompile(`\d+(\.\d+)?(ms|s|m|h)`)
-	output = durationRegex.ReplaceAllString(output, "DURATION")
-
-	// Remove file paths that might differ
-	pathRegex := regexp.MustCompile(`/[^\s]+/testdata/`)
-	output = pathRegex.ReplaceAllString(output, "TESTDATA/")
-
-	// Normalize whitespace
-	output = strings.TrimSpace(output)
-
-	return output
-}
-
-// compareOutputs compares two outputs after normalization
-func compareOutputs(t *testing.T, lazy, eager string, msgAndArgs ...interface{}) {
-	lazyNorm := normalizeOutput(lazy)
-	eagerNorm := normalizeOutput(eager)
-
-	if lazyNorm != eagerNorm {
-		t.Errorf("Output mismatch between lazy and eager modes.\nLazy:\n%s\n\nEager:\n%s\n\n%v",
-			lazyNorm, eagerNorm, msgAndArgs)
-	}
-}
 
 // =============================================================================
 // Server Command Tests
@@ -299,8 +261,8 @@ func TestCLI_ServerStartsWithPreload(t *testing.T) {
 	require.NoError(t, err, "Failed to start server")
 	defer func() {
 		if cmd.Process != nil {
-			cmd.Process.Kill()
-			cmd.Wait()
+			_ = cmd.Process.Kill()
+			_ = cmd.Wait()
 		}
 	}()
 

@@ -48,7 +48,7 @@ func Track(name string, context ...string) func() {
 		})
 		mu.Unlock()
 		if detailed {
-			fmt.Fprintf(os.Stderr, "[TIMING] %s: %.2fms\n", name, float64(duration.Nanoseconds())/1e6)
+			_, _ = os.Stderr.WriteString(fmt.Sprintf("[TIMING] %s: %.2fms\n", name, float64(duration.Nanoseconds())/1e6))
 		}
 	}
 }
@@ -60,7 +60,7 @@ func Report() {
 	}
 
 	if jsonMode {
-		fmt.Fprintln(os.Stderr, ReportJSON())
+		_, _ = os.Stderr.WriteString(ReportJSON() + "\n")
 		return
 	}
 
@@ -72,14 +72,14 @@ func Report() {
 		return timings[i].StartTime.Before(timings[j].StartTime)
 	})
 
-	fmt.Fprintln(os.Stderr, "\n=== Performance Timing Report ===")
+	_, _ = os.Stderr.WriteString("\n=== Performance Timing Report ===\n")
 	var total time.Duration
 	for _, t := range timings {
-		fmt.Fprintf(os.Stderr, "%-50s %10.2fms\n", t.Name, t.DurationMs)
+		_, _ = os.Stderr.WriteString(fmt.Sprintf("%-50s %10.2fms\n", t.Name, t.DurationMs))
 		total += t.Duration
 	}
-	fmt.Fprintf(os.Stderr, "%-50s %10.2fms\n", "TOTAL (sum)", float64(total.Nanoseconds())/1e6)
-	fmt.Fprintln(os.Stderr, "=================================")
+	_, _ = os.Stderr.WriteString(fmt.Sprintf("%-50s %10.2fms\n", "TOTAL (sum)", float64(total.Nanoseconds())/1e6))
+	_, _ = os.Stderr.WriteString("=================================\n")
 }
 
 // ReportJSON outputs timings as JSON for programmatic processing

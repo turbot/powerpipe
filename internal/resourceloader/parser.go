@@ -107,13 +107,6 @@ func (l *Loader) readByLines(entry *resourceindex.IndexEntry) ([]byte, error) {
 	return []byte(content.String()), nil
 }
 
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
 // decodeResourceBlock decodes an HCL block into the appropriate resource type.
 func (l *Loader) decodeResourceBlock(ctx context.Context, entry *resourceindex.IndexEntry, block *hcl.Block) (modconfig.HclResource, error) {
 	// Create the resource using the factory function

@@ -148,9 +148,7 @@ func trackChildAccess(tracker *AccessTracker, resource modconfig.ModTreeItem, de
 
 	for _, child := range resource.GetChildren() {
 		tracker.Record(child.GetBlockType(), child.Name(), "children")
-		if treeItem, ok := child.(modconfig.ModTreeItem); ok {
-			trackChildAccess(tracker, treeItem, depth+1)
-		}
+		trackChildAccess(tracker, child, depth+1)
 	}
 }
 

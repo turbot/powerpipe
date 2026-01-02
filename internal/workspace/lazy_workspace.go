@@ -29,8 +29,6 @@ import (
 type LazyWorkspace struct {
 	*PowerpipeWorkspace
 
-	mu sync.RWMutex
-
 	// Index of all resources (always loaded at startup)
 	index *resourceindex.ResourceIndex
 

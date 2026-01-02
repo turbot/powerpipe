@@ -38,10 +38,8 @@ func (s *Scanner) ScanBytesHCL(content []byte, filePath string) error {
 func (s *Scanner) scanBytesHCL(content []byte, filePath string, withOffsets bool) error {
 	// Syntax parse only - no expression evaluation
 	file, diags := hclsyntax.ParseConfig(content, filePath, hcl.InitialPos)
-	if diags.HasErrors() {
-		// Continue with partial results - extract what we can from valid portions
-		// The HCL parser provides good error recovery
-	}
+	// Continue with partial results on errors - HCL parser provides good error recovery
+	_ = diags
 
 	if file == nil || file.Body == nil {
 		return nil

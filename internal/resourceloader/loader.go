@@ -139,10 +139,8 @@ func (l *Loader) loadChildren(ctx context.Context, parent modconfig.ModTreeItem)
 			}
 		}
 
-		if treeItem, ok := child.(modconfig.ModTreeItem); ok {
-			if err := l.loadChildren(ctx, treeItem); err != nil {
-				return err
-			}
+		if err := l.loadChildren(ctx, child); err != nil {
+			return err
 		}
 	}
 	return nil

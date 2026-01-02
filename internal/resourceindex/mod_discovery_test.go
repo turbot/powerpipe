@@ -34,7 +34,7 @@ mod "test_main" {
 query "main_query" {
   sql = "SELECT 1"
 }
-`), 0644))
+`), 0600))
 
 	// Create dependency mod
 	depModDir := filepath.Join(tmpDir, ".powerpipe", "mods", "github.com", "test", "dep-mod@v1.0.0")
@@ -47,7 +47,7 @@ mod "dep_mod" {
 query "dep_query" {
   sql = "SELECT 2"
 }
-`), 0644))
+`), 0600))
 
 	// Scan the main directory
 	scanner := NewScanner("test_main")
@@ -71,7 +71,7 @@ func TestModDiscovery_NestedDependency(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "main" { title = "Main" }
 query "main_query" { sql = "SELECT 'main'" }
-`), 0644))
+`), 0600))
 
 	// Create first-level dependency
 	depADir := filepath.Join(tmpDir, ".powerpipe", "mods", "github.com", "test", "dep-a@v1.0.0")
@@ -79,7 +79,7 @@ query "main_query" { sql = "SELECT 'main'" }
 	require.NoError(t, os.WriteFile(filepath.Join(depADir, "mod.pp"), []byte(`
 mod "dep_a" { title = "Dep A" }
 query "dep_a_query" { sql = "SELECT 'dep_a'" }
-`), 0644))
+`), 0600))
 
 	// Create nested dependency (dep_a's dependency)
 	depLeafDir := filepath.Join(depADir, ".powerpipe", "mods", "github.com", "test", "dep-leaf@v1.0.0")
@@ -87,7 +87,7 @@ query "dep_a_query" { sql = "SELECT 'dep_a'" }
 	require.NoError(t, os.WriteFile(filepath.Join(depLeafDir, "mod.pp"), []byte(`
 mod "dep_leaf" { title = "Dep Leaf" }
 query "leaf_query" { sql = "SELECT 'leaf'" }
-`), 0644))
+`), 0600))
 
 	// Scan main directory
 	mainScanner := NewScanner("main")
@@ -118,7 +118,7 @@ func TestModDiscovery_MissingModFile(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "main" { title = "Main" }
 query "main_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Create directory without mod.pp (simulating incomplete dependency)
 	incompleteDep := filepath.Join(tmpDir, ".powerpipe", "mods", "github.com", "test", "incomplete@v1.0.0")
@@ -128,7 +128,7 @@ query "main_query" { sql = "SELECT 1" }
 	// Create a .pp file in incomplete dep (but no mod.pp)
 	require.NoError(t, os.WriteFile(filepath.Join(incompleteDep, "queries.pp"), []byte(`
 query "orphan_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Scanning should not fail
 	scanner := NewScanner("main")
@@ -145,14 +145,14 @@ func TestModDiscovery_InvalidModFile(t *testing.T) {
 mod "main" {
   title = "Main"  # This is valid
 }
-`), 0644))
+`), 0600))
 
 	// Create a queries file with syntax that might cause issues
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(`
 query "valid_query" {
   sql = "SELECT 1"
 }
-`), 0644))
+`), 0600))
 
 	// Scanning should succeed (scanner is regex-based, not full HCL parse)
 	scanner := NewScanner("main")
@@ -177,7 +177,7 @@ func TestModDiscovery_EmptyModsDir(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "main" { title = "Main" }
 query "main_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Create empty .powerpipe/mods directory
 	modsDir := filepath.Join(tmpDir, ".powerpipe", "mods")
@@ -202,7 +202,7 @@ func TestModDiscovery_NoModsDir(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "main" { title = "Main" }
 query "main_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Note: No .powerpipe/mods directory created
 
@@ -228,11 +228,11 @@ func TestModDiscovery_ScanWithDifferentModName(t *testing.T) {
 	// Create mod files
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "original_name" { title = "Original" }
-`), 0644))
+`), 0600))
 
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(`
 query "test_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Scan with a specific mod name (simulating dependency scanning)
 	scanner := NewScanner("") // Empty initial name
@@ -251,11 +251,11 @@ func TestModDiscovery_ModRootSet(t *testing.T) {
 
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(`
 mod "test" { title = "Test" }
-`), 0644))
+`), 0600))
 
 	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(`
 query "test_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	scanner := NewScanner("test")
 	scanner.SetModRoot(tmpDir)
@@ -465,7 +465,7 @@ func TestModDiscovery_Symlinks(t *testing.T) {
 	require.NoError(t, os.WriteFile(filepath.Join(actualDir, "mod.pp"), []byte(`
 mod "symlinked_mod" { title = "Symlinked" }
 query "sym_query" { sql = "SELECT 1" }
-`), 0644))
+`), 0600))
 
 	// Create main mod with symlinked dependency
 	mainDir := filepath.Join(tmpDir, "main")
@@ -473,7 +473,7 @@ query "sym_query" { sql = "SELECT 1" }
 	require.NoError(t, os.MkdirAll(modsDir, 0755))
 	require.NoError(t, os.WriteFile(filepath.Join(mainDir, "mod.pp"), []byte(`
 mod "main" { title = "Main" }
-`), 0644))
+`), 0600))
 
 	// Create symlink to actual mod
 	symlinkPath := filepath.Join(modsDir, "symlinked@v1.0.0")
