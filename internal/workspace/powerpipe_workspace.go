@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"sync"
 
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
@@ -19,6 +20,10 @@ type PowerpipeWorkspace struct {
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
 	dashboardEventChan chan dashboardevents.DashboardEvent
+	// closeOnce ensures Close() is only executed once
+	closeOnce sync.Once
+	// closeCh signals event handlers to stop
+	closeCh chan struct{}
 }
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
@@ -29,6 +34,7 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 			ValidateVariables: true,
 			Mod:               modconfig.NewMod("local", workspacePath, hcl.Range{}),
 		},
+		closeCh: make(chan struct{}),
 	}
 
 	w.OnFileWatcherError = func(ctx context.Context, err error) {
@@ -41,13 +47,19 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 }
 
 func (w *PowerpipeWorkspace) Close() {
-	w.Workspace.Close()
-	if ch := w.dashboardEventChan; ch != nil {
-		// NOTE: set nil first
-		w.dashboardEventChan = nil
-		slog.Debug("closing dashboardEventChan")
-		close(ch)
-	}
+	w.closeOnce.Do(func() {
+		// Signal event handlers to stop (if closeCh was initialized)
+		if w.closeCh != nil {
+			close(w.closeCh)
+		}
+		// Close the base workspace
+		w.Workspace.Close()
+		// Close the event channel if it exists
+		if ch := w.dashboardEventChan; ch != nil {
+			slog.Debug("closing dashboardEventChan")
+			close(ch)
+		}
+	})
 }
 
 func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {

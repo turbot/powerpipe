@@ -40,9 +40,11 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 			benchmarkTrunks[entry.Name] = [][]string{{entry.Name}}
 		}
 
-		// Build children recursively from index
+		// Build children recursively from index with cycle detection
+		visiting := make(map[string]bool)
+		visiting[entry.Name] = true
 		info.Children = idx.buildBenchmarkChildren(entry, entry.IsTopLevel,
-			[]string{entry.Name}, benchmarkTrunks)
+			[]string{entry.Name}, benchmarkTrunks, visiting)
 
 		payload.Benchmarks[entry.Name] = info
 	}
@@ -59,13 +61,19 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 }
 
 func (idx *ResourceIndex) buildBenchmarkChildren(parent *IndexEntry,
-	recordTrunk bool, trunk []string, trunks map[string][][]string) []BenchmarkInfo {
+	recordTrunk bool, trunk []string, trunks map[string][][]string, visiting map[string]bool) []BenchmarkInfo {
 
 	var children []BenchmarkInfo
 
 	for _, childEntry := range idx.GetChildren(parent.Name) {
 		// Only include benchmark children (not controls)
 		if childEntry.Type != "benchmark" && childEntry.Type != "detection_benchmark" {
+			continue
+		}
+
+		// Cycle detection: skip if we're already visiting this node in the current path
+		if visiting[childEntry.Name] {
+			// Circular reference detected - skip to prevent infinite recursion
 			continue
 		}
 
@@ -76,14 +84,20 @@ func (idx *ResourceIndex) buildBenchmarkChildren(parent *IndexEntry,
 			trunks[childEntry.Name] = append(trunks[childEntry.Name], childTrunk)
 		}
 
+		// Mark as visiting before recursion
+		visiting[childEntry.Name] = true
+
 		info := BenchmarkInfo{
 			Title:         childEntry.Title,
 			FullName:      childEntry.Name,
 			ShortName:     childEntry.ShortName,
 			BenchmarkType: childEntry.BenchmarkType,
 			Tags:          childEntry.Tags,
-			Children:      idx.buildBenchmarkChildren(childEntry, recordTrunk, childTrunk, trunks),
+			Children:      idx.buildBenchmarkChildren(childEntry, recordTrunk, childTrunk, trunks, visiting),
 		}
+
+		// Unmark after recursion completes (allows the same node to appear in different branches)
+		delete(visiting, childEntry.Name)
 
 		children = append(children, info)
 	}

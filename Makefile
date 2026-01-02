@@ -49,6 +49,14 @@ release:
 		ghcr.io/turbot/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		release --clean --skip=validate
 
+.PHONY: test test-race
+
+test:
+	go test ./...
+
+test-race:
+	go test -race ./...
+
 # Run the test generator to create the acceptance tests(update the paths in main function in tests/acceptance/test_generator/generate.go)
 build-tests:
 	go run tests/acceptance/test_generator/generate.go

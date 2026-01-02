@@ -93,7 +93,8 @@ type attribute struct {
 var blockStartRegex = regexp.MustCompile(`^\s*(\w+)\s+"([^"]+)"(?:\s+"[^"]*")?\s*\{?`)
 
 // Attribute pattern: `key = "value"` (quoted string)
-var attrStringRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*"([^"]*)"`)
+// Handles escaped characters like \" within the string value
+var attrStringRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*"((?:[^"\\]|\\.)*)"`)
 
 // Attribute pattern: `key = value` (unquoted, for booleans, numbers, references)
 var attrUnquotedRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*([^\s"#]+)`)
@@ -102,7 +103,11 @@ var attrUnquotedRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*([^\s"#]+)`)
 var childRefRegex = regexp.MustCompile(`\b(\w+)\.(\w+)\b`)
 
 // Tag entry pattern: `key = "value"` inside tags block
-var tagEntryRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*"([^"]*)"`)
+// Handles escaped characters like \" within the string value
+var tagEntryRegex = regexp.MustCompile(`^\s*(\w+)\s*=\s*"((?:[^"\\]|\\.)*)"`)
+
+// Heredoc start pattern: detects `<<-MARKER` or `<<MARKER`
+var heredocStartRegex = regexp.MustCompile(`<<-?(\w+)\s*$`)
 
 // ScanFile extracts index entries from a single HCL file.
 // It uses a line-by-line scanner for efficiency.
@@ -135,10 +140,49 @@ func (s *Scanner) scanReader(r io.Reader, filePath string) error {
 
 	lineNum := 0
 	var blockStack []*blockState
+	inBlockComment := false
+	heredocMarker := "" // tracks the heredoc end marker when inside a heredoc
 
 	for scanner.Scan() {
 		lineNum++
 		line := scanner.Text()
+
+		// Track heredocs - skip lines inside heredoc content
+		if heredocMarker != "" {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == heredocMarker {
+				heredocMarker = "" // End of heredoc
+			}
+			continue // Skip lines in heredocs
+		}
+
+		// Check for heredoc start on this line
+		if matches := heredocStartRegex.FindStringSubmatch(line); len(matches) >= 2 {
+			heredocMarker = matches[1]
+			// Continue processing this line (the heredoc start line has attributes)
+			// but subsequent lines will be skipped until the marker
+		}
+
+		// Track block comments (/* ... */)
+		// Handle same-line open/close: /* comment */
+		if !inBlockComment && strings.Contains(line, "/*") {
+			// Check if comment closes on same line
+			openIdx := strings.Index(line, "/*")
+			closeIdx := strings.Index(line, "*/")
+			if closeIdx > openIdx {
+				// Comment opens and closes on same line, continue processing
+				// but skip content between /* and */
+			} else {
+				inBlockComment = true
+				continue
+			}
+		}
+		if inBlockComment {
+			if strings.Contains(line, "*/") {
+				inBlockComment = false
+			}
+			continue // Skip lines in block comments
+		}
 
 		// Check for block start
 		if blockStart := s.parseBlockStart(line); blockStart != nil {
@@ -160,7 +204,15 @@ func (s *Scanner) scanReader(r io.Reader, filePath string) error {
 
 			// Process any attributes on the same line as block start
 			// (for single-line blocks like: dashboard "d1" { title = "Test" })
-			if openBraces > 0 {
+			if openBraces > 0 && closeBraces > 0 {
+				// Single-line block: extract content between braces
+				braceStart := strings.Index(line, "{")
+				braceEnd := strings.LastIndex(line, "}")
+				if braceStart < braceEnd {
+					innerContent := line[braceStart+1 : braceEnd]
+					s.processBlockLine(innerContent, block)
+				}
+			} else if openBraces > 0 {
 				s.processBlockLine(line, block)
 			}
 
@@ -200,6 +252,8 @@ func (s *Scanner) scanReaderWithOffsets(r io.Reader, filePath string) error {
 	lineNum := 0
 	byteOffset := int64(0)
 	var blockStack []*blockState
+	inBlockComment := false
+	heredocMarker := "" // tracks the heredoc end marker when inside a heredoc
 
 	for {
 		line, err := reader.ReadString('\n')
@@ -210,6 +264,55 @@ func (s *Scanner) scanReaderWithOffsets(r io.Reader, filePath string) error {
 		lineLen := int64(len(line))
 		lineNum++
 		lineStart := byteOffset
+
+		// Track heredocs - skip lines inside heredoc content
+		if heredocMarker != "" {
+			trimmed := strings.TrimSpace(line)
+			if trimmed == heredocMarker {
+				heredocMarker = "" // End of heredoc
+			}
+			byteOffset += lineLen
+			if err == io.EOF {
+				break
+			}
+			continue // Skip lines in heredocs
+		}
+
+		// Check for heredoc start on this line
+		if matches := heredocStartRegex.FindStringSubmatch(line); len(matches) >= 2 {
+			heredocMarker = matches[1]
+			// Continue processing this line (the heredoc start line has attributes)
+			// but subsequent lines will be skipped until the marker
+		}
+
+		// Track block comments (/* ... */)
+		// Handle same-line open/close: /* comment */
+		if !inBlockComment && strings.Contains(line, "/*") {
+			// Check if comment closes on same line
+			openIdx := strings.Index(line, "/*")
+			closeIdx := strings.Index(line, "*/")
+			if closeIdx > openIdx {
+				// Comment opens and closes on same line, continue processing
+				// but skip content between /* and */
+			} else {
+				inBlockComment = true
+				byteOffset += lineLen
+				if err == io.EOF {
+					break
+				}
+				continue
+			}
+		}
+		if inBlockComment {
+			if strings.Contains(line, "*/") {
+				inBlockComment = false
+			}
+			byteOffset += lineLen
+			if err == io.EOF {
+				break
+			}
+			continue // Skip lines in block comments
+		}
 
 		// Check for block start
 		if blockStart := s.parseBlockStart(line); blockStart != nil {
@@ -231,7 +334,16 @@ func (s *Scanner) scanReaderWithOffsets(r io.Reader, filePath string) error {
 			block.depth = openBraces - closeBraces
 
 			// Process any attributes on the same line as block start
-			if openBraces > 0 {
+			// (for single-line blocks like: dashboard "d1" { title = "Test" })
+			if openBraces > 0 && closeBraces > 0 {
+				// Single-line block: extract content between braces
+				braceStart := strings.Index(line, "{")
+				braceEnd := strings.LastIndex(line, "}")
+				if braceStart < braceEnd {
+					innerContent := line[braceStart+1 : braceEnd]
+					s.processBlockLine(innerContent, block)
+				}
+			} else if openBraces > 0 {
 				s.processBlockLine(line, block)
 			}
 
@@ -298,6 +410,17 @@ func (s *Scanner) processBlockLine(line string, block *blockState) {
 
 	// Check for tags block start
 	if strings.HasPrefix(trimmed, "tags") && strings.Contains(line, "{") {
+		// Check if single-line tags: tags = { key = "value" key2 = "value2" }
+		if strings.Contains(line, "}") {
+			// Single-line tags: extract content between { and }
+			start := strings.Index(line, "{")
+			end := strings.LastIndex(line, "}")
+			if start < end {
+				tagsContent := line[start+1 : end]
+				s.parseSingleLineTags(tagsContent, block)
+			}
+			return
+		}
 		block.inTags = true
 		return
 	}
@@ -388,6 +511,21 @@ func (s *Scanner) parseAttribute(line string) *attribute {
 	}
 
 	return nil
+}
+
+// singleLineTagRegex matches key = "value" patterns anywhere in the string (no ^ anchor)
+var singleLineTagRegex = regexp.MustCompile(`(\w+)\s*=\s*"((?:[^"\\]|\\.)*)"`)
+
+// parseSingleLineTags parses tag entries from a single-line tags definition.
+// Content should be the text between { and }, e.g., `service = "aws" category = "security"`
+func (s *Scanner) parseSingleLineTags(content string, block *blockState) {
+	// Find all key = "value" patterns in the content
+	matches := singleLineTagRegex.FindAllStringSubmatch(content, -1)
+	for _, match := range matches {
+		if len(match) >= 3 {
+			block.tags[match[1]] = match[2]
+		}
+	}
 }
 
 func (s *Scanner) finalizeBlock(block *blockState, endLine int, filePath string, byteOffset int64, byteLen int) {

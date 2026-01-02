@@ -536,8 +536,10 @@ func (s *Server) addSession(session *melody.Session) {
 }
 
 func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
-	dashboardClients := s.getDashboardClients()
-	if sessionInfo, ok := dashboardClients[sessionId]; ok {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if sessionInfo, ok := s.dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
 	}
 }

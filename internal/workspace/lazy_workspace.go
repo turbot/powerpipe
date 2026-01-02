@@ -56,6 +56,16 @@ type LazyWorkspace struct {
 
 	// Path for eager loading
 	workspacePath string
+
+	// Per-benchmark resolution tracking to prevent concurrent modifications
+	// Key: benchmark name, Value: *benchmarkResolution
+	resolvedBenchmarks sync.Map
+}
+
+// benchmarkResolution tracks the resolution state of a benchmark
+type benchmarkResolution struct {
+	once sync.Once
+	err  error
 }
 
 // LazyLoadConfig configures lazy loading behavior.
@@ -260,23 +270,32 @@ func scanModInfo(workspacePath string) (modName, modFullName, modTitle string, e
 
 	scanner := bufio.NewScanner(file)
 	inModBlock := false
+	braceDepth := 0
 
 	for scanner.Scan() {
 		line := scanner.Text()
 
-		if matches := modBlockRegex.FindStringSubmatch(line); len(matches) >= 2 {
-			modName = matches[1]
-			modFullName = "mod." + modName
-			inModBlock = true
-			continue
+		// Only match the first mod block (not nested mod blocks in require section)
+		if !inModBlock {
+			if matches := modBlockRegex.FindStringSubmatch(line); len(matches) >= 2 {
+				modName = matches[1]
+				modFullName = "mod." + modName
+				inModBlock = true
+				// Count braces on this line
+				braceDepth += strings.Count(line, "{") - strings.Count(line, "}")
+				continue
+			}
 		}
 
 		if inModBlock {
+			// Track brace depth to know when we exit the mod block
+			braceDepth += strings.Count(line, "{") - strings.Count(line, "}")
+
 			if matches := titleRegex.FindStringSubmatch(line); len(matches) >= 2 {
 				modTitle = matches[1]
 			}
-			// Stop at end of mod block
-			if strings.Contains(line, "}") {
+			// Stop when we've exited the top-level mod block
+			if braceDepth <= 0 {
 				break
 			}
 		}
@@ -427,6 +446,9 @@ func (lw *LazyWorkspace) LoadBenchmark(ctx context.Context, name string) (modcon
 // The key difference from LoadBenchmark:
 // - LoadBenchmark: loads resources into cache, but GetChildren() returns empty
 // - LoadBenchmarkForExecution: loads resources AND sets Children field properly
+//
+// Thread-safe: Uses per-benchmark sync.Once to ensure resolution happens only once
+// even when called concurrently from multiple goroutines.
 func (lw *LazyWorkspace) LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
 	// First, load all resources into the cache using the standard loader
 	benchmark, err := lw.loader.LoadBenchmark(ctx, name)
@@ -434,9 +456,18 @@ func (lw *LazyWorkspace) LoadBenchmarkForExecution(ctx context.Context, name str
 		return nil, err
 	}
 
-	// Now resolve and set children on all benchmarks in the tree
-	if err := lw.resolveChildrenRecursively(ctx, benchmark); err != nil {
-		return nil, err
+	// Get or create the resolution tracker for this benchmark
+	// This ensures that child resolution only happens once per benchmark
+	resolutionI, _ := lw.resolvedBenchmarks.LoadOrStore(name, &benchmarkResolution{})
+	resolution := resolutionI.(*benchmarkResolution)
+
+	// Resolve children only once (thread-safe)
+	resolution.once.Do(func() {
+		resolution.err = lw.resolveChildrenRecursively(ctx, benchmark)
+	})
+
+	if resolution.err != nil {
+		return nil, resolution.err
 	}
 
 	return benchmark, nil

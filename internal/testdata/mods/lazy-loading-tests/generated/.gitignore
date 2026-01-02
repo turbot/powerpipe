@@ -1,0 +1,3 @@
+# Ignore stress test mods - they're too large for the repo
+# Generate locally with: go run scripts/generate_lazy_test_mods.go <path> stress
+stress/

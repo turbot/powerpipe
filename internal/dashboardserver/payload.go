@@ -150,50 +150,78 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 
 }
 
-func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string, visiting map[string]bool) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.Benchmark:
+			// Cycle detection: skip if we're already visiting this node in the current path
+			if visiting[t.FullName] {
+				// Circular reference detected - skip to prevent infinite recursion
+				continue
+			}
+
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
 			if recordTrunk {
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
+
+			// Mark as visiting before recursion
+			visiting[t.FullName] = true
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "control",
 				Tags:          t.Tags,
-				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
+
+			// Unmark after recursion completes (allows the same node to appear in different branches)
+			delete(visiting, t.FullName)
+
 			children = append(children, availableBenchmark)
 		}
 	}
 	return children
 }
 
-func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string, visiting map[string]bool) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.DetectionBenchmark:
+			// Cycle detection: skip if we're already visiting this node in the current path
+			if visiting[t.FullName] {
+				// Circular reference detected - skip to prevent infinite recursion
+				continue
+			}
+
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
 			if recordTrunk {
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
+
+			// Mark as visiting before recursion
+			visiting[t.FullName] = true
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "detection",
 				Tags:          t.Tags,
-				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
+
+			// Unmark after recursion completes (allows the same node to appear in different branches)
+			delete(visiting, t.FullName)
+
 			children = append(children, availableBenchmark)
 		}
 	}
@@ -306,6 +334,10 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				benchmarkTrunks[benchmark.FullName] = [][]string{trunk}
 			}
 
+			// Cycle detection: track visited nodes in current path
+			visiting := make(map[string]bool)
+			visiting[benchmark.FullName] = true
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         benchmark.GetTitle(),
 				FullName:      benchmark.FullName,
@@ -313,7 +345,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				BenchmarkType: "control",
 				Tags:          benchmark.Tags,
 				IsTopLevel:    isTopLevel,
-				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
+				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks, visiting),
 				ModFullName:   mod.GetFullName(),
 			}
 
@@ -348,6 +380,10 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				detectionBenchmarkTrunks[detectionBenchmark.FullName] = [][]string{trunk}
 			}
 
+			// Cycle detection: track visited nodes in current path
+			visiting := make(map[string]bool)
+			visiting[detectionBenchmark.FullName] = true
+
 			availableDetectionBenchmark := ModAvailableBenchmark{
 				Title:         detectionBenchmark.GetTitle(),
 				FullName:      detectionBenchmark.FullName,
@@ -355,7 +391,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				BenchmarkType: "detection",
 				Tags:          detectionBenchmark.Tags,
 				IsTopLevel:    isTopLevel,
-				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
+				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks, visiting),
 				ModFullName:   mod.GetFullName(),
 			}
 
