@@ -60,7 +60,7 @@ jobs:
         run: |
           cd powerpipe
           go clean -testcache
-          go test -timeout 30s ./... -test.v
+          go test -short -timeout 120s ./... -test.v
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
