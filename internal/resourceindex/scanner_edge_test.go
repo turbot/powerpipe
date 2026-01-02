@@ -16,8 +16,7 @@ import (
 // =============================================================================
 
 func TestScanner_TitleWithQuotes(t *testing.T) {
-	// The scanner uses a regex that handles escaped characters: `"((?:[^"\\]|\\.)*)"`
-	// This allows proper extraction of strings with escaped quotes.
+	// The HCL parser properly handles escaped characters and unescapes them.
 	tests := []struct {
 		name      string
 		content   string
@@ -30,7 +29,7 @@ func TestScanner_TitleWithQuotes(t *testing.T) {
     title = "Dashboard \"Quoted\" Title"
 }`,
 			wantName:  "testmod.dashboard.quoted_title",
-			wantTitle: "Dashboard \\\"Quoted\\\" Title", // Escaped quotes are preserved
+			wantTitle: `Dashboard "Quoted" Title`, // HCL parser unescapes quotes
 		},
 		{
 			name: "single quotes in title (literal)",
@@ -65,6 +64,7 @@ func TestScanner_TitleWithQuotes(t *testing.T) {
 }
 
 func TestScanner_TitleWithEscapes(t *testing.T) {
+	// HCL parser unescapes \n and \t to actual newline and tab characters
 	tests := []struct {
 		name     string
 		content  string
@@ -77,7 +77,7 @@ func TestScanner_TitleWithEscapes(t *testing.T) {
     title = "Line1\nLine2"
 }`,
 			wantName:  "testmod.dashboard.newline_title",
-			wantTitle: "Line1\\nLine2",
+			wantTitle: "Line1\nLine2", // HCL unescapes to actual newline
 		},
 		{
 			name: "tab escape",
@@ -85,7 +85,7 @@ func TestScanner_TitleWithEscapes(t *testing.T) {
     title = "Col1\tCol2"
 }`,
 			wantName:  "testmod.dashboard.tab_title",
-			wantTitle: "Col1\\tCol2",
+			wantTitle: "Col1\tCol2", // HCL unescapes to actual tab
 		},
 		{
 			name: "multiple escapes",
@@ -94,7 +94,7 @@ func TestScanner_TitleWithEscapes(t *testing.T) {
     sql = "SELECT 1"
 }`,
 			wantName:  "testmod.query.multi_escape",
-			wantTitle: "Line1\\nLine2\\tTabbed",
+			wantTitle: "Line1\nLine2\tTabbed", // HCL unescapes both
 		},
 	}
 
@@ -1311,11 +1311,10 @@ dashboard "tagged" {
 
 func TestScanner_TagsSingleLine(t *testing.T) {
 	// Single-line tags are now supported by the scanner.
-	// When tags open and close on the same line, the scanner extracts
-	// the content between { and } and parses all key="value" pairs.
+	// Note: HCL requires commas between object items on a single line.
 	content := `dashboard "inline_tags" {
     title = "Inline Tags"
-    tags = { service = "aws" category = "compliance" }
+    tags = { service = "aws", category = "compliance" }
 }`
 	scanner := NewScanner("testmod")
 	err := scanner.ScanBytes([]byte(content), "test.pp")
