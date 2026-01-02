@@ -8,9 +8,9 @@ import (
 
 // PreloadOptions configures preloading behavior.
 type PreloadOptions struct {
-	IncludeDependencies bool                     // Load all dependencies of requested resources
-	MaxConcurrency      int                      // Maximum parallel loads (default: 10)
-	OnProgress          func(loaded, total int)  // Progress callback
+	IncludeDependencies bool                         // Load all dependencies of requested resources
+	MaxConcurrency      int                          // Maximum parallel loads (default: 10)
+	OnProgress          func(loaded, total int)      // Progress callback
 	OnError             func(name string, err error) // Error callback (if nil, first error stops loading)
 }
 

@@ -532,52 +532,52 @@ func TestServer_ConcurrentSameDashboard(t *testing.T) {
 // TestServer_ClientRequestParsing verifies client request message parsing.
 func TestServer_ClientRequestParsing(t *testing.T) {
 	testCases := []struct {
-		name         string
-		jsonMessage  string
+		name           string
+		jsonMessage    string
 		expectedAction string
-		shouldParse  bool
+		shouldParse    bool
 	}{
 		{
-			name:          "get_available_dashboards",
-			jsonMessage:   `{"action":"get_available_dashboards"}`,
+			name:           "get_available_dashboards",
+			jsonMessage:    `{"action":"get_available_dashboards"}`,
 			expectedAction: "get_available_dashboards",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "get_server_metadata",
-			jsonMessage:   `{"action":"get_server_metadata"}`,
+			name:           "get_server_metadata",
+			jsonMessage:    `{"action":"get_server_metadata"}`,
 			expectedAction: "get_server_metadata",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "select_dashboard",
-			jsonMessage:   `{"action":"select_dashboard","payload":{"dashboard":{"full_name":"test.dashboard.main"}}}`,
+			name:           "select_dashboard",
+			jsonMessage:    `{"action":"select_dashboard","payload":{"dashboard":{"full_name":"test.dashboard.main"}}}`,
 			expectedAction: "select_dashboard",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "input_changed",
-			jsonMessage:   `{"action":"input_changed","payload":{"changed_input":"filter","inputs":{"filter":"value"}}}`,
+			name:           "input_changed",
+			jsonMessage:    `{"action":"input_changed","payload":{"changed_input":"filter","inputs":{"filter":"value"}}}`,
 			expectedAction: "input_changed",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "clear_dashboard",
-			jsonMessage:   `{"action":"clear_dashboard"}`,
+			name:           "clear_dashboard",
+			jsonMessage:    `{"action":"clear_dashboard"}`,
 			expectedAction: "clear_dashboard",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "keep_alive",
-			jsonMessage:   `{"action":"keep_alive"}`,
+			name:           "keep_alive",
+			jsonMessage:    `{"action":"keep_alive"}`,
 			expectedAction: "keep_alive",
-			shouldParse:   true,
+			shouldParse:    true,
 		},
 		{
-			name:          "invalid json",
-			jsonMessage:   `{invalid json`,
+			name:           "invalid json",
+			jsonMessage:    `{invalid json`,
 			expectedAction: "",
-			shouldParse:   false,
+			shouldParse:    false,
 		},
 	}
 

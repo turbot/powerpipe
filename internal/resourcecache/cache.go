@@ -19,8 +19,8 @@ type CacheConfig struct {
 func DefaultConfig() CacheConfig {
 	return CacheConfig{
 		MaxMemoryBytes: 50 * 1024 * 1024, // 50MB
-		MaxEntries:     0,                 // Memory-based eviction only
-		TTL:            0,                 // No expiry
+		MaxEntries:     0,                // Memory-based eviction only
+		TTL:            0,                // No expiry
 	}
 }
 

@@ -66,9 +66,9 @@ func TestScanner_TitleWithQuotes(t *testing.T) {
 func TestScanner_TitleWithEscapes(t *testing.T) {
 	// HCL parser unescapes \n and \t to actual newline and tab characters
 	tests := []struct {
-		name     string
-		content  string
-		wantName string
+		name      string
+		content   string
+		wantName  string
 		wantTitle string
 	}{
 		{
@@ -113,11 +113,11 @@ func TestScanner_TitleWithEscapes(t *testing.T) {
 
 func TestScanner_UnicodeContent(t *testing.T) {
 	tests := []struct {
-		name        string
-		content     string
-		wantName    string
-		wantTitle   string
-		wantDesc    string
+		name      string
+		content   string
+		wantName  string
+		wantTitle string
+		wantDesc  string
 	}{
 		{
 			name: "emoji in title",
@@ -465,28 +465,28 @@ func TestScanner_IndentationVariations(t *testing.T) {
 		wantName string
 	}{
 		{
-			name: "tab indentation",
-			content: "dashboard \"tab_indent\" {\n\ttitle = \"Tab Indented\"\n}",
+			name:     "tab indentation",
+			content:  "dashboard \"tab_indent\" {\n\ttitle = \"Tab Indented\"\n}",
 			wantName: "testmod.dashboard.tab_indent",
 		},
 		{
-			name: "space indentation",
-			content: "dashboard \"space_indent\" {\n    title = \"Space Indented\"\n}",
+			name:     "space indentation",
+			content:  "dashboard \"space_indent\" {\n    title = \"Space Indented\"\n}",
 			wantName: "testmod.dashboard.space_indent",
 		},
 		{
-			name: "mixed indentation",
-			content: "dashboard \"mixed_indent\" {\n\t    title = \"Mixed Indented\"\n}",
+			name:     "mixed indentation",
+			content:  "dashboard \"mixed_indent\" {\n\t    title = \"Mixed Indented\"\n}",
 			wantName: "testmod.dashboard.mixed_indent",
 		},
 		{
-			name: "no indentation",
-			content: "dashboard \"no_indent\" {\ntitle = \"No Indent\"\n}",
+			name:     "no indentation",
+			content:  "dashboard \"no_indent\" {\ntitle = \"No Indent\"\n}",
 			wantName: "testmod.dashboard.no_indent",
 		},
 		{
-			name: "deep indentation",
-			content: "dashboard \"deep_indent\" {\n                title = \"Deep Indent\"\n}",
+			name:     "deep indentation",
+			content:  "dashboard \"deep_indent\" {\n                title = \"Deep Indent\"\n}",
 			wantName: "testmod.dashboard.deep_indent",
 		},
 	}
@@ -829,7 +829,7 @@ query "second" {
 	assert.Less(t, first.ByteOffset, int64(len(fileContent)))
 
 	// Extract the content at the offset
-	extracted := string(fileContent[first.ByteOffset:first.ByteOffset+int64(first.ByteLength)])
+	extracted := string(fileContent[first.ByteOffset : first.ByteOffset+int64(first.ByteLength)])
 	assert.Contains(t, extracted, "dashboard")
 	assert.Contains(t, extracted, "first")
 
@@ -837,7 +837,7 @@ query "second" {
 	require.NotNil(t, second)
 	assert.Greater(t, second.ByteOffset, first.ByteOffset)
 
-	extracted = string(fileContent[second.ByteOffset:second.ByteOffset+int64(second.ByteLength)])
+	extracted = string(fileContent[second.ByteOffset : second.ByteOffset+int64(second.ByteLength)])
 	assert.Contains(t, extracted, "query")
 	assert.Contains(t, extracted, "second")
 }
@@ -869,7 +869,7 @@ dashboard "after_unicode" {
 	assert.Less(t, entry.ByteOffset+int64(entry.ByteLength), int64(len(fileContent))+1)
 
 	// Seeking to offset should land at dashboard
-	extracted := string(fileContent[entry.ByteOffset:entry.ByteOffset+int64(entry.ByteLength)])
+	extracted := string(fileContent[entry.ByteOffset : entry.ByteOffset+int64(entry.ByteLength)])
 	assert.Contains(t, extracted, "dashboard")
 }
 
@@ -906,7 +906,7 @@ query "at_end" {
 
 	dash, _ := index.Get("testmod.dashboard.after_varying")
 	require.NotNil(t, dash)
-	extracted := string(fileContent[dash.ByteOffset:dash.ByteOffset+int64(dash.ByteLength)])
+	extracted := string(fileContent[dash.ByteOffset : dash.ByteOffset+int64(dash.ByteLength)])
 	assert.Contains(t, extracted, "dashboard")
 
 	query, _ := index.Get("testmod.query.at_end")

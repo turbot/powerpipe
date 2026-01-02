@@ -109,11 +109,11 @@ func (b *testGraphBuilder) build() *resourceindex.ResourceIndex {
 
 // TestResolver_DiamondDependency tests the diamond dependency pattern:
 //
-//	    A
-//	   / \
-//	  B   C
-//	   \ /
-//	    D
+//	  A
+//	 / \
+//	B   C
+//	 \ /
+//	  D
 //
 // D should appear only once in the dependency order
 func TestResolver_DiamondDependency(t *testing.T) {
@@ -426,13 +426,13 @@ func TestResolver_SelfReference(t *testing.T) {
 
 // TestResolver_NoCycleFalsePositive tests that a complex DAG doesn't false-positive as a cycle
 //
-//	    A
-//	   /|\
-//	  B C D
-//	  |/ \|
-//	  E   F
-//	   \ /
-//	    G
+//	  A
+//	 /|\
+//	B C D
+//	|/ \|
+//	E   F
+//	 \ /
+//	  G
 //
 // Multiple paths to G, but NO cycle
 func TestResolver_NoCycleFalsePositive(t *testing.T) {

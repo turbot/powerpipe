@@ -19,7 +19,7 @@ type DetectionBenchmarkDisplayTree struct {
 	Progress  *controlstatus.ControlProgress    `json:"progress"`
 	// map of dimension property name to property value to color map
 	DimensionColorGenerator *controlexecute.DimensionColorGenerator `json:"-"`
-	Workspace *workspace.PowerpipeWorkspace `json:"-"`
+	Workspace               *workspace.PowerpipeWorkspace           `json:"-"`
 	// for now just using DetectionRuns
 	DetectionRuns []*DetectionRun `json:"-"`
 }

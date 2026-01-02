@@ -128,8 +128,8 @@ func (r *DependencyResolver) GetDependencies(name string) []Dependency {
 func (r *DependencyResolver) GetDependencyOrder(names []string) ([]string, error) {
 	// Build reverse dependency graph: for each resource, track what depends on it
 	// graph[A] = [B, C] means B and C depend on A
-	dependsOn := make(map[string][]string)    // resource -> what it depends on
-	dependedBy := make(map[string][]string)   // resource -> what depends on it
+	dependsOn := make(map[string][]string)  // resource -> what it depends on
+	dependedBy := make(map[string][]string) // resource -> what depends on it
 	inDegree := make(map[string]int)
 
 	// Collect all nodes including transitive dependencies
