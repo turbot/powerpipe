@@ -180,13 +180,11 @@ func waitForServer(t *testing.T, port int, timeout time.Duration) bool {
 }
 
 // startServer starts a powerpipe server and returns a cleanup function
-func startServer(t *testing.T, workDir string, port int, lazy bool, extraArgs ...string) (*exec.Cmd, func()) {
+// Note: lazy loading is now the default, use POWERPIPE_WORKSPACE_PRELOAD=true to disable
+func startServer(t *testing.T, workDir string, port int, extraArgs ...string) (*exec.Cmd, func()) {
 	binary := buildPowerpipe(t)
 
 	args := []string{"server", "--port", fmt.Sprintf("%d", port)}
-	if lazy {
-		args = append(args, "--lazy-load")
-	}
 	args = append(args, extraArgs...)
 
 	cmd := exec.Command(binary, args...)
@@ -256,7 +254,7 @@ func compareOutputs(t *testing.T, lazy, eager string, msgAndArgs ...interface{})
 // Server Command Tests
 // =============================================================================
 
-func TestCLI_ServerStartsLazy(t *testing.T) {
+func TestCLI_ServerStarts(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping server test in short mode")
 	}
@@ -264,7 +262,7 @@ func TestCLI_ServerStartsLazy(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 	port := getFreePort(t)
 
-	_, cleanup := startServer(t, modPath, port, true)
+	_, cleanup := startServer(t, modPath, port)
 	defer cleanup()
 
 	// Verify server responds to HTTP requests
@@ -279,7 +277,7 @@ func TestCLI_ServerStartsLazy(t *testing.T) {
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
 }
 
-func TestCLI_ServerStartsEager(t *testing.T) {
+func TestCLI_ServerStartsWithPreload(t *testing.T) {
 	if testing.Short() {
 		t.Skip("Skipping server test in short mode")
 	}
@@ -287,8 +285,29 @@ func TestCLI_ServerStartsEager(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 	port := getFreePort(t)
 
-	_, cleanup := startServer(t, modPath, port, false)
-	defer cleanup()
+	// Start server with workspace preload (eager loading)
+	binary := buildPowerpipe(t)
+	cmd := exec.Command(binary, "server", "--port", fmt.Sprintf("%d", port))
+	cmd.Dir = modPath
+	cmd.Env = append(os.Environ(), "POWERPIPE_WORKSPACE_PRELOAD=true")
+
+	var outBuf, errBuf bytes.Buffer
+	cmd.Stdout = &outBuf
+	cmd.Stderr = &errBuf
+
+	err := cmd.Start()
+	require.NoError(t, err, "Failed to start server")
+	defer func() {
+		if cmd.Process != nil {
+			cmd.Process.Kill()
+			cmd.Wait()
+		}
+	}()
+
+	// Wait for server to be ready
+	if !waitForServer(t, port, 30*time.Second) {
+		t.Fatalf("Server failed to start within timeout.\nStdout: %s\nStderr: %s", outBuf.String(), errBuf.String())
+	}
 
 	// Verify server responds
 	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/", port))
@@ -305,17 +324,17 @@ func TestCLI_ServerAvailableDashboardsAPI(t *testing.T) {
 
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 
-	// Test with lazy mode
-	lazyPort := getFreePort(t)
-	_, lazyCleanup := startServer(t, modPath, lazyPort, true)
-	defer lazyCleanup()
+	// Test with lazy mode (default)
+	port := getFreePort(t)
+	_, cleanup := startServer(t, modPath, port)
+	defer cleanup()
 
 	// Give server time to fully initialize
 	time.Sleep(500 * time.Millisecond)
 
 	// The available_dashboards endpoint is typically accessed via WebSocket
 	// For this test, we just verify the server is running and responding
-	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/", lazyPort))
+	resp, err := http.Get(fmt.Sprintf("http://localhost:%d/", port))
 	require.NoError(t, err)
 	resp.Body.Close()
 	assert.Equal(t, http.StatusOK, resp.StatusCode)
@@ -546,20 +565,19 @@ func TestCLI_WithOutputPlain(t *testing.T) {
 // Environment Variable Tests
 // =============================================================================
 
-func TestCLI_LazyLoadEnvVar(t *testing.T) {
+func TestCLI_WorkspacePreloadEnvVar(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 
-	// Test with env var set to true
-	result := runPowerpipeWithEnv(t, modPath, []string{"POWERPIPE_LAZY_LOAD=true"}, "dashboard", "list", "--output", "json")
-
+	// Test with workspace preload disabled (default lazy loading)
+	result := runPowerpipe(t, modPath, "dashboard", "list", "--output", "json")
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
 }
 
-func TestCLI_LazyLoadEnvVarFalse(t *testing.T) {
+func TestCLI_WorkspacePreloadEnabled(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 
-	// Test with env var set to false
-	result := runPowerpipeWithEnv(t, modPath, []string{"POWERPIPE_LAZY_LOAD=false"}, "dashboard", "list", "--output", "json")
+	// Test with workspace preload enabled (eager loading)
+	result := runPowerpipeWithEnv(t, modPath, []string{"POWERPIPE_WORKSPACE_PRELOAD=true"}, "dashboard", "list", "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
 }
@@ -667,7 +685,6 @@ func TestCLI_ServerHelpCommand(t *testing.T) {
 	result := runPowerpipe(t, modPath, "server", "--help")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0")
-	assert.Contains(t, result.Stdout, "--lazy-load", "Server help should mention --lazy-load flag")
 	assert.Contains(t, result.Stdout, "--port", "Server help should mention --port flag")
 }
 
@@ -688,7 +705,7 @@ func TestCLI_DashboardRunHelpCommand(t *testing.T) {
 	result := runPowerpipe(t, modPath, "dashboard", "run", "--help")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0")
-	assert.Contains(t, result.Stdout, "--lazy-load", "Dashboard run help should mention --lazy-load flag")
+	assert.Contains(t, result.Stdout, "--output", "Dashboard run help should mention --output flag")
 }
 
 func TestCLI_BenchmarkRunHelpCommand(t *testing.T) {
@@ -697,7 +714,7 @@ func TestCLI_BenchmarkRunHelpCommand(t *testing.T) {
 	result := runPowerpipe(t, modPath, "benchmark", "run", "--help")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0")
-	assert.Contains(t, result.Stdout, "--lazy-load", "Benchmark run help should mention --lazy-load flag")
+	assert.Contains(t, result.Stdout, "--output", "Benchmark run help should mention --output flag")
 }
 
 func TestCLI_ControlRunHelpCommand(t *testing.T) {
@@ -706,7 +723,7 @@ func TestCLI_ControlRunHelpCommand(t *testing.T) {
 	result := runPowerpipe(t, modPath, "control", "run", "--help")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0")
-	assert.Contains(t, result.Stdout, "--lazy-load", "Control run help should mention --lazy-load flag")
+	assert.Contains(t, result.Stdout, "--output", "Control run help should mention --output flag")
 }
 
 func TestCLI_QueryRunHelpCommand(t *testing.T) {
@@ -715,7 +732,7 @@ func TestCLI_QueryRunHelpCommand(t *testing.T) {
 	result := runPowerpipe(t, modPath, "query", "run", "--help")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0")
-	assert.Contains(t, result.Stdout, "--lazy-load", "Query run help should mention --lazy-load flag")
+	assert.Contains(t, result.Stdout, "--output", "Query run help should mention --output flag")
 }
 
 // =============================================================================
@@ -744,12 +761,12 @@ func TestCLI_ServerPortConflict(t *testing.T) {
 	port := getFreePort(t)
 
 	// Start first server
-	_, cleanup := startServer(t, modPath, port, true)
+	_, cleanup := startServer(t, modPath, port)
 	defer cleanup()
 
 	// Try to start second server on same port
 	binary := buildPowerpipe(t)
-	cmd := exec.Command(binary, "server", "--port", fmt.Sprintf("%d", port), "--lazy-load")
+	cmd := exec.Command(binary, "server", "--port", fmt.Sprintf("%d", port))
 	cmd.Dir = modPath
 
 	// Should fail quickly
@@ -871,7 +888,7 @@ func TestCLI_ServerWebSocketEndpoint(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 	port := getFreePort(t)
 
-	_, cleanup := startServer(t, modPath, port, true)
+	_, cleanup := startServer(t, modPath, port)
 	defer cleanup()
 
 	// Verify WebSocket endpoint exists by checking HTTP upgrade
