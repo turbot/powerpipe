@@ -37,6 +37,14 @@ benchmark "nested_root" {
   tags = local.common_tags
 }
 
+benchmark "nested_level_1" {
+  title       = "Nested Level 1"
+  description = "Intermediate level in hierarchy"
+  children = [
+    benchmark.nested_level_2
+  ]
+}
+
 benchmark "nested_level_2" {
   title       = "Nested Level 2"
   description = "Intermediate level in hierarchy"

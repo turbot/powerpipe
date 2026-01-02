@@ -9,9 +9,9 @@ control "control_0" {
 }
 
 control "control_1" {
-  title       = "Control 1 (Query Ref)"
-  description = "Control referencing query.query_3"
-  query       = query.query_3
+  title       = "Control 1 (Inline)"
+  description = "Control with inline SQL"
+  sql         = "SELECT 'pass' as status, 'resource_1' as resource, 'Control 1 passed' as reason"
   severity    = "medium"
   tags        = local.common_tags
 }
@@ -25,9 +25,9 @@ control "control_2" {
 }
 
 control "control_3" {
-  title       = "Control 3 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_3' as resource, 'Control 3 passed' as reason"
+  title       = "Control 3 (Query Ref)"
+  description = "Control referencing query.query_9"
+  query       = query.query_9
   severity    = "critical"
   tags        = local.common_tags
 }
@@ -49,25 +49,25 @@ control "control_5" {
 }
 
 control "control_6" {
-  title       = "Control 6 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_6' as resource, 'Control 6 passed' as reason"
+  title       = "Control 6 (Query Ref)"
+  description = "Control referencing query.query_18"
+  query       = query.query_18
   severity    = "high"
   tags        = local.common_tags
 }
 
 control "control_7" {
-  title       = "Control 7 (Query Ref)"
-  description = "Control referencing query.query_1"
-  query       = query.query_1
+  title       = "Control 7 (Inline)"
+  description = "Control with inline SQL"
+  sql         = "SELECT 'pass' as status, 'resource_7' as resource, 'Control 7 passed' as reason"
   severity    = "critical"
   tags        = local.common_tags
 }
 
 control "control_8" {
-  title       = "Control 8 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_8' as resource, 'Control 8 passed' as reason"
+  title       = "Control 8 (Query Ref)"
+  description = "Control referencing query.query_4"
+  query       = query.query_4
   severity    = "low"
   tags        = local.common_tags
 }
@@ -105,33 +105,33 @@ control "control_12" {
 }
 
 control "control_13" {
-  title       = "Control 13 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_13' as resource, 'Control 13 passed' as reason"
+  title       = "Control 13 (Query Ref)"
+  description = "Control referencing query.query_19"
+  query       = query.query_19
   severity    = "medium"
   tags        = local.common_tags
 }
 
 control "control_14" {
-  title       = "Control 14 (Query Ref)"
-  description = "Control referencing query.query_2"
-  query       = query.query_2
+  title       = "Control 14 (Inline)"
+  description = "Control with inline SQL"
+  sql         = "SELECT 'pass' as status, 'resource_14' as resource, 'Control 14 passed' as reason"
   severity    = "high"
   tags        = local.common_tags
 }
 
 control "control_15" {
-  title       = "Control 15 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_15' as resource, 'Control 15 passed' as reason"
+  title       = "Control 15 (Query Ref)"
+  description = "Control referencing query.query_5"
+  query       = query.query_5
   severity    = "critical"
   tags        = local.common_tags
 }
 
 control "control_16" {
-  title       = "Control 16 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_16' as resource, 'Control 16 passed' as reason"
+  title       = "Control 16 (Query Ref)"
+  description = "Control referencing query.query_8"
+  query       = query.query_8
   severity    = "low"
   tags        = local.common_tags
 }
@@ -153,17 +153,17 @@ control "control_18" {
 }
 
 control "control_19" {
-  title       = "Control 19 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_19' as resource, 'Control 19 passed' as reason"
+  title       = "Control 19 (Query Ref)"
+  description = "Control referencing query.query_17"
+  query       = query.query_17
   severity    = "critical"
   tags        = local.common_tags
 }
 
 control "control_20" {
-  title       = "Control 20 (Query Ref)"
-  description = "Control referencing query.query_0"
-  query       = query.query_0
+  title       = "Control 20 (Inline)"
+  description = "Control with inline SQL"
+  sql         = "SELECT 'pass' as status, 'resource_20' as resource, 'Control 20 passed' as reason"
   severity    = "low"
   tags        = local.common_tags
 }
@@ -193,9 +193,9 @@ control "control_23" {
 }
 
 control "control_24" {
-  title       = "Control 24 (Query Ref)"
-  description = "Control referencing query.query_12"
-  query       = query.query_12
+  title       = "Control 24 (Inline)"
+  description = "Control with inline SQL"
+  sql         = "SELECT 'pass' as status, 'resource_24' as resource, 'Control 24 passed' as reason"
   severity    = "low"
   tags        = local.common_tags
 }
@@ -233,9 +233,9 @@ control "control_28" {
 }
 
 control "control_29" {
-  title       = "Control 29 (Inline)"
-  description = "Control with inline SQL"
-  sql         = "SELECT 'pass' as status, 'resource_29' as resource, 'Control 29 passed' as reason"
+  title       = "Control 29 (Query Ref)"
+  description = "Control referencing query.query_7"
+  query       = query.query_7
   severity    = "medium"
   tags        = local.common_tags
 }
