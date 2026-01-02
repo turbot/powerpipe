@@ -49,7 +49,20 @@ func (l *Loader) parseResource(ctx context.Context, entry *resourceindex.IndexEn
 
 	block := content.Blocks[0]
 
-	return l.decodeResourceBlock(ctx, entry, block)
+	resource, err := l.decodeResourceBlock(ctx, entry, block)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set source definition on the resource metadata.
+	// The blockContent we read is the HCL source for this resource.
+	if rwm, ok := resource.(modconfig.ResourceWithMetadata); ok {
+		if meta := rwm.GetMetadata(); meta != nil {
+			meta.SetSourceDefinition(strings.TrimSpace(string(blockContent)))
+		}
+	}
+
+	return resource, nil
 }
 
 // readResourceBlock reads just the bytes for a single resource block from the file.
