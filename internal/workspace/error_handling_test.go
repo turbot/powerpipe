@@ -148,7 +148,7 @@ func TestError_NoPanicOnEmptyWorkspace(t *testing.T) {
 
 	// Create minimal mod.pp
 	modContent := `mod "empty_mod" { title = "Empty" }`
-	err = os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644)
+	err = os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600)
 	require.NoError(t, err)
 
 	// Should not panic

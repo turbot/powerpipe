@@ -192,7 +192,7 @@ func setupTestMod(t testing.TB) (string, *modconfig.Mod) {
 	modContent := `mod "testmod" {
   title = "Test Mod"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600))
 
 	// Create queries.pp
 	queriesContent := `query "simple" {
@@ -210,14 +210,14 @@ query "q2" {
 query "q3" {
   sql = "SELECT 3"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(queriesContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(queriesContent), 0600))
 
 	// Create controls.pp
 	controlsContent := `control "check_one" {
   sql = "SELECT 'ok' as status, 'test' as reason"
   title = "Check One"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "controls.pp"), []byte(controlsContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "controls.pp"), []byte(controlsContent), 0600))
 
 	// Create a minimal mod using the constructor
 	mod := modconfig.NewMod("testmod", tmpDir, hcl.Range{})

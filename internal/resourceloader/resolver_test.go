@@ -394,7 +394,7 @@ func setupTestModWithDeps(t testing.TB) (string, *modconfig.Mod) {
 	modContent := `mod "testmod" {
   title = "Test Mod"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600))
 
 	// Create queries.pp
 	queriesContent := `query "q1" {
@@ -404,7 +404,7 @@ func setupTestModWithDeps(t testing.TB) (string, *modconfig.Mod) {
 query "q2" {
   sql = "SELECT 2"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(queriesContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "queries.pp"), []byte(queriesContent), 0600))
 
 	// Create controls.pp - one inline control (direct SQL), one referencing query
 	controlsContent := `control "inline" {
@@ -416,7 +416,7 @@ control "child" {
   query = query.q1
   title = "Child Control"
 }`
-	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "controls.pp"), []byte(controlsContent), 0644))
+	require.NoError(t, os.WriteFile(filepath.Join(tmpDir, "controls.pp"), []byte(controlsContent), 0600))
 
 	mod := modconfig.NewMod("testmod", tmpDir, hcl.Range{})
 	return tmpDir, mod

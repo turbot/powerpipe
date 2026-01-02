@@ -150,7 +150,7 @@ func TestLoadModWithoutModfile(t *testing.T) {
 
 	// Create a simple query file without a mod.pp
 	queryFile := filepath.Join(modPath, "query.pp")
-	err := os.WriteFile(queryFile, []byte(`query "test" { sql = "SELECT 1" }`), 0644)
+	err := os.WriteFile(queryFile, []byte(`query "test" { sql = "SELECT 1" }`), 0600)
 	require.NoError(t, err)
 
 	w, ew := Load(ctx, modPath, WithVariableValidation(false))
