@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
 	"strings"
 	"sync"
 
@@ -78,7 +77,7 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	}
 
 	// Check if lazy loading is enabled
-	lazyEnabled := isLazyLoadEnabled(cmd)
+	lazyEnabled := isLazyLoadEnabled()
 
 	if lazyEnabled {
 		// Use lazy loading for faster startup and lower memory
@@ -145,26 +144,16 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 }
 
 // isLazyLoadEnabled checks if lazy loading should be used.
-// Priority: 1. CLI flag (--lazy-load), 2. Environment variable (POWERPIPE_LAZY_LOAD), 3. Default (false)
-func isLazyLoadEnabled(cmd *cobra.Command) bool {
-	const lazyLoadFlag = "lazy-load"
-	const envLazyLoad = "POWERPIPE_LAZY_LOAD"
-
-	// Check if flag exists on command and is set
-	if cmd != nil && cmd.Flags().Lookup(lazyLoadFlag) != nil {
-		if cmd.Flags().Changed(lazyLoadFlag) {
-			val, _ := cmd.Flags().GetBool(lazyLoadFlag)
-			return val
-		}
+// Lazy loading is enabled by default. Set POWERPIPE_WORKSPACE_PRELOAD=true to disable.
+func isLazyLoadEnabled() bool {
+	// Check if workspace preload is enabled - this forces eager loading
+	if localconstants.WorkspacePreloadEnabled() {
+		slog.Info("Workspace preload enabled via POWERPIPE_WORKSPACE_PRELOAD - using eager loading")
+		return false
 	}
 
-	// Check environment variable
-	if envVal := os.Getenv(envLazyLoad); envVal != "" {
-		return envVal == "true" || envVal == "1" || envVal == "yes"
-	}
-
-	// Default: lazy loading disabled for backward compatibility
-	return false
+	// Default: lazy loading enabled
+	return true
 }
 
 func commandRequiresModfile(cmd *cobra.Command, args []string) bool {

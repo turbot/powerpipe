@@ -60,7 +60,6 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		AddIntFlag(constants.ArgDatabaseQueryTimeout, localconstants.DatabaseDefaultQueryTimeout, "The query timeout").
 		AddBoolFlag(constants.ArgHelp, false, "Help for detection", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		AddBoolFlag(LazyLoadFlag, false, "Enable lazy loading of resources (reduces memory usage, faster startup)").
 		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
 		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the detection").
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),

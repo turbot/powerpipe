@@ -41,7 +41,6 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddCloudFlags().
 		AddModLocationFlag().
 		AddBoolFlag(constants.ArgHelp, false, "Help for service start", cmdconfig.FlagOptions.WithShortHand("h")).
-		AddBoolFlag(LazyLoadFlag, false, "Enable lazy loading of resources (reduces memory usage, faster startup)").
 		AddIntFlag(constants.ArgPort, dashboardserver.DashboardServerDefaultPort, "Web server port").
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
