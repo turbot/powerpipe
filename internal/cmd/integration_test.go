@@ -313,7 +313,9 @@ func TestCLI_DashboardListLazy(t *testing.T) {
 	result := runPowerpipe(t, modPath, "dashboard", "list", "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
-	assert.Contains(t, result.Stdout, "lazy_simple.dashboard.simple", "Should list the simple dashboard")
+	// JSON output has mod_name and resource_name as separate fields
+	assert.Contains(t, result.Stdout, `"mod_name": "lazy_simple"`, "Should list dashboard from lazy_simple mod")
+	assert.Contains(t, result.Stdout, `"resource_name": "simple"`, "Should list the simple dashboard")
 }
 
 func TestCLI_DashboardShowLazy(t *testing.T) {
@@ -336,7 +338,9 @@ func TestCLI_BenchmarkListLazy(t *testing.T) {
 	result := runPowerpipe(t, modPath, "benchmark", "list", "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
-	assert.Contains(t, result.Stdout, "lazy_simple.benchmark.simple", "Should list the simple benchmark")
+	// JSON output has mod_name and resource_name as separate fields
+	assert.Contains(t, result.Stdout, `"mod_name": "lazy_simple"`, "Should list benchmark from lazy_simple mod")
+	assert.Contains(t, result.Stdout, `"resource_name": "simple"`, "Should list the simple benchmark")
 }
 
 func TestCLI_BenchmarkShowLazy(t *testing.T) {
@@ -358,8 +362,10 @@ func TestCLI_ControlListLazy(t *testing.T) {
 	result := runPowerpipe(t, modPath, "control", "list", "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
-	assert.Contains(t, result.Stdout, "lazy_simple.control.inline_sql", "Should list inline_sql control")
-	assert.Contains(t, result.Stdout, "lazy_simple.control.uses_query", "Should list uses_query control")
+	// JSON output has mod_name and resource_name as separate fields
+	assert.Contains(t, result.Stdout, `"mod_name": "lazy_simple"`, "Should list controls from lazy_simple mod")
+	assert.Contains(t, result.Stdout, `"resource_name": "inline_sql"`, "Should list inline_sql control")
+	assert.Contains(t, result.Stdout, `"resource_name": "uses_query"`, "Should list uses_query control")
 }
 
 func TestCLI_ControlShowLazy(t *testing.T) {
@@ -381,8 +387,10 @@ func TestCLI_QueryListLazy(t *testing.T) {
 	result := runPowerpipe(t, modPath, "query", "list", "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
-	assert.Contains(t, result.Stdout, "lazy_simple.query.simple_count", "Should list simple_count query")
-	assert.Contains(t, result.Stdout, "lazy_simple.query.simple_status", "Should list simple_status query")
+	// JSON output has mod_name and resource_name as separate fields
+	assert.Contains(t, result.Stdout, `"mod_name": "lazy_simple"`, "Should list queries from lazy_simple mod")
+	assert.Contains(t, result.Stdout, `"resource_name": "simple_count"`, "Should list simple_count query")
+	assert.Contains(t, result.Stdout, `"resource_name": "simple_status"`, "Should list simple_status query")
 }
 
 func TestCLI_QueryShowLazy(t *testing.T) {
@@ -497,7 +505,9 @@ func TestCLI_WithModLocation(t *testing.T) {
 	result := runPowerpipe(t, tmpDir, "dashboard", "list", "--mod-location", modPath, "--output", "json")
 
 	assert.Equal(t, 0, result.ExitCode, "Expected exit code 0, got %d. Stderr: %s", result.ExitCode, result.Stderr)
-	assert.Contains(t, result.Stdout, "lazy_simple.dashboard.simple", "Should list dashboards from specified mod location")
+	// JSON output has mod_name and resource_name as separate fields
+	assert.Contains(t, result.Stdout, `"mod_name": "lazy_simple"`, "Should list dashboards from specified mod location")
+	assert.Contains(t, result.Stdout, `"resource_name": "simple"`, "Should list the simple dashboard")
 }
 
 func TestCLI_WithOutputJSON(t *testing.T) {
