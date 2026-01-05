@@ -207,33 +207,20 @@ jobs:
       - name: Run Test Suite
         id: run-test-suite
         timeout-minutes: 15
-        continue-on-error: true
         run: |
           chmod +x $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh
+          # Run the tests and capture exit code (don't let set -e kill the script)
+          set +e
           $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh ${{ matrix.test_block }}.bats
           TEST_EXIT_CODE=$?
+          set -e
           echo "exit_code=$TEST_EXIT_CODE" >> $GITHUB_OUTPUT
           echo ">> Test completed with exit code: $TEST_EXIT_CODE"
-
-      # This job checks whether the test suite has passed or not.
-      # Since the exit_code is set only when the bats test suite pass,
-      # we have added the if-conditional block
-      - name: Check Test Passed/Failed
-        if: ${{ success() }}
-        continue-on-error: false
-        run: |
-          EXIT_CODE="${{ steps.run-test-suite.outputs.exit_code }}"
-          if [ -z "$EXIT_CODE" ]; then
-            echo "Error: exit_code output was not set"
-            exit 1
-          elif [ "$EXIT_CODE" -eq 0 ]; then
-            exit 0
-          else
-            echo "Tests failed with exit code: $EXIT_CODE"
-            exit 1
-          fi
+          # Exit with the test result
+          exit $TEST_EXIT_CODE
 
       - name: Stop steampipe service
+        if: always()
         run: |
           steampipe service stop
 
