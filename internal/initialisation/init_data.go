@@ -76,11 +76,15 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		ExportManager: export.NewManager(),
 	}
 
-	// Check if lazy loading is enabled
-	lazyEnabled := isLazyLoadEnabled()
+	// Only use lazy loading for benchmark types
+	// For other types (query, dashboard), lazy loading doesn't support target resolution
+	var empty T
+	_, isBenchmark := any(empty).(*resources.Benchmark)
+	_, isDetectionBenchmark := any(empty).(*resources.DetectionBenchmark)
+	useLazyLoading := isLazyLoadEnabled() && (isBenchmark || isDetectionBenchmark)
 
-	if lazyEnabled {
-		// Use lazy loading for faster startup and lower memory
+	if useLazyLoading {
+		// Use lazy loading for benchmark commands - faster startup and lower memory
 		slog.Debug("Loading workspace with lazy loading enabled")
 		lw, err := workspace.LoadLazy(ctx, modLocation,
 			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
@@ -90,13 +94,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		}
 		i.LazyWorkspace = lw
 		i.Workspace = lw.PowerpipeWorkspace
-
-		// For lazy loading, we don't need to resolve targets at init time
-		// They will be resolved on-demand when accessed
-		// However, for backward compatibility, we still try to resolve them
-		// TODO: Consider deferring target resolution entirely for lazy loading
 	} else {
-		// Standard eager loading
+		// Standard eager loading for non-benchmark commands or when lazy loading is disabled
 		w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
 			modLocation,
 			// pass connections
@@ -118,8 +117,9 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	// resolve target resources
 	var targets []modconfig.ModTreeItem
 	var err error
-	if lazyEnabled {
-		// For lazy loading, resolve targets directly using LoadBenchmarkForExecution
+
+	if useLazyLoading {
+		// For lazy loading (benchmark commands only), resolve targets using LoadBenchmarkForExecution
 		// This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace
 		targets, err = i.resolveTargetsForLazyLoading(ctx, cmdArgs)
 		if err != nil {
