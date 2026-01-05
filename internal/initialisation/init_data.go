@@ -145,10 +145,18 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 
 // isLazyLoadEnabled checks if lazy loading should be used.
 // Lazy loading is enabled by default. Set POWERPIPE_WORKSPACE_PRELOAD=true to disable.
+// Also disabled when tag/where filters are used (they require full workspace to iterate).
 func isLazyLoadEnabled() bool {
 	// Check if workspace preload is enabled - this forces eager loading
 	if localconstants.WorkspacePreloadEnabled() {
 		slog.Info("Workspace preload enabled via POWERPIPE_WORKSPACE_PRELOAD - using eager loading")
+		return false
+	}
+
+	// Tag and where filters require iterating over all controls in the workspace,
+	// which isn't compatible with lazy loading. Disable lazy loading when these are set.
+	if viper.IsSet(constants.ArgTag) || viper.IsSet(constants.ArgWhere) {
+		slog.Debug("Tag or where filter set - disabling lazy loading")
 		return false
 	}
 
