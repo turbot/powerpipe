@@ -81,7 +81,12 @@ func (s *Scanner) addEntry(entry *IndexEntry) {
 	s.index.Add(entry)
 }
 
-// ScanDirectory scans all .pp files in a directory recursively.
+// isPowerpipeFile checks if a file has a valid Powerpipe extension (.pp or .sp)
+func isPowerpipeFile(name string) bool {
+	return strings.HasSuffix(name, ".pp") || strings.HasSuffix(name, ".sp")
+}
+
+// ScanDirectory scans all .pp and .sp files in a directory recursively.
 func (s *Scanner) ScanDirectory(dirPath string) error {
 	return filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -93,8 +98,8 @@ func (s *Scanner) ScanDirectory(dirPath string) error {
 			return filepath.SkipDir
 		}
 
-		// Only scan .pp files
-		if info.IsDir() || !strings.HasSuffix(info.Name(), ".pp") {
+		// Only scan .pp and .sp files
+		if info.IsDir() || !isPowerpipeFile(info.Name()) {
 			return nil
 		}
 
@@ -104,7 +109,7 @@ func (s *Scanner) ScanDirectory(dirPath string) error {
 
 // ScanDirectoryParallel scans files in parallel for faster indexing.
 func (s *Scanner) ScanDirectoryParallel(dirPath string, workers int) error {
-	// Collect all .pp files
+	// Collect all .pp and .sp files
 	var files []string
 	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -116,7 +121,7 @@ func (s *Scanner) ScanDirectoryParallel(dirPath string, workers int) error {
 			return filepath.SkipDir
 		}
 
-		if !info.IsDir() && strings.HasSuffix(path, ".pp") {
+		if !info.IsDir() && isPowerpipeFile(path) {
 			files = append(files, path)
 		}
 		return nil
@@ -199,8 +204,8 @@ func (s *Scanner) ScanDirectoryWithModName(dirPath, modName string) error {
 			return filepath.SkipDir
 		}
 
-		// Only scan .pp files
-		if info.IsDir() || !strings.HasSuffix(info.Name(), ".pp") {
+		// Only scan .pp and .sp files
+		if info.IsDir() || !isPowerpipeFile(info.Name()) {
 			return nil
 		}
 
