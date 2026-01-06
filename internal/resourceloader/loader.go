@@ -183,20 +183,70 @@ func (l *Loader) loadBenchmarkChildren(ctx context.Context, bench modconfig.ModT
 }
 
 // loadControlDependencies loads the query referenced by a control.
+// It handles two patterns:
+// 1. query = query.xxx - the Query field is already set
+// 2. sql = query.xxx.sql - need to look up the query and copy its SQL
 func (l *Loader) loadControlDependencies(ctx context.Context, control *resources.Control) error {
+	// Pattern 1: query attribute is set
 	if control.Query != nil && control.Query.Name() != "" {
 		if _, err := l.Load(ctx, control.Query.Name()); err != nil {
 			return fmt.Errorf("loading query %s: %w", control.Query.Name(), err)
+		}
+		return nil
+	}
+
+	// Pattern 2: sql references a query (sql = query.xxx.sql)
+	// If SQL is not set, check if the index has a QueryRef for this control
+	if control.GetSQL() == nil || *control.GetSQL() == "" {
+		entry, ok := l.index.Get(control.Name())
+		if ok && entry.QueryRef != "" {
+			// Load the referenced query
+			queryResource, err := l.Load(ctx, entry.QueryRef)
+			if err != nil {
+				return fmt.Errorf("loading query ref %s: %w", entry.QueryRef, err)
+			}
+
+			// Copy the SQL from the query to the control
+			if query, ok := queryResource.(*resources.Query); ok {
+				if querySql := query.GetSQL(); querySql != nil && *querySql != "" {
+					control.SQL = querySql
+				}
+			}
 		}
 	}
 	return nil
 }
 
 // loadDetectionDependencies loads the query referenced by a detection.
+// It handles two patterns:
+// 1. query = query.xxx - the Query field is already set
+// 2. sql = query.xxx.sql - need to look up the query and copy its SQL
 func (l *Loader) loadDetectionDependencies(ctx context.Context, detection *resources.Detection) error {
+	// Pattern 1: query attribute is set
 	if detection.Query != nil && detection.Query.Name() != "" {
 		if _, err := l.Load(ctx, detection.Query.Name()); err != nil {
 			return fmt.Errorf("loading query %s: %w", detection.Query.Name(), err)
+		}
+		return nil
+	}
+
+	// Pattern 2: sql references a query (sql = query.xxx.sql)
+	// If SQL is not set, check if the index has a QueryRef for this detection
+	if detection.GetSQL() == nil || *detection.GetSQL() == "" {
+		entry, ok := l.index.Get(detection.Name())
+		if ok && entry.QueryRef != "" {
+			// Load the referenced query
+			queryResource, err := l.Load(ctx, entry.QueryRef)
+			if err != nil {
+				return fmt.Errorf("loading query ref %s: %w", entry.QueryRef, err)
+			}
+
+			// Copy the SQL from the query to the detection
+			if query, ok := queryResource.(*resources.Query); ok {
+				if querySql := query.GetSQL(); querySql != nil && *querySql != "" {
+					detection.SQL = querySql
+				}
+			}
 		}
 	}
 	return nil

@@ -131,6 +131,10 @@ func (s *Scanner) extractHCLAttributes(body *hclsyntax.Body, entry *IndexEntry) 
 			entry.Description = extractStringLiteral(attr.Expr)
 		case "sql":
 			entry.HasSQL = true
+			// Check if sql is a reference like query.xxx.sql
+			if ref := extractSQLQueryReference(attr.Expr, s.modName); ref != "" {
+				entry.QueryRef = intern.Intern(ref)
+			}
 		case "query":
 			entry.HasSQL = true
 			// Try to extract query reference
@@ -266,6 +270,41 @@ func extractObjectKey(expr hcl.Expression) string {
 		return extractStringLiteral(e)
 	}
 
+	return ""
+}
+
+// extractSQLQueryReference extracts a query reference from an sql expression like query.xxx.sql
+// Returns the full query name if the expression is of the form query.name.sql or mod.query.name.sql
+func extractSQLQueryReference(expr hcl.Expression, modName string) string {
+	if trav, ok := expr.(*hclsyntax.ScopeTraversalExpr); ok {
+		if len(trav.Traversal) >= 3 {
+			// Extract all parts
+			parts := make([]string, 0, len(trav.Traversal))
+			parts = append(parts, trav.Traversal.RootName())
+			for i := 1; i < len(trav.Traversal); i++ {
+				if attr, ok := trav.Traversal[i].(hcl.TraverseAttr); ok {
+					parts = append(parts, attr.Name)
+				}
+			}
+
+			// Check if last part is "sql"
+			if parts[len(parts)-1] == "sql" {
+				// Remove the "sql" part
+				parts = parts[:len(parts)-1]
+
+				// Now we have either:
+				// - query.name (2 parts) - local reference
+				// - mod.query.name (3 parts) - cross-mod reference
+				if len(parts) == 2 && parts[0] == "query" {
+					// Local query reference: query.name -> modName.query.name
+					return modName + ".query." + parts[1]
+				} else if len(parts) >= 3 {
+					// Cross-mod reference: mod.query.name -> mod.query.name (already qualified)
+					return strings.Join(parts, ".")
+				}
+			}
+		}
+	}
 	return ""
 }
 
