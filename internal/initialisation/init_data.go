@@ -4,8 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
-	"os"
-	"path/filepath"
 	"strings"
 	"sync"
 
@@ -148,7 +146,6 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 // isLazyLoadEnabled checks if lazy loading should be used.
 // Lazy loading is enabled by default. Set POWERPIPE_WORKSPACE_PRELOAD=true to disable.
 // Also disabled when tag/where filters are used (they require full workspace to iterate).
-// Also disabled when dependency mods are installed (complex reference resolution needed).
 func isLazyLoadEnabled() bool {
 	// Check if workspace preload is enabled - this forces eager loading
 	if localconstants.WorkspacePreloadEnabled() {
@@ -161,19 +158,6 @@ func isLazyLoadEnabled() bool {
 	if viper.IsSet(constants.ArgTag) || viper.IsSet(constants.ArgWhere) {
 		slog.Debug("Tag or where filter set - disabling lazy loading")
 		return false
-	}
-
-	// Check for dependency mods - they require full workspace loading for proper
-	// reference resolution across mod boundaries.
-	modLocation := viper.GetString(constants.ArgModLocation)
-	modsDir := filepath.Join(modLocation, ".powerpipe", "mods")
-	if info, err := os.Stat(modsDir); err == nil && info.IsDir() {
-		// Check if there are any actual mods installed
-		entries, err := os.ReadDir(modsDir)
-		if err == nil && len(entries) > 0 {
-			slog.Debug("Dependency mods detected - disabling lazy loading")
-			return false
-		}
 	}
 
 	// Default: lazy loading enabled
