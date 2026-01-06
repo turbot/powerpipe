@@ -209,18 +209,18 @@ func buildResourceIndex(ctx context.Context, workspacePath, modName string) (*re
 
 // scanDependencyMods walks the mods directory and scans each mod with its own mod name.
 func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
-	// Walk through the mods directory looking for mod.pp files
+	// Walk through the mods directory looking for mod.pp or mod.sp files
 	return filepath.Walk(modsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return err
 		}
 
-		// Look for mod.pp files
-		if info.IsDir() || info.Name() != "mod.pp" {
+		// Look for mod.pp or mod.sp files (both are valid mod definition files)
+		if info.IsDir() || (info.Name() != "mod.pp" && info.Name() != "mod.sp") {
 			return nil
 		}
 
-		// Found a mod.pp - extract mod name and scan its directory
+		// Found a mod definition file - extract mod name and scan its directory
 		modDir := filepath.Dir(path)
 		depModName, _, _, err := scanModInfo(modDir)
 		if err != nil {
@@ -246,14 +246,20 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 	})
 }
 
-// scanModInfo extracts mod name, full name, and title from mod.pp.
+// scanModInfo extracts mod name, full name, and title from mod.pp or mod.sp.
 func scanModInfo(workspacePath string) (modName, modFullName, modTitle string, err error) {
+	// Try mod.pp first, then mod.sp
 	modFilePath := filepath.Join(workspacePath, "mod.pp")
-
 	file, err := os.Open(modFilePath)
+	if err != nil && os.IsNotExist(err) {
+		// Try mod.sp as fallback
+		modFilePath = filepath.Join(workspacePath, "mod.sp")
+		file, err = os.Open(modFilePath)
+	}
+
 	if err != nil {
 		if os.IsNotExist(err) {
-			// Default to directory name if no mod.pp
+			// Default to directory name if no mod.pp or mod.sp
 			modName = filepath.Base(workspacePath)
 			modFullName = "mod." + modName
 			return modName, modFullName, modName, nil

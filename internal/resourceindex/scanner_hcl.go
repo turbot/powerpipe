@@ -2,6 +2,7 @@ package resourceindex
 
 import (
 	"os"
+	"strings"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/hashicorp/hcl/v2/hclsyntax"
@@ -147,10 +148,22 @@ func (s *Scanner) extractHCLChildren(body *hclsyntax.Body, entry *IndexEntry) {
 	}
 
 	// Children is typically a tuple expression: [benchmark.a, control.b]
+	// References can be:
+	//   - "type.name" (local reference, needs mod prefix)
+	//   - "mod.type.name" (cross-mod reference, already qualified)
 	if tuple, ok := attr.Expr.(*hclsyntax.TupleConsExpr); ok {
 		for _, elem := range tuple.Exprs {
 			if ref := extractReference(elem); ref != "" {
-				fullRef := intern.Intern(s.modName + "." + ref)
+				// Count parts to determine if it's a local or cross-mod reference
+				parts := strings.Count(ref, ".") + 1
+				var fullRef string
+				if parts == 2 {
+					// Local reference (type.name) - prefix with current mod
+					fullRef = intern.Intern(s.modName + "." + ref)
+				} else {
+					// Cross-mod reference (mod.type.name) - already qualified
+					fullRef = intern.Intern(ref)
+				}
 				entry.ChildNames = append(entry.ChildNames, fullRef)
 			}
 		}
@@ -256,15 +269,22 @@ func extractObjectKey(expr hcl.Expression) string {
 	return ""
 }
 
-// extractReference extracts a "type.name" reference from an expression.
-// References like benchmark.child are ScopeTraversalExpr.
+// extractReference extracts a reference from an expression.
+// References can be:
+//   - "type.name" (e.g., benchmark.child, control.my_control)
+//   - "mod.type.name" (e.g., dependency_1.control.version for cross-mod references)
 func extractReference(expr hcl.Expression) string {
 	if trav, ok := expr.(*hclsyntax.ScopeTraversalExpr); ok {
 		if len(trav.Traversal) >= 2 {
-			root := trav.Traversal.RootName()
-			if attr, ok := trav.Traversal[1].(hcl.TraverseAttr); ok {
-				return root + "." + attr.Name
+			// Build the full reference from all traversal parts
+			parts := make([]string, 0, len(trav.Traversal))
+			parts = append(parts, trav.Traversal.RootName())
+			for i := 1; i < len(trav.Traversal); i++ {
+				if attr, ok := trav.Traversal[i].(hcl.TraverseAttr); ok {
+					parts = append(parts, attr.Name)
+				}
 			}
+			return strings.Join(parts, ".")
 		}
 	}
 	return ""
