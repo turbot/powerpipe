@@ -77,15 +77,16 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		ExportManager: export.NewManager(),
 	}
 
-	// Only use lazy loading for benchmark types
-	// For other types (query, dashboard), lazy loading doesn't support target resolution
+	// Use lazy loading for benchmark types and dashboard server
+	// Query commands still need eager loading for proper target resolution
 	var empty T
 	_, isBenchmark := any(empty).(*resources.Benchmark)
 	_, isDetectionBenchmark := any(empty).(*resources.DetectionBenchmark)
-	useLazyLoading := isLazyLoadEnabled() && (isBenchmark || isDetectionBenchmark)
+	_, isDashboard := any(empty).(*resources.Dashboard)
+	useLazyLoading := isLazyLoadEnabled() && (isBenchmark || isDetectionBenchmark || isDashboard)
 
 	if useLazyLoading {
-		// Use lazy loading for benchmark commands - faster startup and lower memory
+		// Use lazy loading - faster startup and lower memory for browsing
 		slog.Debug("Loading workspace with lazy loading enabled")
 		lw, err := workspace.LoadLazy(ctx, modLocation,
 			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
