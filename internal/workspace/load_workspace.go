@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
@@ -155,6 +156,8 @@ func LoadLazy(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWo
 
 // LoadAuto loads a workspace, using lazy loading if enabled in options.
 // Returns a WorkspaceProvider interface that can be either type.
+// If lazy loading fails due to duplicate mod versions (diamond dependency),
+// it automatically falls back to eager loading.
 func LoadAuto(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (WorkspaceProvider, error_helpers.ErrorAndWarnings) {
 	cfg := newLoadPowerpipeWorkspaceConfig()
 	for _, o := range opts {
@@ -164,6 +167,11 @@ func LoadAuto(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWo
 	if cfg.lazyLoad {
 		lw, err := LoadLazy(ctx, workspacePath, opts...)
 		if err != nil {
+			// Check if this is a duplicate mod versions error - if so, fall back to eager loading
+			if errors.Is(err, ErrDuplicateModVersions) {
+				slog.Info("Falling back to eager loading due to duplicate mod versions")
+				return Load(ctx, workspacePath, opts...)
+			}
 			return nil, error_helpers.NewErrorsAndWarning(err)
 		}
 		return lw, error_helpers.ErrorAndWarnings{}

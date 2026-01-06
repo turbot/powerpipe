@@ -4,7 +4,9 @@ package workspace
 import (
 	"bufio"
 	"context"
+	"errors"
 	"fmt"
+	"log/slog"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -207,8 +209,14 @@ func buildResourceIndex(ctx context.Context, workspacePath, modName string) (*re
 	return scanner.GetIndex(), nil
 }
 
+// ErrDuplicateModVersions is returned when multiple versions of the same mod are detected
+var ErrDuplicateModVersions = errors.New("duplicate mod versions detected")
+
 // scanDependencyMods walks the mods directory and scans each mod with its own mod name.
 func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
+	// Track seen mod names to detect duplicates (diamond dependency issues)
+	seenModNames := make(map[string]string) // mod name -> first seen path
+
 	// Walk through the mods directory looking for mod.pp or mod.sp files
 	return filepath.Walk(modsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
@@ -226,6 +234,17 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 		if err != nil {
 			return fmt.Errorf("scanning mod info from %s: %w", path, err)
 		}
+
+		// Check for duplicate mod names (different versions of same mod)
+		// This indicates a diamond dependency that lazy loading can't handle correctly
+		if firstPath, exists := seenModNames[depModName]; exists {
+			slog.Info("Duplicate mod versions detected - falling back to eager loading",
+				"mod", depModName,
+				"path1", firstPath,
+				"path2", modDir)
+			return ErrDuplicateModVersions
+		}
+		seenModNames[depModName] = modDir
 
 		// Extract the full mod path from the directory structure
 		// e.g., ".powerpipe/mods/github.com/turbot/steampipe-mod-aws-insights@v1.2.0"

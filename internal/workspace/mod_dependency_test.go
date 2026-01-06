@@ -415,34 +415,16 @@ func TestModDeps_ReferenceMissingModResource(t *testing.T) {
 
 func TestModDeps_VersionConflictBehavior(t *testing.T) {
 	// Test: When multiple versions of a mod exist in .powerpipe/mods
-	// Document the actual behavior (last-wins, first-wins, or both visible)
+	// Lazy loading detects this as a version conflict and returns ErrDuplicateModVersions
+	// so the caller can fall back to eager loading which handles this correctly
 	modPath := getModDependencyTestPath(t, "version-conflict/main")
 
-	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
-	require.NoError(t, err)
-	defer lw.Close()
+	_, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 
-	index := lw.GetIndex()
-
-	// Count how many "dep" mod entries we have
-	depQueryCount := 0
-	entries := index.List()
-	for _, e := range entries {
-		if e.ModName == "dep" && e.Type == "query" && e.ShortName == "dep_query" {
-			depQueryCount++
-		}
-	}
-
-	// Document the behavior - typically the scanner processes directories
-	// in filesystem order, which may result in one or both being indexed
-	t.Logf("Number of dep.query.dep_query entries: %d", depQueryCount)
-
-	// At minimum, we should have at least one version
-	assert.GreaterOrEqual(t, depQueryCount, 1, "At least one version should be indexed")
-
-	// Check if the new_in_v2 query (only in v2) exists
-	_, hasV2Only := index.Get("dep.query.new_in_v2")
-	t.Logf("Has v2-only resource: %v", hasV2Only)
+	// Lazy loading should return an error for duplicate mod versions
+	// This allows the caller to fall back to eager loading which handles this correctly
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrDuplicateModVersions)
 }
 
 // =============================================================================
@@ -451,37 +433,16 @@ func TestModDeps_VersionConflictBehavior(t *testing.T) {
 
 func TestModDeps_NameMappingCollision(t *testing.T) {
 	// Test: Two mods with same short name from different orgs
-	// Both map to "my_mod" - verify behavior
+	// Both map to "my_mod" - lazy loading detects this as a collision
+	// and returns ErrDuplicateModVersions so the caller can fall back to eager loading
 	modPath := getModDependencyTestPath(t, "name-collision/main")
 
-	lw, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
-	require.NoError(t, err)
-	defer lw.Close()
+	_, err := NewLazyWorkspace(context.Background(), modPath, DefaultLazyLoadConfig())
 
-	index := lw.GetIndex()
-
-	// Both mods have the same short name "my_mod"
-	// Check if both sets of resources are accessible
-	entries := index.List()
-
-	testQueryCount := 0
-	otherQueryCount := 0
-	for _, e := range entries {
-		if e.ModName == "my_mod" && e.ShortName == "test_query" {
-			testQueryCount++
-		}
-		if e.ModName == "my_mod" && e.ShortName == "other_query" {
-			otherQueryCount++
-		}
-	}
-
-	// Document collision behavior
-	t.Logf("test_query count: %d, other_query count: %d", testQueryCount, otherQueryCount)
-
-	// Due to name collision, behavior may vary
-	// The important thing is that the system doesn't crash
-	assert.True(t, testQueryCount >= 0 || otherQueryCount >= 0,
-		"At least some resources should be indexed despite collision")
+	// Lazy loading should return an error for duplicate mod names
+	// This allows the caller to fall back to eager loading which handles this correctly
+	require.Error(t, err)
+	require.ErrorIs(t, err, ErrDuplicateModVersions)
 }
 
 // =============================================================================
