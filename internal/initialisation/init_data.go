@@ -2,6 +2,7 @@ package initialisation
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"log/slog"
 	"strings"
@@ -90,11 +91,20 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
 		)
 		if err != nil {
-			return NewErrorInitData(fmt.Errorf("failed to load lazy workspace: %s", error_helpers.HandleCancelError(err).Error()))
+			// Check if this is a duplicate mod versions error - if so, fall back to eager loading
+			if errors.Is(err, workspace.ErrDuplicateModVersions) {
+				slog.Info("Falling back to eager loading due to duplicate mod versions")
+				useLazyLoading = false
+			} else {
+				return NewErrorInitData(fmt.Errorf("failed to load lazy workspace: %s", error_helpers.HandleCancelError(err).Error()))
+			}
+		} else {
+			i.LazyWorkspace = lw
+			i.Workspace = lw.PowerpipeWorkspace
 		}
-		i.LazyWorkspace = lw
-		i.Workspace = lw.PowerpipeWorkspace
-	} else {
+	}
+
+	if !useLazyLoading {
 		// Standard eager loading for non-benchmark commands or when lazy loading is disabled
 		w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
 			modLocation,
