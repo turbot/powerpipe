@@ -12,9 +12,6 @@ on:
 env:
   POWERPIPE_UPDATE_CHECK: false
   SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
-  # Force eager loading for dashboard run tests until lazy loading panel naming is fixed
-  # Lazy loading generates different panel names (e.g., "container_1" vs "anonymous_container_0")
-  POWERPIPE_WORKSPACE_PRELOAD: true
 
 jobs:
   dashboard_tests:
@@ -63,7 +60,7 @@ jobs:
         run: |
           cd powerpipe
           go clean -testcache
-          go test -short -timeout 120s ./... -test.v
+          go test -timeout 300s ./... -test.v
 
       - name: Set up Docker
         uses: docker/setup-buildx-action@v3
@@ -115,29 +112,38 @@ jobs:
           path: ~/artifacts/darwin.tar.gz
           if-no-files-found: error
 
+  # Discover all BATS test files dynamically
+  # This ensures new test files are automatically included in CI without manual updates
+  discover_tests:
+    name: Discover Tests
+    runs-on: ubuntu-latest
+    outputs:
+      test_files: ${{ steps.find-tests.outputs.test_files }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
+
+      - name: Find all BATS test files
+        id: find-tests
+        run: |
+          # Find all .bats files, extract base names (without .bats extension)
+          # Output as JSON array for matrix consumption
+          test_files=$(ls tests/acceptance/test_files/*.bats \
+            | xargs -n1 basename \
+            | sed 's/\.bats$//' \
+            | jq -R -s -c 'split("\n") | map(select(length > 0))')
+          echo "Found test files: $test_files"
+          echo "test_files=$test_files" >> $GITHUB_OUTPUT
+
   acceptance_test:
     name: Test
-    needs: goreleaser
+    needs: [goreleaser, discover_tests]
     strategy:
       fail-fast: false
       matrix:
         platform: [ubuntu-latest]
-        test_block:
-          - "config_path"
-          - "check"
-          - "resource_show_outputs"
-          - "dashboard"
-          - "backend"
-          - "mod"
-          - "mod_install"
-          - "sp_files"
-          - "var_resolution"
-          - "params_and_args"
-          - "snapshot"
-          - "dashboard_parsing_validation"
-          - "database_precedence"
-          - "tag_filtering"
-          - "config_precedence"
+        # Dynamically populate test_block from discovered test files
+        test_block: ${{ fromJson(needs.discover_tests.outputs.test_files) }}
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
@@ -156,7 +162,7 @@ jobs:
         id: prepare-for-downloads
         run: |
           mkdir ~/artifacts
-  
+
       - name: Download Linux Build Artifacts
         uses: actions/download-artifact@634f93cb2916e3fdff6788551b99b062d0335ce0 # v5.0.0
         if: ${{ matrix.platform == 'ubuntu-latest' }}
@@ -182,7 +188,7 @@ jobs:
         run: |
           mkdir ~/build
           tar -xf ~/artifacts/linux.tar.gz -C ~/build
-      
+
       - name: Install Steampipe(Darwin)
         if: ${{ matrix.platform == 'macos-latest' }}
         run: |
@@ -194,7 +200,7 @@ jobs:
         run: |
           sudo /bin/sh -c "$(curl -fsSL https://steampipe.io/install/steampipe.sh)"
           steampipe -v
-      
+
       - name: Set PATH
         run: |
           echo "PATH=$PATH:$HOME/build:$GTIHUB_WORKSPACE/powerpipe/tests/acceptance/lib/bats-core/libexec" >> $GITHUB_ENV

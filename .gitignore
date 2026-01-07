@@ -41,8 +41,8 @@
 
 powerpipe
 
-# Generated test mods for benchmarking
-/internal/testdata/mods/generated/
+# Generated stress test mods (too large for repo - generate locally)
+/internal/testdata/mods/generated/stress/
 
 # Benchmark results
 /benchmark_results/
