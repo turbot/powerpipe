@@ -3,6 +3,7 @@ package dashboardserver
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -18,11 +19,20 @@ func comparisonTestdataDir() string {
 	return filepath.Join(filepath.Dir(filename), "..", "testdata", "mods")
 }
 
+// skipIfModNotExists skips the test if the mod directory doesn't exist.
+// Generated test mods are gitignored and only available for local testing.
+func skipIfModNotExists(t *testing.T, modPath string) {
+	if _, err := os.Stat(modPath); os.IsNotExist(err) {
+		t.Skipf("Test mod not found (gitignored): %s", modPath)
+	}
+}
+
 // TestDashboardListPayload_EagerVsLazy_Identical verifies that the dashboard list
 // payload from lazy loading is identical to eager loading.
 // This test should FAIL initially, proving the current gap between lazy and eager loading.
 func TestDashboardListPayload_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -116,6 +126,7 @@ func TestDashboardListPayload_EagerVsLazy_Identical(t *testing.T) {
 // are populated in the lazy payload (not nil/empty where they shouldn't be).
 func TestDashboardPayload_AllFieldsPopulated(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -156,6 +167,7 @@ func TestDashboardPayload_AllFieldsPopulated(t *testing.T) {
 // is correctly built from the index.
 func TestBenchmarkPayload_ChildHierarchy(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -231,6 +243,7 @@ func compareChildHierarchy(t *testing.T, parentName string, eagerChildren, lazyC
 // This is the definitive test for payload equivalence.
 func TestPayload_JSONEquivalence(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "small")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -272,6 +285,7 @@ func TestPayload_JSONEquivalence(t *testing.T) {
 // TestTagsNotNil verifies that tags are never nil (should be empty map if no tags).
 func TestTagsNotNil(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
