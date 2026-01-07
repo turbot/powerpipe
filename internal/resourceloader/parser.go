@@ -19,6 +19,7 @@ import (
 	pparse "github.com/turbot/powerpipe/internal/parse"
 	"github.com/turbot/powerpipe/internal/resourceindex"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/zclconf/go-cty/cty"
 )
 
 // parseResource parses a single resource from its file using the index entry metadata.
@@ -303,6 +304,12 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 		provider := l.resourceProvider
 		l.mu.RUnlock()
 
+		// Load base resources into eval context BEFORE decoding
+		// This allows the HCL decoder to resolve base references naturally
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.loadBaseResourcesIntoEvalContext(ctx, syntaxBody, evalCtx)
+		}
+
 		diags := parse.DecodeHclBody(block.Body, evalCtx, provider, childResource)
 		// Ignore non-critical errors
 		if diags.HasErrors() {
@@ -321,11 +328,6 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 		// Extract runtime dependencies from args attribute
 		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
 			l.extractRuntimeDependencies(syntaxBody, childResource, evalCtx)
-		}
-
-		// Try to resolve base reference if present
-		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
-			l.resolveBaseReference(ctx, syntaxBody, childResource)
 		}
 
 		// Recursively decode nested blocks in this child
@@ -436,16 +438,24 @@ func (l *Loader) decodeNodeAndEdgeBlocks(ctx context.Context, nep resources.Node
 		provider := l.resourceProvider
 		l.mu.RUnlock()
 
+		// Load base resources into eval context BEFORE decoding
+		// This allows the HCL decoder to resolve base references naturally
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.loadBaseResourcesIntoEvalContext(ctx, syntaxBody, evalCtx)
+		}
+
 		_ = parse.DecodeHclBody(block.Body, evalCtx, provider, childResource)
+
+		// Call OnDecoded to trigger SetBaseProperties which copies SQL from base
+		if od, ok := childResource.(interface {
+			OnDecoded(*hcl.Block, modconfig.ModResourcesProvider) hcl.Diagnostics
+		}); ok {
+			_ = od.OnDecoded(block, nil)
+		}
 
 		// Extract runtime dependencies from args attribute
 		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
 			l.extractRuntimeDependencies(syntaxBody, childResource, evalCtx)
-		}
-
-		// Try to resolve base reference if present
-		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
-			l.resolveBaseReference(ctx, syntaxBody, childResource)
 		}
 
 		// Collect nodes and edges
@@ -555,12 +565,15 @@ func (l *Loader) extractRuntimeDependencies(body *hclsyntax.Body, resource modco
 	}
 }
 
-// resolveBaseReference attempts to resolve a `base` attribute reference for a resource.
-// This is needed for lazy loading because base references can't be resolved during HCL decode
-// without the referenced resource being already loaded.
-func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body, resource modconfig.HclResource) {
-	// Only nodes and edges support base references in the context of lazy loading
-	if body == nil {
+// loadBaseResourcesIntoEvalContext scans an HCL body for base references and loads
+// them into the eval context. This allows the HCL decoder to resolve base references
+// naturally, just like in eager loading.
+//
+// This is the unified approach: instead of manually setting Base fields after decoding,
+// we pre-load base resources into the eval context so the HCL decoder's automatic
+// field population (via hcl:"base" tag) works correctly.
+func (l *Loader) loadBaseResourcesIntoEvalContext(ctx context.Context, body *hclsyntax.Body, evalCtx *hcl.EvalContext) {
+	if body == nil || evalCtx == nil {
 		return
 	}
 
@@ -570,10 +583,9 @@ func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body,
 		return
 	}
 
-	// Try to extract the reference from the base attribute expression
+	// Extract the reference from the base attribute expression
 	// The expression should be a scope traversal like `node.chaos_cache_check_top`
-	expr := baseAttr.Expr
-	traversal, ok := expr.(*hclsyntax.ScopeTraversalExpr)
+	traversal, ok := baseAttr.Expr.(*hclsyntax.ScopeTraversalExpr)
 	if !ok || len(traversal.Traversal) < 2 {
 		return
 	}
@@ -581,9 +593,6 @@ func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body,
 	// Extract resource type and name from traversal
 	// e.g., node.chaos_cache_check_top -> type="node", name="chaos_cache_check_top"
 	resourceType := traversal.Traversal.RootName()
-	if len(traversal.Traversal) < 2 {
-		return
-	}
 	attrTraversal, ok := traversal.Traversal[1].(hcl.TraverseAttr)
 	if !ok {
 		return
@@ -591,7 +600,6 @@ func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body,
 	resourceName := attrTraversal.Name
 
 	// Build the full resource name for lookup
-	// The mod name should be the same as the current resource's mod
 	fullName := fmt.Sprintf("%s.%s.%s", l.mod.ShortName, resourceType, resourceName)
 
 	// Try to load the base resource
@@ -600,37 +608,36 @@ func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body,
 		return
 	}
 
-	// Set the base on the resource based on type
-	switch r := resource.(type) {
-	case *resources.DashboardNode:
-		if baseNode, ok := baseResource.(*resources.DashboardNode); ok {
-			r.Base = baseNode
-			r.SetBaseProperties()
+	// Get the cty value for the base resource
+	ctyProvider, ok := baseResource.(interface{ CtyValue() (cty.Value, error) })
+	if !ok {
+		return
+	}
+	ctyVal, err := ctyProvider.CtyValue()
+	if err != nil {
+		return
+	}
+
+	// Initialize variables map if needed
+	if evalCtx.Variables == nil {
+		evalCtx.Variables = make(map[string]cty.Value)
+	}
+
+	// Add or update the resource type map in the eval context
+	// This mirrors how eager loading builds the eval context with resources
+	typeMap, hasTypeMap := evalCtx.Variables[resourceType]
+	if !hasTypeMap || typeMap.IsNull() {
+		// Create a new map for this resource type
+		evalCtx.Variables[resourceType] = cty.ObjectVal(map[string]cty.Value{
+			resourceName: ctyVal,
+		})
+	} else {
+		// Add to existing map - need to rebuild the object
+		existingMap := typeMap.AsValueMap()
+		if existingMap == nil {
+			existingMap = make(map[string]cty.Value)
 		}
-	case *resources.DashboardEdge:
-		if baseEdge, ok := baseResource.(*resources.DashboardEdge); ok {
-			r.Base = baseEdge
-			r.SetBaseProperties()
-		}
-	case *resources.DashboardChart:
-		if baseChart, ok := baseResource.(*resources.DashboardChart); ok {
-			r.Base = baseChart
-			r.SetBaseProperties()
-		}
-	case *resources.DashboardCard:
-		if baseCard, ok := baseResource.(*resources.DashboardCard); ok {
-			r.Base = baseCard
-			r.SetBaseProperties()
-		}
-	case *resources.DashboardTable:
-		if baseTable, ok := baseResource.(*resources.DashboardTable); ok {
-			r.Base = baseTable
-			r.SetBaseProperties()
-		}
-	case *resources.DashboardInput:
-		if baseInput, ok := baseResource.(*resources.DashboardInput); ok {
-			r.Base = baseInput
-			r.SetBaseProperties()
-		}
+		existingMap[resourceName] = ctyVal
+		evalCtx.Variables[resourceType] = cty.ObjectVal(existingMap)
 	}
 }
