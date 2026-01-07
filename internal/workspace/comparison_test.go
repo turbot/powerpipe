@@ -3,6 +3,7 @@ package workspace_test
 import (
 	"context"
 	"encoding/json"
+	"os"
 	"path/filepath"
 	"runtime"
 	"testing"
@@ -18,11 +19,20 @@ func comparisonTestdataDir() string {
 	return filepath.Join(filepath.Dir(filename), "..", "testdata", "mods")
 }
 
+// skipIfModNotExists skips the test if the mod directory doesn't exist.
+// Generated test mods are gitignored and only available for local testing.
+func skipIfModNotExists(t *testing.T, modPath string) {
+	if _, err := os.Stat(modPath); os.IsNotExist(err) {
+		t.Skipf("Test mod not found (gitignored): %s", modPath)
+	}
+}
+
 // TestResourceMetadata_EagerVsLazy_Identical verifies that resource metadata
 // from lazy loading matches eager loading exactly.
 // This test should FAIL initially, proving that lazy loading differs from eager loading.
 func TestResourceMetadata_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -105,6 +115,7 @@ func TestResourceMetadata_EagerVsLazy_Identical(t *testing.T) {
 // Tags must have the same keys AND values.
 func TestTagStructure_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -154,6 +165,7 @@ func TestTagStructure_EagerVsLazy_Identical(t *testing.T) {
 // This uses JSON comparison to ensure complete equivalence.
 func TestDashboardListPayload_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -208,6 +220,7 @@ func TestDashboardListPayload_EagerVsLazy_Identical(t *testing.T) {
 // (parent-child relationships) matches between eager and lazy loading.
 func TestBenchmarkHierarchy_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -257,6 +270,7 @@ func TestBenchmarkHierarchy_EagerVsLazy_Identical(t *testing.T) {
 // are available for lazy-loaded resources.
 func TestSourceDefinition_LazyLoaded_NotEmpty(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -293,6 +307,7 @@ func TestSourceDefinition_LazyLoaded_NotEmpty(t *testing.T) {
 // when serialized.
 func TestJSONPayload_EagerVsLazy_Identical(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "small")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
@@ -354,6 +369,7 @@ func TestJSONPayload_EagerVsLazy_Identical(t *testing.T) {
 // are populated in the lazy-loaded payload.
 func TestAllFieldsPresent_LazyPayload(t *testing.T) {
 	modPath := filepath.Join(comparisonTestdataDir(), "generated", "medium")
+	skipIfModNotExists(t, modPath)
 
 	ctx := context.Background()
 
