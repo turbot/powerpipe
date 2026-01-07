@@ -263,14 +263,17 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 		}
 
 		// Generate name for anonymous blocks
-		childCounts[block.Type]++
 		shortName := ""
 		if len(block.Labels) > 0 {
 			shortName = block.Labels[0]
 		} else {
-			// Anonymous block - generate a name based on parent and index
-			shortName = fmt.Sprintf("%s_%d", block.Type, childCounts[block.Type])
+			// Anonymous block - generate a name matching pipe-fittings convention:
+			// {sanitised_parent_name}_anonymous_{block_type}_{index}
+			// This ensures consistent naming between eager and lazy loading.
+			sanitisedParentName := strings.ReplaceAll(parent.GetUnqualifiedName(), ".", "_")
+			shortName = fmt.Sprintf("%s_anonymous_%s_%d", sanitisedParentName, block.Type, childCounts[block.Type])
 		}
+		childCounts[block.Type]++
 
 		// Create child resource
 		childEntry := &resourceindex.IndexEntry{
