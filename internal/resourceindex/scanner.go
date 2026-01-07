@@ -1,13 +1,13 @@
 package resourceindex
 
 import (
+	"context"
 	"fmt"
 	"os"
-	"path/filepath"
 	"runtime"
-	"strings"
 	"sync"
 
+	filehelpers "github.com/turbot/go-kit/files"
 	"github.com/turbot/powerpipe/internal/intern"
 )
 
@@ -81,51 +81,55 @@ func (s *Scanner) addEntry(entry *IndexEntry) {
 	s.index.Add(entry)
 }
 
-// isPowerpipeFile checks if a file has a valid Powerpipe extension (.pp or .sp)
-func isPowerpipeFile(name string) bool {
-	return strings.HasSuffix(name, ".pp") || strings.HasSuffix(name, ".sp")
+// listPowerpipeFiles returns all .pp and .sp files in a directory using go-kit.
+// This uses the same file listing logic as pipe-fittings for consistency.
+func listPowerpipeFiles(ctx context.Context, dirPath string) ([]string, error) {
+	// Validate directory exists and is a directory
+	info, err := os.Stat(dirPath)
+	if err != nil {
+		return nil, fmt.Errorf("accessing directory %s: %w", dirPath, err)
+	}
+	if !info.IsDir() {
+		return nil, fmt.Errorf("%s is not a directory", dirPath)
+	}
+
+	listOpts := &filehelpers.ListOptions{
+		Flags:   filehelpers.FilesRecursive,
+		Include: []string{"**/*.pp", "**/*.sp"},
+		Exclude: []string{".*/**"}, // Skip hidden directories
+	}
+	return filehelpers.ListFilesWithContext(ctx, dirPath, listOpts)
 }
 
 // ScanDirectory scans all .pp and .sp files in a directory recursively.
 func (s *Scanner) ScanDirectory(dirPath string) error {
-	return filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
+	return s.ScanDirectoryWithContext(context.Background(), dirPath)
+}
+
+// ScanDirectoryWithContext scans all .pp and .sp files with context support.
+func (s *Scanner) ScanDirectoryWithContext(ctx context.Context, dirPath string) error {
+	files, err := listPowerpipeFiles(ctx, dirPath)
+	if err != nil {
+		return err
+	}
+
+	for _, filePath := range files {
+		if err := s.ScanFile(filePath); err != nil {
 			return err
 		}
-
-		// Skip hidden directories
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
-
-		// Only scan .pp and .sp files
-		if info.IsDir() || !isPowerpipeFile(info.Name()) {
-			return nil
-		}
-
-		return s.ScanFile(path)
-	})
+	}
+	return nil
 }
 
 // ScanDirectoryParallel scans files in parallel for faster indexing.
 func (s *Scanner) ScanDirectoryParallel(dirPath string, workers int) error {
-	// Collect all .pp and .sp files
-	var files []string
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, err error) error {
-		if err != nil {
-			return err
-		}
+	return s.ScanDirectoryParallelWithContext(context.Background(), dirPath, workers)
+}
 
-		// Skip hidden directories
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
-		}
-
-		if !info.IsDir() && isPowerpipeFile(path) {
-			files = append(files, path)
-		}
-		return nil
-	})
+// ScanDirectoryParallelWithContext scans files in parallel with context support.
+func (s *Scanner) ScanDirectoryParallelWithContext(ctx context.Context, dirPath string, workers int) error {
+	// Use go-kit for consistent file listing with pipe-fittings
+	files, err := listPowerpipeFiles(ctx, dirPath)
 	if err != nil {
 		return err
 	}
@@ -193,30 +197,29 @@ func (s *Scanner) ScanDirectoryWithModName(dirPath, modName string) error {
 	s.modName = modName
 	s.modRoot = dirPath
 
-	// Scan the directory (don't recurse into subdirectories with mod.pp)
-	err := filepath.Walk(dirPath, func(path string, info os.FileInfo, walkErr error) error {
-		if walkErr != nil {
-			return walkErr
-		}
+	// Use go-kit for consistent file listing
+	files, err := listPowerpipeFiles(context.Background(), dirPath)
+	if err != nil {
+		// Restore original mod name and root before returning
+		s.modName = originalModName
+		s.modRoot = originalModRoot
+		return err
+	}
 
-		// Skip hidden directories
-		if info.IsDir() && strings.HasPrefix(info.Name(), ".") {
-			return filepath.SkipDir
+	for _, filePath := range files {
+		if err := s.ScanFile(filePath); err != nil {
+			// Restore original mod name and root before returning
+			s.modName = originalModName
+			s.modRoot = originalModRoot
+			return err
 		}
-
-		// Only scan .pp and .sp files
-		if info.IsDir() || !isPowerpipeFile(info.Name()) {
-			return nil
-		}
-
-		return s.ScanFile(path)
-	})
+	}
 
 	// Restore original mod name and root
 	s.modName = originalModName
 	s.modRoot = originalModRoot
 
-	return err
+	return nil
 }
 
 // GetIndex returns the built index.

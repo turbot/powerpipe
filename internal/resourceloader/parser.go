@@ -16,6 +16,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/parse"
 	"github.com/turbot/pipe-fittings/v2/schema"
+	pparse "github.com/turbot/powerpipe/internal/parse"
 	"github.com/turbot/powerpipe/internal/resourceindex"
 	"github.com/turbot/powerpipe/internal/resources"
 )
@@ -212,29 +213,8 @@ func (l *Loader) createResource(block *hcl.Block, entry *resourceindex.IndexEntr
 		mod = modconfig.NewMod(entry.ModName, entry.ModRoot, hcl.Range{})
 	}
 
-	// Map of block types to factory functions
-	factoryFuncs := map[string]func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource{
-		schema.BlockTypeBenchmark: resources.NewBenchmark,
-		schema.BlockTypeCard:      resources.NewDashboardCard,
-		schema.BlockTypeCategory:  resources.NewDashboardCategory,
-		schema.BlockTypeContainer: resources.NewDashboardContainer,
-		schema.BlockTypeChart:     resources.NewDashboardChart,
-		schema.BlockTypeControl:   resources.NewControl,
-		schema.BlockTypeDashboard: resources.NewDashboard,
-		schema.BlockTypeDetection: resources.NewDetection,
-		schema.BlockTypeEdge:      resources.NewDashboardEdge,
-		schema.BlockTypeFlow:      resources.NewDashboardFlow,
-		schema.BlockTypeGraph:     resources.NewDashboardGraph,
-		schema.BlockTypeHierarchy: resources.NewDashboardHierarchy,
-		schema.BlockTypeImage:     resources.NewDashboardImage,
-		schema.BlockTypeInput:     resources.NewDashboardInput,
-		schema.BlockTypeNode:      resources.NewDashboardNode,
-		schema.BlockTypeQuery:     resources.NewQuery,
-		schema.BlockTypeTable:     resources.NewDashboardTable,
-		schema.BlockTypeText:      resources.NewDashboardText,
-		schema.BlockTypeWith:      resources.NewDashboardWith,
-	}
-
+	// Use shared factory functions registry to ensure consistency with eager loading
+	factoryFuncs := pparse.GetResourceFactoryFuncs()
 	factoryFunc, ok := factoryFuncs[block.Type]
 	if !ok {
 		return nil, fmt.Errorf("unsupported block type: %s", block.Type)
@@ -267,11 +247,8 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 		if len(block.Labels) > 0 {
 			shortName = block.Labels[0]
 		} else {
-			// Anonymous block - generate a name matching pipe-fittings convention:
-			// {sanitised_parent_name}_anonymous_{block_type}_{index}
-			// This ensures consistent naming between eager and lazy loading.
-			sanitisedParentName := strings.ReplaceAll(parent.GetUnqualifiedName(), ".", "_")
-			shortName = fmt.Sprintf("%s_anonymous_%s_%d", sanitisedParentName, block.Type, childCounts[block.Type])
+			// Anonymous block - use shared utility for consistent naming with eager loading
+			shortName = modconfig.AnonymousBlockName(parent.GetUnqualifiedName(), block.Type, childCounts[block.Type])
 		}
 		childCounts[block.Type]++
 
