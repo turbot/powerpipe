@@ -272,7 +272,12 @@ func BenchmarkDashboardLoadOnDemand(b *testing.B) {
 
 // TestMeasureLoadTimes runs a simple timing test and outputs results.
 // This is useful for quick manual testing.
+// Skip in short mode since it requires an external mod with dependencies.
 func TestMeasureLoadTimes(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping performance test in short mode")
+	}
+
 	modPath := getBenchmarkModPath()
 
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
@@ -340,7 +345,12 @@ func TestMeasureLoadTimes(t *testing.T) {
 }
 
 // TestMeasureMemory measures memory consumption differences.
+// Skip in short mode since it requires an external mod with dependencies.
 func TestMeasureMemory(t *testing.T) {
+	if testing.Short() {
+		t.Skip("Skipping memory test in short mode")
+	}
+
 	modPath := getBenchmarkModPath()
 
 	if _, err := os.Stat(modPath); os.IsNotExist(err) {
