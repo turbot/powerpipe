@@ -7,7 +7,6 @@ load "$LIB_BATS_SUPPORT/load.bash"
 
 setup() {
   export PHASED_LOADING_MOD="$MODS_DIR/phased_loading_comparison_mod"
-  export LOCAL_DB_URL="duckdb://$BATS_TMPDIR/phased_loading.duckdb"
 }
 
 # Test: Dashboard list JSON output should be identical
@@ -15,14 +14,12 @@ setup() {
   cd "$PHASED_LOADING_MOD"
 
   # Eager loading
-  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output json   assert_success
   eager_output=$(echo "$output" | sed -n '/^\[/,$p' | jq -S '.')
   echo "$eager_output" > "$BATS_TMPDIR/eager_dashboard_list.json"
 
   # Lazy loading (default)
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json   assert_success
   lazy_output=$(echo "$output" | sed -n '/^\[/,$p' | jq -S '.')
   echo "$lazy_output" > "$BATS_TMPDIR/lazy_dashboard_list.json"
 
@@ -39,14 +36,12 @@ setup() {
   cd "$PHASED_LOADING_MOD"
 
   # Eager loading
-  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe benchmark list --output json   assert_success
   eager_output=$(echo "$output" | sed -n '/^\[/,$p' | jq -S '.')
   echo "$eager_output" > "$BATS_TMPDIR/eager_benchmark_list.json"
 
   # Lazy loading (default)
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json   assert_success
   lazy_output=$(echo "$output" | sed -n '/^\[/,$p' | jq -S '.')
   echo "$lazy_output" > "$BATS_TMPDIR/lazy_benchmark_list.json"
 
@@ -62,8 +57,7 @@ setup() {
 @test "dashboard list includes all tags in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json   assert_success
 
   # Extract JSON array from output
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
@@ -84,8 +78,7 @@ setup() {
 @test "benchmark list includes all tags in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json   assert_success
 
   # Extract JSON array from output
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
@@ -106,8 +99,7 @@ setup() {
 @test "dashboard list includes titles in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json   assert_success
 
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
 
@@ -123,8 +115,7 @@ setup() {
 @test "benchmark list includes titles in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json   assert_success
 
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
 
@@ -140,8 +131,7 @@ setup() {
 @test "dashboard list includes descriptions in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json   assert_success
 
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
 
@@ -159,8 +149,7 @@ setup() {
 @test "control list includes tags in lazy mode" {
   cd "$PHASED_LOADING_MOD"
 
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe control list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe control list --output json   assert_success
 
   json_output=$(echo "$output" | sed -n '/^\[/,$p')
 
@@ -177,13 +166,11 @@ setup() {
   cd "$PHASED_LOADING_MOD"
 
   # Eager
-  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output json   assert_success
   eager_count=$(echo "$output" | sed -n '/^\[/,$p' | jq 'length')
 
   # Lazy
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output json   assert_success
   lazy_count=$(echo "$output" | sed -n '/^\[/,$p' | jq 'length')
 
   echo "Eager count: $eager_count, Lazy count: $lazy_count"
@@ -197,13 +184,11 @@ setup() {
   cd "$PHASED_LOADING_MOD"
 
   # Eager
-  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe benchmark list --output json   assert_success
   eager_count=$(echo "$output" | sed -n '/^\[/,$p' | jq 'length')
 
   # Lazy
-  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json --database="$LOCAL_DB_URL"
-  assert_success
+  POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output json   assert_success
   lazy_count=$(echo "$output" | sed -n '/^\[/,$p' | jq 'length')
 
   echo "Eager count: $eager_count, Lazy count: $lazy_count"

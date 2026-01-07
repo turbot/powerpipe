@@ -216,6 +216,11 @@ jobs:
       - name: Run Test Suite
         id: run-test-suite
         timeout-minutes: 15
+        # Force eager loading for dashboard run tests until lazy loading panel naming is fixed
+        # Lazy loading generates different panel names (e.g., "container_1" vs "anonymous_container_0")
+        # during dashboard execution. This doesn't affect list/show commands.
+        env:
+          POWERPIPE_WORKSPACE_PRELOAD: true
         run: |
           chmod +x $GITHUB_WORKSPACE/powerpipe/tests/acceptance/run.sh
           # Run the tests and capture exit code (don't let set -e kill the script)
