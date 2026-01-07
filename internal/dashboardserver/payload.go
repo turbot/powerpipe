@@ -171,12 +171,18 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 			// Mark as visiting before recursion
 			visiting[t.FullName] = true
 
+			// Ensure tags is not nil for consistent JSON serialization
+			childTags := t.Tags
+			if childTags == nil {
+				childTags = make(map[string]string)
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "control",
-				Tags:          t.Tags,
+				Tags:          childTags,
 				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
 
@@ -210,12 +216,18 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 			// Mark as visiting before recursion
 			visiting[t.FullName] = true
 
+			// Ensure tags is not nil for consistent JSON serialization
+			detChildTags := t.Tags
+			if detChildTags == nil {
+				detChildTags = make(map[string]string)
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "detection",
-				Tags:          t.Tags,
+				Tags:          detChildTags,
 				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
 
@@ -238,20 +250,27 @@ func buildAvailableDashboardsPayloadFromIndex(lazyWorkspace *workspace.LazyWorks
 	indexPayload := lazyWorkspace.GetAvailableDashboardsFromIndex()
 
 	// Convert to server payload format
+	// Initialize all maps to empty maps (not nil) for consistent JSON serialization
+	// nil maps serialize to "null", empty maps serialize to "{}"
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
 		Benchmarks: make(map[string]ModAvailableBenchmark),
-		Snapshots:  nil, // Snapshots not supported in lazy mode for now
+		Snapshots:  make(map[string]string), // Empty map for consistent serialization
 	}
 
 	// Convert dashboards
 	for name, dash := range indexPayload.Dashboards {
+		// Ensure tags is not nil (empty map if no tags)
+		tags := dash.Tags
+		if tags == nil {
+			tags = make(map[string]string)
+		}
 		payload.Dashboards[name] = ModAvailableDashboard{
 			Title:       dash.Title,
 			FullName:    dash.FullName,
 			ShortName:   dash.ShortName,
-			Tags:        dash.Tags,
+			Tags:        tags,
 			ModFullName: dash.ModFullName,
 		}
 	}
@@ -271,12 +290,18 @@ func convertIndexBenchmarkInfo(info resourceindex.BenchmarkInfo) ModAvailableBen
 		children = append(children, convertIndexBenchmarkInfo(child))
 	}
 
+	// Ensure tags is not nil (empty map if no tags) for consistent JSON serialization
+	tags := info.Tags
+	if tags == nil {
+		tags = make(map[string]string)
+	}
+
 	return ModAvailableBenchmark{
 		Title:         info.Title,
 		FullName:      info.FullName,
 		ShortName:     info.ShortName,
 		BenchmarkType: info.BenchmarkType,
-		Tags:          info.Tags,
+		Tags:          tags,
 		IsTopLevel:    info.IsTopLevel,
 		Children:      children,
 		Trunks:        info.Trunks,
@@ -302,12 +327,17 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 
 		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
+			// Ensure tags is not nil (empty map if no tags) for consistent JSON serialization
+			tags := dashboard.Tags
+			if tags == nil {
+				tags = make(map[string]string)
+			}
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
 				Title:       typeHelpers.SafeString(dashboard.Title),
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
-				Tags:        dashboard.Tags,
+				Tags:        tags,
 				ModFullName: mod.GetFullName(),
 			}
 		}
@@ -338,12 +368,18 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			visiting := make(map[string]bool)
 			visiting[benchmark.FullName] = true
 
+			// Ensure tags is not nil for consistent JSON serialization
+			benchTags := benchmark.Tags
+			if benchTags == nil {
+				benchTags = make(map[string]string)
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         benchmark.GetTitle(),
 				FullName:      benchmark.FullName,
 				ShortName:     benchmark.ShortName,
 				BenchmarkType: "control",
-				Tags:          benchmark.Tags,
+				Tags:          benchTags,
 				IsTopLevel:    isTopLevel,
 				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks, visiting),
 				ModFullName:   mod.GetFullName(),
@@ -384,12 +420,18 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			visiting := make(map[string]bool)
 			visiting[detectionBenchmark.FullName] = true
 
+			// Ensure tags is not nil for consistent JSON serialization
+			detBenchTags := detectionBenchmark.Tags
+			if detBenchTags == nil {
+				detBenchTags = make(map[string]string)
+			}
+
 			availableDetectionBenchmark := ModAvailableBenchmark{
 				Title:         detectionBenchmark.GetTitle(),
 				FullName:      detectionBenchmark.FullName,
 				ShortName:     detectionBenchmark.ShortName,
 				BenchmarkType: "detection",
-				Tags:          detectionBenchmark.Tags,
+				Tags:          detBenchTags,
 				IsTopLevel:    isTopLevel,
 				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks, visiting),
 				ModFullName:   mod.GetFullName(),

@@ -621,3 +621,352 @@ query "shared" {
 	assert.True(t, sql.HasSQL)
 	assert.Empty(t, sql.QueryRef)
 }
+
+// =============================================================================
+// Enhanced Extraction Tests - Resolution Tracking
+// =============================================================================
+
+func TestScannerHCL_TitleResolution_Literal(t *testing.T) {
+	content := `dashboard "literal_title" {
+    title = "My Dashboard Title"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_title")
+	require.True(t, ok)
+	assert.Equal(t, "My Dashboard Title", entry.Title)
+	assert.True(t, entry.TitleResolved, "Literal title should be marked as resolved")
+}
+
+func TestScannerHCL_TitleResolution_Variable(t *testing.T) {
+	content := `dashboard "var_title" {
+    title = var.dashboard_title
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_title")
+	require.True(t, ok)
+	assert.Empty(t, entry.Title, "Variable title should be empty initially")
+	assert.False(t, entry.TitleResolved, "Variable title should NOT be marked as resolved")
+}
+
+func TestScannerHCL_TitleResolution_Interpolation(t *testing.T) {
+	content := `dashboard "interp_title" {
+    title = "Dashboard for ${var.service}"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.interp_title")
+	require.True(t, ok)
+	// Should extract the literal parts
+	assert.Contains(t, entry.Title, "Dashboard for ")
+	assert.False(t, entry.TitleResolved, "Interpolated title should NOT be marked as resolved")
+}
+
+func TestScannerHCL_TitleResolution_NoTitle(t *testing.T) {
+	content := `dashboard "no_title" {
+    description = "No title here"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.no_title")
+	require.True(t, ok)
+	assert.Empty(t, entry.Title)
+	assert.True(t, entry.TitleResolved, "Absent title should be marked as resolved (to empty)")
+}
+
+func TestScannerHCL_DescriptionResolution_Literal(t *testing.T) {
+	content := `dashboard "literal_desc" {
+    description = "A simple description"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_desc")
+	require.True(t, ok)
+	assert.Equal(t, "A simple description", entry.Description)
+	assert.True(t, entry.DescriptionResolved, "Literal description should be resolved")
+}
+
+func TestScannerHCL_DescriptionResolution_Variable(t *testing.T) {
+	content := `dashboard "var_desc" {
+    description = var.common_description
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_desc")
+	require.True(t, ok)
+	assert.Empty(t, entry.Description)
+	assert.False(t, entry.DescriptionResolved, "Variable description should NOT be resolved")
+}
+
+func TestScannerHCL_TagsResolution_LiteralTags(t *testing.T) {
+	content := `dashboard "literal_tags" {
+    title = "Dashboard"
+    tags = {
+        service  = "AWS"
+        category = "Security"
+        type     = "Dashboard"
+    }
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_tags")
+	require.True(t, ok)
+	assert.Equal(t, "AWS", entry.Tags["service"])
+	assert.Equal(t, "Security", entry.Tags["category"])
+	assert.Equal(t, "Dashboard", entry.Tags["type"])
+	assert.True(t, entry.TagsResolved, "Literal tags should be marked as resolved")
+	assert.Empty(t, entry.UnresolvedRefs, "No unresolved refs for literal tags")
+}
+
+func TestScannerHCL_TagsResolution_VariableTags(t *testing.T) {
+	content := `dashboard "var_tags" {
+    title = "Dashboard"
+    tags = var.common_tags
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_tags")
+	require.True(t, ok)
+	assert.False(t, entry.TagsResolved, "Variable tags should NOT be marked as resolved")
+	assert.Contains(t, entry.UnresolvedRefs, "tags", "Should list 'tags' as unresolved")
+}
+
+func TestScannerHCL_TagsResolution_MergeTags(t *testing.T) {
+	content := `dashboard "merge_tags" {
+    title = "Dashboard"
+    tags = merge(var.common_tags, {
+        service = "AWS"
+        custom  = "value"
+    })
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.merge_tags")
+	require.True(t, ok)
+	// Should extract inline literals even when merge is used
+	assert.Equal(t, "AWS", entry.Tags["service"])
+	assert.Equal(t, "value", entry.Tags["custom"])
+	// But should mark as needing resolution
+	assert.False(t, entry.TagsResolved, "merge() tags should NOT be marked as resolved")
+	assert.Contains(t, entry.UnresolvedRefs, "tags")
+}
+
+func TestScannerHCL_TagsResolution_LocalReference(t *testing.T) {
+	content := `dashboard "local_tags" {
+    title = "Dashboard"
+    tags = local.aws_compliance_common_tags
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.local_tags")
+	require.True(t, ok)
+	assert.False(t, entry.TagsResolved, "local. tags should NOT be marked as resolved")
+	assert.Contains(t, entry.UnresolvedRefs, "tags")
+}
+
+func TestScannerHCL_TagsResolution_NoTags(t *testing.T) {
+	content := `dashboard "no_tags" {
+    title = "No Tags Dashboard"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.no_tags")
+	require.True(t, ok)
+	assert.True(t, entry.TagsResolved, "Absent tags should be marked as resolved")
+	assert.Empty(t, entry.Tags)
+}
+
+func TestScannerHCL_TagsResolution_MixedValues(t *testing.T) {
+	content := `dashboard "mixed_tags" {
+    title = "Dashboard"
+    tags = {
+        service  = "AWS"
+        dynamic  = var.dynamic_tag
+        static   = "StaticValue"
+    }
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.mixed_tags")
+	require.True(t, ok)
+	assert.Equal(t, "AWS", entry.Tags["service"])
+	assert.Equal(t, "StaticValue", entry.Tags["static"])
+	assert.Empty(t, entry.Tags["dynamic"], "Variable tag value should be empty")
+	assert.False(t, entry.TagsResolved, "Mixed tags with variables should NOT be resolved")
+	assert.Contains(t, entry.UnresolvedRefs, "tag:dynamic")
+}
+
+func TestScannerHCL_EnhancedMetadata_Category(t *testing.T) {
+	content := `dashboard "with_category" {
+    title    = "Dashboard"
+    category = "Compliance"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.with_category")
+	require.True(t, ok)
+	assert.Equal(t, "Compliance", entry.Category)
+}
+
+func TestScannerHCL_EnhancedMetadata_Documentation(t *testing.T) {
+	content := `control "with_docs" {
+    title         = "Control"
+    documentation = "https://docs.example.com/control"
+    sql           = "SELECT 'ok'"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.control.with_docs")
+	require.True(t, ok)
+	assert.Equal(t, "https://docs.example.com/control", entry.Documentation)
+}
+
+func TestScannerHCL_EnhancedMetadata_Width(t *testing.T) {
+	content := `card "with_width" {
+    title = "Card"
+    width = 4
+    sql   = "SELECT 1"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.card.with_width")
+	require.True(t, ok)
+	require.NotNil(t, entry.Width)
+	assert.Equal(t, 4, *entry.Width)
+}
+
+func TestScannerHCL_EnhancedMetadata_Display(t *testing.T) {
+	content := `control "with_display" {
+    title   = "Control"
+    display = "none"
+    sql     = "SELECT 'ok'"
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.control.with_display")
+	require.True(t, ok)
+	assert.Equal(t, "none", entry.Display)
+}
+
+func TestScannerHCL_NeedsResolution_Method(t *testing.T) {
+	// Fully resolved entry
+	content1 := `dashboard "resolved" {
+    title       = "Resolved Dashboard"
+    description = "A description"
+    tags = {
+        service = "AWS"
+    }
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content1), "test.pp")
+	require.NoError(t, err)
+
+	resolved, _ := scanner.GetIndex().Get("testmod.dashboard.resolved")
+	assert.False(t, resolved.NeedsResolution(), "Fully literal entry should not need resolution")
+	assert.True(t, resolved.IsFullyResolved())
+
+	// Entry needing resolution
+	content2 := `dashboard "unresolved" {
+    title = var.title
+    tags = var.tags
+}`
+	scanner2 := NewScanner("testmod2")
+	err = scanner2.ScanBytesHCL([]byte(content2), "test2.pp")
+	require.NoError(t, err)
+
+	unresolved, _ := scanner2.GetIndex().Get("testmod2.dashboard.unresolved")
+	assert.True(t, unresolved.NeedsResolution(), "Entry with variables should need resolution")
+	assert.False(t, unresolved.IsFullyResolved())
+}
+
+func TestScannerHCL_GetUnresolvedFields_Method(t *testing.T) {
+	content := `dashboard "partial" {
+    title       = var.title
+    description = "Literal description"
+    tags = var.common_tags
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, _ := scanner.GetIndex().Get("testmod.dashboard.partial")
+	fields := entry.GetUnresolvedFields()
+
+	assert.Contains(t, fields, "title")
+	assert.NotContains(t, fields, "description") // Description is resolved
+	assert.Contains(t, fields, "tags")
+}
+
+func TestScannerHCL_TagsBlock_LiteralValues(t *testing.T) {
+	// Test tags as a block instead of attribute
+	content := `dashboard "tags_block" {
+    title = "Dashboard"
+
+    tags {
+        service  = "AWS"
+        category = "Security"
+    }
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.tags_block")
+	require.True(t, ok)
+	assert.Equal(t, "AWS", entry.Tags["service"])
+	assert.Equal(t, "Security", entry.Tags["category"])
+	assert.True(t, entry.TagsResolved)
+}
+
+func TestScannerHCL_TagsBlock_VariableValue(t *testing.T) {
+	content := `dashboard "tags_block_var" {
+    title = "Dashboard"
+
+    tags {
+        service  = "AWS"
+        dynamic  = var.tag_value
+    }
+}`
+	scanner := NewScanner("testmod")
+	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	require.NoError(t, err)
+
+	entry, ok := scanner.GetIndex().Get("testmod.dashboard.tags_block_var")
+	require.True(t, ok)
+	assert.Equal(t, "AWS", entry.Tags["service"])
+	assert.False(t, entry.TagsResolved)
+	assert.Contains(t, entry.UnresolvedRefs, "tag:dynamic")
+}

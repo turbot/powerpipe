@@ -1,6 +1,7 @@
 package resourceindex
 
 import (
+	"fmt"
 	"os"
 	"strings"
 
@@ -126,9 +127,19 @@ func (s *Scanner) extractHCLAttributes(body *hclsyntax.Body, entry *IndexEntry) 
 	for name, attr := range body.Attributes {
 		switch name {
 		case "title":
-			entry.Title = extractStringLiteral(attr.Expr)
+			entry.Title, entry.TitleResolved = extractStringWithResolution(attr.Expr)
 		case "description":
-			entry.Description = extractStringLiteral(attr.Expr)
+			entry.Description, entry.DescriptionResolved = extractStringWithResolution(attr.Expr)
+		case "category":
+			entry.Category, _ = extractStringWithResolution(attr.Expr)
+		case "documentation":
+			entry.Documentation, _ = extractStringWithResolution(attr.Expr)
+		case "display":
+			entry.Display, _ = extractStringWithResolution(attr.Expr)
+		case "width":
+			if width, ok := extractIntLiteral(attr.Expr); ok {
+				entry.Width = &width
+			}
 		case "sql":
 			entry.HasSQL = true
 			// Check if sql is a reference like query.xxx.sql
@@ -142,6 +153,14 @@ func (s *Scanner) extractHCLAttributes(body *hclsyntax.Body, entry *IndexEntry) 
 				entry.QueryRef = intern.Intern(s.modName + "." + ref)
 			}
 		}
+	}
+
+	// If title/description attributes weren't present, mark as resolved (to empty)
+	if _, exists := body.Attributes["title"]; !exists {
+		entry.TitleResolved = true
+	}
+	if _, exists := body.Attributes["description"]; !exists {
+		entry.DescriptionResolved = true
 	}
 }
 
@@ -175,74 +194,206 @@ func (s *Scanner) extractHCLChildren(body *hclsyntax.Body, entry *IndexEntry) {
 }
 
 func (s *Scanner) extractHCLTags(body *hclsyntax.Body, entry *IndexEntry) {
+	// Default to resolved if no tags attribute exists
+	entry.TagsResolved = true
+
 	// Tags can be an attribute with object value
 	if attr, ok := body.Attributes["tags"]; ok {
-		if obj, ok := attr.Expr.(*hclsyntax.ObjectConsExpr); ok {
-			entry.Tags = make(map[string]string)
-			for _, item := range obj.Items {
-				// Key and value should both be extractable
-				key := extractObjectKey(item.KeyExpr)
-				val := extractStringLiteral(item.ValueExpr)
-				if key != "" {
-					// Intern tag keys (often repeated: service, category, etc.)
-					entry.Tags[intern.Intern(key)] = val
-				}
-			}
-		}
+		entry.Tags, entry.TagsResolved, entry.UnresolvedRefs = extractTagsComplete(attr.Expr)
 	}
 
 	// Tags can also be a nested block (less common but valid HCL)
 	for _, block := range body.Blocks {
 		if block.Type == "tags" {
 			entry.Tags = make(map[string]string)
+			entry.TagsResolved = true
 			for name, attr := range block.Body.Attributes {
-				val := extractStringLiteral(attr.Expr)
+				val, resolved := extractStringWithResolution(attr.Expr)
 				entry.Tags[intern.Intern(name)] = val
+				if !resolved {
+					entry.TagsResolved = false
+					entry.UnresolvedRefs = append(entry.UnresolvedRefs, "tag:"+name)
+				}
 			}
 		}
 	}
 }
 
+// extractTagsComplete extracts the full tags map with resolution tracking.
+// It handles literal object expressions, variable references, and merge() calls.
+func extractTagsComplete(expr hcl.Expression) (map[string]string, bool, []string) {
+	tags := make(map[string]string)
+	unresolvedRefs := []string{}
+	allResolved := true
+
+	switch e := expr.(type) {
+	case *hclsyntax.ObjectConsExpr:
+		// tags = { key = "value", ... }
+		for _, item := range e.Items {
+			key := extractObjectKey(item.KeyExpr)
+			if key == "" {
+				continue
+			}
+
+			value, resolved := extractExpressionValue(item.ValueExpr)
+			tags[intern.Intern(key)] = value
+			if !resolved {
+				allResolved = false
+				unresolvedRefs = append(unresolvedRefs, "tag:"+key)
+			}
+		}
+
+	case *hclsyntax.ScopeTraversalExpr:
+		// tags = var.common_tags - needs full resolution
+		allResolved = false
+		unresolvedRefs = append(unresolvedRefs, "tags")
+
+	case *hclsyntax.FunctionCallExpr:
+		// tags = merge(var.common_tags, { ... }) - needs resolution
+		allResolved = false
+		unresolvedRefs = append(unresolvedRefs, "tags")
+
+		// Try to extract any inline object arguments
+		for _, arg := range e.Args {
+			if obj, ok := arg.(*hclsyntax.ObjectConsExpr); ok {
+				for _, item := range obj.Items {
+					key := extractObjectKey(item.KeyExpr)
+					if key != "" {
+						value, _ := extractExpressionValue(item.ValueExpr)
+						tags[intern.Intern(key)] = value
+					}
+				}
+			}
+		}
+
+	default:
+		// Unknown expression type - mark as unresolved
+		allResolved = false
+		unresolvedRefs = append(unresolvedRefs, "tags")
+	}
+
+	return tags, allResolved, unresolvedRefs
+}
+
 // extractStringLiteral attempts to get a string value from an HCL expression
 // without full evaluation. Only works for literal strings.
 func extractStringLiteral(expr hcl.Expression) string {
+	val, _ := extractStringWithResolution(expr)
+	return val
+}
+
+// extractStringWithResolution extracts a string value and reports if it was fully resolved.
+// Returns (value, resolved) where resolved=true means the value is complete (no interpolation/variables).
+func extractStringWithResolution(expr hcl.Expression) (string, bool) {
 	switch e := expr.(type) {
 	case *hclsyntax.TemplateExpr:
 		// Simple string "foo" is a TemplateExpr with one LiteralValueExpr part
 		if len(e.Parts) == 1 {
 			if lit, ok := e.Parts[0].(*hclsyntax.LiteralValueExpr); ok {
 				if lit.Val.Type() == cty.String {
-					return lit.Val.AsString()
+					return lit.Val.AsString(), true
 				}
 			}
 		}
 		// For template expressions with multiple parts (string interpolation),
-		// we can try to concatenate the literal parts
+		// we can try to concatenate the literal parts, but mark as unresolved
 		var result string
+		hasNonLiteral := false
 		for _, part := range e.Parts {
 			if lit, ok := part.(*hclsyntax.LiteralValueExpr); ok {
 				if lit.Val.Type() == cty.String {
 					result += lit.Val.AsString()
 				}
+			} else {
+				// Non-literal parts (variables, function calls)
+				hasNonLiteral = true
 			}
-			// Non-literal parts (variables, function calls) are skipped
-			// This gives us partial values for mixed templates
 		}
-		return result
+		return result, !hasNonLiteral
 
 	case *hclsyntax.LiteralValueExpr:
 		if e.Val.Type() == cty.String {
-			return e.Val.AsString()
+			return e.Val.AsString(), true
 		}
+		return "", true
 
 	case *hclsyntax.TemplateWrapExpr:
 		// Unwrap and recurse
-		return extractStringLiteral(e.Wrapped)
+		return extractStringWithResolution(e.Wrapped)
+
+	case *hclsyntax.ScopeTraversalExpr:
+		// Variable reference like var.title - needs resolution
+		return "", false
+
+	case *hclsyntax.FunctionCallExpr:
+		// Function call - needs resolution
+		return "", false
+
+	case *hclsyntax.ConditionalExpr:
+		// Conditional expression - needs resolution
+		return "", false
 	}
 
-	// Non-literal expressions (variables, function calls) return empty
-	// This is fine - we'll get the real value on full parse
-	return ""
+	// Unknown expression type - mark as unresolved
+	return "", false
+}
+
+// extractExpressionValue extracts a value from any expression, returning (value, resolved).
+// Works for strings, booleans, and numbers.
+func extractExpressionValue(expr hcl.Expression) (string, bool) {
+	switch e := expr.(type) {
+	case *hclsyntax.LiteralValueExpr:
+		if e.Val.Type() == cty.String {
+			return e.Val.AsString(), true
+		}
+		if e.Val.Type() == cty.Bool {
+			if e.Val.True() {
+				return "true", true
+			}
+			return "false", true
+		}
+		if e.Val.Type() == cty.Number {
+			f, _ := e.Val.AsBigFloat().Float64()
+			return strings.TrimRight(strings.TrimRight(formatFloat(f), "0"), "."), true
+		}
+		return "", true
+
+	case *hclsyntax.TemplateExpr:
+		return extractStringWithResolution(e)
+
+	case *hclsyntax.TemplateWrapExpr:
+		return extractStringWithResolution(e.Wrapped)
+
+	case *hclsyntax.ScopeTraversalExpr:
+		// Variable reference - return placeholder
+		return "", false
+
+	default:
+		return "", false
+	}
+}
+
+// extractIntLiteral attempts to extract an integer value from an expression.
+func extractIntLiteral(expr hcl.Expression) (int, bool) {
+	switch e := expr.(type) {
+	case *hclsyntax.LiteralValueExpr:
+		if e.Val.Type() == cty.Number {
+			f, _ := e.Val.AsBigFloat().Float64()
+			return int(f), true
+		}
+	case *hclsyntax.TemplateWrapExpr:
+		return extractIntLiteral(e.Wrapped)
+	}
+	return 0, false
+}
+
+// formatFloat formats a float64, returning an integer string if the value is whole
+func formatFloat(f float64) string {
+	// Check if it's a whole number
+	if f == float64(int64(f)) {
+		return fmt.Sprintf("%d", int64(f))
+	}
+	return fmt.Sprintf("%g", f)
 }
 
 // extractObjectKey extracts a key from an object key expression.

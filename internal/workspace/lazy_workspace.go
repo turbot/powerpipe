@@ -60,6 +60,12 @@ type LazyWorkspace struct {
 	// Per-benchmark resolution tracking to prevent concurrent modifications
 	// Key: benchmark name, Value: *benchmarkResolution
 	resolvedBenchmarks sync.Map
+
+	// Background resolution
+	backgroundResolver *BackgroundResolver
+	updateListeners    []UpdateListener
+	updateListenersMu  sync.RWMutex
+	fullyResolved      bool
 }
 
 // benchmarkResolution tracks the resolution state of a benchmark
@@ -575,6 +581,9 @@ func (lw *LazyWorkspace) IndexStats() resourceindex.IndexStats {
 
 // Close cleans up the lazy workspace.
 func (lw *LazyWorkspace) Close() {
+	// Stop background resolution first
+	lw.StopBackgroundResolution()
+
 	lw.PowerpipeWorkspace.Close()
 	lw.cache.Clear()
 }
@@ -587,4 +596,112 @@ func (lw *LazyWorkspace) PublishDashboardEvent(ctx context.Context, event dashbo
 // IsLazy returns true to indicate this is a lazy-loading workspace.
 func (lw *LazyWorkspace) IsLazy() bool {
 	return true
+}
+
+// StartBackgroundResolution begins background metadata resolution.
+// This resolves variable references, templates, and function calls in the background,
+// progressively updating the index as resolution completes.
+func (lw *LazyWorkspace) StartBackgroundResolution() {
+	if lw.backgroundResolver != nil {
+		return // Already running
+	}
+
+	lw.backgroundResolver = NewBackgroundResolver(lw,
+		WithWorkers(4),
+		WithOnUpdate(lw.handleResourceUpdate),
+		WithOnComplete(lw.handleResolutionComplete),
+	)
+
+	lw.backgroundResolver.Start()
+}
+
+// StopBackgroundResolution stops background resolution if running.
+func (lw *LazyWorkspace) StopBackgroundResolution() {
+	if lw.backgroundResolver != nil {
+		lw.backgroundResolver.Stop()
+		lw.backgroundResolver = nil
+	}
+}
+
+// IsFullyResolved returns true if background resolution is complete.
+func (lw *LazyWorkspace) IsFullyResolved() bool {
+	return lw.fullyResolved
+}
+
+// handleResourceUpdate is called when a resource's metadata is resolved.
+func (lw *LazyWorkspace) handleResourceUpdate(resourceName string) {
+	lw.updateListenersMu.RLock()
+	listeners := lw.updateListeners
+	lw.updateListenersMu.RUnlock()
+
+	for _, listener := range listeners {
+		listener.OnResourceUpdated(resourceName)
+	}
+}
+
+// handleResolutionComplete is called when all background resolution is done.
+func (lw *LazyWorkspace) handleResolutionComplete() {
+	slog.Info("Background resolution complete")
+	lw.fullyResolved = true
+
+	lw.updateListenersMu.RLock()
+	listeners := lw.updateListeners
+	lw.updateListenersMu.RUnlock()
+
+	for _, listener := range listeners {
+		listener.OnResolutionComplete()
+	}
+}
+
+// RegisterUpdateListener adds a listener for background resolution updates.
+func (lw *LazyWorkspace) RegisterUpdateListener(listener UpdateListener) {
+	lw.updateListenersMu.Lock()
+	defer lw.updateListenersMu.Unlock()
+	lw.updateListeners = append(lw.updateListeners, listener)
+}
+
+// UnregisterUpdateListener removes an update listener.
+func (lw *LazyWorkspace) UnregisterUpdateListener(listener UpdateListener) {
+	lw.updateListenersMu.Lock()
+	defer lw.updateListenersMu.Unlock()
+
+	for i, l := range lw.updateListeners {
+		if l == listener {
+			lw.updateListeners = append(lw.updateListeners[:i], lw.updateListeners[i+1:]...)
+			return
+		}
+	}
+}
+
+// PrioritizeResolution moves a resource to front of resolution queue.
+// Useful when user is about to view a resource.
+func (lw *LazyWorkspace) PrioritizeResolution(resourceName string) {
+	if lw.backgroundResolver != nil {
+		lw.backgroundResolver.Prioritize(resourceName)
+	}
+}
+
+// ResolveNow immediately resolves a resource, bypassing the queue.
+// Useful for on-demand resolution when user clicks a dashboard.
+func (lw *LazyWorkspace) ResolveNow(ctx context.Context, resourceName string) error {
+	if lw.backgroundResolver != nil {
+		return lw.backgroundResolver.ResolveNow(ctx, resourceName)
+	}
+
+	// If no background resolver, create a temporary one just for this resolution
+	entry, ok := lw.index.Get(resourceName)
+	if !ok || entry.IsFullyResolved() {
+		return nil
+	}
+
+	resolver := NewBackgroundResolver(lw)
+	return resolver.ResolveNow(ctx, resourceName)
+}
+
+// BackgroundResolverStats returns statistics about background resolution.
+func (lw *LazyWorkspace) BackgroundResolverStats() BackgroundResolverStats {
+	if lw.backgroundResolver == nil {
+		return BackgroundResolverStats{}
+	}
+	return lw.backgroundResolver.Stats()
 }

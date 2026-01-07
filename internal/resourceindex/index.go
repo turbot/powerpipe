@@ -134,6 +134,35 @@ func (idx *ResourceIndex) Remove(name string) bool {
 	return true
 }
 
+// UpdateEntry updates an existing entry in the index.
+// This is used by background resolution to update metadata after resolving variables.
+// The entry's Size is recalculated after the update.
+func (idx *ResourceIndex) UpdateEntry(entry *IndexEntry) {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+
+	oldEntry, ok := idx.entries[entry.Name]
+	if !ok {
+		// Entry doesn't exist, add it instead
+		idx.entries[entry.Name] = entry
+		if idx.byType[entry.Type] == nil {
+			idx.byType[entry.Type] = make(map[string]*IndexEntry)
+		}
+		idx.byType[entry.Type][entry.Name] = entry
+		idx.totalSize += entry.Size()
+		return
+	}
+
+	// Update total size (subtract old, add new)
+	idx.totalSize -= oldEntry.Size()
+	idx.totalSize += entry.Size()
+
+	// The entry pointer should be the same (we're updating in place),
+	// but update the maps just in case
+	idx.entries[entry.Name] = entry
+	idx.byType[entry.Type][entry.Name] = entry
+}
+
 // Dashboards returns all dashboard entries.
 func (idx *ResourceIndex) Dashboards() []*IndexEntry {
 	return idx.GetByType("dashboard")
