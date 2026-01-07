@@ -394,9 +394,9 @@ func (i *InitData) GetSingleTarget() (modconfig.ModTreeItem, error) {
 	return i.Targets[0], nil
 }
 
-// resolveTargetsForLazyLoading resolves benchmark targets for lazy loading mode.
+// resolveTargetsForLazyLoading resolves targets (benchmarks or dashboards) for lazy loading mode.
 // This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace.
-// Instead, it uses the lazy workspace's index and LoadBenchmarkForExecution to resolve and load benchmarks.
+// Instead, it uses the lazy workspace's index and appropriate load methods based on resource type.
 func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []string) ([]modconfig.ModTreeItem, error) {
 	if i.LazyWorkspace == nil {
 		return nil, fmt.Errorf("resolveTargetsForLazyLoading called but LazyWorkspace is nil")
@@ -406,7 +406,7 @@ func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []s
 		return nil, nil
 	}
 
-	// Handle "all" argument
+	// Handle "all" argument (only for benchmarks)
 	if len(cmdArgs) == 1 && cmdArgs[0] == "all" {
 		return i.resolveAllBenchmarksForLazyLoading(ctx)
 	}
@@ -419,13 +419,45 @@ func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []s
 			return nil, err
 		}
 
-		slog.Debug("Loading benchmark for execution (lazy)", "name", fullName)
-		benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, fullName)
-		if err != nil {
-			return nil, fmt.Errorf("failed to load benchmark %s: %w", fullName, err)
+		// Determine resource type from the full name
+		parts := strings.Split(fullName, ".")
+		if len(parts) < 3 {
+			return nil, fmt.Errorf("invalid resource name: %s", fullName)
+		}
+		resourceType := parts[1]
+
+		var target modconfig.ModTreeItem
+
+		switch resourceType {
+		case "dashboard":
+			slog.Debug("Loading dashboard for execution (lazy)", "name", fullName)
+			dashboard, err := i.LazyWorkspace.LoadDashboard(ctx, fullName)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load dashboard %s: %w", fullName, err)
+			}
+			target = dashboard
+		case "benchmark", "detection_benchmark":
+			slog.Debug("Loading benchmark for execution (lazy)", "name", fullName)
+			benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, fullName)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load benchmark %s: %w", fullName, err)
+			}
+			target = benchmark
+		default:
+			// For other types (control, query), try generic load
+			slog.Debug("Loading resource for execution (lazy)", "name", fullName, "type", resourceType)
+			resource, ok := i.LazyWorkspace.GetResource(&modconfig.ParsedResourceName{
+				Mod:      parts[0],
+				ItemType: resourceType,
+				Name:     parts[2],
+			})
+			if !ok {
+				return nil, fmt.Errorf("failed to load resource %s", fullName)
+			}
+			target = resource.(modconfig.ModTreeItem)
 		}
 
-		targets = append(targets, benchmark)
+		targets = append(targets, target)
 	}
 
 	return targets, nil
@@ -433,13 +465,23 @@ func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []s
 
 // parseTargetName parses a target argument into a full resource name.
 // Handles formats: "name", "type.name", "mod.type.name"
+// For single-word names, looks up in the index to determine the resource type.
 func (i *InitData) parseTargetName(arg string) (string, error) {
 	parts := strings.Split(arg, ".")
-	modName := i.LazyWorkspace.GetIndex().ModName
+	index := i.LazyWorkspace.GetIndex()
+	modName := index.ModName
 
 	switch len(parts) {
 	case 1:
-		// Just name, assume benchmark type
+		// Just name - look up in index to find the actual resource type
+		// Check common types in order of likelihood: benchmark, dashboard, control, query
+		for _, resourceType := range []string{"benchmark", "dashboard", "control", "query", "detection_benchmark"} {
+			fullName := fmt.Sprintf("%s.%s.%s", modName, resourceType, parts[0])
+			if _, ok := index.Get(fullName); ok {
+				return fullName, nil
+			}
+		}
+		// Default to benchmark if not found (will error later with clear message)
 		return fmt.Sprintf("%s.benchmark.%s", modName, parts[0]), nil
 	case 2:
 		// type.name
