@@ -12,6 +12,9 @@ on:
 env:
   POWERPIPE_UPDATE_CHECK: false
   SPIPETOOLS_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
+  # Force eager loading for dashboard run tests until lazy loading panel naming is fixed
+  # Lazy loading generates different panel names (e.g., "container_1" vs "anonymous_container_0")
+  POWERPIPE_WORKSPACE_PRELOAD: true
 
 jobs:
   dashboard_tests:
