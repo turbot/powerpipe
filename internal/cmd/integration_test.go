@@ -177,10 +177,15 @@ func waitForServer(t *testing.T, port int, timeout time.Duration) bool {
 
 // startServer starts a powerpipe server and returns a cleanup function
 // Note: lazy loading is now the default, use POWERPIPE_WORKSPACE_PRELOAD=true to disable
+// Uses DuckDB by default to avoid requiring Steampipe service
 func startServer(t *testing.T, workDir string, port int, extraArgs ...string) (*exec.Cmd, func()) {
 	binary := buildPowerpipe(t)
 
-	args := []string{"server", "--port", fmt.Sprintf("%d", port)}
+	// Use a temp DuckDB database to avoid requiring Steampipe
+	tmpDir := t.TempDir()
+	duckdbPath := filepath.Join(tmpDir, "test.duckdb")
+
+	args := []string{"server", "--port", fmt.Sprintf("%d", port), "--database", fmt.Sprintf("duckdb://%s", duckdbPath)}
 	args = append(args, extraArgs...)
 
 	cmd := exec.Command(binary, args...)
@@ -247,9 +252,13 @@ func TestCLI_ServerStartsWithPreload(t *testing.T) {
 	modPath := getTestModPath("lazy-loading-tests", "simple")
 	port := getFreePort(t)
 
+	// Use a temp DuckDB database to avoid requiring Steampipe
+	tmpDir := t.TempDir()
+	duckdbPath := filepath.Join(tmpDir, "test.duckdb")
+
 	// Start server with workspace preload (eager loading)
 	binary := buildPowerpipe(t)
-	cmd := exec.Command(binary, "server", "--port", fmt.Sprintf("%d", port))
+	cmd := exec.Command(binary, "server", "--port", fmt.Sprintf("%d", port), "--database", fmt.Sprintf("duckdb://%s", duckdbPath))
 	cmd.Dir = modPath
 	cmd.Env = append(os.Environ(), "POWERPIPE_WORKSPACE_PRELOAD=true")
 
