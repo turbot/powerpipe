@@ -692,8 +692,8 @@ control "control_%d" {
 
 	t.Logf("Scanned %d controls from large file in %v", index.Count(), duration)
 	assert.Equal(t, 500, index.Count())
-	// Skip timing assertion when race detector is enabled (adds significant overhead)
-	if !raceEnabled {
+	// Skip timing assertion in short mode (race detector adds significant overhead)
+	if !testing.Short() {
 		assert.Less(t, duration.Milliseconds(), int64(200))
 	}
 }

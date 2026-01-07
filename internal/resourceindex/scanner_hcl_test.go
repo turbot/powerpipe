@@ -21,7 +21,7 @@ func TestScannerHCL_BasicDashboard(t *testing.T) {
     description = "A basic test dashboard"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.basic")
@@ -40,7 +40,7 @@ func TestScannerHCL_QueryWithSQL(t *testing.T) {
     sql = "SELECT * FROM table"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.query.my_query")
@@ -54,7 +54,7 @@ func TestScannerHCL_ControlWithQueryRef(t *testing.T) {
     query = query.shared_query
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.control.my_control")
@@ -73,7 +73,7 @@ func TestScannerHCL_BenchmarkWithChildren(t *testing.T) {
     ]
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.benchmark.parent")
@@ -90,7 +90,7 @@ func TestScannerHCL_DetectionBenchmark(t *testing.T) {
     title = "Detection Benchmark"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.detection_benchmark.detect")
@@ -107,7 +107,7 @@ func TestScannerHCL_Tags(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.tagged")
@@ -126,7 +126,7 @@ func TestScannerHCL_EscapedQuotes(t *testing.T) {
     description = "Contains \"nested\" quotes"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.escaped")
@@ -140,7 +140,7 @@ func TestScannerHCL_SingleLineBlock(t *testing.T) {
 	content := `dashboard "single" { title = "Single Line" }`
 
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.single")
@@ -155,7 +155,7 @@ func TestScannerHCL_SingleLineTags(t *testing.T) {
     tags = { service = "aws", category = "compliance" }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.inline_tags")
@@ -182,7 +182,7 @@ benchmark "also_fake" {
 */
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	index := scanner.GetIndex()
@@ -214,7 +214,7 @@ func TestScannerHCL_Heredoc(t *testing.T) {
     EOQ
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.query.heredoc")
@@ -236,7 +236,7 @@ func TestScannerHCL_HeredocWithFakeResources(t *testing.T) {
     EOQ
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	index := scanner.GetIndex()
@@ -257,7 +257,7 @@ func TestScannerHCL_Unicode(t *testing.T) {
     description = "中文描述"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.unicode")
@@ -273,7 +273,7 @@ func TestScannerHCL_BracesInStrings(t *testing.T) {
     description = "More {nested {braces}}"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.braces")
@@ -289,7 +289,7 @@ func TestScannerHCL_CommentMarksInStrings(t *testing.T) {
     description = "Contains /* and */ in string"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.comments")
@@ -317,7 +317,7 @@ query "second" {
 	require.NoError(t, os.WriteFile(filePath, []byte(content), 0600))
 
 	scanner := NewScanner("testmod")
-	err := scanner.ScanFileHCLWithOffsets(filePath)
+	err := scanner.ScanFileWithOffsets(filePath)
 	require.NoError(t, err)
 
 	fileContent, err := os.ReadFile(filePath)
@@ -375,7 +375,7 @@ variable "var" { default = "x" }
 with "w" { sql = "SELECT 1" }
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	index := scanner.GetIndex()
@@ -404,14 +404,14 @@ func TestScannerHCL_MalformedHCL(t *testing.T) {
 `
 	scanner := NewScanner("testmod")
 	// Should not panic, may or may not extract partial data
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	// Error is acceptable but should not crash
 	_ = err
 }
 
 func TestScannerHCL_EmptyFile(t *testing.T) {
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(""), "test.pp")
+	err := scanner.ScanBytes([]byte(""), "test.pp")
 	require.NoError(t, err)
 	assert.Equal(t, 0, scanner.GetIndex().Count())
 }
@@ -422,7 +422,7 @@ func TestScannerHCL_CommentsOnly(t *testing.T) {
 /* Block comment */
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 	assert.Equal(t, 0, scanner.GetIndex().Count())
 }
@@ -437,7 +437,7 @@ func BenchmarkScanner_HCL(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		scanner := NewScanner("testmod")
-		_ = scanner.ScanBytesHCL(content, "bench.pp")
+		_ = scanner.ScanBytes(content, "bench.pp")
 	}
 }
 
@@ -447,7 +447,7 @@ func BenchmarkScanner_HCL_Large(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		scanner := NewScanner("testmod")
-		_ = scanner.ScanBytesHCL(content, "bench.pp")
+		_ = scanner.ScanBytes(content, "bench.pp")
 	}
 }
 
@@ -457,7 +457,7 @@ func BenchmarkScanner_HCL_WithHeredocs(b *testing.B) {
 	b.ResetTimer()
 	for i := 0; i < b.N; i++ {
 		scanner := NewScanner("testmod")
-		_ = scanner.ScanBytesHCL(content, "bench.pp")
+		_ = scanner.ScanBytes(content, "bench.pp")
 	}
 }
 
@@ -531,7 +531,7 @@ query "line6" {
 }
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	dash, _ := scanner.GetIndex().Get("testmod.dashboard.line2")
@@ -557,7 +557,7 @@ query "second" {
 }
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	index := scanner.GetIndex()
@@ -583,7 +583,7 @@ detection_benchmark "detect_bench" {
 }
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	cb, _ := scanner.GetIndex().Get("testmod.benchmark.control_bench")
@@ -610,7 +610,7 @@ query "shared" {
 }
 `
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	ref, _ := scanner.GetIndex().Get("testmod.control.with_ref")
@@ -631,7 +631,7 @@ func TestScannerHCL_TitleResolution_Literal(t *testing.T) {
     title = "My Dashboard Title"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_title")
@@ -645,7 +645,7 @@ func TestScannerHCL_TitleResolution_Variable(t *testing.T) {
     title = var.dashboard_title
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_title")
@@ -659,7 +659,7 @@ func TestScannerHCL_TitleResolution_Interpolation(t *testing.T) {
     title = "Dashboard for ${var.service}"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.interp_title")
@@ -674,7 +674,7 @@ func TestScannerHCL_TitleResolution_NoTitle(t *testing.T) {
     description = "No title here"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.no_title")
@@ -688,7 +688,7 @@ func TestScannerHCL_DescriptionResolution_Literal(t *testing.T) {
     description = "A simple description"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_desc")
@@ -702,7 +702,7 @@ func TestScannerHCL_DescriptionResolution_Variable(t *testing.T) {
     description = var.common_description
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_desc")
@@ -721,7 +721,7 @@ func TestScannerHCL_TagsResolution_LiteralTags(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.literal_tags")
@@ -739,7 +739,7 @@ func TestScannerHCL_TagsResolution_VariableTags(t *testing.T) {
     tags = var.common_tags
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.var_tags")
@@ -757,7 +757,7 @@ func TestScannerHCL_TagsResolution_MergeTags(t *testing.T) {
     })
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.merge_tags")
@@ -776,7 +776,7 @@ func TestScannerHCL_TagsResolution_LocalReference(t *testing.T) {
     tags = local.aws_compliance_common_tags
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.local_tags")
@@ -790,7 +790,7 @@ func TestScannerHCL_TagsResolution_NoTags(t *testing.T) {
     title = "No Tags Dashboard"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.no_tags")
@@ -809,7 +809,7 @@ func TestScannerHCL_TagsResolution_MixedValues(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.mixed_tags")
@@ -827,7 +827,7 @@ func TestScannerHCL_EnhancedMetadata_Category(t *testing.T) {
     category = "Compliance"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.with_category")
@@ -842,7 +842,7 @@ func TestScannerHCL_EnhancedMetadata_Documentation(t *testing.T) {
     sql           = "SELECT 'ok'"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.control.with_docs")
@@ -857,7 +857,7 @@ func TestScannerHCL_EnhancedMetadata_Width(t *testing.T) {
     sql   = "SELECT 1"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.card.with_width")
@@ -873,7 +873,7 @@ func TestScannerHCL_EnhancedMetadata_Display(t *testing.T) {
     sql     = "SELECT 'ok'"
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.control.with_display")
@@ -891,7 +891,7 @@ func TestScannerHCL_NeedsResolution_Method(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content1), "test.pp")
+	err := scanner.ScanBytes([]byte(content1), "test.pp")
 	require.NoError(t, err)
 
 	resolved, _ := scanner.GetIndex().Get("testmod.dashboard.resolved")
@@ -904,7 +904,7 @@ func TestScannerHCL_NeedsResolution_Method(t *testing.T) {
     tags = var.tags
 }`
 	scanner2 := NewScanner("testmod2")
-	err = scanner2.ScanBytesHCL([]byte(content2), "test2.pp")
+	err = scanner2.ScanBytes([]byte(content2), "test2.pp")
 	require.NoError(t, err)
 
 	unresolved, _ := scanner2.GetIndex().Get("testmod2.dashboard.unresolved")
@@ -919,7 +919,7 @@ func TestScannerHCL_GetUnresolvedFields_Method(t *testing.T) {
     tags = var.common_tags
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, _ := scanner.GetIndex().Get("testmod.dashboard.partial")
@@ -941,7 +941,7 @@ func TestScannerHCL_TagsBlock_LiteralValues(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.tags_block")
@@ -961,7 +961,7 @@ func TestScannerHCL_TagsBlock_VariableValue(t *testing.T) {
     }
 }`
 	scanner := NewScanner("testmod")
-	err := scanner.ScanBytesHCL([]byte(content), "test.pp")
+	err := scanner.ScanBytes([]byte(content), "test.pp")
 	require.NoError(t, err)
 
 	entry, ok := scanner.GetIndex().Get("testmod.dashboard.tags_block_var")
