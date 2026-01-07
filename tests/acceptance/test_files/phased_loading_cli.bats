@@ -12,8 +12,15 @@ setup() {
 }
 
 # Helper function to sort JSON array by qualified_name for consistent comparison
+# Also sorts nested path arrays for deterministic comparison
 sort_json_by_name() {
-  jq -S 'sort_by(.qualified_name)'
+  jq -S 'sort_by(.qualified_name) | [.[] | .path |= (if . then sort else . end)]'
+}
+
+# Helper function to strip update notification banners from plain text output
+# The banner appears intermittently and interferes with output comparison
+strip_update_banner() {
+  grep -v -E '^(\+---|\|.*version.*available|\|.*powerpipe.io|\|[[:space:]]*\|$)' | sed '/^$/d'
 }
 
 # ============================================
@@ -49,12 +56,12 @@ sort_json_by_name() {
   # Eager loading
   POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output plain
   assert_success
-  eager_output="$output"
+  eager_output=$(echo "$output" | strip_update_banner)
 
   # Lazy loading
   POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output plain
   assert_success
-  lazy_output="$output"
+  lazy_output=$(echo "$output" | strip_update_banner)
 
   assert_equal "$eager_output" "$lazy_output"
 
@@ -67,12 +74,12 @@ sort_json_by_name() {
   # Eager loading
   POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard list --output pretty
   assert_success
-  eager_output="$output"
+  eager_output=$(echo "$output" | strip_update_banner)
 
   # Lazy loading
   POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe dashboard list --output pretty
   assert_success
-  lazy_output="$output"
+  lazy_output=$(echo "$output" | strip_update_banner)
 
   assert_equal "$eager_output" "$lazy_output"
 
@@ -135,12 +142,12 @@ sort_json_by_name() {
   # Eager loading
   POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe benchmark list --output plain
   assert_success
-  eager_output="$output"
+  eager_output=$(echo "$output" | strip_update_banner)
 
   # Lazy loading
   POWERPIPE_WORKSPACE_PRELOAD=false run powerpipe benchmark list --output plain
   assert_success
-  lazy_output="$output"
+  lazy_output=$(echo "$output" | strip_update_banner)
 
   assert_equal "$eager_output" "$lazy_output"
 

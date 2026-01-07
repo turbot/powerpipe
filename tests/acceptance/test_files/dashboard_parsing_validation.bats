@@ -20,7 +20,9 @@ load "$LIB_BATS_SUPPORT/load.bash"
 @test "Parsing case 3 - top level control/query always require query/sql block (FAIL)" {
   cd $FILE_PATH/test_data/mods/dashboard_parsing_top_level_query_providers_fail
 
-  run powerpipe dashboard run dashboard.top_level_control_query_require_sql --output snapshot
+  # Force eager loading to validate all resources at workspace load time
+  # (lazy loading only validates resources when they're used)
+  POWERPIPE_WORKSPACE_PRELOAD=true run powerpipe dashboard run dashboard.top_level_control_query_require_sql --output snapshot
   assert_output --partial 'does not define a query or SQL'
 }
 

@@ -164,6 +164,29 @@ func (l *Loader) decodeResourceBlock(ctx context.Context, entry *resourceindex.I
 		}
 	}
 
+	// Initialize inputs map for dashboards after nested blocks are decoded
+	// This is needed so that runtime dependencies on inputs can be resolved
+	if dashboard, ok := resource.(*resources.Dashboard); ok {
+		_ = dashboard.InitInputs()
+	}
+
+	// Call OnDecoded to allow the resource to perform post-decode initialization.
+	// This is important for NodeAndEdgeProviders (graph/flow/hierarchy) which
+	// need to populate NodeNames/EdgeNames from their Nodes/Edges lists.
+	if od, ok := resource.(interface {
+		OnDecoded(*hcl.Block, modconfig.ModResourcesProvider) hcl.Diagnostics
+	}); ok {
+		// Pass nil for ModResourcesProvider since we don't have full workspace context
+		// during lazy loading. The OnDecoded methods we care about don't require it.
+		diags := od.OnDecoded(block, nil)
+		// Ignore non-critical diagnostics from OnDecoded
+		for _, diag := range diags {
+			if diag.Severity == hcl.DiagError && !isNonCriticalDecodeError(diag) {
+				return nil, fmt.Errorf("OnDecoded: %s", diag.Summary)
+			}
+		}
+	}
+
 	// Clear the Remain field to save memory
 	if clearer, ok := resource.(remainClearer); ok {
 		clearer.ClearRemain()
@@ -224,12 +247,18 @@ func (l *Loader) createResource(block *hcl.Block, entry *resourceindex.IndexEntr
 }
 
 // decodeNestedBlocks decodes nested blocks (children) for dashboards and containers.
+// The isParentDashboard parameter indicates if the immediate parent is a dashboard
+// (as opposed to a container), which determines if children should be considered top-level.
 func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclResource, body *hclsyntax.Body, evalCtx *hcl.EvalContext, entry *resourceindex.IndexEntry) error {
 	// Check if this resource type supports nested blocks
 	parentType := parent.GetBlockType()
 	if parentType != schema.BlockTypeDashboard && parentType != schema.BlockTypeContainer {
 		return nil
 	}
+
+	// Direct children of a dashboard are considered "top-level" for validation purposes
+	// (they don't require SQL). Children inside containers are NOT top-level (require SQL).
+	isParentDashboard := parentType == schema.BlockTypeDashboard
 
 	// Track child index for generating anonymous names
 	childCounts := make(map[string]int)
@@ -265,6 +294,10 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 			continue // Skip children that can't be created
 		}
 
+		// Set top-level status: direct children of dashboard are "top-level" for validation
+		// (they don't require SQL), but children inside containers are not top-level
+		childResource.SetTopLevel(isParentDashboard)
+
 		// Decode child's attributes
 		l.mu.RLock()
 		provider := l.resourceProvider
@@ -285,11 +318,39 @@ func (l *Loader) decodeNestedBlocks(ctx context.Context, parent modconfig.HclRes
 			}
 		}
 
+		// Extract runtime dependencies from args attribute
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.extractRuntimeDependencies(syntaxBody, childResource, evalCtx)
+		}
+
+		// Try to resolve base reference if present
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.resolveBaseReference(ctx, syntaxBody, childResource)
+		}
+
 		// Recursively decode nested blocks in this child
 		if childBody, ok := block.Body.(*hclsyntax.Body); ok {
 			if err := l.decodeNestedBlocks(ctx, childResource, childBody, evalCtx, entry); err != nil {
-				continue
+				return err
 			}
+			// For flow/graph/hierarchy, also decode node and edge blocks
+			if nep, ok := childResource.(resources.NodeAndEdgeProvider); ok {
+				if err := l.decodeNodeAndEdgeBlocks(ctx, nep, childBody, evalCtx, entry); err != nil {
+					return err
+				}
+			}
+		}
+
+		// Call OnDecoded on child resource for post-decode initialization
+		if od, ok := childResource.(interface {
+			OnDecoded(*hcl.Block, modconfig.ModResourcesProvider) hcl.Diagnostics
+		}); ok {
+			_ = od.OnDecoded(block, nil)
+		}
+
+		// Validate the child resource has required SQL/query
+		if err := validateResource(childResource); err != nil {
+			return err
 		}
 
 		// Add child to parent based on parent type
@@ -318,9 +379,258 @@ func isDashboardChildType(blockType string) bool {
 		schema.BlockTypeImage,
 		schema.BlockTypeInput,
 		schema.BlockTypeTable,
-		schema.BlockTypeText:
+		schema.BlockTypeText,
+		schema.BlockTypeWith:
 		return true
 	default:
 		return false
+	}
+}
+
+// decodeNodeAndEdgeBlocks decodes node and edge blocks inside flow/graph/hierarchy resources.
+func (l *Loader) decodeNodeAndEdgeBlocks(ctx context.Context, nep resources.NodeAndEdgeProvider, body *hclsyntax.Body, evalCtx *hcl.EvalContext, entry *resourceindex.IndexEntry) error {
+	parentResource := nep.(modconfig.HclResource)
+	nodeCount := 0
+	edgeCount := 0
+	var nodes resources.DashboardNodeList
+	var edges resources.DashboardEdgeList
+
+	for _, b := range body.Blocks {
+		block := b.AsHCLBlock()
+
+		// Only process node and edge blocks
+		if block.Type != schema.BlockTypeNode && block.Type != schema.BlockTypeEdge {
+			continue
+		}
+
+		// Generate name for this node/edge
+		shortName := ""
+		if len(block.Labels) > 0 {
+			shortName = block.Labels[0]
+		} else {
+			// Anonymous - generate a name
+			if block.Type == schema.BlockTypeNode {
+				shortName = fmt.Sprintf("%s_node_%d", parentResource.GetUnqualifiedName(), nodeCount)
+				nodeCount++
+			} else {
+				shortName = fmt.Sprintf("%s_edge_%d", parentResource.GetUnqualifiedName(), edgeCount)
+				edgeCount++
+			}
+		}
+
+		// Create node/edge resource
+		childEntry := &resourceindex.IndexEntry{
+			Type:      block.Type,
+			ShortName: shortName,
+			ModRoot:   entry.ModRoot,
+			FileName:  entry.FileName,
+		}
+
+		childResource, err := l.createResource(block, childEntry)
+		if err != nil {
+			continue
+		}
+
+		// Decode child's attributes
+		l.mu.RLock()
+		provider := l.resourceProvider
+		l.mu.RUnlock()
+
+		_ = parse.DecodeHclBody(block.Body, evalCtx, provider, childResource)
+
+		// Extract runtime dependencies from args attribute
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.extractRuntimeDependencies(syntaxBody, childResource, evalCtx)
+		}
+
+		// Try to resolve base reference if present
+		if syntaxBody, ok := block.Body.(*hclsyntax.Body); ok {
+			l.resolveBaseReference(ctx, syntaxBody, childResource)
+		}
+
+		// Collect nodes and edges
+		switch block.Type {
+		case schema.BlockTypeNode:
+			if node, ok := childResource.(*resources.DashboardNode); ok {
+				nodes = append(nodes, node)
+			}
+		case schema.BlockTypeEdge:
+			if edge, ok := childResource.(*resources.DashboardEdge); ok {
+				edges = append(edges, edge)
+			}
+		}
+	}
+
+	// Set nodes and edges on the parent
+	if len(nodes) > 0 {
+		nep.SetNodes(nodes)
+	}
+	if len(edges) > 0 {
+		nep.SetEdges(edges)
+	}
+
+	return nil
+}
+
+// validateResource validates a resource after decoding.
+// This ensures that nested resources have required SQL/query definitions.
+func validateResource(resource modconfig.HclResource) error {
+	// Check NodeAndEdgeProvider FIRST - flow, graph, hierarchy can have either SQL OR edges/nodes
+	// This is more permissive than QueryProvider validation
+	if nep, ok := resource.(resources.NodeAndEdgeProvider); ok {
+		diags := validateNodeAndEdgeProvider(nep)
+		if diags.HasErrors() {
+			return fmt.Errorf("%s", diags.Error())
+		}
+		// Don't also validate as QueryProvider since we've already validated
+		return nil
+	}
+
+	// Validate QueryProvider resources (chart, table, etc.)
+	// Call the resource's own ValidateQuery() method which may have
+	// type-specific overrides (e.g., DashboardImage, DashboardCard don't require SQL)
+	if qp, ok := resource.(resources.QueryProvider); ok {
+		diags := qp.ValidateQuery()
+		if diags.HasErrors() {
+			return fmt.Errorf("%s", diags.Error())
+		}
+	}
+
+	return nil
+}
+
+// validateNodeAndEdgeProvider validates flow/graph/hierarchy resources.
+func validateNodeAndEdgeProvider(nep resources.NodeAndEdgeProvider) hcl.Diagnostics {
+	var diags hcl.Diagnostics
+	containsEdgesOrNodes := len(nep.GetEdges())+len(nep.GetNodes()) > 0
+	definesQuery := nep.GetSQL() != nil || nep.GetQuery() != nil
+
+	// cannot declare both edges/nodes AND sql/query
+	if definesQuery && containsEdgesOrNodes {
+		diags = append(diags, &hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  fmt.Sprintf("%s contains edges/nodes AND has a query", nep.Name()),
+			Subject:  nep.GetDeclRange(),
+		})
+	}
+
+	// if resource is NOT top level must have either edges/nodes OR sql/query
+	if !nep.IsTopLevel() && !definesQuery && !containsEdgesOrNodes {
+		diags = append(diags, &hcl.Diagnostic{
+			Severity: hcl.DiagError,
+			Summary:  fmt.Sprintf("%s does not define a query or SQL, and has no edges/nodes", nep.Name()),
+			Subject:  nep.GetDeclRange(),
+		})
+	}
+
+	return diags
+}
+
+// extractRuntimeDependencies extracts runtime dependencies from the args attribute
+// and adds them to the resource. This is needed for lazy loading because DecodeHclBody
+// doesn't call DecodeArgs which extracts runtime dependencies.
+func (l *Loader) extractRuntimeDependencies(body *hclsyntax.Body, resource modconfig.HclResource, evalCtx *hcl.EvalContext) {
+	if body == nil {
+		return
+	}
+
+	// Check if resource is a QueryProvider (only they have args)
+	queryProvider, ok := resource.(resources.QueryProvider)
+	if !ok {
+		return
+	}
+
+	// Look for args attribute
+	argsAttr, ok := body.Attributes[schema.AttributeTypeArgs]
+	if !ok {
+		return
+	}
+
+	// Decode args to extract runtime dependencies
+	args, runtimeDependencies, diags := pparse.DecodeArgs(argsAttr.AsHCLAttribute(), evalCtx, queryProvider)
+	if !diags.HasErrors() {
+		// Set args and add runtime dependencies
+		queryProvider.SetArgs(args)
+		queryProvider.AddRuntimeDependencies(runtimeDependencies)
+	}
+}
+
+// resolveBaseReference attempts to resolve a `base` attribute reference for a resource.
+// This is needed for lazy loading because base references can't be resolved during HCL decode
+// without the referenced resource being already loaded.
+func (l *Loader) resolveBaseReference(ctx context.Context, body *hclsyntax.Body, resource modconfig.HclResource) {
+	// Only nodes and edges support base references in the context of lazy loading
+	if body == nil {
+		return
+	}
+
+	// Check if there's a base attribute
+	baseAttr, ok := body.Attributes["base"]
+	if !ok {
+		return
+	}
+
+	// Try to extract the reference from the base attribute expression
+	// The expression should be a scope traversal like `node.chaos_cache_check_top`
+	expr := baseAttr.Expr
+	traversal, ok := expr.(*hclsyntax.ScopeTraversalExpr)
+	if !ok || len(traversal.Traversal) < 2 {
+		return
+	}
+
+	// Extract resource type and name from traversal
+	// e.g., node.chaos_cache_check_top -> type="node", name="chaos_cache_check_top"
+	resourceType := traversal.Traversal.RootName()
+	if len(traversal.Traversal) < 2 {
+		return
+	}
+	attrTraversal, ok := traversal.Traversal[1].(hcl.TraverseAttr)
+	if !ok {
+		return
+	}
+	resourceName := attrTraversal.Name
+
+	// Build the full resource name for lookup
+	// The mod name should be the same as the current resource's mod
+	fullName := fmt.Sprintf("%s.%s.%s", l.mod.ShortName, resourceType, resourceName)
+
+	// Try to load the base resource
+	baseResource, err := l.Load(ctx, fullName)
+	if err != nil || baseResource == nil {
+		return
+	}
+
+	// Set the base on the resource based on type
+	switch r := resource.(type) {
+	case *resources.DashboardNode:
+		if baseNode, ok := baseResource.(*resources.DashboardNode); ok {
+			r.Base = baseNode
+			r.SetBaseProperties()
+		}
+	case *resources.DashboardEdge:
+		if baseEdge, ok := baseResource.(*resources.DashboardEdge); ok {
+			r.Base = baseEdge
+			r.SetBaseProperties()
+		}
+	case *resources.DashboardChart:
+		if baseChart, ok := baseResource.(*resources.DashboardChart); ok {
+			r.Base = baseChart
+			r.SetBaseProperties()
+		}
+	case *resources.DashboardCard:
+		if baseCard, ok := baseResource.(*resources.DashboardCard); ok {
+			r.Base = baseCard
+			r.SetBaseProperties()
+		}
+	case *resources.DashboardTable:
+		if baseTable, ok := baseResource.(*resources.DashboardTable); ok {
+			r.Base = baseTable
+			r.SetBaseProperties()
+		}
+	case *resources.DashboardInput:
+		if baseInput, ok := baseResource.(*resources.DashboardInput); ok {
+			r.Base = baseInput
+			r.SetBaseProperties()
+		}
 	}
 }
