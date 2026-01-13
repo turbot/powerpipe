@@ -50,6 +50,7 @@ func (l *ListableIndexEntry) MarshalJSON() ([]byte, error) {
 	// Build a map with the fields expected in JSON output
 	data := map[string]interface{}{
 		"qualified_name": l.entry.Name,
+		"resource_name":  l.entry.ShortName,
 		"mod_name":       l.entry.ModName,
 		"file_name":      l.entry.FileName,
 		"is_anonymous":   false,
