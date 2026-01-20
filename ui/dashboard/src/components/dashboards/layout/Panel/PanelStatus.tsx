@@ -1,3 +1,4 @@
+import CopyToClipboard from "@powerpipe/components/CopyToClipboard";
 import ErrorMessage from "../../../ErrorMessage";
 import Icon from "../../../Icon";
 import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
@@ -22,6 +23,22 @@ type BasePanelStatusProps = {
   children: ReactNode;
   className?: string;
   definition: PanelDefinition;
+};
+
+const formatPanelErrorForCopy = (panel: PanelDefinition): string => {
+  let output = `# Panel Error Report\n\n`;
+  output += `**Panel:** ${panel.name}\n`;
+  output += `**Type:** ${panel.panel_type || "unknown"}\n`;
+  output += `**Status:** ${panel.status || "error"}\n`;
+  output += `**Timestamp:** ${new Date().toISOString()}\n\n`;
+
+  if (panel.error) {
+    output += `## Error Message\n\`\`\`\n${panel.error}\n\`\`\`\n`;
+  } else {
+    output += `## Error Message\n\`\`\`\n(no error message provided)\n\`\`\`\n`;
+  }
+
+  return output;
 };
 
 const BasePanelStatus = ({
@@ -150,21 +167,36 @@ const PanelCancelled = ({ definition }) => {
 };
 
 const PanelError = ({ definition }) => {
+  const copyData = formatPanelErrorForCopy(definition);
+
   return (
     <BasePanelStatus
       className="bg-alert-light border-alert text-foreground"
       definition={definition}
     >
-      <div className="flex items-center space-x-1">
-        <Icon
-          className="w-3.5 h-3.5 text-alert shrink-0"
-          icon="materialsymbols-solid:error"
-        />
-        <span className="block truncate">Error</span>
+      <div className="space-y-2">
+        {/* Header with error icon and copy button */}
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-1">
+            <Icon
+              className="w-3.5 h-3.5 text-alert shrink-0"
+              icon="materialsymbols-solid:error"
+            />
+            <span className="block truncate">Error</span>
+          </div>
+          <div title="Copy to clipboard">
+            <CopyToClipboard
+              data={copyData}
+              className="text-foreground-light hover:text-foreground transition-colors"
+            />
+          </div>
+        </div>
+
+        {/* Error message */}
+        <span className="block">
+          <ErrorMessage error={definition.error} />
+        </span>
       </div>
-      <span className="block">
-        <ErrorMessage error={definition.error} />
-      </span>
     </BasePanelStatus>
   );
 };
