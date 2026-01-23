@@ -60,11 +60,25 @@ func (l *ListableIndexEntry) MarshalJSON() ([]byte, error) {
 
 	// Add path - the hierarchical path to this resource
 	// Format: [["mod.mod_name", "parent_name", ..., "qualified_name"]]
-	data["path"] = [][]string{l.buildPath()}
+	// Controls can have multiple paths if they're children of multiple benchmarks
+	// Use pre-computed paths if available
+	if len(l.entry.Paths) > 0 {
+		data["path"] = l.entry.Paths
+	} else {
+		data["path"] = l.buildAllPaths()
+	}
 
 	// Add url_path for dashboards
 	if l.entry.Type == "dashboard" {
 		data["url_path"] = "/" + l.entry.Name
+	}
+
+	// Add control-specific fields
+	if l.entry.Type == "control" {
+		data["args"] = map[string]interface{}{} // Controls always have args (empty if none)
+		if l.entry.SQL != "" {
+			data["sql"] = l.entry.SQL
+		}
 	}
 
 	// Add optional fields if present
@@ -194,10 +208,21 @@ func (l *ListableIndexEntry) GetModName() string {
 	return l.entry.ModName
 }
 
-// buildPath constructs the hierarchical path to this resource.
-// For nested resources (with parents), the path includes the full ancestry.
-// Format: ["mod.mod_name", "parent_name", ..., "resource_name"]
-func (l *ListableIndexEntry) buildPath() []string {
+// buildAllPaths constructs all hierarchical paths to this resource.
+// Controls can be children of multiple benchmarks, so they may have multiple paths.
+// Format: [["mod.mod_name", "parent_name", ..., "resource_name"], ...]
+func (l *ListableIndexEntry) buildAllPaths() [][]string {
+	// If there are multiple parents, build a path for each
+	if len(l.entry.ParentNames) > 1 {
+		paths := make([][]string, 0, len(l.entry.ParentNames))
+		for _, parentName := range l.entry.ParentNames {
+			path := []string{l.entry.ModFullName, parentName, l.entry.Name}
+			paths = append(paths, path)
+		}
+		return paths
+	}
+
+	// Single path case
 	path := []string{l.entry.ModFullName}
 
 	// If this resource has a parent, include it in the path
@@ -208,5 +233,5 @@ func (l *ListableIndexEntry) buildPath() []string {
 	// Add this resource's name
 	path = append(path, l.entry.Name)
 
-	return path
+	return [][]string{path}
 }

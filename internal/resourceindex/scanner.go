@@ -203,6 +203,10 @@ func (s *Scanner) extractAttributes(body *hclsyntax.Body, entry *IndexEntry) {
 			}
 		case "sql":
 			entry.HasSQL = true
+			// Try to extract literal SQL value
+			if sqlText, resolved := extractStringWithResolution(attr.Expr); resolved && sqlText != "" {
+				entry.SQL = sqlText
+			}
 			// Check if sql is a reference like query.xxx.sql
 			if ref := extractSQLQueryReference(attr.Expr, s.modName); ref != "" {
 				entry.QueryRef = intern.Intern(ref)
@@ -566,8 +570,9 @@ func (s *Scanner) MarkTopLevelResources() {
 	}
 }
 
-// SetParentNames sets ParentName on child entries based on ChildNames.
+// SetParentNames sets ParentName and ParentNames on child entries based on ChildNames.
 // This should be called after scanning is complete.
+// Controls can be children of multiple benchmarks, so we track all parents.
 func (s *Scanner) SetParentNames() {
 	s.index.mu.Lock()
 	defer s.index.mu.Unlock()
@@ -575,11 +580,68 @@ func (s *Scanner) SetParentNames() {
 	for _, entry := range s.index.entries {
 		for _, childName := range entry.ChildNames {
 			if child, ok := s.index.entries[childName]; ok {
-				// Parent name is already interned (it's entry.Name)
-				child.ParentName = entry.Name
+				// Track all parents for multi-path support
+				child.ParentNames = append(child.ParentNames, entry.Name)
+				// Also set single ParentName for backwards compatibility (use first parent)
+				if child.ParentName == "" {
+					child.ParentName = entry.Name
+				}
 			}
 		}
 	}
+}
+
+// ComputePaths computes the full hierarchical paths for all entries.
+// This should be called after SetParentNames.
+func (s *Scanner) ComputePaths() {
+	s.index.mu.Lock()
+	defer s.index.mu.Unlock()
+
+	for _, entry := range s.index.entries {
+		// Use visited set to prevent cycles
+		visited := make(map[string]bool)
+		entry.Paths = s.buildPathsForEntry(entry, visited)
+	}
+}
+
+// buildPathsForEntry builds all paths for an entry by traversing up the parent hierarchy.
+// visited tracks entries already in the current path to prevent cycles.
+func (s *Scanner) buildPathsForEntry(entry *IndexEntry, visited map[string]bool) [][]string {
+	// Check for cycle
+	if visited[entry.Name] {
+		// Cycle detected, return simple path to break recursion
+		return [][]string{{entry.ModFullName, entry.Name}}
+	}
+	visited[entry.Name] = true
+	defer func() { visited[entry.Name] = false }()
+
+	// If no parents, simple path: [mod, resource]
+	if len(entry.ParentNames) == 0 {
+		return [][]string{{entry.ModFullName, entry.Name}}
+	}
+
+	// Build a path for each parent, recursively including their ancestry
+	var paths [][]string
+	for _, parentName := range entry.ParentNames {
+		parent, ok := s.index.entries[parentName]
+		if !ok {
+			// Parent not found, use simple path
+			paths = append(paths, []string{entry.ModFullName, parentName, entry.Name})
+			continue
+		}
+
+		// Get parent's paths and extend each with this entry
+		parentPaths := s.buildPathsForEntry(parent, visited)
+		for _, parentPath := range parentPaths {
+			// Extend parent path with this entry's name
+			fullPath := make([]string, len(parentPath)+1)
+			copy(fullPath, parentPath)
+			fullPath[len(parentPath)] = entry.Name
+			paths = append(paths, fullPath)
+		}
+	}
+
+	return paths
 }
 
 // -----------------------------------------------------------------------------

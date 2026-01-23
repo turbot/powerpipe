@@ -211,6 +211,7 @@ func buildResourceIndex(ctx context.Context, workspacePath, modName string) (*re
 	// Mark top-level resources and set parent names
 	scanner.MarkTopLevelResources()
 	scanner.SetParentNames()
+	scanner.ComputePaths()
 
 	return scanner.GetIndex(), nil
 }
