@@ -3,6 +3,7 @@ package workspace_test
 import (
 	"context"
 	"os"
+	"path/filepath"
 	"runtime"
 	"testing"
 	"time"
@@ -32,14 +33,22 @@ func init() {
 	parse.AppSpecificGetResourceSchemaFunc = pparse.GetResourceSchema
 }
 
-// BenchmarkModPath points to the large test mod for benchmarking.
-// This can be overridden by setting BENCHMARK_MOD_PATH environment variable.
+// selfContainedModPath returns the path to a self-contained test mod within the repo.
+// This uses runtime.Caller to find the test file and construct a relative path.
+func selfContainedModPath(size string) string {
+	_, filename, _, _ := runtime.Caller(0)
+	return filepath.Join(filepath.Dir(filename), "..", "testdata", "mods", "generated", size)
+}
+
+// getBenchmarkModPath returns the mod path to use for benchmarks.
+// If BENCHMARK_MOD_PATH is set, uses that (for testing with larger external mods).
+// Otherwise, uses the self-contained "medium" test mod from the repo.
 func getBenchmarkModPath() string {
 	if path := os.Getenv("BENCHMARK_MOD_PATH"); path != "" {
 		return path
 	}
-	// Default to the performance test mod
-	return "/Users/nathan/src/powerpipe-performance-test"
+	// Default to the self-contained medium test mod
+	return selfContainedModPath("medium")
 }
 
 // BenchmarkEagerLoad measures full eager workspace loading time.
