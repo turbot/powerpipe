@@ -5,7 +5,7 @@ package resourceindex
 
 import (
 	"context"
-	"crypto/md5"
+	"crypto/md5" //nolint:gosec // MD5 used for consistent hashing to match pipe-fittings format, not for security
 	"encoding/hex"
 	"fmt"
 	"os"
@@ -306,7 +306,7 @@ func generateResourceHash(to, from, blockType, blockName, attribute string) stri
 	str := fmt.Sprintf("To: %s\nFrom: %s\nBlockType: %s\nBlockName: %s\nAttribute: %s",
 		to, from, blockType, blockName, attribute)
 
-	hash := md5.Sum([]byte(str))
+	hash := md5.Sum([]byte(str)) //nolint:gosec // MD5 used for consistent hashing, not security
 	return hex.EncodeToString(hash[:])[:8]
 }
 
