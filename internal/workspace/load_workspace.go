@@ -151,6 +151,9 @@ func LoadLazy(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWo
 	// This is needed for commands that require a modfile
 	lw.PowerpipeWorkspace.SetModfileExists()
 
+	// Start background resolution for variable references and templates
+	lw.StartBackgroundResolution()
+
 	return lw, nil
 }
 
