@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"log/slog"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -84,6 +85,25 @@ func listResourcesLazy[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.
 	// Get entries from the index
 	index := lw.GetIndex()
 	entries := filterIndexEntries(index, typeName, cmd)
+
+	// Check if any entries need resolution (have unresolved variable references)
+	hasUnresolved := false
+	for _, entry := range entries {
+		if entry.NeedsResolution() {
+			hasUnresolved = true
+			break
+		}
+	}
+
+	// If there are unresolved entries, wait for background resolution to complete
+	// This ensures variable tags are properly resolved before displaying
+	if hasUnresolved {
+		slog.Debug("Waiting for background resolution to complete")
+		// Wait up to 5 seconds for resolution (most mods resolve quickly)
+		lw.WaitForResolution(5 * time.Second)
+		// Re-fetch entries after resolution as they may have been updated
+		entries = filterIndexEntries(index, typeName, cmd)
+	}
 
 	// Convert to ListableIndexEntry for display
 	listable := make([]*ListableIndexEntry, 0, len(entries))

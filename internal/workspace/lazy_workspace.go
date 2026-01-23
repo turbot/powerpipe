@@ -12,6 +12,7 @@ import (
 	"regexp"
 	"strings"
 	"sync"
+	"time"
 
 	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
@@ -705,4 +706,13 @@ func (lw *LazyWorkspace) BackgroundResolverStats() BackgroundResolverStats {
 		return BackgroundResolverStats{}
 	}
 	return lw.backgroundResolver.Stats()
+}
+
+// WaitForResolution waits for background resolution to complete, up to the specified timeout.
+// Returns true if resolution completed, false if timeout was reached.
+func (lw *LazyWorkspace) WaitForResolution(timeout time.Duration) bool {
+	if lw.backgroundResolver == nil {
+		return true
+	}
+	return lw.backgroundResolver.WaitForComplete(timeout)
 }

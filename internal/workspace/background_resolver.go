@@ -129,6 +129,23 @@ func (r *BackgroundResolver) IsComplete() bool {
 	return r.completed.Load()
 }
 
+// WaitForComplete blocks until resolution is complete or timeout is reached.
+// Returns true if resolution completed, false if timeout was reached.
+func (r *BackgroundResolver) WaitForComplete(timeout time.Duration) bool {
+	if r.completed.Load() {
+		return true
+	}
+
+	deadline := time.Now().Add(timeout)
+	for time.Now().Before(deadline) {
+		if r.completed.Load() {
+			return true
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
+	return r.completed.Load()
+}
+
 // Prioritize moves a resource to higher priority in the resolution queue.
 // If the resource is not in the queue, it's added with high priority.
 func (r *BackgroundResolver) Prioritize(resourceName string) {
