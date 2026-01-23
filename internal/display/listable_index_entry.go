@@ -2,6 +2,7 @@ package display
 
 import (
 	"encoding/json"
+	"os"
 	"strings"
 
 	"github.com/turbot/pipe-fittings/v2/printers"
@@ -54,6 +55,16 @@ func (l *ListableIndexEntry) MarshalJSON() ([]byte, error) {
 		"mod_name":       l.entry.ModName,
 		"file_name":      l.entry.FileName,
 		"is_anonymous":   false,
+		"auto_generated": false, // User-defined resources are never auto-generated
+	}
+
+	// Add path - the hierarchical path to this resource
+	// Format: [["mod.mod_name", "parent_name", ..., "qualified_name"]]
+	data["path"] = [][]string{l.buildPath()}
+
+	// Add url_path for dashboards
+	if l.entry.Type == "dashboard" {
+		data["url_path"] = "/" + l.entry.Name
 	}
 
 	// Add optional fields if present
@@ -77,21 +88,58 @@ func (l *ListableIndexEntry) MarshalJSON() ([]byte, error) {
 		data["end_line_number"] = l.entry.EndLine
 	}
 
-	// Add children for benchmarks
+	// Add children for benchmarks (from explicit children attribute)
 	if len(l.entry.ChildNames) > 0 {
 		data["children"] = l.entry.ChildNames
 	}
 
-	// Add benchmark type if present
-	if l.entry.Type == "benchmark" || l.entry.Type == "detection_benchmark" {
-		benchmarkType := "control"
-		if l.entry.BenchmarkType == "detection" || l.entry.Type == "detection_benchmark" {
-			benchmarkType = "detection"
-		}
-		data["type"] = benchmarkType
+	// Add references for benchmarks
+	if len(l.entry.References) > 0 {
+		data["references"] = l.entry.References
 	}
 
+	// Add source_definition if we can read it from file
+	if sourceDef := l.readSourceDefinition(); sourceDef != "" {
+		data["source_definition"] = sourceDef
+	}
+
+	// Note: benchmark "type" field is not included in JSON output for list command
+	// (eager mode doesn't include it either - it's only used for pretty/plain output)
+
 	return json.Marshal(data)
+}
+
+// readSourceDefinition reads the source definition from the file using byte offsets.
+func (l *ListableIndexEntry) readSourceDefinition() string {
+	// Need byte offset and length to read source
+	if l.entry.ByteOffset == 0 && l.entry.ByteLength == 0 {
+		return ""
+	}
+	if l.entry.FileName == "" {
+		return ""
+	}
+
+	// Read the source from file
+	file, err := os.Open(l.entry.FileName)
+	if err != nil {
+		return ""
+	}
+	defer file.Close()
+
+	// Seek to the block start
+	_, err = file.Seek(l.entry.ByteOffset, 0)
+	if err != nil {
+		return ""
+	}
+
+	// Read the block content
+	buf := make([]byte, l.entry.ByteLength)
+	n, err := file.Read(buf)
+	if err != nil || n == 0 {
+		return ""
+	}
+
+	return strings.TrimSpace(string(buf[:n]))
 }
 
 // IsDependencyResource returns true if this resource is from a dependency mod.
@@ -144,4 +192,21 @@ func (l *ListableIndexEntry) GetType() string {
 // GetModName returns the mod name.
 func (l *ListableIndexEntry) GetModName() string {
 	return l.entry.ModName
+}
+
+// buildPath constructs the hierarchical path to this resource.
+// For nested resources (with parents), the path includes the full ancestry.
+// Format: ["mod.mod_name", "parent_name", ..., "resource_name"]
+func (l *ListableIndexEntry) buildPath() []string {
+	path := []string{l.entry.ModFullName}
+
+	// If this resource has a parent, include it in the path
+	if l.entry.ParentName != "" {
+		path = append(path, l.entry.ParentName)
+	}
+
+	// Add this resource's name
+	path = append(path, l.entry.Name)
+
+	return path
 }
