@@ -129,6 +129,15 @@ func NewLazyWorkspace(ctx context.Context, workspacePath string, config LazyLoad
 	// Create loader
 	loader := resourceloader.NewLoader(index, cache, mod, workspacePath)
 
+	// Build eval context with variables and locals for tag resolution
+	evalCtx, err := resourceloader.BuildEvalContext(ctx, workspacePath)
+	if err != nil {
+		// Log but don't fail - lazy loading can still work, just without variable resolution
+		slog.Debug("failed to build eval context for lazy loading", "error", err)
+	} else {
+		loader.SetEvalContext(evalCtx)
+	}
+
 	// Create resolver
 	resolver := resourceloader.NewDependencyResolver(index, loader)
 

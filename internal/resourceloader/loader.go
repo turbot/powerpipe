@@ -7,6 +7,7 @@ import (
 	"sync/atomic"
 	"time"
 
+	"github.com/hashicorp/hcl/v2"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/powerpipe/internal/resourcecache"
 	"github.com/turbot/powerpipe/internal/resourceindex"
@@ -22,6 +23,10 @@ type Loader struct {
 	cache   *resourcecache.ResourceCache
 	mod     *modconfig.Mod
 	modPath string
+
+	// Eval context with pre-resolved variables and locals
+	// This enables resolution of expressions like `tags = local.common_tags`
+	evalContext *hcl.EvalContext
 
 	// Statistics
 	loadCount int64
@@ -51,6 +56,21 @@ func (l *Loader) SetResourceProvider(provider modconfig.ResourceProvider) {
 	l.mu.Lock()
 	defer l.mu.Unlock()
 	l.resourceProvider = provider
+}
+
+// SetEvalContext sets the evaluation context for variable and local resolution.
+// This should be called after building the eval context from workspace variables/locals.
+func (l *Loader) SetEvalContext(ctx *hcl.EvalContext) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.evalContext = ctx
+}
+
+// GetEvalContext returns the evaluation context, or nil if not set.
+func (l *Loader) GetEvalContext() *hcl.EvalContext {
+	l.mu.RLock()
+	defer l.mu.RUnlock()
+	return l.evalContext
 }
 
 // Load retrieves a resource by name, loading from disk if not cached.

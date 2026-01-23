@@ -130,15 +130,32 @@ func (l *Loader) decodeResourceBlock(ctx context.Context, entry *resourceindex.I
 		return nil, err
 	}
 
-	// Create an eval context with standard HCL functions.
+	// Create an eval context with standard HCL functions and variables/locals.
 	// The root path is the mod root directory, which is needed for file() function.
 	rootPath := entry.ModRoot
 	if rootPath == "" {
 		// Fallback to file directory if mod root not set
 		rootPath = filepath.Dir(entry.FileName)
 	}
-	evalCtx := &hcl.EvalContext{
-		Functions: funcs.ContextFunctions(rootPath),
+
+	// Start with the loader's pre-built eval context (with variables and locals)
+	// or create a new one if not available
+	l.mu.RLock()
+	baseEvalCtx := l.evalContext
+	l.mu.RUnlock()
+
+	var evalCtx *hcl.EvalContext
+	if baseEvalCtx != nil {
+		// Clone the base context and ensure functions are set
+		evalCtx = &hcl.EvalContext{
+			Functions: funcs.ContextFunctions(rootPath),
+			Variables: baseEvalCtx.Variables,
+		}
+	} else {
+		// Fallback to minimal context with just functions
+		evalCtx = &hcl.EvalContext{
+			Functions: funcs.ContextFunctions(rootPath),
+		}
 	}
 
 	l.mu.RLock()
