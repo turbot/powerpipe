@@ -27,12 +27,8 @@ func (l *ListableIndexEntry) GetListData() *printers.RowData {
 	// Add MOD field
 	res.AddField(printers.NewFieldValue("MOD", l.entry.ModName))
 
-	// Add NAME field - use short name for local resources, full name for dependencies
-	name := l.entry.ShortName
-	if l.IsDependencyResource() {
-		name = l.entry.Name
-	}
-	res.AddField(printers.NewFieldValue("NAME", name))
+	// Add NAME field - always use full qualified name for consistency with v1.4.2
+	res.AddField(printers.NewFieldValue("NAME", l.entry.Name))
 
 	// Add TYPE field for benchmarks (matches Benchmark.GetListData behavior)
 	if l.entry.Type == "benchmark" || l.entry.Type == "detection_benchmark" {

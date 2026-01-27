@@ -469,3 +469,172 @@ strip_update_banner() {
 
   cd -
 }
+
+# ============================================
+# Full Qualified Name Format Tests
+# These verify that list commands output full qualified names (mod.type.name)
+# to ensure backward compatibility with v1.4.2 behavior
+# ============================================
+
+@test "dashboard list - NAME column shows full qualified name in plain output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe dashboard list --output plain
+  assert_success
+
+  # Strip any update banners and check that NAME column contains full qualified names
+  plain_output=$(echo "$output" | strip_update_banner)
+
+  # Verify the output contains the full qualified name format (mod.dashboard.name)
+  echo "$plain_output" | grep -q "phased_loading_comparison.dashboard.dashboard_with_tags"
+  assert_success
+
+  echo "$plain_output" | grep -q "phased_loading_comparison.dashboard.dashboard_without_tags"
+  assert_success
+
+  # Verify it does NOT show just the short name without the mod prefix
+  # The NAME column should never be just "dashboard_with_tags" without the mod prefix
+  if echo "$plain_output" | grep -E "^[[:space:]]*phased_loading_comparison[[:space:]]+dashboard_with_tags[[:space:]]*$" > /dev/null; then
+    fail "NAME column shows short name instead of full qualified name"
+  fi
+
+  cd -
+}
+
+@test "dashboard list - qualified_name has correct format in JSON output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe dashboard list --output json
+  assert_success
+
+  json_output=$(echo "$output" | sed -n '/^\[/,$p')
+
+  # Verify qualified_name matches the format: mod_name.dashboard.short_name
+  run bash -c "echo '$json_output' | jq -e '.[] | select(.resource_name == \"dashboard_with_tags\") | .qualified_name == \"phased_loading_comparison.dashboard.dashboard_with_tags\"'"
+  assert_success
+
+  run bash -c "echo '$json_output' | jq -e '.[] | select(.resource_name == \"dashboard_without_tags\") | .qualified_name == \"phased_loading_comparison.dashboard.dashboard_without_tags\"'"
+  assert_success
+
+  # Verify all dashboards have qualified_name in the correct format (mod.dashboard.name)
+  run bash -c "echo '$json_output' | jq -e '[.[] | .qualified_name | test(\"^phased_loading_comparison\\\\.dashboard\\\\.[a-z_]+\$\")] | all'"
+  assert_success
+
+  cd -
+}
+
+@test "benchmark list - NAME column shows full qualified name in plain output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe benchmark list --output plain
+  assert_success
+
+  plain_output=$(echo "$output" | strip_update_banner)
+
+  # Verify the output contains the full qualified name format (mod.benchmark.name)
+  echo "$plain_output" | grep -q "phased_loading_comparison.benchmark.benchmark_with_tags"
+  assert_success
+
+  cd -
+}
+
+@test "benchmark list - qualified_name has correct format in JSON output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe benchmark list --output json
+  assert_success
+
+  json_output=$(echo "$output" | sed -n '/^\[/,$p')
+
+  # Verify qualified_name matches the format: mod_name.benchmark.short_name
+  run bash -c "echo '$json_output' | jq -e '.[] | select(.resource_name == \"benchmark_with_tags\") | .qualified_name == \"phased_loading_comparison.benchmark.benchmark_with_tags\"'"
+  assert_success
+
+  # Verify all benchmarks have qualified_name in the correct format
+  run bash -c "echo '$json_output' | jq -e '[.[] | .qualified_name | test(\"^phased_loading_comparison\\\\.benchmark\\\\.[a-z_]+\$\")] | all'"
+  assert_success
+
+  cd -
+}
+
+@test "control list - NAME column shows full qualified name in plain output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe control list --output plain
+  assert_success
+
+  plain_output=$(echo "$output" | strip_update_banner)
+
+  # Verify the output contains the full qualified name format (mod.control.name)
+  echo "$plain_output" | grep -q "phased_loading_comparison.control.control_with_tags"
+  assert_success
+
+  cd -
+}
+
+@test "control list - qualified_name has correct format in JSON output" {
+  cd "$PHASED_LOADING_MOD"
+
+  run powerpipe control list --output json
+  assert_success
+
+  json_output=$(echo "$output" | sed -n '/^\[/,$p')
+
+  # Verify qualified_name matches the format: mod_name.control.short_name
+  run bash -c "echo '$json_output' | jq -e '.[] | select(.resource_name == \"control_with_tags\") | .qualified_name == \"phased_loading_comparison.control.control_with_tags\"'"
+  assert_success
+
+  # Verify all controls have qualified_name in the correct format
+  run bash -c "echo '$json_output' | jq -e '[.[] | .qualified_name | test(\"^phased_loading_comparison\\\\.control\\\\.[a-z_]+\$\")] | all'"
+  assert_success
+
+  cd -
+}
+
+@test "dashboard show - works with full qualified name from list output" {
+  cd "$PHASED_LOADING_MOD"
+
+  # Get the qualified name from list output
+  run powerpipe dashboard list --output json
+  assert_success
+
+  json_output=$(echo "$output" | sed -n '/^\[/,$p')
+  qualified_name=$(echo "$json_output" | jq -r '.[] | select(.resource_name == "dashboard_with_tags") | .qualified_name')
+
+  # Verify we got the expected qualified name
+  assert_equal "$qualified_name" "phased_loading_comparison.dashboard.dashboard_with_tags"
+
+  # Verify show command works with this qualified name
+  run powerpipe dashboard show "$qualified_name"
+  assert_success
+
+  # Verify the show output contains expected data
+  echo "$output" | grep -q "Dashboard With Tags"
+  assert_success
+
+  cd -
+}
+
+@test "benchmark show - works with full qualified name from list output" {
+  cd "$PHASED_LOADING_MOD"
+
+  # Get the qualified name from list output
+  run powerpipe benchmark list --output json
+  assert_success
+
+  json_output=$(echo "$output" | sed -n '/^\[/,$p')
+  qualified_name=$(echo "$json_output" | jq -r '.[] | select(.resource_name == "benchmark_with_tags") | .qualified_name')
+
+  # Verify we got the expected qualified name
+  assert_equal "$qualified_name" "phased_loading_comparison.benchmark.benchmark_with_tags"
+
+  # Verify show command works with this qualified name
+  run powerpipe benchmark show "$qualified_name"
+  assert_success
+
+  # Verify the show output contains expected data
+  echo "$output" | grep -q "Benchmark With Tags"
+  assert_success
+
+  cd -
+}
