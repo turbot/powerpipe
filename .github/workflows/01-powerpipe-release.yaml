@@ -95,7 +95,7 @@ jobs:
           echo "VERSION=${trim}" >> $GITHUB_ENV
 
       - name: Setup Node
-        uses: actions/setup-node@cdca7365b2dadb8aad0a33bc7601856ffabcc48e # v4.3.0
+        uses: actions/setup-node@6044e13b5dc448c55e2357c09f80417699197238 # v6.2.0
         with:
           node-version: ">=18.12.0"
 
