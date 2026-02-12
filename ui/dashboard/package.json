@@ -146,7 +146,8 @@
     "tar": "7.5.7",
     "lodash-es": "4.17.23",
     "lodash": "4.17.23",
-    "@remix-run/router": "1.23.2"
+    "@remix-run/router": "1.23.2",
+    "jsonpath": "1.2.0"
   },
   "engines": {
     "node": ">=20",
