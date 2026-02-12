@@ -1,3 +1,7 @@
+## v1.4.3 [2026-02-12]
+_Dependencies_
+- Upgrade go and npm dependencies to remediate vulnerabilities.
+
 ## v1.4.2 [2025-11-21]
 _Bug Fixes_
 - Fix issue where cell controls were not appearing after scrolling. ([#956](https://github.com/turbot/powerpipe/issues/956))
