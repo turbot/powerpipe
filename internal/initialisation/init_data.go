@@ -2,15 +2,18 @@ package initialisation
 
 import (
 	"context"
+	"errors"
 	"fmt"
-	"github.com/turbot/pipe-fittings/v2/connection"
 	"log/slog"
+	"strings"
+	"sync"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
@@ -24,10 +27,20 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
 )
+
+// clientResult holds the async result of database client creation
+type clientResult struct {
+	client           *db_client.DbClient
+	csp              connection.ConnectionStringProvider
+	searchPathConfig backend.SearchPathConfig
+	err              error
+}
 
 type InitData struct {
 	Workspace *workspace.PowerpipeWorkspace
@@ -40,6 +53,10 @@ type InitData struct {
 
 	DefaultDatabase         connection.ConnectionStringProvider
 	DefaultSearchPathConfig backend.SearchPathConfig
+
+	// LazyWorkspace is set when lazy loading is enabled
+	// It wraps the PowerpipeWorkspace with on-demand resource loading
+	LazyWorkspace *workspace.LazyWorkspace
 }
 
 func NewErrorInitData(err error) *InitData {
@@ -51,42 +68,111 @@ func NewErrorInitData(err error) *InitData {
 }
 
 func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Command, cmdArgs ...string) *InitData {
+	defer timing.Track("NewInitData")()
+
 	modLocation := viper.GetString(constants.ArgModLocation)
 
-	w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
-		modLocation,
-		// pass connections
-		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
-		// disable late binding
-		workspace.WithLateBinding(false),
-	)
-	if errAndWarnings.GetError() != nil {
-		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
-	}
-
-	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
-		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
-	}
 	i := &InitData{
 		Result:        &InitResult{},
 		ExportManager: export.NewManager(),
 	}
 
-	i.Workspace = w
-	i.Result.Warnings = errAndWarnings.Warnings
+	// Use lazy loading for benchmark types and dashboard server
+	// Query commands still need eager loading for proper target resolution
+	var empty T
+	_, isBenchmark := any(empty).(*resources.Benchmark)
+	_, isDetectionBenchmark := any(empty).(*resources.DetectionBenchmark)
+	_, isDashboard := any(empty).(*resources.Dashboard)
+	useLazyLoading := isLazyLoadEnabled() && (isBenchmark || isDetectionBenchmark || isDashboard)
+
+	if useLazyLoading {
+		// Use lazy loading - faster startup and lower memory for browsing
+		slog.Debug("Loading workspace with lazy loading enabled")
+		lw, err := workspace.LoadLazy(ctx, modLocation,
+			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+		)
+		if err != nil {
+			// Check if this is a duplicate mod versions error - if so, fall back to eager loading
+			if errors.Is(err, workspace.ErrDuplicateModVersions) {
+				slog.Info("Falling back to eager loading due to duplicate mod versions")
+				useLazyLoading = false
+			} else {
+				return NewErrorInitData(fmt.Errorf("failed to load lazy workspace: %s", error_helpers.HandleCancelError(err).Error()))
+			}
+		} else {
+			i.LazyWorkspace = lw
+			i.Workspace = lw.PowerpipeWorkspace
+		}
+	}
+
+	if !useLazyLoading {
+		// Standard eager loading for non-benchmark commands or when lazy loading is disabled
+		w, errAndWarnings := workspace.LoadWorkspacePromptingForVariables(ctx,
+			modLocation,
+			// pass connections
+			workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
+			// disable late binding
+			workspace.WithLateBinding(false),
+		)
+		if errAndWarnings.GetError() != nil {
+			return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
+		}
+		i.Workspace = w
+		i.Result.Warnings = errAndWarnings.Warnings
+	}
+
+	if !i.Workspace.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
+		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
+	}
 
 	// resolve target resources
-	targets, err := cmdconfig.ResolveTargets[T](cmdArgs, w)
-	if err != nil {
-		i.Result.Error = err
-		return i
+	var targets []modconfig.ModTreeItem
+	var err error
+
+	if useLazyLoading {
+		// For lazy loading (benchmark commands only), resolve targets using LoadBenchmarkForExecution
+		// This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace
+		targets, err = i.resolveTargetsForLazyLoading(ctx, cmdArgs)
+		if err != nil {
+			i.Result.Error = err
+			return i
+		}
+	} else {
+		// Standard target resolution for eager loading
+		targets, err = cmdconfig.ResolveTargets[T](cmdArgs, i.Workspace)
+		if err != nil {
+			i.Result.Error = err
+			return i
+		}
 	}
+
 	i.Targets = targets
 
 	// now do the actual initialisation
 	i.Init(ctx, cmdArgs...)
 
 	return i
+}
+
+// isLazyLoadEnabled checks if lazy loading should be used.
+// Lazy loading is enabled by default. Set POWERPIPE_WORKSPACE_PRELOAD=true to disable.
+// Also disabled when tag/where filters are used (they require full workspace to iterate).
+func isLazyLoadEnabled() bool {
+	// Check if workspace preload is enabled - this forces eager loading
+	if localconstants.WorkspacePreloadEnabled() {
+		slog.Info("Workspace preload enabled via POWERPIPE_WORKSPACE_PRELOAD - using eager loading")
+		return false
+	}
+
+	// Tag and where filters require iterating over all controls in the workspace,
+	// which isn't compatible with lazy loading. Disable lazy loading when these are set.
+	if viper.IsSet(constants.ArgTag) || viper.IsSet(constants.ArgWhere) {
+		slog.Debug("Tag or where filter set - disabling lazy loading")
+		return false
+	}
+
+	// Default: lazy loading enabled
+	return true
 }
 
 func commandRequiresModfile(cmd *cobra.Command, args []string) bool {
@@ -111,6 +197,8 @@ func (i *InitData) RegisterExporters(exporters ...export.Exporter) error {
 }
 
 func (i *InitData) Init(ctx context.Context, args ...string) {
+	defer timing.Track("InitData.Init")()
+
 	defer func() {
 		if r := recover(); r != nil {
 			i.Result.Error = helpers.ToError(r)
@@ -131,66 +219,110 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 
 	statushooks.SetStatus(ctx, "Initializing")
 
-	// initialise telemetry
-	shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
-	if err != nil {
-		i.Result.AddWarnings(err.Error())
-	} else {
-		i.ShutdownTelemetry = shutdownTelemetry
-	}
+	// Start database client creation in background - this can run concurrently
+	// with telemetry init and mod installation
+	clientChan := make(chan clientResult, 1)
+	var clientWg sync.WaitGroup
+	clientWg.Add(1)
 
-	// install mod dependencies if needed (this defaults to true for dashboard and check commands
-	// and will always be false for query command)
-	if viper.GetBool(constants.ArgModInstall) {
-		statushooks.SetStatus(ctx, "Installing workspace dependencies")
-		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
-		// arg pull should always be set (to a default at least) if ArgModInstall is set
-		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
-		// use force install so that errors are ignored during installation
-		// (we are validating prereqs later)
-		opts.Force = true
-		_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+	go func() {
+		defer clientWg.Done()
+		defer close(clientChan)
+		defer timing.Track("db_client.CreateAsync")()
+
+		// Get default database config
+		csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
 		if err != nil {
-			i.Result.Error = err
+			clientChan <- clientResult{err: err}
+			return
+		}
+
+		// Build backend options
+		var opts []backend.BackendOption
+		if !searchPathConfig.Empty() {
+			opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
+		}
+
+		connectionString, err := csp.GetConnectionString()
+		if err != nil {
+			clientChan <- clientResult{err: err}
+			return
+		}
+
+		// Create the client
+		client, err := db_client.NewDbClient(ctx, connectionString, opts...)
+		clientChan <- clientResult{
+			client:           client,
+			csp:              csp,
+			searchPathConfig: searchPathConfig,
+			err:              err,
+		}
+	}()
+
+	// Initialize telemetry concurrently with DB client creation
+	func() {
+		defer timing.Track("telemetry.Init")()
+		shutdownTelemetry, err := telemetry.Init(app_specific.AppName)
+		if err != nil {
+			i.Result.AddWarnings(err.Error())
+		} else {
+			i.ShutdownTelemetry = shutdownTelemetry
+		}
+	}()
+
+	// Install mod dependencies if needed (this defaults to true for dashboard and check commands
+	// and will always be false for query command)
+	// This also runs concurrently with DB client creation
+	if viper.GetBool(constants.ArgModInstall) {
+		func() {
+			defer timing.Track("modinstaller.InstallWorkspaceDependencies")()
+			statushooks.SetStatus(ctx, "Installing workspace dependencies")
+			slog.Info("Installing workspace dependencies")
+			opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
+			// arg pull should always be set (to a default at least) if ArgModInstall is set
+			opts.UpdateStrategy = viper.GetString(constants.ArgPull)
+			// use force install so that errors are ignored during installation
+			// (we are validating prereqs later)
+			opts.Force = true
+			_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
+			if err != nil {
+				i.Result.Error = err
+			}
+		}()
+		if i.Result.Error != nil {
+			// Wait for DB goroutine to complete before returning
+			clientWg.Wait()
 			return
 		}
 	}
 
-	// create default client
-	// set the database and search patch config
-	csp, searchPathConfig, err := db_client.GetDefaultDatabaseConfig(i.Workspace.Mod)
-	if err != nil {
-		i.Result.Error = err
+	// Now wait for database client creation to complete
+	statushooks.SetStatus(ctx, "Connecting to database")
+	result := <-clientChan
+
+	if result.err != nil {
+		i.Result.Error = result.err
 		return
 	}
-	i.DefaultDatabase = csp
-	i.DefaultSearchPathConfig = searchPathConfig
 
-	// create client
-	var opts []backend.BackendOption
-	if !searchPathConfig.Empty() {
-		opts = append(opts, backend.WithSearchPathConfig(searchPathConfig))
-	}
-	connectionString, err := csp.GetConnectionString()
-	if err != nil {
-		i.Result.Error = err
-		return
-	}
-	client, err := db_client.NewDbClient(ctx, connectionString, opts...)
-	if err != nil {
-		i.Result.Error = err
-		return
-	}
-	i.DefaultClient = client
+	// Store results
+	i.DefaultClient = result.client
+	i.DefaultDatabase = result.csp
+	i.DefaultSearchPathConfig = result.searchPathConfig
 
-	// validate mod requirements
-	validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, client)
-	i.Result.AddWarnings(validationWarnings...)
+	// Validate mod requirements - this needs the client
+	func() {
+		defer timing.Track("validateModRequirementsRecursively")()
+		validationWarnings := validateModRequirementsRecursively(i.Workspace.Mod, i.DefaultClient)
+		i.Result.AddWarnings(validationWarnings...)
+	}()
 
-	// create the dashboard executor, passing the default client inside a client map
-	clientMap := db_client.NewClientMap().Add(client, searchPathConfig)
-	dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
+	// Create the dashboard executor, passing the default client inside a client map
+	func() {
+		defer timing.Track("NewDashboardExecutor")()
+		clientMap := db_client.NewClientMap().Add(i.DefaultClient, i.DefaultSearchPathConfig)
+		dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(clientMap, i.DefaultDatabase, i.DefaultSearchPathConfig)
+	}()
 }
 
 func validateModRequirementsRecursively(mod *modconfig.Mod, client *db_client.DbClient) []string {
@@ -226,12 +358,29 @@ func (i *InitData) Cleanup(ctx context.Context) {
 	if i.ShutdownTelemetry != nil {
 		i.ShutdownTelemetry()
 	}
-	if i.Workspace != nil {
+	// Close lazy workspace if present (this also closes the embedded PowerpipeWorkspace)
+	if i.LazyWorkspace != nil {
+		i.LazyWorkspace.Close()
+	} else if i.Workspace != nil {
 		i.Workspace.Close()
 	}
 	if i.DefaultClient != nil {
 		i.DefaultClient.Close(ctx)
 	}
+}
+
+// IsLazy returns true if lazy loading is enabled for this init data
+func (i *InitData) IsLazy() bool {
+	return i.LazyWorkspace != nil
+}
+
+// GetWorkspaceProvider returns the workspace as a WorkspaceProvider interface,
+// which can be either a LazyWorkspace or PowerpipeWorkspace
+func (i *InitData) GetWorkspaceProvider() workspace.WorkspaceProvider {
+	if i.LazyWorkspace != nil {
+		return i.LazyWorkspace
+	}
+	return i.Workspace
 }
 
 // GetSingleTarget validates there is only a single target and returns it
@@ -243,4 +392,136 @@ func (i *InitData) GetSingleTarget() (modconfig.ModTreeItem, error) {
 		return nil, sperr.New("expected a single target")
 	}
 	return i.Targets[0], nil
+}
+
+// resolveTargetsForLazyLoading resolves targets (benchmarks or dashboards) for lazy loading mode.
+// This bypasses the standard ResolveTargets which requires resources to be loaded in the workspace.
+// Instead, it uses the lazy workspace's index and appropriate load methods based on resource type.
+func (i *InitData) resolveTargetsForLazyLoading(ctx context.Context, cmdArgs []string) ([]modconfig.ModTreeItem, error) {
+	if i.LazyWorkspace == nil {
+		return nil, fmt.Errorf("resolveTargetsForLazyLoading called but LazyWorkspace is nil")
+	}
+
+	if len(cmdArgs) == 0 {
+		return nil, nil
+	}
+
+	// Handle "all" argument (only for benchmarks)
+	if len(cmdArgs) == 1 && cmdArgs[0] == "all" {
+		return i.resolveAllBenchmarksForLazyLoading(ctx)
+	}
+
+	targets := make([]modconfig.ModTreeItem, 0, len(cmdArgs))
+	for _, arg := range cmdArgs {
+		// Parse the resource name from the argument
+		fullName, err := i.parseTargetName(arg)
+		if err != nil {
+			return nil, err
+		}
+
+		// Determine resource type from the full name
+		parts := strings.Split(fullName, ".")
+		if len(parts) < 3 {
+			return nil, fmt.Errorf("invalid resource name: %s", fullName)
+		}
+		resourceType := parts[1]
+
+		var target modconfig.ModTreeItem
+
+		switch resourceType {
+		case "dashboard":
+			slog.Debug("Loading dashboard for execution (lazy)", "name", fullName)
+			dashboard, err := i.LazyWorkspace.LoadDashboard(ctx, fullName)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load dashboard %s: %w", fullName, err)
+			}
+			target = dashboard
+		case "benchmark", "detection_benchmark":
+			slog.Debug("Loading benchmark for execution (lazy)", "name", fullName)
+			benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, fullName)
+			if err != nil {
+				return nil, fmt.Errorf("failed to load benchmark %s: %w", fullName, err)
+			}
+			target = benchmark
+		default:
+			// For other types (control, query), try generic load
+			slog.Debug("Loading resource for execution (lazy)", "name", fullName, "type", resourceType)
+			resource, ok := i.LazyWorkspace.GetResource(&modconfig.ParsedResourceName{
+				Mod:      parts[0],
+				ItemType: resourceType,
+				Name:     parts[2],
+			})
+			if !ok {
+				return nil, fmt.Errorf("failed to load resource %s", fullName)
+			}
+			target = resource.(modconfig.ModTreeItem)
+		}
+
+		targets = append(targets, target)
+	}
+
+	return targets, nil
+}
+
+// parseTargetName parses a target argument into a full resource name.
+// Handles formats: "name", "type.name", "mod.type.name"
+// For single-word names, looks up in the index to determine the resource type.
+func (i *InitData) parseTargetName(arg string) (string, error) {
+	parts := strings.Split(arg, ".")
+	index := i.LazyWorkspace.GetIndex()
+	modName := index.ModName
+
+	switch len(parts) {
+	case 1:
+		// Just name - look up in index to find the actual resource type
+		// Check common types in order of likelihood: benchmark, dashboard, control, query
+		for _, resourceType := range []string{"benchmark", "dashboard", "control", "query", "detection_benchmark"} {
+			fullName := fmt.Sprintf("%s.%s.%s", modName, resourceType, parts[0])
+			if _, ok := index.Get(fullName); ok {
+				return fullName, nil
+			}
+		}
+		// Default to benchmark if not found (will error later with clear message)
+		return fmt.Sprintf("%s.benchmark.%s", modName, parts[0]), nil
+	case 2:
+		// type.name
+		return fmt.Sprintf("%s.%s.%s", modName, parts[0], parts[1]), nil
+	case 3:
+		// mod.type.name - use as-is
+		return arg, nil
+	default:
+		return "", fmt.Errorf("invalid target name format: %s", arg)
+	}
+}
+
+// resolveAllBenchmarksForLazyLoading resolves all top-level benchmarks for the "all" argument.
+func (i *InitData) resolveAllBenchmarksForLazyLoading(ctx context.Context) ([]modconfig.ModTreeItem, error) {
+	// Get all top-level benchmarks from the index
+	index := i.LazyWorkspace.GetIndex()
+	modName := index.ModName
+
+	var childTargets []modconfig.ModTreeItem
+
+	for _, entry := range index.List() {
+		// Only include top-level benchmarks from the current mod
+		if entry.Type == "benchmark" && entry.IsTopLevel {
+			// Check if this benchmark belongs to the current mod
+			if strings.HasPrefix(entry.Name, modName+".") {
+				slog.Debug("Loading benchmark for execution (lazy, all)", "name", entry.Name)
+				benchmark, err := i.LazyWorkspace.LoadBenchmarkForExecution(ctx, entry.Name)
+				if err != nil {
+					return nil, fmt.Errorf("failed to load benchmark %s: %w", entry.Name, err)
+				}
+				childTargets = append(childTargets, benchmark)
+			}
+		}
+	}
+
+	if len(childTargets) == 0 {
+		return nil, nil
+	}
+
+	// Create a root benchmark to hold all the benchmarks (same as handleAllArg does)
+	resolvedItem := resources.NewRootBenchmarkWithChildren(i.Workspace.Mod, childTargets).(modconfig.ModTreeItem)
+	return []modconfig.ModTreeItem{resolvedItem}, nil
 }

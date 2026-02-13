@@ -225,3 +225,11 @@ func (b *Benchmark) GetListData() *printers.RowData {
 
 	return res
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (b *Benchmark) ClearRemain() {
+	b.Remain = nil
+	b.ResourceWithMetadataImpl.ClearRemain()
+	b.ModTreeItemImpl.ClearRemain()
+	b.DashboardLeafNodeImpl.ClearRemain()
+}

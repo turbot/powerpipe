@@ -463,3 +463,12 @@ func (d *Dashboard) validateInputDependencies(inputs []*DashboardInput) error {
 	_, err := dependencyGraph.TopSort(rootDependencyNode)
 	return err
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (d *Dashboard) ClearRemain() {
+	d.Remain = nil
+	d.ResourceWithMetadataImpl.ClearRemain()
+	d.ModTreeItemImpl.ClearRemain()
+	d.WithProviderImpl.ClearRemain()
+	d.DashboardLeafNodeImpl.ClearRemain()
+}

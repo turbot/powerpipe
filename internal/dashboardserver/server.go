@@ -21,6 +21,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/initialisation"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
@@ -31,11 +32,13 @@ type Server struct {
 	dashboardClients        map[string]*DashboardClientInfo
 	webSocket               *melody.Melody
 	workspace               *workspace.PowerpipeWorkspace
+	lazyWorkspace           *workspace.LazyWorkspace
 	defaultDatabase         connection.ConnectionStringProvider
 	defaultSearchPathConfig backend.SearchPathConfig
 }
 
 func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket *melody.Melody) (*Server, error) {
+	defer timing.Track("dashboardserver.NewServer")()
 	OutputWait(ctx, "Starting WorkspaceEvents Server")
 
 	var dashboardClients = make(map[string]*DashboardClientInfo)
@@ -53,12 +56,66 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 		defaultSearchPathConfig: initData.DefaultSearchPathConfig,
 	}
 
+	// If lazy loading is enabled, set the lazy workspace reference
+	if initData.IsLazy() {
+		server.lazyWorkspace = initData.LazyWorkspace
+	}
+
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 
 	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
 	OutputMessage(ctx, "WorkspaceEvents loaded")
 
 	return server, err
+}
+
+// NewServerWithLazyWorkspace creates a server with lazy loading enabled.
+// This allows available_dashboards to be served from the index without loading all resources.
+func NewServerWithLazyWorkspace(ctx context.Context, lazyWorkspace *workspace.LazyWorkspace, defaultDatabase connection.ConnectionStringProvider, defaultSearchPathConfig backend.SearchPathConfig, webSocket *melody.Melody) (*Server, error) {
+	defer timing.Track("dashboardserver.NewServerWithLazyWorkspace")()
+	OutputWait(ctx, "Starting WorkspaceEvents Server (lazy mode)")
+
+	var dashboardClients = make(map[string]*DashboardClientInfo)
+	var mutex = &sync.Mutex{}
+
+	server := &Server{
+		mutex:                   mutex,
+		dashboardClients:        dashboardClients,
+		webSocket:               webSocket,
+		lazyWorkspace:           lazyWorkspace,
+		defaultDatabase:         defaultDatabase,
+		defaultSearchPathConfig: defaultSearchPathConfig,
+	}
+
+	lazyWorkspace.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
+
+	// Note: file watching in lazy mode would need cache invalidation
+	// For now, we skip the watcher setup - this can be added later
+	OutputMessage(ctx, "WorkspaceEvents loaded (lazy mode)")
+
+	return server, nil
+}
+
+// isLazyMode returns true if the server is using lazy loading.
+func (s *Server) isLazyMode() bool {
+	return s.lazyWorkspace != nil
+}
+
+// getActiveWorkspace returns the appropriate workspace based on mode.
+func (s *Server) getActiveWorkspace() workspace.DashboardServerWorkspace {
+	if s.isLazyMode() {
+		return s.lazyWorkspace
+	}
+	return s.workspace
+}
+
+// buildAvailableDashboardsPayload builds the available dashboards payload
+// using the index in lazy mode, or full resources in eager mode.
+func (s *Server) buildAvailableDashboardsPayload() ([]byte, error) {
+	if s.isLazyMode() {
+		return buildAvailableDashboardsPayloadFromIndex(s.lazyWorkspace)
+	}
+	return buildAvailableDashboardsPayload(s.workspace.GetPowerpipeModResources())
 }
 
 // Start starts the API server
@@ -215,15 +272,14 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			OutputMessage(ctx, "Available Dashboards updated")
 
 			// Emit dashboard metadata event in case there is a new mod - else the UI won't know about this mod
-			payload, payloadError = s.buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
+			payload, payloadError = s.buildServerMetadataPayload(s.getActiveWorkspace().GetModResources(), &steampipeconfig.PipesMetadata{})
 			if payloadError != nil {
 				return
 			}
 			_ = s.webSocket.Broadcast(payload)
 
 			// Emit available dashboards event
-			workspaceResources := s.workspace.GetPowerpipeModResources()
-			payload, payloadError = buildAvailableDashboardsPayload(workspaceResources)
+			payload, payloadError = s.buildAvailableDashboardsPayload()
 			if payloadError != nil {
 				return
 			}
@@ -278,7 +334,12 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == changedDashboardName {
 
 					if changedResource := s.getResource(changedDashboardName); changedResource != nil {
-						err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, s.workspace)
+						ws, err := s.getWorkspaceForExecution(ctx)
+						if err != nil {
+							OutputError(ctx, sperr.WrapWithMessage(err, "error loading workspace for execution"))
+							continue
+						}
+						err = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, changedResource, dashboardClientInfo.DashboardInputs, ws)
 						if err != nil {
 							OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
 						}
@@ -303,7 +364,12 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			for sessionId, dashboardClientInfo := range sessionMap {
 				if typeHelpers.SafeString(dashboardClientInfo.Dashboard) == newDashboardName {
 					if newDashboard := s.getResource(newDashboardName); newDashboard != nil {
-						err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, s.workspace)
+						ws, err := s.getWorkspaceForExecution(ctx)
+						if err != nil {
+							OutputError(ctx, sperr.WrapWithMessage(err, "error loading workspace for execution"))
+							continue
+						}
+						err = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, newDashboard, dashboardClientInfo.DashboardInputs, ws)
 						if err != nil {
 							OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
 						}
@@ -329,6 +395,7 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 }
 
 func (s *Server) InitAsync(ctx context.Context) {
+	defer timing.Track("Server.InitAsync")()
 	go func() {
 		// Return list of dashboards on connect
 		s.webSocket.HandleConnect(func(session *melody.Session) {
@@ -365,23 +432,18 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 
 		switch request.Action {
 		case "get_server_metadata":
-			payload, err := s.buildServerMetadataPayload(s.workspace.GetModResources(), &steampipeconfig.PipesMetadata{})
+			payload, err := s.buildServerMetadataPayload(s.getActiveWorkspace().GetModResources(), &steampipeconfig.PipesMetadata{})
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_metadata"))
 			}
 			_ = session.Write(payload)
 		case "get_available_dashboards":
-			payload, err := buildAvailableDashboardsPayload(s.workspace.GetPowerpipeModResources())
+			payload, err := s.buildAvailableDashboardsPayload()
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error building payload for get_available_dashboards"))
 			}
 			_ = session.Write(payload)
 		case "select_dashboard":
-			dashboard := s.getResource(request.Payload.Dashboard.FullName)
-			if dashboard == nil {
-				return
-			}
-
 			inputValues := request.Payload.InputValues()
 			s.setDashboardForSession(sessionId, request.Payload.Dashboard.FullName, inputValues)
 
@@ -393,7 +455,25 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 					SearchPathPrefix: request.Payload.SearchPathPrefix,
 				}))
 			}
-			err := dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, s.workspace, opts...)
+			ws, err := s.getWorkspaceForExecution(ctx)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error loading workspace for execution"))
+				return
+			}
+			// Get the dashboard/benchmark from the eager workspace for execution
+			// This ensures query references are properly resolved
+			parsedName, err := modconfig.ParseResourceName(request.Payload.Dashboard.FullName)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error parsing dashboard name"))
+				return
+			}
+			resource, ok := ws.GetResource(parsedName)
+			if !ok {
+				slog.Warn("dashboard not found in workspace for execution", "name", request.Payload.Dashboard.FullName)
+				return
+			}
+			dashboard := resource.(modconfig.ModTreeItem)
+			err = dashboardexecute.Executor.ExecuteDashboard(ctx, sessionId, dashboard, inputValues, ws, opts...)
 			if err != nil {
 				OutputError(ctx, sperr.WrapWithMessage(err, "error executing dashboard"))
 			}
@@ -407,7 +487,12 @@ func (s *Server) handleMessageFunc(ctx context.Context) func(session *melody.Ses
 		case "select_snapshot":
 			snapshotName := request.Payload.Dashboard.FullName
 			s.setDashboardForSession(sessionId, snapshotName, request.Payload.InputValues())
-			snap, err := dashboardexecute.Executor.LoadSnapshot(ctx, sessionId, snapshotName, s.workspace)
+			ws, err := s.getWorkspaceForExecution(ctx)
+			if err != nil {
+				OutputError(ctx, sperr.WrapWithMessage(err, "error loading workspace for snapshot"))
+				return
+			}
+			snap, err := dashboardexecute.Executor.LoadSnapshot(ctx, sessionId, snapshotName, ws)
 			// TACTICAL- handle with error message
 			error_helpers.FailOnError(err)
 			// error handling???
@@ -451,8 +536,10 @@ func (s *Server) addSession(session *melody.Session) {
 }
 
 func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
-	dashboardClients := s.getDashboardClients()
-	if sessionInfo, ok := dashboardClients[sessionId]; ok {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	if sessionInfo, ok := s.dashboardClients[sessionId]; ok {
 		sessionInfo.DashboardInputs = inputs
 	}
 }
@@ -510,12 +597,35 @@ func (s *Server) getResource(name string) modconfig.ModTreeItem {
 		return nil
 	}
 
-	resource, ok := s.workspace.GetResource(parsedResourceName)
+	slog.Debug("getResource: looking up resource",
+		"inputName", name,
+		"parsedMod", parsedResourceName.Mod,
+		"parsedItemType", parsedResourceName.ItemType,
+		"parsedName", parsedResourceName.Name,
+		"isLazyMode", s.isLazyMode())
+
+	resource, ok := s.getActiveWorkspace().GetResource(parsedResourceName)
 	if !ok {
-		slog.Warn("changed resource not found in workspace", "resource", name)
+		slog.Warn("changed resource not found in workspace",
+			"resource", name,
+			"parsedMod", parsedResourceName.Mod,
+			"parsedItemType", parsedResourceName.ItemType,
+			"parsedName", parsedResourceName.Name)
 		return nil
 	}
 	return resource.(modconfig.ModTreeItem)
+}
+
+// getWorkspaceForExecution returns the workspace to use for dashboard execution.
+// In lazy mode, this triggers eager loading of the full workspace with proper
+// reference resolution (needed for controls that reference queries).
+func (s *Server) getWorkspaceForExecution(ctx context.Context) (*workspace.PowerpipeWorkspace, error) {
+	if s.isLazyMode() {
+		// In lazy mode, load the workspace eagerly for execution
+		// This ensures controls have their query references properly resolved
+		return s.lazyWorkspace.GetWorkspaceForExecution(ctx)
+	}
+	return s.workspace, nil
 }
 
 func getDashboardsInterestedInResourceChanges(dashboardsBeingWatched []string, existingChangedDashboardNames []string, changedItems []*modconfig.ModTreeItemDiffs) []string {

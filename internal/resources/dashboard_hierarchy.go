@@ -148,3 +148,11 @@ func (h *DashboardHierarchy) GetShowData() *printers.RowData {
 	res.Merge(h.QueryProviderImpl.GetShowData())
 	return res
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (h *DashboardHierarchy) ClearRemain() {
+	h.Remain = nil
+	h.ResourceWithMetadataImpl.ClearRemain()
+	h.DashboardLeafNodeImpl.ClearRemain()
+	h.NodeAndEdgeProviderImpl.ClearRemain()
+}

@@ -90,3 +90,11 @@ func (e *DashboardEdge) SetBaseProperties() {
 		e.Category = e.Base.Category
 	}
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (e *DashboardEdge) ClearRemain() {
+	e.Remain = nil
+	e.ResourceWithMetadataImpl.ClearRemain()
+	e.QueryProviderImpl.ClearRemain()
+	e.DashboardLeafNodeImpl.ClearRemain()
+}

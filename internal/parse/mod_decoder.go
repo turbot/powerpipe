@@ -16,6 +16,36 @@ type PowerpipeModDecoder struct {
 	parse.DecoderImpl
 }
 
+// ResourceFactoryFunc is a function that creates an HclResource from a block.
+type ResourceFactoryFunc func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource
+
+// GetResourceFactoryFuncs returns a map of block types to their factory functions.
+// This allows the lazy loader to use the same factory functions as the eager loader,
+// ensuring consistent resource creation across loading strategies.
+func GetResourceFactoryFuncs() map[string]ResourceFactoryFunc {
+	return map[string]ResourceFactoryFunc{
+		schema.BlockTypeBenchmark: resources.NewBenchmark,
+		schema.BlockTypeCard:      resources.NewDashboardCard,
+		schema.BlockTypeCategory:  resources.NewDashboardCategory,
+		schema.BlockTypeContainer: resources.NewDashboardContainer,
+		schema.BlockTypeChart:     resources.NewDashboardChart,
+		schema.BlockTypeControl:   resources.NewControl,
+		schema.BlockTypeDashboard: resources.NewDashboard,
+		schema.BlockTypeDetection: resources.NewDetection,
+		schema.BlockTypeEdge:      resources.NewDashboardEdge,
+		schema.BlockTypeFlow:      resources.NewDashboardFlow,
+		schema.BlockTypeGraph:     resources.NewDashboardGraph,
+		schema.BlockTypeHierarchy: resources.NewDashboardHierarchy,
+		schema.BlockTypeImage:     resources.NewDashboardImage,
+		schema.BlockTypeInput:     resources.NewDashboardInput,
+		schema.BlockTypeNode:      resources.NewDashboardNode,
+		schema.BlockTypeQuery:     resources.NewQuery,
+		schema.BlockTypeTable:     resources.NewDashboardTable,
+		schema.BlockTypeText:      resources.NewDashboardText,
+		schema.BlockTypeWith:      resources.NewDashboardWith,
+	}
+}
+
 func NewPowerpipeModDecoder(opts ...parse.DecoderOption) parse.Decoder {
 	d := &PowerpipeModDecoder{
 		DecoderImpl: parse.NewDecoderImpl(),
@@ -502,35 +532,17 @@ func (d *PowerpipeModDecoder) decodeResource(block *hcl.Block, parseCtx *parse.M
 
 // return a shell resource for the given block
 func (d *PowerpipeModDecoder) resourceForBlock(block *hcl.Block, parseCtx *parse.ModParseContext) (modconfig.HclResource, hcl.Diagnostics) {
-	var resource modconfig.HclResource
 	// parseCtx already contains the current mod
 	mod := parseCtx.CurrentMod
 	blockName := parseCtx.DetermineBlockName(block)
 
-	factoryFuncs := map[string]func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource{
-		// for block type mod, just use the current mod
-		schema.BlockTypeBenchmark: resources.NewBenchmark,
-		schema.BlockTypeCard:      resources.NewDashboardCard,
-		schema.BlockTypeCategory:  resources.NewDashboardCategory,
-		schema.BlockTypeContainer: resources.NewDashboardContainer,
-		schema.BlockTypeChart:     resources.NewDashboardChart,
-		schema.BlockTypeControl:   resources.NewControl,
-		schema.BlockTypeDashboard: resources.NewDashboard,
-		schema.BlockTypeDetection: resources.NewDetection,
-		schema.BlockTypeEdge:      resources.NewDashboardEdge,
-		schema.BlockTypeFlow:      resources.NewDashboardFlow,
-		schema.BlockTypeGraph:     resources.NewDashboardGraph,
-		schema.BlockTypeHierarchy: resources.NewDashboardHierarchy,
-		schema.BlockTypeImage:     resources.NewDashboardImage,
-		schema.BlockTypeInput:     resources.NewDashboardInput,
-		schema.BlockTypeMod:       func(*hcl.Block, *modconfig.Mod, string) modconfig.HclResource { return mod },
-		schema.BlockTypeNode:      resources.NewDashboardNode,
-		schema.BlockTypeQuery:     resources.NewQuery,
-		schema.BlockTypeTable:     resources.NewDashboardTable,
-		schema.BlockTypeText:      resources.NewDashboardText,
-		schema.BlockTypeWith:      resources.NewDashboardWith,
+	// Special case: mod blocks return the current mod
+	if block.Type == schema.BlockTypeMod {
+		return mod, nil
 	}
 
+	// Use shared factory functions registry
+	factoryFuncs := GetResourceFactoryFuncs()
 	factoryFunc, ok := factoryFuncs[block.Type]
 	if !ok {
 		return nil, hcl.Diagnostics{&hcl.Diagnostic{
@@ -540,8 +552,7 @@ func (d *PowerpipeModDecoder) resourceForBlock(block *hcl.Block, parseCtx *parse
 		},
 		}
 	}
-	resource = factoryFunc(block, mod, blockName)
-	return resource, nil
+	return factoryFunc(block, mod, blockName), nil
 }
 
 // validate the resource

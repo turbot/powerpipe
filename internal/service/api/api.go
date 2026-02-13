@@ -230,13 +230,31 @@ func (api *APIService) Start() error {
 		ReadHeaderTimeout: 60 * time.Second,
 	}
 
+	// Use a channel to communicate startup errors
+	startupErr := make(chan error, 1)
+
 	// Initializing the server in a goroutine so that
 	// it won't block the graceful shutdown handling below
 	go func() {
 		if err := api.httpServer.ListenAndServe(); err != nil && err != http.ErrServerClosed {
-			log.Fatalf("listen: %s\n", err)
+			// Send error to channel if anyone is still listening
+			select {
+			case startupErr <- err:
+			default:
+				// Channel full or closed, log the error
+				log.Printf("HTTP server error: %s\n", err)
+			}
 		}
 	}()
+
+	// Wait briefly for startup errors (e.g., port already in use)
+	// This catches immediate failures like port binding errors
+	select {
+	case err := <-startupErr:
+		return fmt.Errorf("failed to start server: %w", err)
+	case <-time.After(100 * time.Millisecond):
+		// Server started successfully (or at least didn't fail immediately)
+	}
 
 	// api.StartedAt = utils.TimeNow()
 	api.Status = "running"

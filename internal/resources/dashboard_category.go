@@ -159,3 +159,10 @@ func (c *DashboardCategory) Diff(other *DashboardCategory) *modconfig.ModTreeIte
 func (c *DashboardCategory) CtyValue() (cty.Value, error) {
 	return cty_helpers.GetCtyValue(c)
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (c *DashboardCategory) ClearRemain() {
+	c.Remain = nil
+	c.ResourceWithMetadataImpl.ClearRemain()
+	c.ModTreeItemImpl.ClearRemain()
+}

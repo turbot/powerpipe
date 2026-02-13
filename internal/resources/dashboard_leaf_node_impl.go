@@ -23,3 +23,8 @@ func (d *DashboardLeafNodeImpl) GetType() string {
 func (d *DashboardLeafNodeImpl) GetWidth() int {
 	return typehelpers.IntValue(d.Width)
 }
+
+// ClearRemain clears the DashboardLeafNodeRemain field to free HCL AST memory after parsing
+func (d *DashboardLeafNodeImpl) ClearRemain() {
+	d.DashboardLeafNodeRemain = nil
+}

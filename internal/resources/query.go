@@ -118,3 +118,10 @@ func (q *Query) Diff(other *Query) *modconfig.ModTreeItemDiffs {
 
 	return res
 }
+
+// ClearRemain clears the Remain field and nested Remain fields to free HCL AST memory after parsing
+func (q *Query) ClearRemain() {
+	q.Remain = nil
+	q.ResourceWithMetadataImpl.ClearRemain()
+	q.QueryProviderImpl.ClearRemain()
+}

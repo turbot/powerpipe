@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -19,6 +20,7 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/service/api"
+	"github.com/turbot/powerpipe/internal/timing"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 	"gopkg.in/olahol/melody.v1"
 )
@@ -51,6 +53,7 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 }
 
 func runServerCmd(cmd *cobra.Command, _ []string) {
+	startupStart := time.Now()
 	ctx := context.Background()
 	ctx, stopFn := signal.NotifyContext(ctx, os.Interrupt)
 	defer stopFn()
@@ -81,8 +84,11 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	defer modInitData.Cleanup(ctx)
 
 	// ensure dashboard assets
-	err := dashboardassets.Ensure(ctx)
-	error_helpers.FailOnError(err)
+	func() {
+		defer timing.Track("dashboardassets.Ensure")()
+		err := dashboardassets.Ensure(ctx)
+		error_helpers.FailOnError(err)
+	}()
 
 	// setup a new webSocket service
 	webSocket := melody.New()
@@ -91,21 +97,37 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	error_helpers.FailOnError(err)
 
 	// send it over to the powerpipe API Server
-	powerpipeService, err := api.NewAPIService(ctx,
-		api.WithWebSocket(webSocket),
-		api.WithWorkspace(modInitData.Workspace),
-		api.WithHTTPPortAndListenConfig(serverPort, serverListen),
-	)
-	if err != nil {
-		error_helpers.FailOnError(err)
-	}
+	var powerpipeService *api.APIService
+	func() {
+		defer timing.Track("api.NewAPIService")()
+		var err error
+		powerpipeService, err = api.NewAPIService(ctx,
+			api.WithWebSocket(webSocket),
+			api.WithWorkspace(modInitData.Workspace),
+			api.WithHTTPPortAndListenConfig(serverPort, serverListen),
+		)
+		if err != nil {
+			error_helpers.FailOnError(err)
+		}
+	}()
 	dashboardServer.InitAsync(ctx)
 
 	//start the API server
-	err = powerpipeService.Start()
-	if err != nil {
-		error_helpers.FailOnError(err)
+	func() {
+		defer timing.Track("powerpipeService.Start")()
+		err = powerpipeService.Start()
+		if err != nil {
+			error_helpers.FailOnError(err)
+		}
+	}()
+
+	// Record overall startup time
+	if timing.IsEnabled() {
+		timing.Track("runServerCmd.total", fmt.Sprintf("%.2fms", float64(time.Since(startupStart).Nanoseconds())/1e6))()
 	}
+
+	// Output timing report
+	timing.Report()
 
 	dashboardserver.OutputReady(ctx, fmt.Sprintf("Dashboard server started on %d and listening on %s", serverPort, viper.GetString(constants.ArgListen)))
 	dashboardserver.OutputMessage(ctx, fmt.Sprintf("Visit http://localhost:%d", serverPort))

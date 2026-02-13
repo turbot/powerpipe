@@ -3,13 +3,15 @@ package workspace
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
+
 	"github.com/hashicorp/hcl/v2"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/resources"
-	"log/slog"
 )
 
 type PowerpipeWorkspace struct {
@@ -18,6 +20,10 @@ type PowerpipeWorkspace struct {
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
 	dashboardEventChan chan dashboardevents.DashboardEvent
+	// closeOnce ensures Close() is only executed once
+	closeOnce sync.Once
+	// closeCh signals event handlers to stop
+	closeCh chan struct{}
 }
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
@@ -28,6 +34,7 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 			ValidateVariables: true,
 			Mod:               modconfig.NewMod("local", workspacePath, hcl.Range{}),
 		},
+		closeCh: make(chan struct{}),
 	}
 
 	w.OnFileWatcherError = func(ctx context.Context, err error) {
@@ -40,13 +47,19 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 }
 
 func (w *PowerpipeWorkspace) Close() {
-	w.Workspace.Close()
-	if ch := w.dashboardEventChan; ch != nil {
-		// NOTE: set nil first
-		w.dashboardEventChan = nil
-		slog.Debug("closing dashboardEventChan")
-		close(ch)
-	}
+	w.closeOnce.Do(func() {
+		// Signal event handlers to stop (if closeCh was initialized)
+		if w.closeCh != nil {
+			close(w.closeCh)
+		}
+		// Close the base workspace
+		w.Workspace.Close()
+		// Close the event channel if it exists
+		if ch := w.dashboardEventChan; ch != nil {
+			slog.Debug("closing dashboardEventChan")
+			close(ch)
+		}
+	})
 }
 
 func (w *PowerpipeWorkspace) verifyResourceRuntimeDependencies() error {
@@ -130,4 +143,36 @@ func (w *PowerpipeWorkspace) GetPowerpipeModResources() *resources.PowerpipeModR
 		panic(fmt.Sprintf("mod.GetModResources() did not return a powerpipe PowerpipeModResources: %T", w.GetModResources()))
 	}
 	return modResources
+}
+
+// IsLazy returns false as this is not a lazy-loading workspace.
+func (w *PowerpipeWorkspace) IsLazy() bool {
+	return false
+}
+
+// LoadDashboard loads a dashboard by name from the already-loaded resources.
+func (w *PowerpipeWorkspace) LoadDashboard(ctx context.Context, name string) (*resources.Dashboard, error) {
+	modResources := w.GetPowerpipeModResources()
+	if dash, ok := modResources.Dashboards[name]; ok {
+		return dash, nil
+	}
+	return nil, fmt.Errorf("dashboard not found: %s", name)
+}
+
+// LoadBenchmark loads a benchmark by name from the already-loaded resources.
+func (w *PowerpipeWorkspace) LoadBenchmark(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
+	modResources := w.GetPowerpipeModResources()
+	if bench, ok := modResources.ControlBenchmarks[name]; ok {
+		return bench, nil
+	}
+	if bench, ok := modResources.DetectionBenchmarks[name]; ok {
+		return bench, nil
+	}
+	return nil, fmt.Errorf("benchmark not found: %s", name)
+}
+
+// LoadBenchmarkForExecution loads a benchmark with children properly resolved for execution.
+// For eager workspaces, this is the same as LoadBenchmark since children are already resolved during parsing.
+func (w *PowerpipeWorkspace) LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error) {
+	return w.LoadBenchmark(ctx, name)
 }

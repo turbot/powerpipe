@@ -12,6 +12,10 @@ type LoadPowerpipeWorkspaceConfig struct {
 	blockTypeInclusions         []string
 	validateVariables           bool
 	supportLateBinding          bool
+
+	// Lazy loading options
+	lazyLoad       bool
+	lazyLoadConfig LazyLoadConfig
 }
 
 func newLoadPowerpipeWorkspaceConfig() *LoadPowerpipeWorkspaceConfig {
@@ -19,6 +23,7 @@ func newLoadPowerpipeWorkspaceConfig() *LoadPowerpipeWorkspaceConfig {
 		pipelingConnections: make(map[string]connection.PipelingConnection),
 		validateVariables:   true,
 		supportLateBinding:  true,
+		lazyLoadConfig:      DefaultLazyLoadConfig(),
 	}
 }
 
@@ -50,5 +55,21 @@ func WithVariableValidation(enabled bool) LoadPowerpipeWorkspaceOption {
 func WithSkipResourceLoadIfNoModfile(enabled bool) LoadPowerpipeWorkspaceOption {
 	return func(m *LoadPowerpipeWorkspaceConfig) {
 		m.skipResourceLoadIfNoModfile = enabled
+	}
+}
+
+// WithLazyLoading enables lazy loading mode where resources are loaded on-demand
+// instead of all at startup. This provides faster startup and lower memory usage.
+func WithLazyLoading(enabled bool) LoadPowerpipeWorkspaceOption {
+	return func(m *LoadPowerpipeWorkspaceConfig) {
+		m.lazyLoad = enabled
+	}
+}
+
+// WithLazyLoadConfig sets the lazy loading configuration.
+func WithLazyLoadConfig(config LazyLoadConfig) LoadPowerpipeWorkspaceOption {
+	return func(m *LoadPowerpipeWorkspaceConfig) {
+		m.lazyLoadConfig = config
+		m.lazyLoad = true
 	}
 }

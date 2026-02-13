@@ -55,16 +55,21 @@ func (w *PowerpipeWorkspace) UnregisterDashboardEventHandlers() {
 // this function is run as a goroutine to call registered event handlers for all received events
 func (w *PowerpipeWorkspace) handleDashboardEvent(ctx context.Context) {
 	for {
-		e := <-w.dashboardEventChan
-		atomic.AddInt64(&EventCount, -1)
-		if e == nil {
-			slog.Debug("handleDashboardEvent nil event received - exiting")
-			w.dashboardEventChan = nil
+		select {
+		case <-w.closeCh:
+			// Workspace is closing, exit gracefully
+			slog.Debug("handleDashboardEvent received close signal - exiting")
 			return
-		}
+		case e := <-w.dashboardEventChan:
+			atomic.AddInt64(&EventCount, -1)
+			if e == nil {
+				slog.Debug("handleDashboardEvent nil event received - exiting")
+				return
+			}
 
-		for _, handler := range w.dashboardEventHandlers {
-			handler(ctx, e)
+			for _, handler := range w.dashboardEventHandlers {
+				handler(ctx, e)
+			}
 		}
 	}
 }
