@@ -94,6 +94,15 @@ func (b *EvalContextBuilder) Build(ctx context.Context) (*hcl.EvalContext, error
 		}
 	}
 
+	// Third pass: scan dependency mods for their variables and locals
+	// This is critical for Pipes scenarios where benchmarks from dependency mods
+	// (like aws_compliance, aws_insights) use variables defined in those mods.
+	if err := b.ScanDependencyMods(ctx); err != nil {
+		// Log but don't fail - we can still use variables from main workspace
+		// This matches the error handling pattern used elsewhere in this file
+		// Continue on error
+	}
+
 	// Build final eval context with both variables and locals
 	finalCtx := &hcl.EvalContext{
 		Functions: funcs.ContextFunctions(b.workspacePath),

@@ -3,6 +3,7 @@ package workspace
 import (
 	"context"
 	"log/slog"
+	"strings"
 	"sync"
 	"sync/atomic"
 	"time"
@@ -309,16 +310,32 @@ func (r *BackgroundResolver) updateEntryFromResource(entry *resourceindex.IndexE
 	// Try to extract tags
 	if !entry.TagsResolved {
 		tags := r.extractTags(resource)
-		if tags != nil {
+		if tags != nil && len(tags) > 0 {
+			// Successfully extracted tags - mark as resolved
 			entry.Tags = tags
 			entry.TagsResolved = true
 			entry.UnresolvedRefs = nil
 			updated = true
 		} else {
-			// No tags, but mark as resolved
-			entry.Tags = make(map[string]string)
-			entry.TagsResolved = true
-			entry.UnresolvedRefs = nil
+			// Tags are nil or empty. This could mean:
+			// 1. Resource truly has no tags (should mark resolved)
+			// 2. Tags exist but couldn't be evaluated due to missing variables (keep unresolved)
+			// Check if entry had unresolved refs for tags - if so, resolution failed
+			hasUnresolvedTags := false
+			for _, ref := range entry.UnresolvedRefs {
+				if ref == "tags" || strings.HasPrefix(ref, "tag:") {
+					hasUnresolvedTags = true
+					break
+				}
+			}
+
+			if !hasUnresolvedTags {
+				// No unresolved refs - resource truly has no tags, mark as resolved
+				entry.Tags = make(map[string]string)
+				entry.TagsResolved = true
+				entry.UnresolvedRefs = nil
+			}
+			// else: keep as unresolved - tags exist but couldn't be evaluated
 		}
 	}
 

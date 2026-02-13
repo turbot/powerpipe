@@ -180,6 +180,23 @@ func TestPipesScenario_LazyLoadingWithMultipleDependencyMods(t *testing.T) {
 		require.NoError(t, err)
 		defer lw.Close()
 
+		// Check resolution status RIGHT after LoadLazy returns
+		stats := lw.BackgroundResolverStats()
+		t.Logf("After LoadLazy: started=%v, complete=%v, queue_length=%v, fully_resolved=%v",
+			stats.IsStarted, stats.IsComplete, stats.QueueLength, lw.IsFullyResolved())
+
+		// Check if entries need resolution
+		needsResolutionCount := 0
+		resolvedCount := 0
+		for _, entry := range lw.GetIndex().List() {
+			if entry.NeedsResolution() {
+				needsResolutionCount++
+			} else if entry.Type == "benchmark" || entry.Type == "dashboard" {
+				resolvedCount++
+			}
+		}
+		t.Logf("Index status: %d entries need resolution, %d benchmarks/dashboards resolved", needsResolutionCount, resolvedCount)
+
 		// IMMEDIATELY get the payload - no additional waiting
 		// This is what Pipes does, and why the bug occurred
 		indexPayload := lw.GetAvailableDashboardsFromIndex()
@@ -313,12 +330,22 @@ func createPipesLikeWorkspace(t *testing.T) (string, func()) {
 	require.NoError(t, err)
 
 	// Create main mod with dashboards and benchmarks
+	// Use variable references like real Pipes workspaces
 	mainModContent := `mod "smoketest" {
   title = "Smoke Test Workspace"
 }
 
+variable "common_tags" {
+  type = map(string)
+  default = {
+    service = "main"
+    env = "test"
+  }
+}
+
 dashboard "main_dashboard" {
   title = "Main Dashboard"
+  tags = var.common_tags
 
   text {
     value = "Main workspace dashboard"
@@ -327,9 +354,7 @@ dashboard "main_dashboard" {
 
 benchmark "main_benchmark" {
   title = "Main Benchmark"
-  tags = {
-    service = "main"
-  }
+  tags = merge(var.common_tags, { benchmark = "true" })
   children = []
 }
 `
@@ -339,9 +364,17 @@ benchmark "main_benchmark" {
 	// Create dependency mods directory structure
 	modsDir := filepath.Join(tmpDir, ".powerpipe", "mods")
 
-	// Create AWS Compliance mod (with duplicate variables)
+	// Create AWS Compliance mod with variable references
 	createAwsMod(t, modsDir, "aws_compliance", "v1.13.0", `mod "aws_compliance" {
   title = "AWS Compliance"
+}
+
+variable "common_tags" {
+  type = map(string)
+  default = {
+    service = "AWS"
+    category = "Compliance"
+  }
 }
 
 variable "common_dimensions" {
@@ -354,10 +387,7 @@ variable "tag_dimensions" {
 
 dashboard "compliance_dashboard" {
   title = "AWS Compliance Dashboard"
-  tags = {
-    service = "AWS"
-    category = "Compliance"
-  }
+  tags = var.common_tags
 
   text {
     value = "Compliance checks"
@@ -366,18 +396,22 @@ dashboard "compliance_dashboard" {
 
 benchmark "cis_v1_2_0" {
   title = "CIS v1.2.0"
-  tags = {
-    cis = "true"
-    plugin = "aws"
-    service = "AWS"
-  }
+  tags = merge(var.common_tags, { cis = "true", plugin = "aws" })
   children = []
 }
 `)
 
-	// Create AWS Insights mod (with duplicate variables)
+	// Create AWS Insights mod with variable references
 	createAwsMod(t, modsDir, "aws_insights", "v1.0.0", `mod "aws_insights" {
   title = "AWS Insights"
+}
+
+variable "common_tags" {
+  type = map(string)
+  default = {
+    service = "AWS"
+    category = "Insights"
+  }
 }
 
 variable "common_dimensions" {
@@ -386,10 +420,7 @@ variable "common_dimensions" {
 
 dashboard "insights_dashboard" {
   title = "AWS Insights Dashboard"
-  tags = {
-    service = "AWS"
-    category = "Insights"
-  }
+  tags = var.common_tags
 
   text {
     value = "AWS insights"
@@ -397,9 +428,17 @@ dashboard "insights_dashboard" {
 }
 `)
 
-	// Create AWS Tags mod (with duplicate variables)
+	// Create AWS Tags mod with variable references
 	createAwsMod(t, modsDir, "aws_tags", "v1.0.1", `mod "aws_tags" {
   title = "AWS Tags"
+}
+
+variable "common_tags" {
+  type = map(string)
+  default = {
+    service = "AWS"
+    category = "Tags"
+  }
 }
 
 variable "common_dimensions" {
@@ -412,9 +451,7 @@ variable "tag_dimensions" {
 
 dashboard "tags_dashboard" {
   title = "AWS Tags Dashboard"
-  tags = {
-    service = "AWS"
-  }
+  tags = var.common_tags
 
   text {
     value = "Tag management"
@@ -423,9 +460,7 @@ dashboard "tags_dashboard" {
 
 benchmark "tag_benchmark" {
   title = "Tag Compliance"
-  tags = {
-    service = "AWS"
-  }
+  tags = merge(var.common_tags, { benchmark = "tag_compliance" })
   children = []
 }
 `)
