@@ -310,7 +310,7 @@ func (r *BackgroundResolver) updateEntryFromResource(entry *resourceindex.IndexE
 	// Try to extract tags
 	if !entry.TagsResolved {
 		tags := r.extractTags(resource)
-		if tags != nil && len(tags) > 0 {
+		if len(tags) > 0 {
 			// Successfully extracted tags - mark as resolved
 			entry.Tags = tags
 			entry.TagsResolved = true
