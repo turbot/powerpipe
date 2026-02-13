@@ -166,26 +166,110 @@ func TestPipesScenario_LazyLoadingWithMultipleDependencyMods(t *testing.T) {
 		t.Logf("✓ Dashboards grouped across %d mods", len(modsWithDashboards))
 	})
 
-	// Step 5: Verify tags are populated on benchmarks
-	t.Run("5. Verify benchmark tags populated", func(t *testing.T) {
+	// Step 5: Verify tags are populated IMMEDIATELY after LoadLazy returns
+	// This is the key test that catches the bug - tags MUST be available immediately,
+	// not after additional waiting. This ensures LoadLazy waits for background resolution.
+	//
+	// NOTE: This test may pass even without the fix in small workspaces because resolution
+	// completes very quickly. The real-world issue occurs with large mods (800+ files) where
+	// resolution takes longer. The test documents the EXPECTED behavior that LoadLazy must
+	// guarantee: tags are available when it returns, not requiring additional waiting.
+	t.Run("5. Verify tags populated IMMEDIATELY (no additional wait)", func(t *testing.T) {
+		// Load workspace - this should wait for initial background resolution
 		lw, err := LoadLazy(ctx, workspaceDir)
 		require.NoError(t, err)
 		defer lw.Close()
 
+		// IMMEDIATELY get the payload - no additional waiting
+		// This is what Pipes does, and why the bug occurred
 		indexPayload := lw.GetAvailableDashboardsFromIndex()
 		benchmarks := indexPayload.Benchmarks
 		require.NotEmpty(t, benchmarks, "should have benchmarks")
 
+		// CRITICAL: Tags must be populated NOW, not empty
+		// Before the fix, tags were {} because LoadLazy returned before resolution completed
 		benchmarksWithTags := 0
+		emptyTagBenchmarks := []string{}
+
 		for name, bench := range benchmarks {
 			if len(bench.Tags) > 0 {
 				benchmarksWithTags++
-				t.Logf("Benchmark %s has %d tags", name, len(bench.Tags))
+				t.Logf("✓ Benchmark %s has %d tags: %v", name, len(bench.Tags), bench.Tags)
+			} else {
+				emptyTagBenchmarks = append(emptyTagBenchmarks, name)
+				t.Errorf("✗ Benchmark %s has EMPTY tags - this is the bug!", name)
 			}
 		}
 
-		// At least some benchmarks should have tags
-		t.Logf("✓ %d/%d benchmarks have tags", benchmarksWithTags, len(benchmarks))
+		// FAIL THE TEST if any benchmarks have empty tags
+		// This ensures the regression is caught
+		if len(emptyTagBenchmarks) > 0 {
+			t.Fatalf("REGRESSION: %d benchmarks have empty tags: %v\n"+
+				"This means LoadLazy() is not waiting for background resolution!\n"+
+				"Tags must be populated IMMEDIATELY after LoadLazy() returns.",
+				len(emptyTagBenchmarks), emptyTagBenchmarks)
+		}
+
+		// All benchmarks must have tags
+		require.Equal(t, len(benchmarks), benchmarksWithTags,
+			"All benchmarks should have tags immediately after LoadLazy returns")
+
+		t.Logf("✓ ALL %d/%d benchmarks have tags IMMEDIATELY (bug would cause 0/%d)",
+			benchmarksWithTags, len(benchmarks), len(benchmarks))
+	})
+
+	// Step 6: Verify LoadLazy actually waits for background resolution
+	// This test explicitly checks the timing behavior
+	t.Run("6. LoadLazy waits for background resolution before returning", func(t *testing.T) {
+		// Create a NEW lazy workspace directly (bypassing LoadLazy to test without waiting)
+		lwDirect, err := NewLazyWorkspace(ctx, workspaceDir, DefaultLazyLoadConfig())
+		require.NoError(t, err)
+		defer lwDirect.Close()
+
+		// Start background resolution manually
+		lwDirect.StartBackgroundResolution()
+
+		// Get payload IMMEDIATELY without waiting - simulates the bug
+		payloadBefore := lwDirect.GetAvailableDashboardsFromIndex()
+		benchmarksBefore := payloadBefore.Benchmarks
+
+		// Count benchmarks with tags BEFORE background resolution completes
+		tagsBeforeCount := 0
+		for _, bench := range benchmarksBefore {
+			if len(bench.Tags) > 0 {
+				tagsBeforeCount++
+			}
+		}
+
+		// Now load via LoadLazy (which should wait)
+		lwWithWait, err := LoadLazy(ctx, workspaceDir)
+		require.NoError(t, err)
+		defer lwWithWait.Close()
+
+		payloadAfter := lwWithWait.GetAvailableDashboardsFromIndex()
+		benchmarksAfter := payloadAfter.Benchmarks
+
+		// Count benchmarks with tags AFTER LoadLazy (with waiting)
+		tagsAfterCount := 0
+		for _, bench := range benchmarksAfter {
+			if len(bench.Tags) > 0 {
+				tagsAfterCount++
+			}
+		}
+
+		// LoadLazy should have MORE or EQUAL tags than immediate access
+		// because it waits for background resolution
+		require.GreaterOrEqual(t, tagsAfterCount, tagsBeforeCount,
+			"LoadLazy should wait for resolution - tags should be available immediately")
+
+		// In this test case with merge() tags, LoadLazy should have ALL tags
+		require.Equal(t, len(benchmarksAfter), tagsAfterCount,
+			"LoadLazy should return with all tags resolved")
+
+		t.Logf("✓ LoadLazy waits for resolution: %d/%d benchmarks have tags immediately",
+			tagsAfterCount, len(benchmarksAfter))
+		t.Logf("  (without waiting: only %d/%d would have complete tags)",
+			tagsBeforeCount, len(benchmarksBefore))
 	})
 
 	t.Log("\n=== ALL PIPES SCENARIO TESTS PASSED ===")
@@ -193,7 +277,8 @@ func TestPipesScenario_LazyLoadingWithMultipleDependencyMods(t *testing.T) {
 	t.Log("✓ installed_mods properly populated")
 	t.Log("✓ Server metadata correctly built")
 	t.Log("✓ Dashboards grouped by mod (not all 'Other')")
-	t.Log("✓ Tags populated on resources")
+	t.Log("✓ Tags populated IMMEDIATELY after LoadLazy returns")
+	t.Log("✓ LoadLazy waits for background resolution (catches timing bugs)")
 }
 
 // TestPipesScenario_VerifyNoEagerLoadingFallback specifically tests that
