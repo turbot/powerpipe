@@ -154,14 +154,23 @@ func LoadLazy(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWo
 	// Start background resolution for variable references and templates
 	lw.StartBackgroundResolution()
 
-	// For dashboard server scenarios (like Pipes), wait briefly for top-level resources
-	// to resolve their tags/metadata. This ensures the initial available_dashboards
-	// message has populated tags instead of empty objects.
-	// We use a short timeout (1s) so we don't block too long, but long enough for
-	// most top-level resources to resolve (they're prioritized by the background resolver).
-	if !lw.WaitForResolution(1000) {
-		// Timeout reached, but continue anyway - partial resolution is better than none
-		slog.Info("initial background resolution timeout reached, continuing with partial metadata")
+	// Wait briefly for quickly-resolvable metadata (e.g., simple tags without variables).
+	// Critical fields like mod_full_name and resource titles are already available from
+	// scanning and don't require resolution. This short wait (default 200ms) allows
+	// literal tags to resolve while keeping startup fast for lazy loading.
+	//
+	// Tags with variable references will resolve progressively in the background.
+	// The dashboard server should handle progressive metadata updates gracefully.
+	timeout := cfg.lazyLoadConfig.InitialResolutionTimeout
+	if timeout <= 0 {
+		// Use default if not configured
+		timeout = DefaultLazyLoadConfig().InitialResolutionTimeout
+	}
+
+	if !lw.WaitForResolution(timeout) {
+		// Normal for large workspaces - background resolution continues asynchronously
+		slog.Debug("initial background resolution timeout reached, tags will resolve progressively",
+			"timeout_ms", timeout.Milliseconds())
 	}
 
 	return lw, nil

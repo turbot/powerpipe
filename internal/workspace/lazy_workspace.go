@@ -85,14 +85,24 @@ type LazyLoadConfig struct {
 
 	// Resources to preload (e.g., top-level benchmarks)
 	PreloadPatterns []string
+
+	// InitialResolutionTimeout is the maximum time to wait for initial background
+	// resolution before returning from LoadLazy. This is intentionally kept short
+	// to maintain fast startup for lazy loading. Critical fields like mod_full_name
+	// are available immediately from scanning and don't require resolution.
+	// Tags and other metadata resolve progressively in the background.
+	// Default: 200ms - allows quick resolution of any immediately-resolvable metadata
+	// while keeping startup fast. UI should handle progressive metadata updates.
+	InitialResolutionTimeout time.Duration
 }
 
 // DefaultLazyLoadConfig returns default configuration.
 func DefaultLazyLoadConfig() LazyLoadConfig {
 	return LazyLoadConfig{
-		MaxCacheMemory:  50 * 1024 * 1024, // 50MB
-		EnablePreload:   false,
-		PreloadPatterns: []string{},
+		MaxCacheMemory:           50 * 1024 * 1024, // 50MB
+		EnablePreload:            false,
+		PreloadPatterns:          []string{},
+		InitialResolutionTimeout: 200 * time.Millisecond, // 200ms - fast startup, critical fields available immediately
 	}
 }
 
