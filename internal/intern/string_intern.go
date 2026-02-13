@@ -1,6 +1,7 @@
 package intern
 
 import (
+	"strings"
 	"sync"
 	"sync/atomic"
 )
@@ -53,7 +54,7 @@ func (i *StringInterner) Intern(s string) string {
 
 	// Intern the string - make a copy to ensure we own the backing array
 	// This is important when strings are substrings of larger buffers
-	interned := string([]byte(s))
+	interned := strings.Clone(s)
 	i.strings[interned] = interned
 	i.misses.Add(1)
 	return interned

@@ -16,8 +16,8 @@ import (
 // Byte patterns for fast pre-scanning.
 // These are used to quickly filter which files need full HCL parsing.
 var (
-	// Pattern to detect variable blocks: `variable "` at start of line
-	variablePattern = []byte("variable ")
+	// Pattern to detect variable blocks: matches `variable` at start of line
+	variablePattern = []byte("variable")
 	// Pattern to detect locals blocks: `locals {` or `locals{`
 	localsPattern = []byte("locals")
 )

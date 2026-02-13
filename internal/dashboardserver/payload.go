@@ -157,7 +157,12 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 		case *resources.Benchmark:
 			// Cycle detection: skip if we're already visiting this node in the current path
 			if visiting[t.FullName] {
-				// Circular reference detected - skip to prevent infinite recursion
+				// Circular reference detected - log a warning and skip to prevent infinite recursion
+				cyclePath := append(append([]string{}, trunk...), t.FullName)
+				slog.Warn("circular benchmark reference detected; skipping child to prevent infinite recursion",
+					"benchmark", benchmark.FullName,
+					"child", t.FullName,
+					"path", fmt.Sprintf("%v", cyclePath))
 				continue
 			}
 
