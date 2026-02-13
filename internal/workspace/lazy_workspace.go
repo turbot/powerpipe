@@ -237,6 +237,11 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 	// Walk through the mods directory looking for mod.pp or mod.sp files
 	return filepath.Walk(modsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
+			// Skip missing files - they may have been deleted during mod updates (race condition)
+			// This prevents crashes when mods are being uninstalled/reinstalled
+			if os.IsNotExist(err) {
+				return nil
+			}
 			return err
 		}
 
