@@ -57,6 +57,20 @@ func (idx *ResourceIndex) ResolveModName(modName string) string {
 	return modName
 }
 
+// GetModNameMap returns a copy of the mod name mappings.
+// This is used by lazy workspace to build dependency mod metadata.
+func (idx *ResourceIndex) GetModNameMap() map[string]string {
+	idx.mu.RLock()
+	defer idx.mu.RUnlock()
+
+	// Return a copy to prevent concurrent modification
+	result := make(map[string]string, len(idx.modNameMap))
+	for k, v := range idx.modNameMap {
+		result[k] = v
+	}
+	return result
+}
+
 // Add adds an entry to the index.
 func (idx *ResourceIndex) Add(entry *IndexEntry) {
 	idx.mu.Lock()

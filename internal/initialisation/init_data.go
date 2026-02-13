@@ -100,19 +100,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 				return NewErrorInitData(fmt.Errorf("failed to load lazy workspace: %s", error_helpers.HandleCancelError(err).Error()))
 			}
 		} else {
-			// Check if lazy index has any browsable resources (dashboards or benchmarks)
-			// If the index is empty, fall back to eager loading. This handles cases where
-			// the workspace files are not accessible to the scanner (e.g., in Pipes environment
-			// where mods might be provided through a different mechanism)
-			index := lw.GetIndex()
-			if len(index.Dashboards()) == 0 && len(index.Benchmarks()) == 0 {
-				slog.Info("Lazy index has no dashboards or benchmarks - falling back to eager loading")
-				lw.Close() // Clean up the lazy workspace
-				useLazyLoading = false
-			} else {
-				i.LazyWorkspace = lw
-				i.Workspace = lw.PowerpipeWorkspace
-			}
+			i.LazyWorkspace = lw
+			i.Workspace = lw.PowerpipeWorkspace
 		}
 	}
 

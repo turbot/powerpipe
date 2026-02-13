@@ -469,6 +469,86 @@ func (lw *LazyWorkspace) GetLazyModResources() *LazyModResources {
 	return lw.lazyResources
 }
 
+// GetModResources returns mod resources with dependency mods populated from the index.
+// This overrides the PowerpipeWorkspace.GetModResources() to provide proper mod metadata
+// for the dashboard server without requiring full eager loading.
+func (lw *LazyWorkspace) GetModResources() modconfig.ModResources {
+	// Create PowerpipeModResources with dependency mods from index
+	modResources := &resources.PowerpipeModResources{
+		Mod:  lw.Mod,
+		Mods: lw.buildModsMapFromIndex(),
+		// Other resource maps are populated on-demand via lazyResources
+		// We only need Mods populated here for server metadata
+	}
+	return modResources
+}
+
+// buildModsMapFromIndex creates a map of mods from the index's modNameMap.
+// This provides dependency mod metadata without requiring full HCL parsing.
+func (lw *LazyWorkspace) buildModsMapFromIndex() map[string]*modconfig.Mod {
+	mods := make(map[string]*modconfig.Mod)
+
+	// Add the main mod
+	mods[lw.Mod.GetFullName()] = lw.Mod
+
+	// Add dependency mods from index's modNameMap
+	// The modNameMap contains: fullPath (e.g., "github.com/turbot/steampipe-mod-aws-insights") -> shortName (e.g., "aws_insights")
+	modNameMap := lw.index.GetModNameMap()
+	for fullPath, shortName := range modNameMap {
+		// Create minimal mod objects for dependencies
+		// We don't need full mod parsing - just enough metadata for server to display installed mods
+		fullName := "mod." + shortName
+
+		// Skip if this is the main mod
+		if fullName == lw.Mod.GetFullName() {
+			continue
+		}
+
+		// Create minimal mod with basic metadata
+		depMod := modconfig.NewMod(shortName, "", hcl.Range{})
+		depMod.FullName = fullName
+
+		// Extract title from full path (e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "AWS Insights")
+		// This is just for display purposes - not critical if it's not perfect
+		title := extractTitleFromModPath(fullPath)
+		depMod.Title = &title
+
+		mods[fullName] = depMod
+	}
+
+	return mods
+}
+
+// extractTitleFromModPath extracts a display title from a mod path.
+// e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "AWS Insights"
+func extractTitleFromModPath(fullPath string) string {
+	// Get the last part of the path
+	parts := strings.Split(fullPath, "/")
+	if len(parts) == 0 {
+		return fullPath
+	}
+
+	lastPart := parts[len(parts)-1]
+
+	// Remove common prefixes
+	lastPart = strings.TrimPrefix(lastPart, "steampipe-mod-")
+	lastPart = strings.TrimPrefix(lastPart, "powerpipe-mod-")
+
+	// Convert hyphens and underscores to spaces, then title case
+	lastPart = strings.ReplaceAll(lastPart, "-", " ")
+	lastPart = strings.ReplaceAll(lastPart, "_", " ")
+
+	// Simple title case (capitalize first letter of each word)
+	words := strings.Fields(lastPart)
+	for i, word := range words {
+		if len(word) > 0 {
+			words[i] = strings.ToUpper(word[:1]) + word[1:]
+		}
+	}
+
+	return strings.Join(words, " ")
+}
+
 // LoadDashboard loads a dashboard and all its children on-demand.
 func (lw *LazyWorkspace) LoadDashboard(ctx context.Context, name string) (*resources.Dashboard, error) {
 	return lw.loader.LoadDashboard(ctx, name)
