@@ -267,7 +267,7 @@ func TestDashboardGrouping_RealMod(t *testing.T) {
 	ctx, cancel := context.WithTimeout(context.Background(), 60*time.Second)
 	defer cancel()
 
-	cmd := exec.CommandContext(ctx, powerpipeBinary, "server", "--port", fmt.Sprintf("%d", port))
+	cmd := exec.CommandContext(ctx, powerpipeBinary, "server", "--port", fmt.Sprintf("%d", port)) //nolint:gosec // G204: Test uses controlled binary path
 	cmd.Dir = modPath
 	cmd.Env = append(os.Environ(), "POWERPIPE_LOG_LEVEL=INFO")
 
@@ -294,7 +294,7 @@ func TestDashboardGrouping_RealMod(t *testing.T) {
 	// Wait for server to be ready (try to connect to HTTP endpoint)
 	serverURL := fmt.Sprintf("http://localhost:%d", port)
 	require.Eventually(t, func() bool {
-		resp, err := http.Get(serverURL)
+		resp, err := http.Get(serverURL) //nolint:gosec // G107: Test uses localhost URL
 		if err == nil {
 			_ = resp.Body.Close()
 			return resp.StatusCode == 200
@@ -357,7 +357,7 @@ func getAvailableDashboardsViaWebSocket(t *testing.T, port int) map[string]inter
 	require.NoError(t, err, "Failed to send request")
 
 	// Read response with timeout
-	conn.SetReadDeadline(time.Now().Add(10 * time.Second))
+	_ = conn.SetReadDeadline(time.Now().Add(10 * time.Second))
 	_, message, err := conn.ReadMessage()
 	require.NoError(t, err, "Failed to read response")
 
