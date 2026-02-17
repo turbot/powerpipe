@@ -59,6 +59,9 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 	// If lazy loading is enabled, set the lazy workspace reference
 	if initData.IsLazy() {
 		server.lazyWorkspace = initData.LazyWorkspace
+		// Register as update listener for background resolution
+		// This ensures the dashboard server broadcasts updated metadata when tags/titles are resolved
+		server.lazyWorkspace.RegisterUpdateListener(server)
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
@@ -88,6 +91,10 @@ func NewServerWithLazyWorkspace(ctx context.Context, lazyWorkspace *workspace.La
 	}
 
 	lazyWorkspace.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
+
+	// Register as update listener for background resolution
+	// This ensures the dashboard server broadcasts updated metadata when tags/titles are resolved
+	lazyWorkspace.RegisterUpdateListener(server)
 
 	// Note: file watching in lazy mode would need cache invalidation
 	// For now, we skip the watcher setup - this can be added later
@@ -391,6 +398,33 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 			}
 		}
 		s.writePayloadToSession(e.Session, payload)
+	}
+}
+
+// OnResourceUpdated is called when a resource's metadata is updated during background resolution.
+// For now, we don't need to take action on individual resource updates.
+func (s *Server) OnResourceUpdated(resourceName string) {
+	// Individual updates are not broadcasted to avoid spam
+	// The final complete payload is sent in OnResolutionComplete
+	slog.Debug("Resource metadata updated", "resource", resourceName)
+}
+
+// OnResolutionComplete is called when all background resolution is done.
+// This broadcasts an updated available_dashboards payload with resolved tags/titles.
+func (s *Server) OnResolutionComplete() {
+	slog.Info("Background resolution complete - broadcasting updated dashboard metadata")
+
+	// Build and broadcast updated available_dashboards payload
+	// This ensures the frontend gets the resolved tags for proper grouping
+	payload, err := s.buildAvailableDashboardsPayload()
+	if err != nil {
+		slog.Error("Failed to build available_dashboards payload after resolution", "error", err)
+		return
+	}
+
+	// Broadcast to all connected clients
+	if err := s.webSocket.Broadcast(payload); err != nil {
+		slog.Error("Failed to broadcast available_dashboards after resolution", "error", err)
 	}
 }
 

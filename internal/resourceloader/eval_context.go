@@ -59,16 +59,9 @@ func (b *EvalContextBuilder) Build(ctx context.Context) (*hcl.EvalContext, error
 		return nil, err
 	}
 
-	// If no variables or locals found anywhere, return minimal context
-	if len(varFiles) == 0 && len(localFiles) == 0 {
-		return &hcl.EvalContext{
-			Functions: funcs.ContextFunctions(b.workspacePath),
-			Variables: map[string]cty.Value{
-				"var":   cty.ObjectVal(b.variables),
-				"local": cty.ObjectVal(b.locals),
-			},
-		}, nil
-	}
+	// NOTE: We don't return early even if main workspace has no variables/locals
+	// because we still need to scan dependency mods which may have variables/locals
+	// that are referenced by resources in those mods
 
 	// First pass: collect all variable defaults (only from files with variables)
 	for filePath, content := range varFiles {
@@ -97,7 +90,7 @@ func (b *EvalContextBuilder) Build(ctx context.Context) (*hcl.EvalContext, error
 	// Third pass: scan dependency mods for their variables and locals
 	// This is critical for Pipes scenarios where benchmarks from dependency mods
 	// (like aws_compliance, aws_insights) use variables defined in those mods.
-	// Ignore errors - we can still use variables from main workspace
+	// Ignore errors - we can still use variables from main workspace even if dependency scanning fails
 	_ = b.ScanDependencyMods(ctx)
 
 	// Build final eval context with both variables and locals
@@ -193,7 +186,11 @@ func (b *EvalContextBuilder) parseVariables(filePath string, content []byte) err
 // parseLocals extracts locals blocks and evaluates them from file content.
 func (b *EvalContextBuilder) parseLocals(filePath string, content []byte, evalCtx *hcl.EvalContext) error {
 	file, diags := hclsyntax.ParseConfig(content, filePath, hcl.InitialPos)
-	if diags.HasErrors() || file == nil || file.Body == nil {
+	if diags.HasErrors() {
+		// Parse errors - skip this file
+		return nil
+	}
+	if file == nil || file.Body == nil {
 		return nil
 	}
 
@@ -202,10 +199,13 @@ func (b *EvalContextBuilder) parseLocals(filePath string, content []byte, evalCt
 		return nil
 	}
 
+	localsCount := 0
 	for _, block := range body.Blocks {
 		if block.Type != "locals" {
 			continue
 		}
+
+		localsCount++
 
 		// Evaluate each attribute in the locals block
 		for name, attr := range block.Body.Attributes {
@@ -213,6 +213,8 @@ func (b *EvalContextBuilder) parseLocals(filePath string, content []byte, evalCt
 			if !diags.HasErrors() {
 				b.locals[name] = val
 			}
+			// If evaluation fails, skip this local (it may have unresolved references)
+			// It might be resolved in a later pass
 		}
 	}
 
@@ -255,7 +257,7 @@ func (b *EvalContextBuilder) ScanDependencyMods(ctx context.Context) error {
 		return err // Unexpected error accessing mods directory
 	}
 
-	return filepath.Walk(modsDir, func(path string, info os.FileInfo, err error) error {
+	err = filepath.Walk(modsDir, func(path string, info os.FileInfo, err error) error {
 		if err != nil {
 			return nil //nolint:nilerr // Intentionally skip inaccessible paths and continue walking
 		}
@@ -267,6 +269,7 @@ func (b *EvalContextBuilder) ScanDependencyMods(ctx context.Context) error {
 
 		// Found a mod - scan its directory
 		modDir := filepath.Dir(path)
+
 		files, err := b.listFilesInDir(ctx, modDir)
 		if err != nil {
 			return nil //nolint:nilerr // Skip mods we can't list files for
@@ -284,20 +287,50 @@ func (b *EvalContextBuilder) ScanDependencyMods(ctx context.Context) error {
 		}
 
 		// Build intermediate context for locals evaluation
+		// IMPORTANT: Need to include both existing variables AND existing locals
+		// because locals in dependency mods may reference other locals
 		evalCtx := &hcl.EvalContext{
 			Functions: funcs.ContextFunctions(modDir),
 			Variables: map[string]cty.Value{
-				"var": cty.ObjectVal(b.variables),
+				"var":   cty.ObjectVal(b.variables),
+				"local": cty.ObjectVal(b.locals),
 			},
 		}
 
-		// Parse locals
-		for filePath, content := range localFiles {
-			_ = b.parseLocals(filePath, content, evalCtx)
+		// Parse locals - need to make multiple passes because locals can reference each other
+		// across different files. Keep parsing until no new locals are added.
+		// CRITICAL: All files must be parsed in each pass because locals in different files
+		// reference each other (e.g., ec2.pp references locals from all_controls.pp)
+		maxPasses := 10  // Increase to handle deep dependency chains
+		for pass := 0; pass < maxPasses; pass++ {
+			localsBefore := len(b.locals)
+
+			// Update eval context with current locals for this pass
+			if pass > 0 {
+				evalCtx.Variables["local"] = cty.ObjectVal(b.locals)
+			}
+
+			// Parse ALL files in this pass - this allows cross-file local references
+			for filePath, content := range localFiles {
+				_ = b.parseLocals(filePath, content, evalCtx)
+			}
+
+			localsAfter := len(b.locals)
+			localsAdded := localsAfter - localsBefore
+
+			// If no new locals were added, we're done
+			if localsAdded == 0 {
+				break
+			}
+
+			// Update eval context for next pass
+			evalCtx.Variables["local"] = cty.ObjectVal(b.locals)
 		}
 
 		return filepath.SkipDir // Don't recurse into subdirectories of this mod
 	})
+
+	return err
 }
 
 // listFilesInDir returns all .pp and .sp files in a specific directory.

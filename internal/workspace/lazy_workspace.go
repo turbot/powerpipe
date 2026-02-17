@@ -760,10 +760,21 @@ func (lw *LazyWorkspace) handleResolutionComplete() {
 }
 
 // RegisterUpdateListener adds a listener for background resolution updates.
+// If resolution is already complete, the listener's OnResolutionComplete is called immediately.
 func (lw *LazyWorkspace) RegisterUpdateListener(listener UpdateListener) {
 	lw.updateListenersMu.Lock()
-	defer lw.updateListenersMu.Unlock()
 	lw.updateListeners = append(lw.updateListeners, listener)
+	alreadyResolved := lw.fullyResolved
+	lw.updateListenersMu.Unlock()
+
+	slog.Debug("Registered update listener", "already_resolved", alreadyResolved)
+
+	// If resolution already completed before this listener was registered,
+	// trigger the callback immediately (outside the lock to avoid deadlock)
+	if alreadyResolved {
+		slog.Debug("Triggering OnResolutionComplete for late listener")
+		listener.OnResolutionComplete()
+	}
 }
 
 // UnregisterUpdateListener removes an update listener.
