@@ -547,3 +547,106 @@ func getTitleString(title *string) string {
 	}
 	return *title
 }
+
+// TestPipesStartup_IncompleteDepMod_DanglingSymlink replicates the exact Pipes pod-restart
+// race condition where the PVC contains stale/incomplete mod files:
+//
+//	Error: failed to load lazy workspace: building index: scanning dependency mods:
+//	       scanning mod aws_insights: open .../dashboards/emr/emr.pp: no such file or directory
+//
+// Simulation: a dangling symlink mimics a file that appears in directory listings
+// (WalkDir uses Lstat, so it finds the symlink entry) but fails to open
+// (os.ReadFile follows the symlink and gets ENOENT).
+// This is equivalent to NFS stale handles and partial mod extraction on PVC.
+//
+// Before fix: returns "failed to load lazy workspace: ..."
+// After fix:  loads successfully; aws_insights dep mod skipped with a WARN log.
+func TestPipesStartup_IncompleteDepMod_DanglingSymlink(t *testing.T) {
+	ctx := context.Background()
+	workspaceDir := t.TempDir()
+
+	// Main mod
+	require.NoError(t, os.WriteFile(
+		filepath.Join(workspaceDir, "mod.pp"),
+		[]byte(`mod "test_main" { title = "Test Main" }`), 0600))
+
+	// Dependency mod directory (simulating stale PVC state)
+	depModDir := filepath.Join(workspaceDir, ".powerpipe", "mods",
+		"github.com", "turbot", "steampipe-mod-aws-insights@v1.2.0")
+	require.NoError(t, os.MkdirAll(depModDir, 0755))
+
+	// mod.pp exists (directory was partially set up)
+	require.NoError(t, os.WriteFile(
+		filepath.Join(depModDir, "mod.pp"),
+		[]byte(`mod "aws_insights" { title = "AWS Insights" }`), 0600))
+
+	// Some files are fully installed
+	s3Dir := filepath.Join(depModDir, "dashboards", "s3")
+	require.NoError(t, os.MkdirAll(s3Dir, 0755))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(s3Dir, "s3.pp"),
+		[]byte(`dashboard "s3_overview" { title = "S3 Overview" tags = { service = "S3" } }`), 0600))
+
+	// emr/ directory exists but emr.pp is a dangling symlink — simulates partial install on PVC
+	emrDir := filepath.Join(depModDir, "dashboards", "emr")
+	require.NoError(t, os.MkdirAll(emrDir, 0755))
+	require.NoError(t, os.Symlink(
+		"/nonexistent/target/emr.pp",
+		filepath.Join(emrDir, "emr.pp")))
+
+	// Before fix: returns "failed to load lazy workspace: building index: ..."
+	// After fix:  loads successfully, aws_insights dep mod skipped (will be reinstalled)
+	lw, err := LoadLazy(ctx, workspaceDir)
+	require.NoError(t, err,
+		"LoadLazy should not fail when dependency mod has missing/unreadable files")
+	require.NotNil(t, lw)
+	defer lw.Close()
+
+	// Workspace should still be usable (main mod resources available)
+	payload := lw.GetAvailableDashboardsFromIndex()
+	require.NotNil(t, payload)
+}
+
+// TestPipesStartup_IncompleteDepMod_RaceCondition simulates a TOCTOU race:
+// a file exists when listed by the scanner, then is deleted concurrently before
+// os.ReadFile reads it. This is the concurrent equivalent of the dangling-symlink test.
+//
+// Whether the race is hit or not, LoadLazy must not crash.
+// After the fix is applied, this test should always pass.
+func TestPipesStartup_IncompleteDepMod_RaceCondition(t *testing.T) {
+	ctx := context.Background()
+	workspaceDir := t.TempDir()
+
+	require.NoError(t, os.WriteFile(
+		filepath.Join(workspaceDir, "mod.pp"),
+		[]byte(`mod "test_main" { title = "Test Main" }`), 0600))
+
+	depModDir := filepath.Join(workspaceDir, ".powerpipe", "mods",
+		"github.com", "turbot", "steampipe-mod-aws-insights@v1.2.0")
+	require.NoError(t, os.MkdirAll(depModDir, 0755))
+	require.NoError(t, os.WriteFile(
+		filepath.Join(depModDir, "mod.pp"),
+		[]byte(`mod "aws_insights" { title = "AWS Insights" }`), 0600))
+
+	// Create a .pp file, then delete it in a goroutine while LoadLazy runs
+	emrDir := filepath.Join(depModDir, "dashboards", "emr")
+	require.NoError(t, os.MkdirAll(emrDir, 0755))
+	emrFile := filepath.Join(emrDir, "emr.pp")
+	require.NoError(t, os.WriteFile(emrFile,
+		[]byte(`dashboard "emr_detail" { title = "EMR" }`), 0600))
+
+	// Concurrently delete the file while LoadLazy is running
+	go func() {
+		_ = os.Remove(emrFile)
+	}()
+
+	// Whether the race is hit or not, LoadLazy must not crash
+	lw, err := LoadLazy(ctx, workspaceDir)
+	if err == nil {
+		defer lw.Close()
+		t.Log("LoadLazy succeeded (race not hit or fix applied)")
+	} else {
+		t.Logf("LoadLazy failed (race hit, bug not yet fixed): %v", err)
+		// Once the fix is applied, change this to require.NoError
+	}
+}

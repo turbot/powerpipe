@@ -290,6 +290,15 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 
 		// Scan this mod directory with the correct mod name
 		if err := scanner.ScanDirectoryWithModName(modDir, depModName); err != nil {
+			// If a file is missing, the dep mod is in an incomplete/stale state
+			// (e.g. Pipes pod restart with partially-installed mods on PVC).
+			// Skip it gracefully — the mod-update workflow will reinstall it.
+			var pathErr *os.PathError
+			if errors.As(err, &pathErr) && os.IsNotExist(pathErr.Err) {
+				slog.Warn("Skipping dependency mod with missing files — will be reinstalled by mod update workflow",
+					"mod", depModName, "path", modDir, "missing_file", pathErr.Path)
+				return filepath.SkipDir
+			}
 			return fmt.Errorf("scanning mod %s: %w", depModName, err)
 		}
 

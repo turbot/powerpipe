@@ -1,5 +1,7 @@
 package resourceindex
 
+import "maps"
+
 // BuildAvailableDashboardsPayload builds the dashboard list payload
 // without loading full resources. This enables the dashboard UI to
 // show available dashboards and benchmarks with minimal memory usage.
@@ -12,11 +14,10 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 
 	// Build dashboard list from index
 	for _, entry := range idx.Dashboards() {
-		// Ensure mod tag is set for grouping
-		tags := entry.Tags
-		if tags == nil {
-			tags = make(map[string]string)
-		}
+		// Copy tags to avoid mutating the shared IndexEntry.Tags map.
+		// entry.Tags is a reference into the live index — concurrent callers
+		// would race on the write below if we used it directly.
+		tags := copyTagMap(entry.Tags)
 		// Add mod tag if not already present (mod_full_name without "github.com/" prefix)
 		if _, exists := tags["mod"]; !exists && entry.ModFullName != "" {
 			tags["mod"] = entry.ModFullName
@@ -35,11 +36,8 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 	benchmarkTrunks := make(map[string][][]string)
 
 	for _, entry := range idx.Benchmarks() {
-		// Ensure mod tag is set for grouping
-		tags := entry.Tags
-		if tags == nil {
-			tags = make(map[string]string)
-		}
+		// Copy tags — same reason as dashboard loop above.
+		tags := copyTagMap(entry.Tags)
 		// Add mod tag if not already present
 		if _, exists := tags["mod"]; !exists && entry.ModFullName != "" {
 			tags["mod"] = entry.ModFullName
@@ -107,11 +105,8 @@ func (idx *ResourceIndex) buildBenchmarkChildren(parent *IndexEntry,
 		// Mark as visiting before recursion
 		visiting[childEntry.Name] = true
 
-		// Ensure mod tag is set for child benchmarks too
-		childTags := childEntry.Tags
-		if childTags == nil {
-			childTags = make(map[string]string)
-		}
+		// Copy child tags — same race risk as top-level benchmarks.
+		childTags := copyTagMap(childEntry.Tags)
 		if _, exists := childTags["mod"]; !exists && childEntry.ModFullName != "" {
 			childTags["mod"] = childEntry.ModFullName
 		}
@@ -132,6 +127,14 @@ func (idx *ResourceIndex) buildBenchmarkChildren(parent *IndexEntry,
 	}
 
 	return children
+}
+
+// copyTagMap returns a shallow copy of a string→string map.
+// Always returns a non-nil map, safe to write into immediately.
+func copyTagMap(src map[string]string) map[string]string {
+	dst := make(map[string]string, len(src))
+	maps.Copy(dst, src)
+	return dst
 }
 
 // AvailableDashboardsPayload is the payload sent to the dashboard UI
