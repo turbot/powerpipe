@@ -24,7 +24,7 @@ func TestFileFunction_BasePath(t *testing.T) {
 
 	testContent := "# Test Document\nThis is a test markdown file."
 	docsFile := filepath.Join(docsDir, "test.md")
-	if err := os.WriteFile(docsFile, []byte(testContent), 0644); err != nil {
+	if err := os.WriteFile(docsFile, []byte(testContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -95,7 +95,7 @@ func TestFileFunction_SubdirectoryBase(t *testing.T) {
 	// Create the docs file
 	testContent := "# GuardDuty Documentation"
 	docsFile := filepath.Join(docsDir, "test.md")
-	if err := os.WriteFile(docsFile, []byte(testContent), 0644); err != nil {
+	if err := os.WriteFile(docsFile, []byte(testContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 

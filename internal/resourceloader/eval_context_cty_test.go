@@ -40,7 +40,7 @@ func TestEvalContext_RealWorkspaceWithAwsCompliance(t *testing.T) {
 	modContent := `mod "local" {
   title = "test"
 }`
-	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -57,7 +57,7 @@ func TestEvalContext_RealWorkspaceWithAwsCompliance(t *testing.T) {
 	depModContent := `mod "aws-compliance" {
   title = "AWS Compliance"
 }`
-	if err := os.WriteFile(filepath.Join(awsComplianceDir, "mod.pp"), []byte(depModContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(awsComplianceDir, "mod.pp"), []byte(depModContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -72,7 +72,7 @@ func TestEvalContext_RealWorkspaceWithAwsCompliance(t *testing.T) {
     service = "AWS/AuditManager"
   }
 }`
-	if err := os.WriteFile(filepath.Join(fsDir, "locals.pp"), []byte(localsContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(fsDir, "locals.pp"), []byte(localsContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
