@@ -181,6 +181,13 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 			if childTags == nil {
 				childTags = make(map[string]string)
 			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			if t.Mod != nil {
+				modFullName := t.Mod.GetFullName()
+				if _, exists := childTags["mod"]; !exists && modFullName != "" {
+					childTags["mod"] = modFullName
+				}
+			}
 
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
@@ -225,6 +232,13 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 			detChildTags := t.Tags
 			if detChildTags == nil {
 				detChildTags = make(map[string]string)
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			if t.Mod != nil {
+				modFullName := t.Mod.GetFullName()
+				if _, exists := detChildTags["mod"]; !exists && modFullName != "" {
+					detChildTags["mod"] = modFullName
+				}
 			}
 
 			availableBenchmark := ModAvailableBenchmark{
@@ -337,13 +351,18 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			if tags == nil {
 				tags = make(map[string]string)
 			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := mod.GetFullName()
+			if _, exists := tags["mod"]; !exists && modFullName != "" {
+				tags["mod"] = modFullName
+			}
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
 				Title:       typeHelpers.SafeString(dashboard.Title),
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
 				Tags:        tags,
-				ModFullName: mod.GetFullName(),
+				ModFullName: modFullName,
 			}
 		}
 
@@ -378,6 +397,11 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			if benchTags == nil {
 				benchTags = make(map[string]string)
 			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := mod.GetFullName()
+			if _, exists := benchTags["mod"]; !exists && modFullName != "" {
+				benchTags["mod"] = modFullName
+			}
 
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         benchmark.GetTitle(),
@@ -387,7 +411,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				Tags:          benchTags,
 				IsTopLevel:    isTopLevel,
 				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks, visiting),
-				ModFullName:   mod.GetFullName(),
+				ModFullName:   modFullName,
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark
@@ -430,6 +454,11 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			if detBenchTags == nil {
 				detBenchTags = make(map[string]string)
 			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := mod.GetFullName()
+			if _, exists := detBenchTags["mod"]; !exists && modFullName != "" {
+				detBenchTags["mod"] = modFullName
+			}
 
 			availableDetectionBenchmark := ModAvailableBenchmark{
 				Title:         detectionBenchmark.GetTitle(),
@@ -439,7 +468,7 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				Tags:          detBenchTags,
 				IsTopLevel:    isTopLevel,
 				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks, visiting),
-				ModFullName:   mod.GetFullName(),
+				ModFullName:   modFullName,
 			}
 
 			payload.Benchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark

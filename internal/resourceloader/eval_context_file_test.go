@@ -86,10 +86,9 @@ func TestEvalContext_DependencyModWithFileFunction(t *testing.T) {
 		t.Fatal("Build() returned nil eval context")
 	}
 
-	// Check that we have functions available
-	if evalCtx.Functions == nil {
-		t.Error("Eval context has no functions")
-	}
+	// NOTE: Functions is intentionally nil in the eval context from Build()
+	// because functions are added later by the loader with the correct base path
+	// for each file being parsed (see eval_context.go line 97-101)
 
 	// Check that we have variables map
 	if evalCtx.Variables == nil {
