@@ -354,10 +354,17 @@ func TestJSONPayload_EagerVsLazy_Identical(t *testing.T) {
 
 	lazyDashMap := make(map[string]comparableDash)
 	for name, d := range lazyPayload.Dashboards {
+		// Filter out "mod" tag for fair comparison (added at payload level for grouping)
+		tags := make(map[string]string)
+		for k, v := range d.Tags {
+			if k != "mod" {
+				tags[k] = v
+			}
+		}
 		lazyDashMap[name] = comparableDash{
 			Title:     d.Title,
 			ShortName: d.ShortName,
-			Tags:      d.Tags,
+			Tags:      tags,
 		}
 	}
 
