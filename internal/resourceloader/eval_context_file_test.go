@@ -22,7 +22,7 @@ func TestEvalContext_DependencyModWithFileFunction(t *testing.T) {
 	modContent := `mod "local" {
   title = "test_workspace"
 }`
-	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -37,7 +37,7 @@ func TestEvalContext_DependencyModWithFileFunction(t *testing.T) {
 	depModContent := `mod "test-mod" {
   title = "Test Mod"
 }`
-	if err := os.WriteFile(filepath.Join(depModDir, "mod.pp"), []byte(depModContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(depModDir, "mod.pp"), []byte(depModContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -54,7 +54,7 @@ func TestEvalContext_DependencyModWithFileFunction(t *testing.T) {
     title = "Test"
   }
 }`
-	if err := os.WriteFile(filepath.Join(depModDir, "test_resource.pp"), []byte(localsContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(depModDir, "test_resource.pp"), []byte(localsContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -66,7 +66,7 @@ func TestEvalContext_DependencyModWithFileFunction(t *testing.T) {
     extra = "data"
   })
 }`
-	if err := os.WriteFile(filepath.Join(depModDir, "other_resource.pp"), []byte(locals2Content), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(depModDir, "other_resource.pp"), []byte(locals2Content), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -122,7 +122,7 @@ func TestEvalContext_DependencyModWithMissingDocs(t *testing.T) {
 	modContent := `mod "local" {
   title = "pskr"
 }`
-	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -139,7 +139,7 @@ func TestEvalContext_DependencyModWithMissingDocs(t *testing.T) {
 	depModContent := `mod "aws-compliance" {
   title = "AWS Compliance"
 }`
-	if err := os.WriteFile(filepath.Join(depModDir, "mod.pp"), []byte(depModContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(depModDir, "mod.pp"), []byte(depModContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 
@@ -155,7 +155,7 @@ func TestEvalContext_DependencyModWithMissingDocs(t *testing.T) {
   # documentation = file("./foundational_security/docs/foundational_security_guardduty_7.md")
   guardduty_7_docs = file("./foundational_security/docs/foundational_security_guardduty_7.md")
 }`
-	if err := os.WriteFile(filepath.Join(foundationalDir, "guardduty.pp"), []byte(guarddutyContent), 0644); err != nil {
+	if err := os.WriteFile(filepath.Join(foundationalDir, "guardduty.pp"), []byte(guarddutyContent), 0600); err != nil {
 		t.Fatal(err)
 	}
 

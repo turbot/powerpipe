@@ -21,7 +21,7 @@ func TestScanModInfo_OpengraphTitle(t *testing.T) {
 }
 `
 	modPath := filepath.Join(tmpDir, "mod.pp")
-	if err := os.WriteFile(modPath, []byte(modContent), 0644); err != nil {
+	if err := os.WriteFile(modPath, []byte(modContent), 0600); err != nil {
 		t.Fatalf("Failed to write test mod.pp: %v", err)
 	}
 

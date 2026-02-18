@@ -230,7 +230,7 @@ func setupComprehensiveTestWorkspace(t *testing.T, workspaceDir string) {
   title = "Test Workspace"
 }
 `
-	err := os.WriteFile(filepath.Join(workspaceDir, "mod.pp"), []byte(modContent), 0644)
+	err := os.WriteFile(filepath.Join(workspaceDir, "mod.pp"), []byte(modContent), 0600)
 	require.NoError(t, err)
 
 	// Dashboard WITH service tags
@@ -243,7 +243,7 @@ func setupComprehensiveTestWorkspace(t *testing.T, workspaceDir string) {
   }
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "tagged_dashboard.pp"), []byte(dashboard1), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "tagged_dashboard.pp"), []byte(dashboard1), 0600)
 	require.NoError(t, err)
 
 	// Dashboard WITHOUT service tags
@@ -254,7 +254,7 @@ func setupComprehensiveTestWorkspace(t *testing.T, workspaceDir string) {
   }
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "untagged_dashboard.pp"), []byte(dashboard2), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "untagged_dashboard.pp"), []byte(dashboard2), 0600)
 	require.NoError(t, err)
 
 	// Benchmark WITH service tags
@@ -275,7 +275,7 @@ control "tagged_control" {
   sql = "select 1 as result"
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "tagged_benchmark.pp"), []byte(benchmark1), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "tagged_benchmark.pp"), []byte(benchmark1), 0600)
 	require.NoError(t, err)
 
 	// Benchmark WITHOUT service tags
@@ -294,6 +294,6 @@ control "untagged_control" {
   sql = "select 1 as result"
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "untagged_benchmark.pp"), []byte(benchmark2), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "untagged_benchmark.pp"), []byte(benchmark2), 0600)
 	require.NoError(t, err)
 }

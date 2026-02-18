@@ -30,7 +30,7 @@ func TestModInstallWhileRunning(t *testing.T) {
   title = "Test Workspace"
 }
 `
-	err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0644)
+	err := os.WriteFile(filepath.Join(tmpDir, "mod.pp"), []byte(modContent), 0600)
 	require.NoError(t, err)
 
 	t.Run("1. Initial load with empty workspace", func(t *testing.T) {
@@ -488,7 +488,7 @@ func setupTestMod(t *testing.T, workspaceDir string) {
   title = "Test Workspace"
 }
 `
-	err := os.WriteFile(filepath.Join(workspaceDir, "mod.pp"), []byte(modContent), 0644)
+	err := os.WriteFile(filepath.Join(workspaceDir, "mod.pp"), []byte(modContent), 0600)
 	require.NoError(t, err)
 
 	// Create a dashboard with tags
@@ -500,7 +500,7 @@ func setupTestMod(t *testing.T, workspaceDir string) {
   }
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "dashboard.pp"), []byte(dashboardContent), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "dashboard.pp"), []byte(dashboardContent), 0600)
 	require.NoError(t, err)
 
 	// Create a benchmark with tags
@@ -520,6 +520,6 @@ control "test_control" {
   sql = "select 1 as result"
 }
 `
-	err = os.WriteFile(filepath.Join(workspaceDir, "benchmark.pp"), []byte(benchmarkContent), 0644)
+	err = os.WriteFile(filepath.Join(workspaceDir, "benchmark.pp"), []byte(benchmarkContent), 0600)
 	require.NoError(t, err)
 }
