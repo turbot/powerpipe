@@ -206,7 +206,16 @@ func TestDashboardListPayload_EagerVsLazy_Identical(t *testing.T) {
 			assert.Equal(t, eagerTitle, lazyDash.Title, "titles should match")
 
 			// Compare tags - THIS IS THE KEY COMPARISON
-			assert.Equal(t, eagerDash.Tags, lazyDash.Tags,
+			// Note: Lazy payloads add a "mod" tag for grouping purposes at the payload level
+			// Eager resources don't have this tag since they're raw resources.
+			// Filter out the "mod" tag from lazy for fair comparison.
+			lazyTagsFiltered := make(map[string]string)
+			for k, v := range lazyDash.Tags {
+				if k != "mod" {
+					lazyTagsFiltered[k] = v
+				}
+			}
+			assert.Equal(t, eagerDash.Tags, lazyTagsFiltered,
 				"tags should match for dashboard %s", name)
 
 			// Compare short name

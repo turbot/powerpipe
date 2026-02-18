@@ -176,10 +176,10 @@ func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trun
 			// Mark as visiting before recursion
 			visiting[t.FullName] = true
 
-			// Ensure tags is not nil for consistent JSON serialization
-			childTags := t.Tags
-			if childTags == nil {
-				childTags = make(map[string]string)
+			// Create a copy of tags to avoid mutating the original resource
+			childTags := make(map[string]string)
+			for k, v := range t.Tags {
+				childTags[k] = v
 			}
 			// Add mod tag if not already present (for grouping consistency with lazy loading)
 			if t.Mod != nil {
@@ -228,10 +228,10 @@ func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, reco
 			// Mark as visiting before recursion
 			visiting[t.FullName] = true
 
-			// Ensure tags is not nil for consistent JSON serialization
-			detChildTags := t.Tags
-			if detChildTags == nil {
-				detChildTags = make(map[string]string)
+			// Create a copy of tags to avoid mutating the original resource
+			detChildTags := make(map[string]string)
+			for k, v := range t.Tags {
+				detChildTags[k] = v
 			}
 			// Add mod tag if not already present (for grouping consistency with lazy loading)
 			if t.Mod != nil {
@@ -346,13 +346,16 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 
 		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
-			// Ensure tags is not nil (empty map if no tags) for consistent JSON serialization
-			tags := dashboard.Tags
-			if tags == nil {
-				tags = make(map[string]string)
+			// Create a copy of tags to avoid mutating the original resource
+			tags := make(map[string]string)
+			for k, v := range dashboard.Tags {
+				tags[k] = v
 			}
 			// Add mod tag if not already present (for grouping consistency with lazy loading)
-			modFullName := mod.GetFullName()
+			modFullName := ""
+			if mod != nil {
+				modFullName = mod.GetFullName()
+			}
 			if _, exists := tags["mod"]; !exists && modFullName != "" {
 				tags["mod"] = modFullName
 			}
@@ -392,10 +395,10 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			visiting := make(map[string]bool)
 			visiting[benchmark.FullName] = true
 
-			// Ensure tags is not nil for consistent JSON serialization
-			benchTags := benchmark.Tags
-			if benchTags == nil {
-				benchTags = make(map[string]string)
+			// Create a copy of tags to avoid mutating the original resource
+			benchTags := make(map[string]string)
+			for k, v := range benchmark.Tags {
+				benchTags[k] = v
 			}
 			// Add mod tag if not already present (for grouping consistency with lazy loading)
 			modFullName := mod.GetFullName()
@@ -449,10 +452,10 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 			visiting := make(map[string]bool)
 			visiting[detectionBenchmark.FullName] = true
 
-			// Ensure tags is not nil for consistent JSON serialization
-			detBenchTags := detectionBenchmark.Tags
-			if detBenchTags == nil {
-				detBenchTags = make(map[string]string)
+			// Create a copy of tags to avoid mutating the original resource
+			detBenchTags := make(map[string]string)
+			for k, v := range detectionBenchmark.Tags {
+				detBenchTags[k] = v
 			}
 			// Add mod tag if not already present (for grouping consistency with lazy loading)
 			modFullName := mod.GetFullName()
