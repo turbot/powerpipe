@@ -260,9 +260,9 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 			return nil
 		}
 
-		// Found a mod definition file - extract mod name and scan its directory
+		// Found a mod definition file - extract mod name, full name, and title
 		modDir := filepath.Dir(path)
-		depModName, _, _, err := scanModInfo(modDir)
+		depModName, _, depModTitle, err := scanModInfo(modDir)
 		if err != nil {
 			return fmt.Errorf("scanning mod info from %s: %w", path, err)
 		}
@@ -284,8 +284,9 @@ func scanDependencyMods(scanner *resourceindex.Scanner, modsDir string) error {
 		relPath, _ := filepath.Rel(modsDir, modDir)
 		fullModPath := strings.Split(relPath, "@")[0] // Remove version suffix
 
-		// Register the mapping from full path to short name
+		// Register the mapping from full path to short name and title
 		scanner.GetIndex().RegisterModName(fullModPath, depModName)
+		scanner.GetIndex().RegisterModTitle(fullModPath, depModTitle)
 
 		// Scan this mod directory with the correct mod name
 		if err := scanner.ScanDirectoryWithModName(modDir, depModName); err != nil {
@@ -346,8 +347,12 @@ func scanModInfo(workspacePath string) (modName, modFullName, modTitle string, e
 			// Track brace depth to know when we exit the mod block
 			braceDepth += strings.Count(line, "{") - strings.Count(line, "}")
 
-			if matches := titleRegex.FindStringSubmatch(line); len(matches) >= 2 {
-				modTitle = matches[1]
+			// Only extract title from top-level mod block (depth 1), not nested blocks
+			// This prevents picking up titles from opengraph {} or other nested blocks
+			if braceDepth == 1 && modTitle == "" {
+				if matches := titleRegex.FindStringSubmatch(line); len(matches) >= 2 {
+					modTitle = matches[1]
+				}
 			}
 			// Stop when we've exited the top-level mod block
 			if braceDepth <= 0 {
@@ -484,6 +489,155 @@ func (lw *LazyWorkspace) GetLazyModResources() *LazyModResources {
 	return lw.lazyResources
 }
 
+// RebuildIndex rebuilds the resource index from disk.
+// This is called when files change (e.g., mod install/remove) to refresh the index.
+// It also clears the cache since cached resources may be stale.
+func (lw *LazyWorkspace) RebuildIndex(ctx context.Context) error {
+	slog.Info("Rebuilding resource index due to file changes")
+
+	// Build new index
+	newIndex, err := buildResourceIndex(ctx, lw.workspacePath, lw.Mod.ShortName)
+	if err != nil {
+		return fmt.Errorf("rebuilding index: %w", err)
+	}
+
+	// Clear the cache since all cached resources may be stale
+	lw.cache.Clear()
+	slog.Debug("Cleared resource cache after index rebuild")
+
+	// Replace the old index with the new one
+	lw.index = newIndex
+
+	// Update loader and resolver to use new index
+	lw.loader = resourceloader.NewLoader(newIndex, lw.cache, lw.Mod, lw.workspacePath)
+
+	// Rebuild eval context with new dependency mods
+	evalCtx, err := resourceloader.BuildEvalContext(ctx, lw.workspacePath)
+	if err != nil {
+		// Log but don't fail - lazy loading can still work without full eval context
+		slog.Debug("failed to rebuild eval context", "error", err)
+	} else {
+		lw.loader.SetEvalContext(evalCtx)
+	}
+
+	lw.loader.SetResourceProvider(lw)
+	lw.resolver = resourceloader.NewDependencyResolver(newIndex, lw.loader)
+
+	// Update lazy resources accessor
+	lw.lazyResources = NewLazyModResources(lw)
+
+	// Restart background resolution for the new/updated resources
+	// We need to stop the old resolver (if running) and start a new one
+	// because StartBackgroundResolution() returns early if already running
+	lw.StopBackgroundResolution()
+
+	// Reset fullyResolved flag so resolution runs again
+	lw.fullyResolved = false
+
+	// Start new background resolution for the rebuilt index
+	// The background resolver will automatically call handleResolutionComplete() when done,
+	// which will notify listeners. Do NOT manually call OnResolutionComplete() here as that
+	// would broadcast unresolved tags to clients.
+	lw.StartBackgroundResolution()
+
+	slog.Info("Resource index rebuilt successfully - background resolution started",
+		"dashboards", len(newIndex.Dashboards()),
+		"benchmarks", len(newIndex.Benchmarks()),
+		"note", "OnResolutionComplete will broadcast when resolution finishes")
+
+	return nil
+}
+
+// SetupWatcher sets up file watching for lazy mode.
+// Instead of using pipe-fittings' eager reload on file changes, we rebuild the index.
+func (lw *LazyWorkspace) SetupWatcher(ctx context.Context, errorHandler func(context.Context, error)) error {
+	slog.Debug("LazyWorkspace.SetupWatcher called", "workspacePath", lw.workspacePath)
+
+	// Set up hook for successful file watcher events (after eager reload succeeds)
+	// This is called when files change AND eager reload succeeds
+	lw.OnFileWatcherEvent = func(c context.Context, modResources modconfig.ModResources, prevModResources modconfig.ModResources) {
+		slog.Debug("OnFileWatcherEvent called after successful eager reload")
+		// Rebuild index to capture the changes
+		lw.HandleFileWatcherEvent(c)
+	}
+
+	// Set up error handler hook - this is called when eager reload FAILS
+	// In lazy mode, we don't want eager reload at all, so we intercept the "error"
+	// and do our index rebuild instead
+	lw.OnFileWatcherError = func(c context.Context, err error) {
+		slog.Debug("OnFileWatcherError called, rebuilding index", "error", err)
+		// Don't treat this as an error - just rebuild the index
+		lw.HandleFileWatcherEvent(c)
+	}
+
+	// Set up onFileWatcherEventMessages hook to also trigger rebuild
+	// This is called when files change (before eager reload)
+	lw.SetOnFileWatcherEventMessages(func() {
+		slog.Debug("onFileWatcherEventMessages called - file changed, triggering rebuild")
+		lw.HandleFileWatcherEvent(ctx)
+	})
+
+	// Call the parent's SetupWatcher to get the full watcher infrastructure
+	// This sets up the file watcher with proper paths, exclusions, etc.
+	err := lw.Workspace.SetupWatcher(ctx, errorHandler)
+	if err != nil {
+		return fmt.Errorf("setting up file watcher: %w", err)
+	}
+
+	// IMPORTANT: .mod.cache.json is excluded from watching because it's a hidden file
+	// But mod install ONLY modifies .mod.cache.json, not mod.pp
+	// So we need to watch it explicitly with a polling watcher
+	modCachePath := filepath.Join(lw.workspacePath, ".mod.cache.json")
+	slog.Debug("Setting up .mod.cache.json watcher", "path", modCachePath)
+
+	// Create a simple file watcher just for .mod.cache.json
+	go func() {
+		// Watch for changes to .mod.cache.json
+		// This is a simple polling approach - check every 2 seconds
+		lastModTime := time.Time{}
+		ticker := time.NewTicker(2 * time.Second)
+		defer ticker.Stop()
+
+		for {
+			select {
+			case <-ctx.Done():
+				slog.Debug(".mod.cache.json watcher stopped")
+				return
+			case <-ticker.C:
+				info, err := os.Stat(modCachePath)
+				if err != nil {
+					// File doesn't exist yet or error reading it
+					continue
+				}
+				modTime := info.ModTime()
+				if !lastModTime.IsZero() && modTime.After(lastModTime) {
+					slog.Debug(".mod.cache.json modified, triggering index rebuild", "modTime", modTime)
+					lw.HandleFileWatcherEvent(ctx)
+				}
+				lastModTime = modTime
+			}
+		}
+	}()
+
+	slog.Debug("File watcher setup complete")
+	return nil
+}
+
+// HandleFileWatcherEvent handles file change events in lazy mode.
+// When files change, we rebuild the index and notify clients.
+func (lw *LazyWorkspace) HandleFileWatcherEvent(ctx context.Context) {
+	slog.Info("File watcher event received - rebuilding index (broadcast will happen after resolution)")
+
+	if err := lw.RebuildIndex(ctx); err != nil {
+		slog.Error("Failed to rebuild index after file change", "error", err)
+		// Publish error event so UI can show the error
+		lw.PublishDashboardEvent(ctx, &dashboardevents.WorkspaceError{Error: err})
+		return
+	}
+
+	slog.Info("Index rebuild completed - waiting for background resolution to complete")
+}
+
 // GetModResources returns mod resources with dependency mods populated from the index.
 // This overrides the PowerpipeWorkspace.GetModResources() to provide proper mod metadata
 // for the dashboard server without requiring full eager loading.
@@ -506,9 +660,12 @@ func (lw *LazyWorkspace) buildModsMapFromIndex() map[string]*modconfig.Mod {
 	// Add the main mod
 	mods[lw.Mod.GetFullName()] = lw.Mod
 
-	// Add dependency mods from index's modNameMap
+	// Add dependency mods from index's modNameMap and modTitleMap
 	// The modNameMap contains: fullPath (e.g., "github.com/turbot/steampipe-mod-aws-insights") -> shortName (e.g., "aws_insights")
+	// The modTitleMap contains: fullPath -> title (e.g., "AWS Insights")
 	modNameMap := lw.index.GetModNameMap()
+	modTitleMap := lw.index.GetModTitleMap()
+
 	for fullPath, shortName := range modNameMap {
 		// Create minimal mod objects for dependencies
 		// We don't need full mod parsing - just enough metadata for server to display installed mods
@@ -523,9 +680,14 @@ func (lw *LazyWorkspace) buildModsMapFromIndex() map[string]*modconfig.Mod {
 		depMod := modconfig.NewMod(shortName, "", hcl.Range{})
 		depMod.FullName = fullName
 
-		// Extract title from full path (e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "AWS Insights")
-		// This is just for display purposes - not critical if it's not perfect
-		title := extractTitleFromModPath(fullPath)
+		// Use the actual title from the mod.pp file (stored in modTitleMap)
+		// If not available, fall back to deriving from path (shouldn't happen in normal cases)
+		var title string
+		if storedTitle, ok := modTitleMap[fullPath]; ok {
+			title = storedTitle
+		} else {
+			title = extractTitleFromModPath(fullPath)
+		}
 		depMod.Title = &title
 
 		mods[fullName] = depMod

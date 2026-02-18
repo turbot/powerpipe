@@ -62,14 +62,35 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 		// Register as update listener for background resolution
 		// This ensures the dashboard server broadcasts updated metadata when tags/titles are resolved
 		server.lazyWorkspace.RegisterUpdateListener(server)
+
+		// Setup file watcher for lazy mode
+		// When files change (e.g., mod install), rebuild index and clear cache
+		err := server.lazyWorkspace.SetupWatcher(ctx, func(c context.Context, e error) {
+			if e != nil {
+				slog.Error("File watcher error in lazy mode", "error", e)
+				return
+			}
+			// Rebuild index when files change
+			// This will start background resolution, which will call OnResolutionComplete()
+			// when done, triggering the broadcast with resolved tags
+			server.lazyWorkspace.HandleFileWatcherEvent(c)
+		})
+		if err != nil {
+			return nil, err
+		}
+		OutputMessage(ctx, "WorkspaceEvents loaded (lazy mode with file watching)")
+	} else {
+		// Eager mode - setup standard file watcher
+		err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
+		if err != nil {
+			return nil, err
+		}
+		OutputMessage(ctx, "WorkspaceEvents loaded")
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 
-	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
-	OutputMessage(ctx, "WorkspaceEvents loaded")
-
-	return server, err
+	return server, nil
 }
 
 // NewServerWithLazyWorkspace creates a server with lazy loading enabled.
@@ -96,9 +117,23 @@ func NewServerWithLazyWorkspace(ctx context.Context, lazyWorkspace *workspace.La
 	// This ensures the dashboard server broadcasts updated metadata when tags/titles are resolved
 	lazyWorkspace.RegisterUpdateListener(server)
 
-	// Note: file watching in lazy mode would need cache invalidation
-	// For now, we skip the watcher setup - this can be added later
-	OutputMessage(ctx, "WorkspaceEvents loaded (lazy mode)")
+	// Setup file watcher for lazy mode
+	// When files change (e.g., mod install), rebuild index and clear cache
+	err := lazyWorkspace.SetupWatcher(ctx, func(c context.Context, e error) {
+		if e != nil {
+			slog.Error("File watcher error in lazy mode", "error", e)
+			return
+		}
+		// Rebuild index when files change
+		// This will start background resolution, which will call OnResolutionComplete()
+		// when done, triggering the broadcast with resolved tags
+		lazyWorkspace.HandleFileWatcherEvent(c)
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	OutputMessage(ctx, "WorkspaceEvents loaded (lazy mode with file watching)")
 
 	return server, nil
 }

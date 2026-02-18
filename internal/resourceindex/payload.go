@@ -12,11 +12,21 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 
 	// Build dashboard list from index
 	for _, entry := range idx.Dashboards() {
+		// Ensure mod tag is set for grouping
+		tags := entry.Tags
+		if tags == nil {
+			tags = make(map[string]string)
+		}
+		// Add mod tag if not already present (mod_full_name without "github.com/" prefix)
+		if _, exists := tags["mod"]; !exists && entry.ModFullName != "" {
+			tags["mod"] = entry.ModFullName
+		}
+
 		payload.Dashboards[entry.Name] = DashboardInfo{
 			Title:       entry.Title,
 			FullName:    entry.Name,
 			ShortName:   entry.ShortName,
-			Tags:        entry.Tags,
+			Tags:        tags,
 			ModFullName: entry.ModFullName,
 		}
 	}
@@ -25,12 +35,22 @@ func (idx *ResourceIndex) BuildAvailableDashboardsPayload() *AvailableDashboards
 	benchmarkTrunks := make(map[string][][]string)
 
 	for _, entry := range idx.Benchmarks() {
+		// Ensure mod tag is set for grouping
+		tags := entry.Tags
+		if tags == nil {
+			tags = make(map[string]string)
+		}
+		// Add mod tag if not already present
+		if _, exists := tags["mod"]; !exists && entry.ModFullName != "" {
+			tags["mod"] = entry.ModFullName
+		}
+
 		info := BenchmarkInfo{
 			Title:         entry.Title,
 			FullName:      entry.Name,
 			ShortName:     entry.ShortName,
 			BenchmarkType: entry.BenchmarkType,
-			Tags:          entry.Tags,
+			Tags:          tags,
 			IsTopLevel:    entry.IsTopLevel,
 			ModFullName:   entry.ModFullName,
 		}
@@ -87,12 +107,21 @@ func (idx *ResourceIndex) buildBenchmarkChildren(parent *IndexEntry,
 		// Mark as visiting before recursion
 		visiting[childEntry.Name] = true
 
+		// Ensure mod tag is set for child benchmarks too
+		childTags := childEntry.Tags
+		if childTags == nil {
+			childTags = make(map[string]string)
+		}
+		if _, exists := childTags["mod"]; !exists && childEntry.ModFullName != "" {
+			childTags["mod"] = childEntry.ModFullName
+		}
+
 		info := BenchmarkInfo{
 			Title:         childEntry.Title,
 			FullName:      childEntry.Name,
 			ShortName:     childEntry.ShortName,
 			BenchmarkType: childEntry.BenchmarkType,
-			Tags:          childEntry.Tags,
+			Tags:          childTags,
 			Children:      idx.buildBenchmarkChildren(childEntry, recordTrunk, childTrunk, trunks, visiting),
 		}
 

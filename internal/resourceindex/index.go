@@ -24,6 +24,10 @@ type ResourceIndex struct {
 	// e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "aws_insights"
 	modNameMap map[string]string
 
+	// Mod title mappings: full path -> title
+	// e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "AWS Insights"
+	modTitleMap map[string]string
+
 	// Statistics
 	totalSize int
 }
@@ -31,9 +35,10 @@ type ResourceIndex struct {
 // NewResourceIndex creates an empty index.
 func NewResourceIndex() *ResourceIndex {
 	return &ResourceIndex{
-		entries:    make(map[string]*IndexEntry),
-		byType:     make(map[string]map[string]*IndexEntry),
-		modNameMap: make(map[string]string),
+		entries:     make(map[string]*IndexEntry),
+		byType:      make(map[string]map[string]*IndexEntry),
+		modNameMap:  make(map[string]string),
+		modTitleMap: make(map[string]string),
 	}
 }
 
@@ -43,6 +48,14 @@ func (idx *ResourceIndex) RegisterModName(fullPath, shortName string) {
 	idx.mu.Lock()
 	defer idx.mu.Unlock()
 	idx.modNameMap[fullPath] = shortName
+}
+
+// RegisterModTitle registers a mapping from a full mod path to its title.
+// e.g., "github.com/turbot/steampipe-mod-aws-insights" -> "AWS Insights"
+func (idx *ResourceIndex) RegisterModTitle(fullPath, title string) {
+	idx.mu.Lock()
+	defer idx.mu.Unlock()
+	idx.modTitleMap[fullPath] = title
 }
 
 // ResolveModName converts a full mod path to its short name.
@@ -66,6 +79,20 @@ func (idx *ResourceIndex) GetModNameMap() map[string]string {
 	// Return a copy to prevent concurrent modification
 	result := make(map[string]string, len(idx.modNameMap))
 	for k, v := range idx.modNameMap {
+		result[k] = v
+	}
+	return result
+}
+
+// GetModTitleMap returns a copy of the mod title mappings.
+// This is used by lazy workspace to build dependency mod metadata.
+func (idx *ResourceIndex) GetModTitleMap() map[string]string {
+	idx.mu.RLock()
+	defer idx.mu.RUnlock()
+
+	// Return a copy to prevent concurrent modification
+	result := make(map[string]string, len(idx.modTitleMap))
+	for k, v := range idx.modTitleMap {
 		result[k] = v
 	}
 	return result

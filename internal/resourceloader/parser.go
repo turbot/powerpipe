@@ -231,6 +231,13 @@ func isNonCriticalDecodeError(diag *hcl.Diagnostic) bool {
 		strings.Contains(diag.Summary, "Call to unknown function") {
 		return true
 	}
+	// File function errors (incorrect base path during lazy loading)
+	// These can happen when resources from dependency mods are parsed during index building
+	// The file() calls will be re-evaluated with correct base path during on-demand loading
+	if strings.Contains(diag.Summary, "Invalid function argument") &&
+		strings.Contains(diag.Detail, "no file exists") {
+		return true
+	}
 	// Type errors that cascade from variable/function errors
 	if strings.Contains(diag.Summary, "Unsuitable value type") ||
 		strings.Contains(diag.Summary, "Incorrect attribute value type") {

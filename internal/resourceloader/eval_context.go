@@ -94,8 +94,11 @@ func (b *EvalContextBuilder) Build(ctx context.Context) (*hcl.EvalContext, error
 	_ = b.ScanDependencyMods(ctx)
 
 	// Build final eval context with both variables and locals
+	// NOTE: We DON'T include Functions here because this eval context is used
+	// across multiple mods with different base paths. The loader will add
+	// appropriate functions (with correct base path) when parsing each resource.
 	finalCtx := &hcl.EvalContext{
-		Functions: funcs.ContextFunctions(b.workspacePath),
+		Functions: nil, // Will be set by loader based on file being parsed
 		Variables: map[string]cty.Value{
 			"var":   cty.ObjectVal(b.variables),
 			"local": cty.ObjectVal(b.locals),
@@ -301,7 +304,7 @@ func (b *EvalContextBuilder) ScanDependencyMods(ctx context.Context) error {
 		// across different files. Keep parsing until no new locals are added.
 		// CRITICAL: All files must be parsed in each pass because locals in different files
 		// reference each other (e.g., ec2.pp references locals from all_controls.pp)
-		maxPasses := 10  // Increase to handle deep dependency chains
+		maxPasses := 10 // Increase to handle deep dependency chains
 		for pass := 0; pass < maxPasses; pass++ {
 			localsBefore := len(b.locals)
 

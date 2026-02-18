@@ -67,8 +67,8 @@ type IndexEntry struct {
 
 	// For queries/controls
 	HasSQL   bool   `json:"has_sql,omitempty"`
-	SQL      string `json:"sql,omitempty"`        // The actual SQL text
-	QueryRef string `json:"query_ref,omitempty"`  // For controls/cards referencing a query
+	SQL      string `json:"sql,omitempty"`       // The actual SQL text
+	QueryRef string `json:"query_ref,omitempty"` // For controls/cards referencing a query
 
 	// Multiple parents support (for controls that are children of multiple benchmarks)
 	ParentNames []string   `json:"parent_names,omitempty"` // All parents that reference this resource
