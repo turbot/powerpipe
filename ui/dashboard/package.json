@@ -140,14 +140,14 @@
     "webpack-dev-server": "5.2.1",
     "js-yaml": "4.1.1",
     "glob": "10.5.0",
-    "qs": "6.14.1",
+    "qs": "6.14.2",
     "mdast-util-to-hast": "13.2.1",
     "on-headers": "1.1.0",
-    "tar": "7.5.7",
+    "tar": "7.5.8",
     "lodash-es": "4.17.23",
     "lodash": "4.17.23",
     "@remix-run/router": "1.23.2",
-    "jsonpath": "1.2.0"
+    "jsonpath": "1.2.1"
   },
   "engines": {
     "node": ">=20",
