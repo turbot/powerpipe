@@ -4,7 +4,7 @@ go 1.24.0
 
 toolchain go1.24.1
 
-//replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
+// replace github.com/turbot/pipe-fittings/v2 => github.com/turbot/pipe-fittings/v2 v2.7.3-0.20260107171511-1d880d784139
 
 require (
 	github.com/Masterminds/semver/v3 v3.3.0
@@ -25,7 +25,7 @@ require (
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.0
-	github.com/turbot/pipe-fittings/v2 v2.7.0
+	github.com/turbot/pipe-fittings/v2 v2.8.0
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -40,13 +40,16 @@ require github.com/sethvargo/go-retry v0.3.0 // indirect
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/didip/tollbooth/v7 v7.0.2
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/size v1.0.1
 	github.com/go-sql-driver/mysql v1.8.1
+	github.com/gorilla/websocket v1.5.1
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb/v2 v2.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/stretchr/testify v1.11.0
 	github.com/thediveo/enumflag/v2 v2.0.5
 	golang.org/x/sync v0.18.0
 	golang.org/x/text v0.31.0
@@ -110,6 +113,7 @@ require (
 	github.com/containerd/platforms v0.2.1 // indirect
 	github.com/cyphar/filepath-securejoin v0.4.1 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
+	github.com/davecgh/go-spew v1.1.2-0.20180830191138-d8f796af33cc // indirect
 	github.com/dgraph-io/ristretto v0.2.0 // indirect
 	github.com/duckdb/duckdb-go-bindings v0.1.19 // indirect
 	github.com/duckdb/duckdb-go-bindings/darwin-amd64 v0.1.19 // indirect
@@ -125,7 +129,6 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.32.4 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.2.1 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -152,7 +155,6 @@ require (
 	github.com/google/uuid v1.6.0 // indirect
 	github.com/googleapis/enterprise-certificate-proxy v0.3.6 // indirect
 	github.com/googleapis/gax-go/v2 v2.14.1 // indirect
-	github.com/gorilla/websocket v1.5.1 // indirect
 	github.com/grpc-ecosystem/grpc-gateway/v2 v2.19.1 // indirect
 	github.com/hashicorp/errwrap v1.1.0 // indirect
 	github.com/hashicorp/go-cleanhttp v0.5.2 // indirect
@@ -210,6 +212,7 @@ require (
 	github.com/pjbgf/sha1cd v0.3.2 // indirect
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/planetscale/vtprotobuf v0.6.1-0.20240319094008-0393e58bdf10 // indirect
+	github.com/pmezard/go-difflib v1.0.1-0.20181226105442-5d4384ee4fb2 // indirect
 	github.com/prometheus/client_golang v1.16.0 // indirect
 	github.com/prometheus/client_model v0.6.1 // indirect
 	github.com/prometheus/common v0.42.0 // indirect

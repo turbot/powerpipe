@@ -38,3 +38,8 @@ func (b *WithProviderImpl) GetWith(name string) (*DashboardWith, bool) {
 	w, ok := b.withs[name]
 	return w, ok
 }
+
+// ClearRemain clears the WithProviderRemain field to free HCL AST memory after parsing
+func (b *WithProviderImpl) ClearRemain() {
+	b.WithProviderRemain = nil
+}

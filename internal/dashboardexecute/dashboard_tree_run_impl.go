@@ -51,7 +51,7 @@ func NewDashboardTreeRunImpl(resource resources.DashboardLeafNode, parent dashbo
 		Documentation:    resource.GetDocumentation(),
 		Type:             resource.GetType(),
 		Tags:             resource.GetTags(),
-		SourceDefinition: resource.GetMetadata().SourceDefinition,
+		SourceDefinition: resource.GetMetadata().GetSourceDefinition(),
 
 		// set to complete, optimistically
 		// if any children have SQL we will set this to DashboardRunReady instead

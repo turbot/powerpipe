@@ -33,3 +33,9 @@ func (b *RuntimeDependencyProviderImpl) GetNestedStructs() []modconfig.CtyValueP
 	// we return ourselves and our base structs
 	return append([]modconfig.CtyValueProvider{b}, b.ModTreeItemImpl.GetNestedStructs()...)
 }
+
+// ClearRemain clears the RuntimeDependencyProviderRemain field and nested Remain fields to free HCL AST memory after parsing
+func (b *RuntimeDependencyProviderImpl) ClearRemain() {
+	b.RuntimeDependencyProviderRemain = nil
+	b.ModTreeItemImpl.ClearRemain()
+}

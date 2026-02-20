@@ -329,3 +329,9 @@ func (q *QueryProviderImpl) GetDatabase() connection.ConnectionStringProvider {
 	// fall back to parent inheritance (from ModTreeItemImpl)
 	return q.ModTreeItemImpl.GetDatabase()
 }
+
+// ClearRemain clears the QueryProviderRemain field and nested Remain fields to free HCL AST memory after parsing
+func (q *QueryProviderImpl) ClearRemain() {
+	q.QueryProviderRemain = nil
+	q.RuntimeDependencyProviderImpl.ClearRemain()
+}

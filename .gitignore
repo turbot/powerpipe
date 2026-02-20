@@ -40,3 +40,11 @@
 /~/.Powerpipe
 
 powerpipe
+
+# Generated stress test mods (too large for repo - generate locally)
+/internal/testdata/mods/generated/stress/
+
+# Benchmark results
+/benchmark_results/
+# Claude Code WIP files
+.claude/wip/

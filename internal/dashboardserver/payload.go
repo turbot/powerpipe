@@ -18,11 +18,15 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
+	"github.com/turbot/powerpipe/internal/resourceindex"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/timing"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
 func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {
+	defer timing.Track("buildServerMetadataPayload")()
 	workspaceResources := rm.(*resources.PowerpipeModResources)
 	installedMods := make(map[string]*ModMetadata)
 	for _, mod := range workspaceResources.Mods {
@@ -146,57 +150,186 @@ func getSearchPathMetadata(ctx context.Context, database string, searchPathConfi
 
 }
 
-func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addBenchmarkChildren(benchmark *resources.Benchmark, recordTrunk bool, trunk []string, trunks map[string][][]string, visiting map[string]bool) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.Benchmark:
+			// Cycle detection: skip if we're already visiting this node in the current path
+			if visiting[t.FullName] {
+				// Circular reference detected - log a warning and skip to prevent infinite recursion
+				cyclePath := append(append([]string{}, trunk...), t.FullName)
+				slog.Warn("circular benchmark reference detected; skipping child to prevent infinite recursion",
+					"benchmark", benchmark.FullName,
+					"child", t.FullName,
+					"path", fmt.Sprintf("%v", cyclePath))
+				continue
+			}
+
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
 			if recordTrunk {
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
+
+			// Mark as visiting before recursion
+			visiting[t.FullName] = true
+
+			// Create a copy of tags to avoid mutating the original resource
+			childTags := make(map[string]string)
+			for k, v := range t.Tags {
+				childTags[k] = v
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			if t.Mod != nil {
+				modFullName := t.Mod.GetFullName()
+				if _, exists := childTags["mod"]; !exists && modFullName != "" {
+					childTags["mod"] = modFullName
+				}
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "control",
-				Tags:          t.Tags,
-				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Tags:          childTags,
+				Children:      addBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
+
+			// Unmark after recursion completes (allows the same node to appear in different branches)
+			delete(visiting, t.FullName)
+
 			children = append(children, availableBenchmark)
 		}
 	}
 	return children
 }
 
-func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string) []ModAvailableBenchmark {
+func addDetectionBenchmarkChildren(benchmark *resources.DetectionBenchmark, recordTrunk bool, trunk []string, trunks map[string][][]string, visiting map[string]bool) []ModAvailableBenchmark {
 	var children []ModAvailableBenchmark
 	for _, child := range benchmark.GetChildren() {
 		switch t := child.(type) {
 		case *resources.DetectionBenchmark:
+			// Cycle detection: skip if we're already visiting this node in the current path
+			if visiting[t.FullName] {
+				// Circular reference detected - skip to prevent infinite recursion
+				continue
+			}
+
 			childTrunk := make([]string, len(trunk)+1)
 			copy(childTrunk, trunk)
 			childTrunk[len(childTrunk)-1] = t.FullName
 			if recordTrunk {
 				trunks[t.FullName] = append(trunks[t.FullName], childTrunk)
 			}
+
+			// Mark as visiting before recursion
+			visiting[t.FullName] = true
+
+			// Create a copy of tags to avoid mutating the original resource
+			detChildTags := make(map[string]string)
+			for k, v := range t.Tags {
+				detChildTags[k] = v
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			if t.Mod != nil {
+				modFullName := t.Mod.GetFullName()
+				if _, exists := detChildTags["mod"]; !exists && modFullName != "" {
+					detChildTags["mod"] = modFullName
+				}
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         t.GetTitle(),
 				FullName:      t.FullName,
 				ShortName:     t.ShortName,
 				BenchmarkType: "detection",
-				Tags:          t.Tags,
-				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks),
+				Tags:          detChildTags,
+				Children:      addDetectionBenchmarkChildren(t, recordTrunk, childTrunk, trunks, visiting),
 			}
+
+			// Unmark after recursion completes (allows the same node to appear in different branches)
+			delete(visiting, t.FullName)
+
 			children = append(children, availableBenchmark)
 		}
 	}
 	return children
 }
 
+// buildAvailableDashboardsPayloadFromIndex builds the available dashboards payload
+// from a lazy workspace's index without loading any HCL resources.
+// This is much faster than building from fully parsed resources.
+func buildAvailableDashboardsPayloadFromIndex(lazyWorkspace *workspace.LazyWorkspace) ([]byte, error) {
+	defer timing.Track("buildAvailableDashboardsPayloadFromIndex")()
+
+	// Get payload from index - no HCL parsing required!
+	indexPayload := lazyWorkspace.GetAvailableDashboardsFromIndex()
+
+	// Convert to server payload format
+	// Initialize all maps to empty maps (not nil) for consistent JSON serialization
+	// nil maps serialize to "null", empty maps serialize to "{}"
+	payload := AvailableDashboardsPayload{
+		Action:     "available_dashboards",
+		Dashboards: make(map[string]ModAvailableDashboard),
+		Benchmarks: make(map[string]ModAvailableBenchmark),
+		Snapshots:  make(map[string]string), // Empty map for consistent serialization
+	}
+
+	// Convert dashboards
+	for name, dash := range indexPayload.Dashboards {
+		// Ensure tags is not nil (empty map if no tags)
+		tags := dash.Tags
+		if tags == nil {
+			tags = make(map[string]string)
+		}
+		payload.Dashboards[name] = ModAvailableDashboard{
+			Title:       dash.Title,
+			FullName:    dash.FullName,
+			ShortName:   dash.ShortName,
+			Tags:        tags,
+			ModFullName: dash.ModFullName,
+		}
+	}
+
+	// Convert benchmarks
+	for name, bench := range indexPayload.Benchmarks {
+		payload.Benchmarks[name] = convertIndexBenchmarkInfo(bench)
+	}
+
+	return json.Marshal(payload)
+}
+
+// convertIndexBenchmarkInfo converts a resourceindex.BenchmarkInfo to ModAvailableBenchmark.
+func convertIndexBenchmarkInfo(info resourceindex.BenchmarkInfo) ModAvailableBenchmark {
+	var children []ModAvailableBenchmark
+	for _, child := range info.Children {
+		children = append(children, convertIndexBenchmarkInfo(child))
+	}
+
+	// Ensure tags is not nil (empty map if no tags) for consistent JSON serialization
+	tags := info.Tags
+	if tags == nil {
+		tags = make(map[string]string)
+	}
+
+	return ModAvailableBenchmark{
+		Title:         info.Title,
+		FullName:      info.FullName,
+		ShortName:     info.ShortName,
+		BenchmarkType: info.BenchmarkType,
+		Tags:          tags,
+		IsTopLevel:    info.IsTopLevel,
+		Children:      children,
+		Trunks:        info.Trunks,
+		ModFullName:   info.ModFullName,
+	}
+}
+
 func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModResources) ([]byte, error) {
+	defer timing.Track("buildAvailableDashboardsPayload")()
 	payload := AvailableDashboardsPayload{
 		Action:     "available_dashboards",
 		Dashboards: make(map[string]ModAvailableDashboard),
@@ -213,13 +346,26 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 
 		for _, dashboard := range topLevelResources.Dashboards {
 			mod := dashboard.Mod
+			// Create a copy of tags to avoid mutating the original resource
+			tags := make(map[string]string)
+			for k, v := range dashboard.Tags {
+				tags[k] = v
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := ""
+			if mod != nil {
+				modFullName = mod.GetFullName()
+			}
+			if _, exists := tags["mod"]; !exists && modFullName != "" {
+				tags["mod"] = modFullName
+			}
 			// add this dashboard
 			payload.Dashboards[dashboard.FullName] = ModAvailableDashboard{
 				Title:       typeHelpers.SafeString(dashboard.Title),
 				FullName:    dashboard.FullName,
 				ShortName:   dashboard.ShortName,
-				Tags:        dashboard.Tags,
-				ModFullName: mod.GetFullName(),
+				Tags:        tags,
+				ModFullName: modFullName,
 			}
 		}
 
@@ -245,15 +391,30 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				benchmarkTrunks[benchmark.FullName] = [][]string{trunk}
 			}
 
+			// Cycle detection: track visited nodes in current path
+			visiting := make(map[string]bool)
+			visiting[benchmark.FullName] = true
+
+			// Create a copy of tags to avoid mutating the original resource
+			benchTags := make(map[string]string)
+			for k, v := range benchmark.Tags {
+				benchTags[k] = v
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := mod.GetFullName()
+			if _, exists := benchTags["mod"]; !exists && modFullName != "" {
+				benchTags["mod"] = modFullName
+			}
+
 			availableBenchmark := ModAvailableBenchmark{
 				Title:         benchmark.GetTitle(),
 				FullName:      benchmark.FullName,
 				ShortName:     benchmark.ShortName,
 				BenchmarkType: "control",
-				Tags:          benchmark.Tags,
+				Tags:          benchTags,
 				IsTopLevel:    isTopLevel,
-				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks),
-				ModFullName:   mod.GetFullName(),
+				Children:      addBenchmarkChildren(benchmark, isTopLevel, trunk, benchmarkTrunks, visiting),
+				ModFullName:   modFullName,
 			}
 
 			payload.Benchmarks[benchmark.FullName] = availableBenchmark
@@ -287,15 +448,30 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 				detectionBenchmarkTrunks[detectionBenchmark.FullName] = [][]string{trunk}
 			}
 
+			// Cycle detection: track visited nodes in current path
+			visiting := make(map[string]bool)
+			visiting[detectionBenchmark.FullName] = true
+
+			// Create a copy of tags to avoid mutating the original resource
+			detBenchTags := make(map[string]string)
+			for k, v := range detectionBenchmark.Tags {
+				detBenchTags[k] = v
+			}
+			// Add mod tag if not already present (for grouping consistency with lazy loading)
+			modFullName := mod.GetFullName()
+			if _, exists := detBenchTags["mod"]; !exists && modFullName != "" {
+				detBenchTags["mod"] = modFullName
+			}
+
 			availableDetectionBenchmark := ModAvailableBenchmark{
 				Title:         detectionBenchmark.GetTitle(),
 				FullName:      detectionBenchmark.FullName,
 				ShortName:     detectionBenchmark.ShortName,
 				BenchmarkType: "detection",
-				Tags:          detectionBenchmark.Tags,
+				Tags:          detBenchTags,
 				IsTopLevel:    isTopLevel,
-				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks),
-				ModFullName:   mod.GetFullName(),
+				Children:      addDetectionBenchmarkChildren(detectionBenchmark, isTopLevel, trunk, detectionBenchmarkTrunks, visiting),
+				ModFullName:   modFullName,
 			}
 
 			payload.Benchmarks[detectionBenchmark.FullName] = availableDetectionBenchmark

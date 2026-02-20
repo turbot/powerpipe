@@ -2,15 +2,53 @@ package workspace
 
 import (
 	"context"
+	"errors"
 	"log/slog"
 	"time"
 
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/pipe-fittings/v2/workspace"
+	"github.com/turbot/powerpipe/internal/dashboardevents"
+	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/timing"
 )
 
+// WorkspaceProvider is an interface that both PowerpipeWorkspace and LazyWorkspace implement.
+// This allows code to work with either workspace type.
+type WorkspaceProvider interface {
+	// GetResource retrieves a resource by parsed name
+	GetResource(parsedName *modconfig.ParsedResourceName) (modconfig.HclResource, bool)
+	// Close cleans up the workspace
+	Close()
+	// IsLazy returns true if this is a lazy-loading workspace
+	IsLazy() bool
+	// LoadDashboard loads a dashboard by name
+	LoadDashboard(ctx context.Context, name string) (*resources.Dashboard, error)
+	// LoadBenchmark loads a benchmark by name
+	LoadBenchmark(ctx context.Context, name string) (modconfig.ModTreeItem, error)
+	// LoadBenchmarkForExecution loads a benchmark with children properly resolved for execution.
+	// For lazy workspaces, this resolves child references. For eager workspaces, this is the same as LoadBenchmark.
+	LoadBenchmarkForExecution(ctx context.Context, name string) (modconfig.ModTreeItem, error)
+}
+
+// DashboardServerWorkspace extends WorkspaceProvider with methods needed by the dashboard server.
+// Both PowerpipeWorkspace and LazyWorkspace implement this interface.
+type DashboardServerWorkspace interface {
+	WorkspaceProvider
+	// RegisterDashboardEventHandler registers a handler for dashboard events
+	RegisterDashboardEventHandler(ctx context.Context, handler dashboardevents.DashboardEventHandler)
+	// SetupWatcher sets up file watching
+	SetupWatcher(ctx context.Context, errCallback func(context.Context, error)) error
+	// GetModResources returns the mod resources
+	GetModResources() modconfig.ModResources
+	// PublishDashboardEvent publishes a dashboard event
+	PublishDashboardEvent(ctx context.Context, event dashboardevents.DashboardEvent)
+}
+
 func LoadWorkspacePromptingForVariables(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (*PowerpipeWorkspace, error_helpers.ErrorAndWarnings) {
+	defer timing.Track("LoadWorkspacePromptingForVariables")()
 	t := time.Now()
 	defer func() {
 		slog.Debug("Workspace load complete", "duration (ms)", time.Since(t).Milliseconds())
@@ -32,6 +70,8 @@ func LoadWorkspacePromptingForVariables(ctx context.Context, workspacePath strin
 // Load_ creates a Workspace and loads the workspace mod
 
 func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (w *PowerpipeWorkspace, ew error_helpers.ErrorAndWarnings) {
+	defer timing.Track("workspace.Load")()
+
 	cfg := newLoadPowerpipeWorkspaceConfig()
 	for _, o := range opts {
 		o(cfg)
@@ -43,11 +83,20 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 	w = NewPowerpipeWorkspace(workspacePath)
 	// check whether the workspace contains a modfile
 	// this will determine whether we load files recursively, and create pseudo resources for sql files
-	w.SetModfileExists()
+	func() {
+		defer timing.Track("workspace.SetModfileExists")()
+		w.SetModfileExists()
+	}()
 
 	// load the .steampipe ignore file
-	if err := w.LoadExclusions(); err != nil {
-		return nil, error_helpers.NewErrorsAndWarning(err)
+	func() {
+		defer timing.Track("workspace.LoadExclusions")()
+		if err := w.LoadExclusions(); err != nil {
+			ew = error_helpers.NewErrorsAndWarning(err)
+		}
+	}()
+	if ew.GetError() != nil {
+		return nil, ew
 	}
 
 	w.SupportLateBinding = cfg.supportLateBinding
@@ -57,14 +106,98 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 
 	// if there is a mod file (or if we are loading resources even with no modfile), load them
 	if w.ModfileExists() || !cfg.skipResourceLoadIfNoModfile {
-		ew = w.LoadWorkspaceMod(ctx)
+		func() {
+			defer timing.Track("workspace.LoadWorkspaceMod")()
+			ew = w.LoadWorkspaceMod(ctx)
+		}()
 	}
 	if ew.GetError() != nil {
 		return nil, ew
 	}
 
 	// verify all runtime dependencies can be resolved
-	ew.Error = w.verifyResourceRuntimeDependencies()
+	func() {
+		defer timing.Track("workspace.verifyResourceRuntimeDependencies")()
+		ew.Error = w.verifyResourceRuntimeDependencies()
+	}()
 
 	return w, ew
+}
+
+// LoadLazy creates a LazyWorkspace that loads resources on-demand.
+// This provides faster startup and lower memory usage than the standard Load().
+func LoadLazy(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (*LazyWorkspace, error) {
+	defer timing.Track("workspace.LoadLazy")()
+
+	t := time.Now()
+	defer func() {
+		slog.Debug("Lazy workspace load complete", "duration (ms)", time.Since(t).Milliseconds())
+	}()
+
+	cfg := newLoadPowerpipeWorkspaceConfig()
+	for _, o := range opts {
+		o(cfg)
+	}
+
+	utils.LogTime("w.LoadLazy start")
+	defer utils.LogTime("w.LoadLazy end")
+
+	lw, err := NewLazyWorkspace(ctx, workspacePath, cfg.lazyLoadConfig)
+	if err != nil {
+		return nil, err
+	}
+
+	// Set modfile exists flag on the embedded workspace
+	// This is needed for commands that require a modfile
+	lw.PowerpipeWorkspace.SetModfileExists()
+
+	// Start background resolution for variable references and templates
+	lw.StartBackgroundResolution()
+
+	// Wait briefly for quickly-resolvable metadata (e.g., simple tags without variables).
+	// Critical fields like mod_full_name and resource titles are already available from
+	// scanning and don't require resolution. This short wait (default 200ms) allows
+	// literal tags to resolve while keeping startup fast for lazy loading.
+	//
+	// Tags with variable references will resolve progressively in the background.
+	// The dashboard server should handle progressive metadata updates gracefully.
+	timeout := cfg.lazyLoadConfig.InitialResolutionTimeout
+	if timeout <= 0 {
+		// Use default if not configured
+		timeout = DefaultLazyLoadConfig().InitialResolutionTimeout
+	}
+
+	if !lw.WaitForResolution(timeout) {
+		// Normal for large workspaces - background resolution continues asynchronously
+		slog.Debug("initial background resolution timeout reached, tags will resolve progressively",
+			"timeout_ms", timeout.Milliseconds())
+	}
+
+	return lw, nil
+}
+
+// LoadAuto loads a workspace, using lazy loading if enabled in options.
+// Returns a WorkspaceProvider interface that can be either type.
+// If lazy loading fails due to duplicate mod versions (diamond dependency),
+// it automatically falls back to eager loading.
+func LoadAuto(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorkspaceOption) (WorkspaceProvider, error_helpers.ErrorAndWarnings) {
+	cfg := newLoadPowerpipeWorkspaceConfig()
+	for _, o := range opts {
+		o(cfg)
+	}
+
+	if cfg.lazyLoad {
+		lw, err := LoadLazy(ctx, workspacePath, opts...)
+		if err != nil {
+			// Check if this is a duplicate mod versions error - if so, fall back to eager loading
+			if errors.Is(err, ErrDuplicateModVersions) {
+				slog.Info("Falling back to eager loading due to duplicate mod versions")
+				return Load(ctx, workspacePath, opts...)
+			}
+			return nil, error_helpers.NewErrorsAndWarning(err)
+		}
+		return lw, error_helpers.ErrorAndWarnings{}
+	}
+
+	return Load(ctx, workspacePath, opts...)
 }
