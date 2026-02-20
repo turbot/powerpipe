@@ -1,3 +1,7 @@
+## v1.4.4 [2026-02-20]
+_Dependencies_
+- Upgrade go and npm dependencies to remediate security vulnerabilities.
+
 ## v1.4.3 [2026-02-12]
 _Dependencies_
 - Upgrade go and npm dependencies to remediate vulnerabilities.
