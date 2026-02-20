@@ -165,7 +165,7 @@ variable "common_dimensions" {
 func buildTimingResourceFile(fileIdx, startIdx, endIdx int) string {
 	var sb strings.Builder
 	for i := startIdx; i < endIdx; i++ {
-		fmt.Fprintf(&sb, `dashboard "dashboard_%03d" {
+		sb.WriteString(fmt.Sprintf(`dashboard "dashboard_%03d" {
   title = "Service %02d Dashboard %03d"
   tags  = var.common_tags
 
@@ -180,7 +180,7 @@ benchmark "benchmark_%03d" {
   children = []
 }
 
-`, i, fileIdx, i, fileIdx, i, i, fileIdx, i, fileIdx)
+`, i, fileIdx, i, fileIdx, i, i, fileIdx, i, fileIdx))
 	}
 	return sb.String()
 }
@@ -726,7 +726,6 @@ type localPerfResult struct {
 	dashboardList time.Duration
 	numBenchmarks int
 	numDashboards int
-	numFiles      int
 }
 
 // TestLocalPerformanceComparison measures eager vs lazy/phased loading for local
