@@ -32,10 +32,10 @@ linters:
 
     forbidigo:
       forbid:
-        - "^(fmt\\.Print(|f|ln)|print|println)$"
-        - "^(fmt\\.Fprint(|f|ln)|print|println)$"
-        - '^zap\.Error$'
-        - '^grpc\.(Header|Trailer)$' # easy to misuse and create a data race
+        - pattern: "^(fmt\\.Print(|f|ln)|print|println)$"
+        - pattern: "^(fmt\\.Fprint(|f|ln)|print|println)$"
+        - pattern: '^zap\.Error$'
+        - pattern: '^grpc\.(Header|Trailer)$' # easy to misuse and create a data race
 
     gocritic:
       disabled-checks:
