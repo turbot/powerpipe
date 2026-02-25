@@ -30,6 +30,12 @@ linters:
       require-explanation: true
       require-specific: true
 
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST*"    # stylecheck: not previously enabled (merged into staticcheck in v2)
+        - "-QF*"    # quickfix suggestions: not previously enabled (merged into staticcheck in v2)
+
     forbidigo:
       forbid:
         - pattern: "^(fmt\\.Print(|f|ln)|print|println)$"
@@ -55,6 +61,18 @@ linters:
             - pkg: "github.com/pkg/errors"
               desc: Should be replaced by standard lib errors package
   exclusions:
+    presets:
+      - std-error-handling    # errcheck: unchecked Close/Remove/print calls
+      - common-false-positives # gosec: G103, G204, G304 false positives
+      - legacy                 # gosec: G104, G301, G302, G307
+    rules:
+      # gosec rules not covered by presets - pre-existing findings
+      - linters: [gosec]
+        text: "G101:"
+      - linters: [gosec]
+        text: "G602:"
+      - linters: [gosec]
+        text: "G706:"
     paths:
       - "tests/acceptance"
 
