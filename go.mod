@@ -24,7 +24,7 @@ require (
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.0
 	github.com/turbot/pipe-fittings/v2 v2.7.0
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
+	github.com/turbot/steampipe-plugin-sdk/v5 v5.13.1
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.17.0
