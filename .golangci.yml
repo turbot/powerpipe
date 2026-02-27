@@ -1,13 +1,13 @@
+version: "2"
+
 linters:
-  disable-all: true
+  default: none
   enable:
     # default rules
     - errcheck
-    - gosimple
     - govet
     - ineffassign
     - staticcheck
-    - typecheck
     - unused
     # other rules
     - asasalint
@@ -25,48 +25,54 @@ linters:
     - reassign
     - sqlclosecheck
     - unconvert
+  settings:
+    nolintlint:
+      require-explanation: true
+      require-specific: true
 
-linters-settings:
-  nolintlint:
-    require-explanation: true
-    require-specific: true
+    staticcheck:
+      checks:
+        - "all"
+        - "-ST*"    # stylecheck: not previously enabled (merged into staticcheck in v2)
+        - "-QF*"    # quickfix suggestions: not previously enabled (merged into staticcheck in v2)
 
-  forbidigo:
-    forbid:
-      - "^(fmt\\.Print(|f|ln)|print|println)$"
-      - "^(fmt\\.Fprint(|f|ln)|print|println)$"
-      - '^zap\.Error$'
-      - '^grpc\.(Header|Trailer)$' # easy to misuse and create a data race
+    gosec:
+      excludes:
+        - G101      # false positives on non-credential string constants
+        - G602      # false positives on range loops and safe slice access
+        - G706      # false positives on logging config/environment values
 
-  gocritic:
-    disabled-checks:
-      - ifElseChain       # style
-      - singleCaseSwitch  # style & it's actually not a bad idea to use single case switch in some cases
-      - assignOp          # style
-      - commentFormatting # style
+    forbidigo:
+      forbid:
+        - pattern: "^(fmt\\.Print(|f|ln)|print|println)$"
+        - pattern: "^(fmt\\.Fprint(|f|ln)|print|println)$"
+        - pattern: '^zap\.Error$'
+        - pattern: '^grpc\.(Header|Trailer)$' # easy to misuse and create a data race
 
-  depguard:
-    rules:
-      # Name of a rule.
-      main:
-        # List of file globs that will match this list of settings to compare against.
-        # Default: $all
-        # files:
-        #   - "!**/*_a _file.go"
-        # List of allowed packages.
-        # allow:
-        #   - $gostd
-        #   - github.com/OpenPeeDeeP
-        # Packages that are not allowed where the value is a suggestion.
-        deny:
-          - pkg: "go.uber.org/zap"
-            desc: do not use Uber zap directly, use the fplog package instead
-          - pkg: "github.com/pkg/errors"
-            desc: Should be replaced by standard lib errors package
+    gocritic:
+      disabled-checks:
+        - ifElseChain       # style
+        - singleCaseSwitch  # style & it's actually not a bad idea to use single case switch in some cases
+        - assignOp          # style
+        - commentFormatting # style
+
+    depguard:
+      rules:
+        # Name of a rule.
+        main:
+          # Packages that are not allowed where the value is a suggestion.
+          deny:
+            - pkg: "go.uber.org/zap"
+              desc: do not use Uber zap directly, use the fplog package instead
+            - pkg: "github.com/pkg/errors"
+              desc: Should be replaced by standard lib errors package
+  exclusions:
+    presets:
+      - std-error-handling    # errcheck: unchecked Close/Remove/print calls
+      - common-false-positives # gosec: G103, G204, G304 false positives
+      - legacy                 # gosec: G104, G301, G302, G307
+    paths:
+      - "tests/acceptance"
 
 run:
   timeout: 5m
-
-issues:
-  exclude-dirs:
-    - "tests/acceptance"
