@@ -1,3 +1,10 @@
+## v1.5.0 [2026-02-27]
+_What's new_
+- Compiled with Go 1.26.
+
+_Dependencies_
+- Upgrade go and npm dependencies to remediate security vulnerabilities.
+
 ## v1.4.4 [2026-02-20]
 _Dependencies_
 - Upgrade go and npm dependencies to remediate security vulnerabilities.
