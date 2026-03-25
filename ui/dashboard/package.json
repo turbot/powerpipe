@@ -134,7 +134,7 @@
     "nanoid": "3.3.8",
     "elliptic": "6.6.1",
     "esbuild": "0.25.0",
-    "serialize-javascript": "6.0.2",
+    "serialize-javascript": "7.0.3",
     "prismjs": "1.30.0",
     "pbkdf2": "3.1.3",
     "webpack-dev-server": "5.2.1",
@@ -143,11 +143,11 @@
     "qs": "6.14.2",
     "mdast-util-to-hast": "13.2.1",
     "on-headers": "1.1.0",
-    "tar": "7.5.8",
+    "tar": "7.5.10",
     "lodash-es": "4.17.23",
     "lodash": "4.17.23",
     "@remix-run/router": "1.23.2",
-    "jsonpath": "1.2.1",
+    "jsonpath": "1.3.0",
     "rollup": "2.80.0"
   },
   "engines": {
