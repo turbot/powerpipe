@@ -22,7 +22,7 @@ on:
         type: boolean
 
 permissions:
-  contents: read
+  contents: write
 
 env:
   POWERPIPE_UPDATE_CHECK: false
