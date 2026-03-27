@@ -44,7 +44,7 @@ require (
 	github.com/jackc/pgx/v5 v5.6.0
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb/v2 v2.4.0
-	github.com/mattn/go-sqlite3 v1.14.22
+	github.com/mattn/go-sqlite3 v1.14.33
 	github.com/thediveo/enumflag/v2 v2.0.5
 	golang.org/x/sync v0.18.0
 	golang.org/x/text v0.31.0
