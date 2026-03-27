@@ -55,7 +55,7 @@
     "semver": "7.7.2",
     "use-deep-compare-effect": "1.8.1",
     "uuid": "11.1.0",
-    "web-vitals": "4.2.4"
+    "web-vitals": "5.1.0"
   },
   "devDependencies": {
     "@chromatic-com/storybook": "3.2.4",
