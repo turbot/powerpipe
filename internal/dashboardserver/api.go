@@ -20,7 +20,7 @@ import (
 func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} {
 	doneChan := make(chan struct{})
 
-	go func() {
+	go func() { //nolint:gosec // G118: context.Background() is intentional on shutdown path where parent ctx is already cancelled
 		gin.SetMode(gin.ReleaseMode)
 		router := gin.New()
 		// only add the Recovery middleware
