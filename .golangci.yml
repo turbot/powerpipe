@@ -39,7 +39,6 @@ linters:
     gosec:
       excludes:
         - G101      # false positives on non-credential string constants
-        - G118      # false positives: cancel fns stored for deferred use, context.Background() on shutdown paths
         - G602      # false positives on range loops and safe slice access
         - G706      # false positives on logging config/environment values
 
@@ -72,6 +71,12 @@ linters:
       - std-error-handling    # errcheck: unchecked Close/Remove/print calls
       - common-false-positives # gosec: G103, G204, G304 false positives
       - legacy                 # gosec: G104, G301, G302, G307
+    rules:
+      # G118 (cancel fn not called / goroutine context misuse) was added in golangci-lint v2.11.
+      # These two files have intentional G118 suppression that older local versions see as unused.
+      - linters: [nolintlint]
+        text: "unused for linter \"gosec\""
+        path: "internal/cmdconfig/cmd_hooks\\.go|internal/db_client/db_client_execute\\.go"
     paths:
       - "tests/acceptance"
 
