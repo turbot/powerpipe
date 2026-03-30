@@ -98,7 +98,7 @@ func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string) c
 		return nil
 	}
 
-	taskUpdateCtx, cancelFn := context.WithCancel(ctx) //nolint:gosec // G118: cancelFn is stored in tasksCancelFn and called when tasks complete
+	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
 	tasksCancelFn = cancelFn
 
 	return task.RunTasks(

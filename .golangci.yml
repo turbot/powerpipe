@@ -39,6 +39,7 @@ linters:
     gosec:
       excludes:
         - G101      # false positives on non-credential string constants
+        - G118      # false positives: cancel fns stored for deferred use, context.Background() on shutdown paths
         - G602      # false positives on range loops and safe slice access
         - G706      # false positives on logging config/environment values
 
