@@ -40,10 +40,12 @@ func postRunHook(_ *cobra.Command, _ []string) error {
 	defer utils.LogTime("cmdhook.postRunHook end")
 
 	if waitForTasksChannel != nil {
+		// ensure the task update context is cancelled on every exit path,
+		// not just the timeout branch, to avoid leaking the context
+		defer tasksCancelFn()
 		// wait for the async tasks to finish
 		select {
 		case <-time.After(100 * time.Millisecond):
-			tasksCancelFn()
 			return nil
 		case <-waitForTasksChannel:
 			return nil
@@ -98,6 +100,7 @@ func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string) c
 		return nil
 	}
 
+	//nolint:gosec // G118: cancel ownership is intentionally transferred to the package-level tasksCancelFn, which postRunHook always invokes (via defer) on every exit path; gosec cannot trace cancel ownership through a package global
 	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
 	tasksCancelFn = cancelFn
 

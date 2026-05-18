@@ -68,7 +68,10 @@ func startAPIAsync(ctx context.Context, webSocket *melody.Melody) chan struct{} 
 		<-ctx.Done()
 		slog.Debug("Shutdown Server…")
 
-		shutdownCtx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		// derive the shutdown context from the request-scoped ctx (without its
+		// cancellation, which has already fired) so the server context lineage
+		// is propagated rather than starting from context.Background()
+		shutdownCtx, cancel := context.WithTimeout(context.WithoutCancel(ctx), 5*time.Second)
 		defer cancel()
 
 		if err := srv.Shutdown(shutdownCtx); err != nil {
