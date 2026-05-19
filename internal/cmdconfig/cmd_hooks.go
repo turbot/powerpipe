@@ -100,7 +100,6 @@ func runScheduledTasks(ctx context.Context, cmd *cobra.Command, args []string) c
 		return nil
 	}
 
-	//nolint:gosec // G118: cancel ownership is intentionally transferred to the package-level tasksCancelFn, which postRunHook always invokes (via defer) on every exit path; gosec cannot trace cancel ownership through a package global
 	taskUpdateCtx, cancelFn := context.WithCancel(ctx)
 	tasksCancelFn = cancelFn
 
