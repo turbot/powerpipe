@@ -26,6 +26,10 @@ linters:
     - sqlclosecheck
     - unconvert
   settings:
+    govet:
+      disable:
+        - inline
+
     nolintlint:
       require-explanation: true
       require-specific: true
