@@ -1,3 +1,12 @@
+## v1.5.2 [2026-05-19]
+_What's new_
+- Compiled with Go 1.26.1.
+
+_Dependencies_
+- Bump `github.com/jackc/pgx/v5` to v5.9.2 to remediate CVE-2026-41889 (GHSA-j88v-2chj-qfwx).
+- Bump `github.com/go-jose/go-jose/v4` to v4.1.4 to remediate security vulnerabilities.
+- Bump `go.opentelemetry.io/otel/sdk` to v1.43.0 to remediate security vulnerabilities.
+
 ## v1.5.0 [2026-02-27]
 _What's new_
 - Compiled with Go 1.26.
