@@ -33,7 +33,7 @@
     "file-saver": "2.0.5",
     "framer-motion": "12.0.6",
     "jq-wasm": "1.0.1",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "react": "18.3.1",
     "react-cool-img": "1.2.12",
     "react-day-picker": "9.11.0",
@@ -151,7 +151,7 @@
     "picomatch": "2.3.2",
     "yaml": "1.10.3",
     "lodash-es": "4.17.23",
-    "lodash": "4.17.23",
+    "lodash": "4.18.1",
     "@remix-run/router": "1.23.2",
     "jsonpath": "1.3.0",
     "rollup": "2.80.0"
