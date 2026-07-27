@@ -3352,10 +3352,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@remix-run/router@npm:1.23.2":
-  version: 1.23.2
-  resolution: "@remix-run/router@npm:1.23.2"
-  checksum: 10c0/7096b7f2086b2cd80c9e06873b71a8317e04858c01edc06a6fed187b660408a90f47c8e120e8af4c369cf1fa6b6a316a66b0917f42b6eb8a566e98b277c50449
+"@remix-run/router@npm:1.23.3":
+  version: 1.23.3
+  resolution: "@remix-run/router@npm:1.23.3"
+  checksum: 10c0/73622465dd9e9a2c5a7ced7d1151ea6e9195a8a979c99b4f70a67093eeff7f339daf03a7c6304709a9c27deb2081a8fff6737663aacb33529c1a12a0a0827a17
   languageName: node
   linkType: hard
 
@@ -10767,13 +10767,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"ip-address@npm:^9.0.5":
-  version: 9.0.5
-  resolution: "ip-address@npm:9.0.5"
-  dependencies:
-    jsbn: "npm:1.1.0"
-    sprintf-js: "npm:^1.1.3"
-  checksum: 10c0/331cd07fafcb3b24100613e4b53e1a2b4feab11e671e655d46dc09ee233da5011284d09ca40c4ecbdfe1d0004f462958675c224a804259f2f78d2465a87824bc
+"ip-address@npm:10.3.1":
+  version: 10.3.1
+  resolution: "ip-address@npm:10.3.1"
+  checksum: 10c0/45b1c31e2cc53d6354ea39f276d70c365a9b0332e7ca2140a9ad4cdb7fdb9d73b6a7ec0d8bf19993d8dce7ab636cd86c46c3e417b98db5ccb8c25546fe8c0b17
   languageName: node
   linkType: hard
 
@@ -12089,13 +12086,6 @@ __metadata:
   bin:
     js-yaml: bin/js-yaml.js
   checksum: 10c0/1916456c118746603b067d74bbcbb0445d9a1d5e474ad4ae775e7b20525bed902e01d9d97dd0c81fcd8d4f596162309d0eb057f4aa38f3e9647f14075e9dea45
-  languageName: node
-  linkType: hard
-
-"jsbn@npm:1.1.0":
-  version: 1.1.0
-  resolution: "jsbn@npm:1.1.0"
-  checksum: 10c0/4f907fb78d7b712e11dea8c165fe0921f81a657d3443dde75359ed52eb2b5d33ce6773d97985a089f09a65edd80b11cb75c767b57ba47391fee4c969f7215c96
   languageName: node
   linkType: hard
 
@@ -15402,7 +15392,7 @@ __metadata:
     react-papaparse: "npm:4.4.0"
     react-placeholder: "npm:4.1.0"
     react-popper: "npm:2.3.0"
-    react-router-dom: "npm:6.30.2"
+    react-router-dom: "npm:6.30.4"
     react-router-hash-link: "npm:2.4.3"
     react-scripts: "npm:5.0.1"
     react-select: "npm:5.10.2"
@@ -15993,16 +15983,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router-dom@npm:6.30.2":
-  version: 6.30.2
-  resolution: "react-router-dom@npm:6.30.2"
+"react-router-dom@npm:6.30.4":
+  version: 6.30.4
+  resolution: "react-router-dom@npm:6.30.4"
   dependencies:
-    "@remix-run/router": "npm:1.23.1"
-    react-router: "npm:6.30.2"
+    "@remix-run/router": "npm:1.23.3"
+    react-router: "npm:6.30.4"
   peerDependencies:
     react: ">=16.8"
     react-dom: ">=16.8"
-  checksum: 10c0/d0c6edf4e2aa7639b4a4f64a7747f03d8861bdf4857e8981b1cff1451b7cb91fcdcd7e315a6e3df910271b2f5071825d2aec218d5f7890f2269fc074f198e42a
+  checksum: 10c0/1b25ab26a288da852f7b58eec5c14b3f37919e6773a557cd846d3a05d7a7d890c8d49bda93c0a7f497f240df1df8b0ad50635f990aafb55f2fc545ad8269a822
   languageName: node
   linkType: hard
 
@@ -16018,14 +16008,14 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-router@npm:6.30.2":
-  version: 6.30.2
-  resolution: "react-router@npm:6.30.2"
+"react-router@npm:6.30.4":
+  version: 6.30.4
+  resolution: "react-router@npm:6.30.4"
   dependencies:
-    "@remix-run/router": "npm:1.23.1"
+    "@remix-run/router": "npm:1.23.3"
   peerDependencies:
     react: ">=16.8"
-  checksum: 10c0/cff5ea92d248d2230adc46d4e2ed3fbeddfaf1ae2e63411da8b7ea6ddc207d71dbc522c05c492e671e553e2153934f4ab180ac02bd36205b274e097f2cfe6fc4
+  checksum: 10c0/fb6de7d1002bcab9ea12c4072d93792eca494f1e4f30cfec334ccb6523756d23ce3e093c7c1241399296cebed94789a3fb89f96ee76004e0e746458a8f6bab33
   languageName: node
   linkType: hard
 
@@ -17433,13 +17423,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"sprintf-js@npm:^1.1.3":
-  version: 1.1.3
-  resolution: "sprintf-js@npm:1.1.3"
-  checksum: 10c0/09270dc4f30d479e666aee820eacd9e464215cdff53848b443964202bf4051490538e5dd1b42e1a65cf7296916ca17640aebf63dae9812749c7542ee5f288dec
-  languageName: node
-  linkType: hard
-
 "ssri@npm:^10.0.0":
   version: 10.0.6
   resolution: "ssri@npm:10.0.6"
@@ -18053,16 +18036,16 @@ __metadata:
   languageName: node
   linkType: hard
 
-"tar@npm:7.5.16":
-  version: 7.5.16
-  resolution: "tar@npm:7.5.16"
+"tar@npm:7.5.22":
+  version: 7.5.22
+  resolution: "tar@npm:7.5.22"
   dependencies:
     "@isaacs/fs-minipass": "npm:^4.0.0"
     chownr: "npm:^3.0.0"
     minipass: "npm:^7.1.2"
     minizlib: "npm:^3.1.0"
     yallist: "npm:^5.0.0"
-  checksum: 10c0/4f37f3c4bd2ca2755fd736a5df1d573c1a868ec1b1e893346aeafa95ac510f9e2fd1469420bd866cc7904799e5bd4ac62b5d4f03fe27747d6e1e373b44505c5c
+  checksum: 10c0/1311f6be85a8157ac4c9147bae43e13923d2a1aae15e4aa1bd5239e4e03d2cf53cfe103dde7f35832fbb4c938b042856bc8e9a0afd29abd05e2d1608788c4fea
   languageName: node
   linkType: hard
 
