@@ -6953,13 +6953,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"claygl@npm:^1.2.1":
-  version: 1.3.0
-  resolution: "claygl@npm:1.3.0"
-  checksum: 10c0/5e04bd7c8ec6f2c0c5bdc04092ddf6744d8165d3227cf370bcb07b581bcb77d481178d18045484fcea852c1f0bdf702c933865431d371b5ed3591886271444f3
-  languageName: node
-  linkType: hard
-
 "clean-css@npm:^5.2.2":
   version: 5.3.3
   resolution: "clean-css@npm:5.3.3"
@@ -8292,38 +8285,26 @@ __metadata:
   languageName: node
   linkType: hard
 
-"echarts-for-react@npm:3.0.2":
-  version: 3.0.2
-  resolution: "echarts-for-react@npm:3.0.2"
+"echarts-for-react@npm:3.0.6":
+  version: 3.0.6
+  resolution: "echarts-for-react@npm:3.0.6"
   dependencies:
     fast-deep-equal: "npm:^3.1.3"
     size-sensor: "npm:^1.0.1"
   peerDependencies:
-    echarts: ^3.0.0 || ^4.0.0 || ^5.0.0
+    echarts: ^3.0.0 || ^4.0.0 || ^5.0.0 || ^6.0.0
     react: ^15.0.0 || >=16.0.0
-  checksum: 10c0/a67d76d2cea6fdb8efa9e305fa998f4933053a647df13ea58b4ea0c7892a72e9afb7523a7382d98b541983e5e073adafc2c4103d7dcb88d86757c4582d45e400
+  checksum: 10c0/c39db42f66bd94cab99cf64c2f21988903057632d904eb812ade93c3394e11c6c3cdd04569220719865793964bb3b8977cffc3d637d47d681a9ab3c91fdb2e98
   languageName: node
   linkType: hard
 
-"echarts-gl@npm:2.0.9":
-  version: 2.0.9
-  resolution: "echarts-gl@npm:2.0.9"
-  dependencies:
-    claygl: "npm:^1.2.1"
-    zrender: "npm:^5.1.1"
-  peerDependencies:
-    echarts: ^5.1.2
-  checksum: 10c0/8b004731f8d4bcd75c7a8c83bcb70773264a5240788238bd66b8adfdbcaafaa527194bd7cbdf8a53ed11283c939663a6568a1a9d1294a7905162ae99c757daa5
-  languageName: node
-  linkType: hard
-
-"echarts@npm:*, echarts@npm:5.6.0":
-  version: 5.6.0
-  resolution: "echarts@npm:5.6.0"
+"echarts@npm:6.1.0":
+  version: 6.1.0
+  resolution: "echarts@npm:6.1.0"
   dependencies:
     tslib: "npm:2.3.0"
-    zrender: "npm:5.6.1"
-  checksum: 10c0/6d6a2ee88534d1ff0433e935c542237b9896de1c94959f47ebc7e0e9da26f59bf11c91ed6fc135b62ad2786c779ee12bc536fa481e60532dad5b6a2f5167e9ea
+    zrender: "npm:6.1.0"
+  checksum: 10c0/a0911a9d75969ff946d0bce998e95e1924cdec7f5ca6be13ded376e2a47067c70b264ee8d04ba84345aa7895363e202f54c87d2bae114859bd154d565babc09c
   languageName: node
   linkType: hard
 
@@ -15341,9 +15322,8 @@ __metadata:
     dagre: "npm:0.8.5"
     dayjs: "npm:1.11.18"
     deepdash: "npm:5.3.9"
-    echarts: "npm:5.6.0"
-    echarts-for-react: "npm:3.0.2"
-    echarts-gl: "npm:2.0.9"
+    echarts: "npm:6.1.0"
+    echarts-for-react: "npm:3.0.6"
     file-saver: "npm:2.0.5"
     framer-motion: "npm:12.0.6"
     fs-extra: "npm:11.3.2"
@@ -19837,21 +19817,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"zrender@npm:5.6.1":
-  version: 5.6.1
-  resolution: "zrender@npm:5.6.1"
+"zrender@npm:6.1.0":
+  version: 6.1.0
+  resolution: "zrender@npm:6.1.0"
   dependencies:
     tslib: "npm:2.3.0"
-  checksum: 10c0/dc1cc570054640cbd8fbb7b92e6252f225319522bfe3e8dc8bf02cc02d414e00a4c8d0a6f89bfc9d96e5e9511fdca94dd3d06bf53690df2b2f12b0fc560ac307
-  languageName: node
-  linkType: hard
-
-"zrender@npm:^5.1.1":
-  version: 5.6.0
-  resolution: "zrender@npm:5.6.0"
-  dependencies:
-    tslib: "npm:2.3.0"
-  checksum: 10c0/f7c5a1739dfec60b9bead0d0657c47868391b1009cc82a603f9dbf247fa625df28dcdb3e7b2e18404657e2c987f95e0e1bb5613519c2d823854f3dda44e2ee96
+  checksum: 10c0/bfdb5e2ccd70893a9e2c7f33959749a6a1abc8912c2b1af301a05593d677a2f6f6087cdc4f0bf73883b99eea2f2d11d1922c71c3bf0bd4e9e5b362fd32129bce
   languageName: node
   linkType: hard
 
