@@ -272,7 +272,23 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
         isDirty={isDirty}
         isValid={isValid}
         // @ts-ignore
-        onAdd={() => setInnerConfig((existing) => [...existing, { type: "" }])}
+        onAdd={() =>
+          // Insert BEFORE a trailing "result" rather than appending blindly.
+          // "result" is the leaf level, so the validator below requires it to be
+          // last. Appending after it produced the one arrangement that is always
+          // invalid: Apply greyed out, with the explanation only in a title
+          // attribute, and no way forward except dragging the new row up.
+          setInnerConfig((existing) => {
+            const resultIndex = existing.findIndex((c) => c.type === "result");
+            return resultIndex === -1
+              ? [...existing, { type: "" }]
+              : [
+                  ...existing.slice(0, resultIndex),
+                  { type: "" },
+                  ...existing.slice(resultIndex),
+                ];
+          })
+        }
         onApply={() => onApply(innerConfig)}
         onClear={() => onApply([])}
         addLabel="Add grouping"
