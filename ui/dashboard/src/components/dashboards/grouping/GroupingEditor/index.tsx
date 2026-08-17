@@ -216,6 +216,20 @@ const GroupingEditor = ({
   useEffect(() => {
     let reason: string = "";
 
+    // Every level must have a type. The switch below falls through to
+    // `default: return true`, so an untyped row counted as valid and Apply
+    // saved {"type":""} into the URL - a level that groups nothing.
+    const untyped = innerConfig.some((c) => !c?.type);
+
+    // ...and each level may only appear once. A repeat cannot subdivide
+    // anything its twin has not already split, so it is silently inert.
+    // control_tag/dimension are keyed with their value, so `domain` and
+    // `label` remain distinct levels.
+    const keys = innerConfig
+      .filter((c) => !!c?.type)
+      .map((c) => `${c.type}:${c.value ?? ""}`);
+    const duplicated = keys.length !== new Set(keys).size;
+
     const isValid = innerConfig.every((c, i) => {
       switch (c?.type) {
         case "benchmark":
@@ -239,7 +253,14 @@ const GroupingEditor = ({
           return true;
       }
     });
-    setIsValid({ value: isValid, reason });
+    // Reported after the positional checks so the most specific message wins.
+    if (untyped) {
+      setIsValid({ value: false, reason: "Choose a type for every grouping" });
+    } else if (duplicated) {
+      setIsValid({ value: false, reason: "Each grouping can only be used once" });
+    } else {
+      setIsValid({ value: isValid, reason });
+    }
 
     const removeEmpty = stripRowIds(innerConfig).map((c) => {
       const noEmpty = {};
