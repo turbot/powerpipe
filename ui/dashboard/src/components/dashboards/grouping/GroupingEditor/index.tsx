@@ -17,6 +17,7 @@ import { useDashboardControls } from "@powerpipe/components/dashboards/layout/Da
 
 type GroupingEditorProps = {
   config: DisplayGroup[];
+  defaultConfig: DisplayGroup[];
   onApply: (newValue: DisplayGroup[]) => void;
 };
 
@@ -174,23 +175,47 @@ const GroupingEditorItem = ({
   );
 };
 
-const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
+// Rows need a stable identity of their own.
+//
+// Keying by content (`${type}-${value}`) collides: a newly added row is
+// {type: ""}, so adding two produces two children with the key "-undefined".
+// React's child map for the list is then ambiguous and later updates strand
+// rows on screen - a Reset-discarded row survived, and a second Reset could not
+// clear it, even though state, saved grouping and the rendered tree were right.
+//
+// Keying by index is worse: the react-select at a given position keeps its
+// displayed value, so inserting rows made the new ones render as "Result".
+//
+// So each row carries an id, generated when the row is created and preserved
+// across edits and reordering. It is stripped before saving - onApply writes
+// straight to the URL, and this is presentation state, not part of the grouping.
+let nextRowId = 0;
+
+const withRowIds = (groups: DisplayGroup[]): DisplayGroup[] =>
+  groups.map((c) => ({ ...c, __rowId: `row-${nextRowId++}` })) as DisplayGroup[];
+
+const stripRowIds = (groups: DisplayGroup[]): DisplayGroup[] =>
+  groups.map((c) => {
+    const { __rowId, ...rest } = c as any;
+    return rest;
+  }) as DisplayGroup[];
+
+const GroupingEditor = ({
+  config,
+  defaultConfig,
+  onApply,
+}: GroupingEditorProps) => {
   const [innerConfig, setInnerConfig] = useState<DisplayGroup[]>(config);
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
   useEffect(() => {
-    setInnerConfig(
-      config.map((c) => ({
-        ...c,
-        type: c.type,
-        value: c.value,
-      })) as any,
-    );
+    setInnerConfig(withRowIds(config) as any);
   }, [config, setInnerConfig]);
 
   useEffect(() => {
     let reason: string = "";
+
     const isValid = innerConfig.every((c, i) => {
       switch (c?.type) {
         case "benchmark":
@@ -216,7 +241,7 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
     });
     setIsValid({ value: isValid, reason });
 
-    const removeEmpty = innerConfig.map((c) => {
+    const removeEmpty = stripRowIds(innerConfig).map((c) => {
       const noEmpty = {};
       for (const [k, v] of Object.entries(c)) {
         if (!v) {
@@ -242,7 +267,8 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
     (index: number, updatedItem: DisplayGroup) =>
       setInnerConfig((existing) => [
         ...existing.slice(0, index),
-        updatedItem,
+        // keep the row's id: the child rebuilds the item and would drop it
+        { ...updatedItem, __rowId: (existing[index] as any)?.__rowId } as any,
         ...existing.slice(index + 1),
       ]),
     [setInnerConfig],
@@ -259,7 +285,17 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
       >
         {innerConfig.map((c, idx) => (
           <GroupingEditorItem
-            key={`${c.type}-${c.value}`}
+            // Key by POSITION, not by content. A newly added row is {type: ""},
+            // so a content key is `-undefined` - add two rows and both children
+            // share one key. React's child map for the list is then ambiguous
+            // and later updates cannot reliably unmount the right rows: after
+            // Reset a discarded row survived on screen (and a second Reset could
+            // not clear it) even though innerConfig, the saved grouping and the
+            // rendered tree were all correct. Only a remount fixed it.
+            //
+            // Reorder identity is carried by Reorder.Item's `value={item}` prop,
+            // not by the React key, so dragging is unaffected.
+            key={(c as any).__rowId ?? idx}
             config={innerConfig}
             item={c}
             index={idx}
@@ -274,23 +310,42 @@ const GroupingEditor = ({ config, onApply }: GroupingEditorProps) => {
         // @ts-ignore
         onAdd={() =>
           // Insert BEFORE a trailing "result" rather than appending blindly.
-          // "result" is the leaf level, so the validator below requires it to be
-          // last. Appending after it produced the one arrangement that is always
-          // invalid: Apply greyed out, with the explanation only in a title
-          // attribute, and no way forward except dragging the new row up.
+          // "result" is the leaf level - there is nothing beneath a result to
+          // subdivide - so the validator below requires it to be last. Appending
+          // after it produced the one arrangement that is always invalid, which
+          // greyed out Apply with the explanation hidden in a title tooltip.
           setInnerConfig((existing) => {
             const resultIndex = existing.findIndex((c) => c.type === "result");
             return resultIndex === -1
-              ? [...existing, { type: "" }]
+              ? [...existing, { type: "", __rowId: `row-${nextRowId++}` } as any]
               : [
                   ...existing.slice(0, resultIndex),
-                  { type: "" },
+                  { type: "", __rowId: `row-${nextRowId++}` } as any,
                   ...existing.slice(resultIndex),
                 ];
           })
         }
-        onApply={() => onApply(innerConfig)}
-        onClear={() => onApply([])}
+        onApply={() => onApply(stripRowIds(innerConfig))}
+        onClear={() => {
+          // Show the DEFAULT immediately, then clear the saved grouping.
+          //
+          // Two traps here, both hit in earlier attempts:
+          //
+          //  - onApply([]) alone does nothing visible. It removes this panel's
+          //    saved entry so useGroupingConfig falls back to the default, but
+          //    when the panel is already on the default the search params do
+          //    not change, so nothing re-renders and the useEffect that syncs
+          //    innerConfig never fires.
+          //  - Setting innerConfig to `config` is worse than useless: `config`
+          //    is the grouping being discarded, so the rows being removed were
+          //    briefly re-asserted and could survive the reset.
+          //
+          // defaultConfig is what onApply([]) will resolve to, computed by
+          // useGroupingConfig - which knows the control vs detection default,
+          // so this stays correct for detection benchmarks too.
+          setInnerConfig(withRowIds(defaultConfig) as any);
+          onApply([]);
+        }}
         addLabel="Add grouping"
       />
     </div>
