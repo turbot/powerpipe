@@ -1,0 +1,127 @@
+{{/*
+  NIST OSCAL 1.2.3 assessment-results output.
+
+  Mapping from Powerpipe's five control-row statuses (ok, alarm, error,
+  skip, info) to OSCAL:
+    - Every row becomes an Observation (OSCAL requires uuid, description,
+      methods, collected -- all present here).
+    - Only "alarm" rows (an actually-failed control) also become a
+      Finding. "error"/"skip"/"info" are inconclusive, not failures, so
+      -- matching the same honesty rule used for Prowler's OSCAL export --
+      they are never asserted as satisfied or not-satisfied; they are
+      Observations only.
+    - finding.target uses type "objective-id" and target-id the control's
+      full name (the objective actually being assessed), not a random
+      uuid -- the OSCAL TokenDatatype pattern for target-id requires a
+      leading letter/underscore, which a raw uuid can violate; a dotted
+      Powerpipe control name (e.g. aws_compliance.control.foo) satisfies it.
+    - "observations"/"findings" have schema minItems: 1 when present, so
+      an all-ok run must omit "findings" entirely rather than emit [].
+      uuidv4 is not schema-deterministic; each render produces fresh
+      uuids, matching OSCAL's own definition of a *result* as one
+      point-in-time assessment run.
+*/}}
+{{ define "output" }}
+{{- $findingCount := 0 -}}
+{{- range .Data.ControlRuns -}}
+	{{- range .Rows -}}
+		{{- if eq .Status "alarm" -}}
+			{{- $findingCount = add $findingCount 1 -}}
+		{{- end -}}
+	{{- end -}}
+{{- end -}}
+{
+  "assessment-results": {
+    "uuid": "{{ uuidv4 }}",
+    "metadata": {
+      "title": "Powerpipe Assessment Results",
+      "published": "{{ now.Format "2006-01-02T15:04:05Z07:00" }}",
+      "last-modified": "{{ now.Format "2006-01-02T15:04:05Z07:00" }}",
+      "version": "{{ render_context.Constants.PowerpipeVersion }}",
+      "oscal-version": "1.2.3"
+    },
+    "import-ap": {
+      "href": "urn:powerpipe:assessment-plan:default"
+    },
+    "results": [
+      {
+        "uuid": "{{ uuidv4 }}",
+        "title": "Powerpipe Benchmark Run",
+        "description": "Automated technical control evaluation performed by Powerpipe.",
+        "start": "{{ now.Format "2006-01-02T15:04:05Z07:00" }}",
+        "reviewed-controls": {
+          "control-selections": [
+            { "include-all": {} }
+          ]
+        },
+        "observations": [
+          {{- $firstObs := true -}}
+          {{- range .Data.ControlRuns -}}
+            {{- range .Rows -}}
+              {{ if $firstObs -}}{{- $firstObs = false -}}{{- else -}},{{- end }}
+              {{- template "observation_template" . -}}
+            {{- end -}}
+          {{- end }}
+        ]{{ if gt $findingCount 0 }},
+        "findings": [
+          {{- $firstFinding := true -}}
+          {{- range .Data.ControlRuns -}}
+            {{- range .Rows -}}
+              {{- if eq .Status "alarm" -}}
+                {{ if $firstFinding -}}{{- $firstFinding = false -}}{{- else -}},{{- end }}
+                {{- template "finding_template" . -}}
+              {{- end -}}
+            {{- end -}}
+          {{- end }}
+        ]
+        {{- end }}
+      }
+    ]
+  }
+}
+{{ end }}
+
+{{/* sub template: one Observation per control row */}}
+{{ define "observation_template" }}
+{
+  "uuid": "{{ uuidv4 }}",
+  "description": {{ toJson (printf "%s: %s" .Run.FullName .Status) }},
+  "methods": ["TEST-AUTOMATED"],
+  "collected": "{{ now.Format "2006-01-02T15:04:05Z07:00" }}",
+  "subjects": [
+    {
+      "subject-uuid": "{{ uuidv4 }}",
+      "type": "component",
+      "title": {{ toJson .Resource }}
+    }
+  ],
+  "props": [
+    { "name": "control-id", "value": {{ toJson .Run.FullName }} },
+    { "name": "status", "value": {{ toJson .Status }} }{{ with .Run.Severity }},
+    { "name": "severity", "value": {{ toJson . }} }{{ end }}{{ with .Reason }},
+    { "name": "reason", "value": {{ toJson . }} }{{ end }}
+  ]
+}
+{{ end }}
+
+{{/* sub template: one Finding per "alarm" (failed) control row */}}
+{{ define "finding_template" }}
+{
+  "uuid": "{{ uuidv4 }}",
+  "title": {{ toJson (printf "Non-compliant check: %s" .Run.FullName) }},
+  "description": {{ toJson .Run.Description }},
+  "target": {
+    "type": "objective-id",
+    "target-id": {{ toJson .Run.FullName }},
+    "status": {
+      "state": "not-satisfied",
+      "reason": "fail"
+    }
+  },
+  "props": [
+    { "name": "control-id", "value": {{ toJson .Run.FullName }} }{{ with .Run.Severity }},
+    { "name": "severity", "value": {{ toJson . }} }{{ end }}{{ with .Resource }},
+    { "name": "resource", "value": {{ toJson . }} }{{ end }}
+  ]
+}
+{{ end }}

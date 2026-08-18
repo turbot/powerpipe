@@ -16,7 +16,7 @@ import (
 // templateFuncs merges desired functions from sprig with custom functions that we
 // define in steampipe
 func templateFuncs(renderContext TemplateRenderContext) template.FuncMap {
-	useFromSprigMap := []string{"upper", "toJson", "quote", "dict", "add", "now", "toPrettyJson"}
+	useFromSprigMap := []string{"upper", "toJson", "quote", "dict", "add", "now", "toPrettyJson", "uuidv4"}
 
 	var funcs template.FuncMap = template.FuncMap{}
 	sprigMap := sprig.TxtFuncMap()
