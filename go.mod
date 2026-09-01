@@ -1,6 +1,6 @@
 module github.com/turbot/powerpipe
 
-go 1.26.5
+go 1.26.7
 
 //replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
