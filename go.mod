@@ -5,7 +5,7 @@ go 1.26.7
 //replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/briandowns/spinner v1.23.0 // indirect
 	github.com/fatih/color v1.18.0
 	github.com/gin-contrib/static v1.1.2
@@ -17,8 +17,8 @@ require (
 	github.com/karrick/gows v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/cobra v1.10.2
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.0
@@ -44,7 +44,7 @@ require (
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb/v2 v2.4.0
 	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/thediveo/enumflag/v2 v2.0.5
+	github.com/thediveo/enumflag/v2 v2.2.1
 	golang.org/x/sync v0.22.0
 	golang.org/x/text v0.39.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
