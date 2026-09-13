@@ -9,6 +9,18 @@ function setup() {
   if [[ -z "${SPIPETOOLS_TOKEN}" ]]; then
     skip
   fi
+  req_url=""
+}
+
+# Runs after every test, including failing ones. Deleting the snapshot inline at
+# the end of a test only happened when every assertion passed, so any failure
+# after the upload left the snapshot behind in the workspace for good.
+function teardown() {
+  rm -f output.*
+
+  if [[ -n "${req_url}" ]]; then
+    curl -s -X DELETE "$req_url" -H "Authorization: Bearer $SPIPETOOLS_TOKEN" || true
+  fi
 }
 
 @test "snapshot mode - query output csv" {
@@ -20,6 +32,11 @@ function setup() {
   url=$(grep -o 'http[^"]*' output.csv)
   echo $url
 
+  # create the snapshot DELETE Request URL, so teardown can remove it whatever
+  # the assertions below do
+  req_url=$($FILE_PATH/url_parse.sh $url)
+  echo $req_url
+
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 15th line, since it contains snapshot upload link, which will be different in each run
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -29,15 +46,7 @@ function setup() {
   fi
   cat output.csv
 
-  # create the snapshot DELETE Request URL
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
-
   assert_equal "$(cat output.csv)" "$(cat $TEST_DATA_DIR/expected_static_query_csv_snapshot_mode.csv)"
-  rm -f output.*
-
-  # delete the snapshot from cloud workspace to avoid exceeding quota
-  curl -X DELETE "$req_url" -H "Authorization: Bearer $SPIPETOOLS_TOKEN"
 }
 
 @test "snapshot mode - query output json" {
@@ -50,6 +59,11 @@ function setup() {
   url=$(grep -o 'http[^"]*' output.json)
   echo $url
 
+  # create the snapshot DELETE Request URL, so teardown can remove it whatever
+  # the assertions below do
+  req_url=$($FILE_PATH/url_parse.sh $url)
+  echo $req_url
+
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 64th line, since it contains snapshot upload link, which will be different in each run
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -59,15 +73,7 @@ function setup() {
   fi
   cat output.json
 
-  # create the snapshot DELETE Request URL
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
-
   assert_equal "$(cat output.json)" "$(cat $TEST_DATA_DIR/expected_static_query_json_snapshot_mode.json)"
-  rm -f output.*
-
-  # delete the snapshot from cloud workspace to avoid exceeding quota
-  curl -X DELETE "$req_url" -H "Authorization: Bearer $SPIPETOOLS_TOKEN"
 }
 
 @test "snapshot mode - query output table" {
@@ -79,6 +85,11 @@ function setup() {
   url=$(grep -o 'http[^"]*' output.txt)
   echo $url
 
+  # create the snapshot DELETE Request URL, so teardown can remove it whatever
+  # the assertions below do
+  req_url=$($FILE_PATH/url_parse.sh $url)
+  echo $req_url
+
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 18th line, since it contains snapshot upload link, which will be different in each run
   if [[ "$OSTYPE" == "darwin"* ]]; then
@@ -88,14 +99,5 @@ function setup() {
   fi
   cat output.txt
 
-  # create the snapshot DELETE Request URL
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
-
   assert_equal "$(cat output.txt)" "$(cat $TEST_DATA_DIR/expected_static_query_table_snapshot_mode.txt)"
-  rm -f output.*
-
-  # delete the snapshot from cloud workspace to avoid exceeding quota
-  curl -X DELETE "$req_url" -H "Authorization: Bearer $SPIPETOOLS_TOKEN"
 }
-
