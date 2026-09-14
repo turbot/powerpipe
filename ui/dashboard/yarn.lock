@@ -9646,25 +9646,22 @@ __metadata:
   languageName: node
   linkType: hard
 
-"framer-motion@npm:12.0.6":
-  version: 12.0.6
-  resolution: "framer-motion@npm:12.0.6"
+"framer-motion@npm:13.2.0":
+  version: 13.2.0
+  resolution: "framer-motion@npm:13.2.0"
   dependencies:
-    motion-dom: "npm:^12.0.0"
-    motion-utils: "npm:^12.0.0"
+    motion-dom: "npm:^13.2.0"
+    motion-utils: "npm:^13.0.0"
     tslib: "npm:^2.4.0"
   peerDependencies:
-    "@emotion/is-prop-valid": "*"
     react: ^18.0.0 || ^19.0.0
     react-dom: ^18.0.0 || ^19.0.0
   peerDependenciesMeta:
-    "@emotion/is-prop-valid":
-      optional: true
     react:
       optional: true
     react-dom:
       optional: true
-  checksum: 10c0/06d01186a52163225ded9e60563b1aba9a52b14db2516bc7c87de0efd48bf149531d5f6ad4db254254e61ec142aed04e4b119d35063ef13b537c4da35aece762
+  checksum: 10c0/b381cf2c6f9def6ae169c096f9f873b0dafc8343fbdc78cc3d27e3ede2e8f682b22e1160a1f8cde07f263993aecab2c94239a43702fe4f06eccaeba109fcff13
   languageName: node
   linkType: hard
 
@@ -13520,19 +13517,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"motion-dom@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "motion-dom@npm:12.0.0"
+"motion-dom@npm:^13.2.0":
+  version: 13.3.0
+  resolution: "motion-dom@npm:13.3.0"
   dependencies:
-    motion-utils: "npm:^12.0.0"
-  checksum: 10c0/d67209bc217f16b9a0305afa4bfc366997d02df76eea9ab29062f98beeff5fdfc60ae1b422ab397f525ae775c640ac9ba061c9f45aacd6cd71a23dce06661384
+    motion-utils: "npm:^13.3.0"
+  checksum: 10c0/b59ee63a4a487abb571159853d9bb47c02740d9707f01b91440b2d157af26cde16db5ebf29d1b5e19aabccc9dcb9ec763e9bbf931fdf25beae2af3e4d0f9652d
   languageName: node
   linkType: hard
 
-"motion-utils@npm:^12.0.0":
-  version: 12.0.0
-  resolution: "motion-utils@npm:12.0.0"
-  checksum: 10c0/ca6cc7542d00afab011130fcd940e5f5a412b21a4eaeb17c0a497dcb86de311dda90741eeca7de1276cc8c1dff7ac1e6a8df1e8cebb1191a2c43bfe8368dc70b
+"motion-utils@npm:^13.0.0, motion-utils@npm:^13.3.0":
+  version: 13.3.0
+  resolution: "motion-utils@npm:13.3.0"
+  checksum: 10c0/9efb8388cc43501d1d6d1f2997fdd3a9e4c2bd42c57c3979586fdbcc83969a3b9aae7e3108cfb53312db0a46d945ad1b4d54ad388a6585f2eb5f5e742a58d927
   languageName: node
   linkType: hard
 
@@ -15259,7 +15256,7 @@ __metadata:
     echarts: "npm:6.1.0"
     echarts-for-react: "npm:3.0.6"
     file-saver: "npm:2.0.5"
-    framer-motion: "npm:12.0.6"
+    framer-motion: "npm:13.2.0"
     fs-extra: "npm:11.3.2"
     if-node-version: "npm:1.1.1"
     jq-wasm: "npm:1.0.1"
