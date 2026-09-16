@@ -1,3 +1,16 @@
+## v1.5.5 [2026-09-16]
+_Dependencies_
+- Bump `golang.org/x/crypto` from v0.52.0 to v0.55.0 to remediate CVE-2026-56854.
+- Bump `google.golang.org/grpc` from v1.82.1 to v1.83.2 to remediate CVE-2026-84445.
+- Bump `github.com/containerd/containerd` from v1.7.33 to v1.7.35 to remediate CVE-2026-53495.
+- Bump `github.com/go-git/go-git/v5` from v5.19.1 to v5.19.2 to remediate CVE-2026-71556 and CVE-2026-71557.
+- Bump `github.com/gorilla/websocket` from v1.5.1 to v1.5.3 to remediate GHSA-w67g-5rqw-f597.
+- Bump `golang.org/x/net` from v0.55.0 to v0.58.0.
+
+## v1.5.4 [2026-09-09]
+_Dependencies_
+- Compiled with Go 1.26.7 to remediate CVE-2026-39821.
+
 ## v1.5.3 [2026-08-10]
 _Dependencies_
 - Compiled with Go 1.26.5 to remediate CVE-2026-27143 and other Go standard-library CVEs.
