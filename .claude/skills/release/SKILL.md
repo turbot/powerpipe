@@ -10,11 +10,12 @@ Release branches are `v{maj}.{min}.x` (e.g. `v1.5.x`). A release is a tag cut fr
 does not build the dashboard UI assets, run goreleaser, publish binaries, or open the homebrew-tap PR.
 
 Placeholders: `{x.y.z}` is the new version (e.g. `1.5.6`), `{prev}` the previous tag (e.g. `v1.5.5`,
-from `gh release list --repo turbot/powerpipe --limit 1`), `{x}-{y}-{z}` and `{xyz}` the same version
+from `gh release list --repo turbot/powerpipe --limit 1 --exclude-pre-releases`), `{x}-{y}-{z}` and `{xyz}` the same version
 dash-separated (`1-5-6`) and with no separators (`156`).
 
 Every PR you open below is opened under your own `gh` auth and needs a teammate's approval before it
-merges. The one exception is the `turbot/homebrew-tap` PR, which the workflow opens and merges itself.
+merges. The exceptions: the `turbot/homebrew-tap` PR, which the workflow opens and merges itself, and
+the powerpipe.io PR, whose `main` requires no review.
 
 Powerpipe ships two artifacts under one version: the CLI binary, and the dashboard UI built from
 `ui/dashboard/`. The release workflow builds both in one run (no separate FDW-style pre-step, and
@@ -33,23 +34,25 @@ gh api 'repos/turbot/powerpipe/compare/{prev}...v{maj}.{min}.x' \
 - `CHANGELOG.md` on `v{maj}.{min}.x` has an entry for `v{x.y.z}` in the style of earlier entries, dated
   today, committed with the message `v{x.y.z}` (via a PR into the release branch).
 - Open the release issue from `.github/ISSUE_TEMPLATE/release_issue.md`: title `Powerpipe v{x.y.z}`,
-  label `release`. Its checklist names older workflow numbering; follow this skill's order instead.
+  label `release`. Its checklist names older workflow numbering; follow this skill's order instead, and
+  only tick its manual checks (Homebrew install, Linux install script, update check) once you've run them.
 
 ## 2. Dispatch the release workflow
 
 ```bash
 gh workflow run 01-powerpipe-release.yaml --repo turbot/powerpipe --ref v{maj}.{min}.x \
   -f environment='Final (RC and final release)' -f version={x.y.z} -f confirmDevelop=false
-sleep 15; gh run list --repo turbot/powerpipe --workflow 01-powerpipe-release.yaml --limit 1 --json databaseId,createdAt,headBranch
+sleep 15; gh run list --repo turbot/powerpipe --workflow 01-powerpipe-release.yaml --limit 3 --json databaseId,createdAt,headBranch
 gh run watch --repo turbot/powerpipe <run-id>
 ```
 
-Check `createdAt` and `headBranch` are your dispatch, not the previous release. `version` has no `v` prefix; the workflow adds it. `confirmDevelop` stays unchecked/false for a normal release-branch cut — only true when dispatching an alpha/beta build directly off `develop`.
+Take the run whose `createdAt` is after your dispatch; if none is, list again. `version` has no `v` prefix;
+the workflow adds it. `confirmDevelop` is required but not read by any job; pass `false`.
 `Development (alpha)` / `Development (beta)` are for pre-release test builds only.
 
 The `build_assets` job builds `ui/dashboard/` and runs its unit tests before `build_and_release` tags
 and ships the CLI — a dashboard UI failure blocks the whole release, not just the UI. Later jobs open
-and merge the homebrew-tap PR and dispatch `12 - Test: Post-release Linux Distros`.
+and merge the homebrew-tap PR and dispatch `12 - Test: Linux Distros (Post-release)`.
 
 ## 3. Verify and publish the release notes
 
@@ -68,7 +71,9 @@ paste in the `CHANGELOG.md` entry for `v{x.y.z}`.
 1. `v{maj}.{min}.x` into `develop`, titled `Merge branch 'v{maj}.{min}.x' into develop`. If the branches
    conflict (usually `go.mod`/`go.sum`), open it from a branch cut off `develop` that merges
    `origin/v{maj}.{min}.x` with the conflicts resolved (keep the higher version of each dependency), then `go mod tidy`.
-2. `v{maj}.{min}.x` into `main`, titled `Release Powerpipe v{x.y.z}`, label `release`, body:
+2. `v{maj}.{min}.x` into `main`, titled `Release Powerpipe v{x.y.z}`, label `release`. Never merge `main` into
+   the release branch: if they conflict, open it from a branch cut off `v{maj}.{min}.x` that merges
+   `origin/main`, keeping `main`'s workflow action pins. Body:
    ```
    ## Release Issue
    [Powerpipe v{x.y.z}](<release issue URL>)
