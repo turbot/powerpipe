@@ -73,7 +73,7 @@ paste in the `CHANGELOG.md` entry for `v{x.y.z}`.
    `origin/v{maj}.{min}.x` with the conflicts resolved (keep the higher version of each dependency), then `go mod tidy`.
 2. `v{maj}.{min}.x` into `main`, titled `Release Powerpipe v{x.y.z}`, label `release`. Never merge `main` into
    the release branch: if they conflict, open it from a branch cut off `v{maj}.{min}.x` that merges
-   `origin/main`, keeping `main`'s workflow action pins. Body:
+   `origin/main`, keeping `main`'s action SHA pins and the release branch's `go-version`. Body:
    ```
    ## Release Issue
    [Powerpipe v{x.y.z}](<release issue URL>)
