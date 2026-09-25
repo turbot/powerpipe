@@ -39,6 +39,12 @@ const EditorAddItem = ({
         </div>
       </div>
       <div className="flex items-center justify-end space-x-3">
+        {/* Say WHY Apply is disabled. The reason was only ever exposed as the
+            button's title attribute, so a blocked save looked like a dead
+            button - the user had no way to know what to change. */}
+        {!isValid.value && !!isValid.reason && (
+          <span className="text-sm text-alert">{isValid.reason}</span>
+        )}
         <span
           className="text-sm text-foreground-lighter cursor-pointer hover:text-link mr-2"
           onClick={onClear}

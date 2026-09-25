@@ -6,9 +6,15 @@ type GroupingConfigProps = {
 };
 
 const GroupingConfig = ({ panelName }: GroupingConfigProps) => {
-  const { grouping, update } = useGroupingConfig(panelName);
+  const { grouping, defaultGrouping, update } = useGroupingConfig(panelName);
 
-  return <GroupingEditor config={grouping} onApply={update} />;
+  return (
+    <GroupingEditor
+      config={grouping}
+      defaultConfig={defaultGrouping}
+      onApply={update}
+    />
+  );
 };
 
 export default GroupingConfig;

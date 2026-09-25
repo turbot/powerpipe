@@ -20,6 +20,37 @@ const useGroupingConfig = (panelName?: string) => {
     }
   }, [searchParams]);
 
+  // The grouping a panel falls back to when nothing is saved. Exposed so the
+  // editor's Reset can restore it explicitly rather than relying on a re-render
+  // that does not happen when the panel is already on the default.
+  const defaultGrouping = useMemo(() => {
+    if (!panel) {
+      return [] as DisplayGroup[];
+    }
+    if (
+      (!panel.benchmark_type || panel.benchmark_type === "control") &&
+      (panel.panel_type === "benchmark" || panel.panel_type === "control")
+    ) {
+      return [
+        { type: "benchmark" },
+        { type: "control" },
+        { type: "result" },
+      ] as DisplayGroup[];
+    }
+    if (
+      (panel.benchmark_type === "detection" &&
+        panel.panel_type === "benchmark") ||
+      panel.panel_type === "detection"
+    ) {
+      return [
+        { type: "benchmark" },
+        { type: "detection" },
+        { type: "result" },
+      ] as DisplayGroup[];
+    }
+    return [] as DisplayGroup[];
+  }, [panel]);
+
   const grouping = useMemo(() => {
     if (!panel) {
       return [] as DisplayGroup[];
@@ -84,7 +115,7 @@ const useGroupingConfig = (panelName?: string) => {
     });
   };
 
-  return { allGroupings, grouping, update };
+  return { allGroupings, grouping, defaultGrouping, update };
 };
 
 export default useGroupingConfig;
