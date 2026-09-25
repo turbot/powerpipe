@@ -23,7 +23,7 @@
     "@tanstack/react-table": "8.21.3",
     "@tanstack/react-virtual": "3.13.12",
     "color-convert": "2.0.1",
-    "copy-to-clipboard": "3.3.3",
+    "copy-to-clipboard": "4.0.2",
     "dagre": "0.8.5",
     "dayjs": "1.11.18",
     "deepdash": "5.3.9",
