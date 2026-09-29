@@ -20,7 +20,7 @@
     "@material-symbols/svg-300": "0.47.0",
     "@popperjs/core": "2.11.8",
     "@supabase/sql-formatter": "4.0.3",
-    "@tanstack/react-table": "8.21.3",
+    "@tanstack/react-table": "9.2.4",
     "@tanstack/react-virtual": "3.13.12",
     "color-convert": "2.0.1",
     "copy-to-clipboard": "3.3.3",
