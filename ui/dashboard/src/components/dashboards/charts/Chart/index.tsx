@@ -958,17 +958,35 @@ const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
   }, []);
 
   useEffect(() => {
-    if (!chartRef.current || !options) {
+    // Capture a snapshot for print mode. During multi-connection streaming /
+    // navigation, panels can unmount while echarts is still loading or already
+    // disposed — guard before calling getDataURL (see #1144).
+    if (!chartRef.current || !options || !echarts) {
       return;
     }
 
-    const echartInstance = chartRef.current.getEchartsInstance();
-    const dataURL = echartInstance.getDataURL({});
-    if (dataURL === imageUrl) {
-      return;
+    let cancelled = false;
+    try {
+      const echartInstance = chartRef.current.getEchartsInstance();
+      if (
+        !echartInstance ||
+        (typeof echartInstance.isDisposed === "function" &&
+          echartInstance.isDisposed())
+      ) {
+        return;
+      }
+      const dataURL = echartInstance.getDataURL({});
+      if (cancelled || dataURL === imageUrl) {
+        return;
+      }
+      setImageUrl(dataURL);
+    } catch {
+      // Instance may be mid-dispose when the effect runs after unmount churn.
     }
-    setImageUrl(dataURL);
-  }, [chartRef, imageUrl, options]);
+    return () => {
+      cancelled = true;
+    };
+  }, [chartRef, echarts, imageUrl, options]);
 
   if (!options) {
     return null;
