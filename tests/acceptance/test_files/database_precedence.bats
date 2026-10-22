@@ -276,7 +276,7 @@ EOF
   echo $output
 
   # check output that the pipes workspace is queried
-  assert_output --partial "redhood-aaa"
+  assert_output --partial "turbot-silverwater"
 }
 
 # database specified in mod definition through a var
@@ -292,7 +292,7 @@ EOF
   echo $output
 
   # check output that the pipes workspace specified through default value of variable in mod is used
-  assert_output --partial "redhood-aaa"
+  assert_output --partial "turbot-silverwater"
 }
 
 # database specified in mod definition through a var
@@ -309,7 +309,7 @@ EOF
   echo $output
 
   # check output that the pipes workspace specified through --var in mod is used
-  assert_output --partial "redhood-aaa"
+  assert_output --partial "turbot-silverwater"
 }
 
 # database specified in resource
