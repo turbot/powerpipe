@@ -94,7 +94,7 @@
     "prop-types": "15.8.1",
     "react-scripts": "5.0.1",
     "source-map-explorer": "2.5.3",
-    "storybook": "8.6.17",
+    "storybook": "8.6.19",
     "storybook-addon-react-router-v6": "2.0.15",
     "storybook-dark-mode": "4.0.2",
     "stream-browserify": "3.0.0",
