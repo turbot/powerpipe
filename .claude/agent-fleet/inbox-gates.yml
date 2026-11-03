@@ -1,0 +1,72 @@
+# What a change to powerpipe must run and show before an agent's PR counts as done.
+#
+# Left out on purpose:
+# - golangci-lint: CI's version (v2.11.4) cannot load the Go 1.27 standard library on the
+#   workers, and v2.15.0 reports a govet `inline` finding in internal/cmdconfig/mappings.go
+#   that develop has today.
+# - The dashboard UI typecheck (`tsc --noEmit`): it fails on develop inside @types/node.
+# - The acceptance suite: run-local.sh and run.sh run `steampipe service stop --force`, which
+#   stops every steampipe service on the machine (see never_run).
+
+ci_is_proof: false
+
+never_run:
+  # Releases and published artifacts
+  - gh workflow run
+  - gh release
+  - git tag
+  - goreleaser
+  - docker push
+  - make release*
+  # Installs outside the checkout: /usr/local/bin and ~/.powerpipe/dashboard/assets
+  - make build
+  - make all
+  - make dashboard_assets
+  - make -C ui/dashboard*
+  - scripts/install.sh
+  # Uses a GitHub token to download release assets
+  - scripts/download_release.sh
+  # Changes the machine it runs on, or installs from the live site
+  - scripts/prepare_*
+  - scripts/smoke_test.sh
+  # Stops every steampipe service on the machine and needs a real Pipes token for some files
+  - tests/acceptance/run-local.sh
+  - tests/acceptance/run.sh
+  - steampipe service stop --force
+  # A real login writes credentials to the machine
+  - powerpipe login
+
+checks:
+  build: {run: "go build ./...", cost: 1}
+  unit: {run: "go test ./...", cost: 1}
+  ui-test: {run: "cd ui/dashboard && CI=true yarn test --watchAll=false", cost: 1}
+  ui-build: {run: "cd ui/dashboard && yarn setup-material-symbols && yarn build", cost: 2}
+
+surfaces:
+  dashboard:
+    paths: ["ui/dashboard/src/**", "ui/dashboard/public/**"]
+    # Builds the UI and the binary, then serves a text-only test mod from a temporary
+    # install directory, with a local DuckDB file in place of a steampipe database.
+    run: 'cd ui/dashboard && yarn setup-material-symbols && yarn build && cd ../.. && P=$(mktemp -d) && mkdir -p "$P/dashboard/assets" && cp -R ui/dashboard/build/. "$P/dashboard/assets/" && go build -o "$P/powerpipe" . && cd tests/acceptance/test_data/mods/dashboard_texts && POWERPIPE_INSTALL_DIR="$P" POWERPIPE_UPDATE_CHECK=false "$P/powerpipe" server --port {port} --database "duckdb://$P/db.duckdb"'
+    theme: "the theme toggle in the dashboard header, or localStorage key steampipe.ui.theme set to steampipe-default (light) or steampipe-dark"
+
+kinds:
+  go:
+    paths: ["**/*.go", "go.mod", "go.sum", "internal/**", ".golangci.yml"]
+    checks: [build, unit]
+    show: [test]
+  ui:
+    paths: ["ui/dashboard/**"]
+    checks: [ui-test, ui-build]
+    show: [test, shots]
+    skills: [pr-screenshots]
+  acceptance:
+    paths: ["tests/**"]
+    checks: [build]
+    show: [test]
+  workflows:
+    paths: [".github/**", ".goreleaser.yml", "Makefile", "scripts/**", ".gitignore", ".gitmodules"]
+    show: [none]
+  docs:
+    paths: ["**/*.md", ".ai/**", ".claude/**", "images/**", "LICENSE"]
+    show: [none]
