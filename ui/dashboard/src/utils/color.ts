@@ -155,5 +155,11 @@ export const colorToRgb = (input: string, themeColors: any) => {
   if (convertedColor.startsWith("#")) {
     return colorConvert.hex.rgb(convertedColor);
   }
-  return colorConvert.keyword.rgb(convertedColor);
+  // color-convert v3 throws on a name it does not know (v2 returned
+  // undefined), so keep the old contract: no match means no rgb.
+  try {
+    return colorConvert.keyword.rgb(convertedColor);
+  } catch {
+    return undefined;
+  }
 };
