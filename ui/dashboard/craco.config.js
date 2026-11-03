@@ -5,10 +5,23 @@ const webpack = require("webpack");
 
 module.exports = {
   jest: {
-    configure: {
-      moduleNameMapper: {
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...jestConfig.moduleNameMapper,
         "^@powerpipe/(.*)$": "<rootDir>/src/$1",
-      },
+        // TanStack Table v9 ships ES modules behind package "exports" only,
+        // which Jest 27 cannot resolve, so point it at the files...
+        "^@tanstack/(react-table|table-core)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/index.js",
+        "^@tanstack/(react-table|table-core)/(.*)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/$2.js",
+      };
+      // ...and let Babel compile them, as it does the app's own code.
+      jestConfig.transformIgnorePatterns = [
+        "[/\\\\]node_modules[/\\\\](?!@tanstack[/\\\\](react-table|table-core)[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+        "^.+\\.module\\.(css|sass|scss)$",
+      ];
+      return jestConfig;
     },
   },
   webpack: {

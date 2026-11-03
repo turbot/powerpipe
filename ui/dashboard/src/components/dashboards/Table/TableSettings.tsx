@@ -3,8 +3,8 @@ import SearchInput from "@powerpipe/components/SearchInput";
 import sortBy from "lodash/sortBy";
 import useTableConfig from "@powerpipe/hooks/useTableConfig";
 import { AsyncNoop } from "@powerpipe/types/func";
-import { Column, RowData } from "@tanstack/react-table";
 import { KeyValuePairs } from "@powerpipe/components/dashboards/common/types";
+import type { TablePanelColumn } from "./features";
 import { useEffect, useMemo, useState } from "react";
 
 const ShortcutSelector = ({
@@ -30,13 +30,13 @@ const TableSettingsColumns = ({
   leafColumns,
 }: {
   name: string;
-  leafColumns: Column<RowData>[];
+  leafColumns: TablePanelColumn[];
 }) => {
   const { update } = useTableConfig(name);
   const [search, setSearch] = useState("");
   const columnMap = useMemo(() => {
     const columnMap: KeyValuePairs<{
-      column: Column<KeyValuePairs>;
+      column: TablePanelColumn;
       index: number;
     }> = leafColumns.reduce((acc, column, currentIndex) => {
       acc[column.id] = { column, index: currentIndex };
