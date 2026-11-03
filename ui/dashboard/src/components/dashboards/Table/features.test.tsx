@@ -49,7 +49,10 @@ const instanceIds = (table) =>
   table.getRowModel().rows.map((row) => row.original.instance_id);
 
 describe("table panel on TanStack Table v9", () => {
-  test("sorts a column the way v8's auto sort did, both directions", () => {
+  // v8 sampled only rows after the tenth to pick a column's sort, so a table of
+  // ten rows or fewer fell back to plain string order (i-10 before i-9); v9
+  // samples the first ten and sorts them in natural order, as longer tables were.
+  test("sorts a string column in natural order, both directions", () => {
     const { result } = renderPanelTable([]);
     expect(instanceIds(result.current)).toEqual(["i-10", "i-9", "i-100"]);
 
