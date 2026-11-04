@@ -31,9 +31,7 @@ type ExecutionTree struct {
 	// the current session search path
 	SearchPath []string                      `json:"-"`
 	Workspace  *workspace.PowerpipeWorkspace `json:"-"`
-	// ControlRunInstances is a list of control runs for each parent.
-	ControlRunInstances []*ControlRunInstance `json:"-"`
-	client              *db_client.DbClient
+	client     *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
 	controlNameFilterMap map[string]struct{}
 }
@@ -78,8 +76,14 @@ func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, clie
 	return executionTree, nil
 }
 
-// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
-func (tree *ExecutionTree) PopulateControlRunInstances() {
+// ControlRunInstances returns a ControlRunInstance for each parent of each control run.
+//
+// If a control is included by multiple benchmarks, a single ControlRun is created and executed once,
+// and its Parents property lists every ResultGroup (i.e. benchmark) which includes the control.
+// Templates such as CSV render a set of result rows for every instance of the control, i.e. for every parent.
+//
+// The instances copy every result row, so they are built on demand for the formats which use them.
+func (tree *ExecutionTree) ControlRunInstances() []*ControlRunInstance {
 	var controlRunInstances []*ControlRunInstance
 
 	for _, controlRun := range tree.ControlRuns {
@@ -89,7 +93,7 @@ func (tree *ExecutionTree) PopulateControlRunInstances() {
 		}
 	}
 
-	tree.ControlRunInstances = controlRunInstances
+	return controlRunInstances
 }
 
 // IsExportSourceData implements ExportSourceData

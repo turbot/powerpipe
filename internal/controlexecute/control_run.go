@@ -58,8 +58,8 @@ type ControlRun struct {
 	// result rows
 	Rows ResultRows `json:"-"`
 
-	// the results in snapshot format
-	Data *dashboardtypes.LeafData `json:"data"`
+	// the results in snapshot format - built from Rows when marshalled, so the results are not held twice
+	Data *ControlRunData `json:"data"`
 
 	// a list of distinct dimension keys from the results of this control
 	DimensionKeys []string `json:"-"`
@@ -346,9 +346,8 @@ func (r *ControlRun) resolveControlQuery(control *resources.Control) (*modconfig
 
 func (r *ControlRun) waitForResults(ctx context.Context) {
 	defer func() {
-		dimensionsSchema := r.getDimensionSchema()
-		// convert the data to snapshot format
-		r.Data = r.Rows.ToLeafData(dimensionsSchema)
+		// the results are converted to snapshot format when the run is marshalled
+		r.Data = &ControlRunData{run: r, dimensionsSchema: r.getDimensionSchema()}
 	}()
 
 	for {
