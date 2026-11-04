@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/turbot/pipe-fittings/v2/connection"
 	"log/slog"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -63,6 +64,9 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 	if errAndWarnings.GetError() != nil {
 		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
+	// parsing the workspace leaves a large heap of garbage (the parsed mod is a fraction of the peak heap)
+	// collect it and return the memory to the OS now, rather than holding it for the rest of the run
+	debug.FreeOSMemory()
 
 	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
 		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
