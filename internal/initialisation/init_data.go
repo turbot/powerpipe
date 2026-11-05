@@ -60,6 +60,8 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
 		// disable late binding
 		workspace.WithLateBinding(false),
+		// for a benchmark or control run, load only the resources the targets need
+		workspace.WithResourceTargets(cmdconfig.ResourceTargets[T](cmdArgs)),
 	)
 	if errAndWarnings.GetError() != nil {
 		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
