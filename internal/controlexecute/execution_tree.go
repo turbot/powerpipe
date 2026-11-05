@@ -150,7 +150,7 @@ func (e *ExecutionTree) Execute(ctx context.Context) error {
 	// just execute the root - it will traverse the tree
 	e.Root.execute(ctx, e.client, parallelismLock)
 
-	if err := e.waitForActiveRunsToComplete(ctx, parallelismLock, maxParallelGoRoutines); err != nil {
+	if err := e.waitForActiveRunsToComplete(ctx, parallelismLock, maxParallelGoRoutines, constants.ControlQueryCancellationTimeoutSecs*time.Second); err != nil {
 		slog.Warn("timed out waiting for active runs to complete")
 	}
 
@@ -161,16 +161,20 @@ func (e *ExecutionTree) Execute(ctx context.Context) error {
 	return nil
 }
 
-func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, parallelismLock *semaphore.Weighted, maxParallelGoRoutines int64) error {
-	waitCtx := ctx
-	// if the context was already cancelled, we must creat ea new one to use  when waiting to acquire the lock
-	if ctx.Err() != nil {
-		// use a Background context - since the original context has been cancelled
-		// this lets us wait for the active control queries to cancel
-		c, cancel := context.WithTimeout(context.Background(), constants.ControlQueryCancellationTimeoutSecs*time.Second)
-		waitCtx = c
-		defer cancel()
-	}
+func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, parallelismLock *semaphore.Weighted, maxParallelGoRoutines int64, cancelTimeout time.Duration) error {
+	// wait with a context that is not cancelled with ctx: when ctx is cancelled (for example by the benchmark
+	// timeout), before or during the wait, the active control queries are cancelled too, so wait for them to
+	// stop, for at most cancelTimeout
+	waitCtx, cancel := context.WithCancel(context.WithoutCancel(ctx))
+	defer cancel()
+	stop := context.AfterFunc(ctx, func() {
+		select {
+		case <-time.After(cancelTimeout):
+			cancel()
+		case <-waitCtx.Done():
+		}
+	})
+	defer stop()
 	// wait till we can acquire all semaphores - meaning that all active runs have finished
 	return parallelismLock.Acquire(waitCtx, maxParallelGoRoutines)
 }
