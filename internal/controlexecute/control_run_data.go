@@ -9,7 +9,7 @@ import (
 )
 
 // ControlRunData is the snapshot format data of a completed control run.
-// It holds no rows itself: it converts the run's Rows when it is marshalled.
+// It holds no rows itself: it converts the run's rows when it is marshalled.
 type ControlRunData struct {
 	run     *ControlRun
 	columns []*queryresult.ColumnDef
@@ -21,9 +21,13 @@ func newControlRunData(run *ControlRun) *ControlRunData {
 
 // MarshalJSON implements json.Marshaler
 func (d *ControlRunData) MarshalJSON() ([]byte, error) {
-	rows := make([]map[string]any, len(d.run.Rows))
-	for i, row := range d.run.Rows {
-		rows[i] = row.leafRow()
+	rows := make([]map[string]any, 0, len(d.run.Rows))
+	err := d.run.eachResultRow(func(row *ResultRow) error {
+		rows = append(rows, row.leafRow())
+		return nil
+	})
+	if err != nil {
+		return nil, err
 	}
 	return json.Marshal(&dashboardtypes.LeafData{Columns: d.columns, Rows: rows})
 }
@@ -50,10 +54,7 @@ func (r *ControlRun) PanelWithoutRows() any {
 
 // EachRow implements steampipeconfig.SnapshotRowsPanel
 func (r *ControlRun) EachRow(f func(row any) error) error {
-	for _, row := range r.Rows {
-		if err := f(row.leafRow()); err != nil {
-			return err
-		}
-	}
-	return nil
+	return r.eachResultRow(func(row *ResultRow) error {
+		return f(row.leafRow())
+	})
 }

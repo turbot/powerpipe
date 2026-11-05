@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -197,6 +198,12 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	}()
 
 	for _, namedTree := range trees {
+		// if the output reads the rows one at a time, keep them on disk while the controls run
+		// (an export that needs them all loads them back when it runs)
+		if controldisplay.StreamsRows(initData.OutputFormatter) {
+			error_helpers.FailOnError(namedTree.tree.StoreRowsOnDisk())
+		}
+
 		// execute controls synchronously (execute returns the number of alarms and errors)
 		executionErr := executeTree(ctx, namedTree.tree, initData)
 		if executionErr != nil {
@@ -230,6 +237,10 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		if err != nil {
 			error_helpers.ShowError(ctx, err)
 			totalErrors++
+		}
+
+		if err := namedTree.tree.Close(); err != nil {
+			slog.Warn("failed to close the result row file", "error", err)
 		}
 	}
 }
@@ -382,7 +393,7 @@ func shouldPrintCheckTiming() bool {
 }
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
-	reader, err := formatter.Format(ctx, executionTree)
+	reader, err := controldisplay.FormatTree(ctx, formatter, executionTree)
 	if err != nil {
 		return err
 	}

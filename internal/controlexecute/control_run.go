@@ -80,6 +80,9 @@ type ControlRun struct {
 	doneChan    chan bool
 	attempts    int
 	startTime   time.Time
+
+	// set if the rows are kept in a row store instead of in Rows
+	storedRows *storedRows
 }
 
 // ResultRowInstance is used in ControlRunInstance, to store the single ResultRow and
@@ -379,7 +382,8 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 	var dimensionsSchema = make(map[string]*queryresult.ColumnDef)
 
-	for _, row := range r.Rows {
+	// a row store error is kept by the store and returned when the rows are exported
+	_ = r.eachResultRow(func(row *ResultRow) error {
 		for _, dim := range row.Dimensions {
 			if _, ok := dimensionsSchema[dim.Key]; !ok {
 				// add to map
@@ -391,7 +395,8 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 				r.DimensionKeys = append(r.DimensionKeys, dim.Key)
 			}
 		}
-	}
+		return nil
+	})
 	// add keys to group
 	for _, parent := range r.Parents {
 		parent.addDimensionKeys(r.DimensionKeys...)
@@ -402,7 +407,11 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 // add the result row to our results and update the summary with the row status
 func (r *ControlRun) addResultRow(row *ResultRow) {
 	// update results
-	r.rowMap[row.Status] = append(r.rowMap[row.Status], row)
+	if r.storedRows != nil {
+		r.storedRows.add(row)
+	} else {
+		r.rowMap[row.Status] = append(r.rowMap[row.Status], row)
+	}
 
 	// update summary
 	switch row.Status {
@@ -419,12 +428,40 @@ func (r *ControlRun) addResultRow(row *ResultRow) {
 	}
 }
 
+// resultStatusOrder is the order of the result rows of a control run
+var resultStatusOrder = []string{constants.ControlError, constants.ControlAlarm, constants.ControlInfo, constants.ControlOk, constants.ControlSkip}
+
 // populate ordered list of rows
 func (r *ControlRun) createdOrderedResultRows() {
-	statusOrder := []string{constants.ControlError, constants.ControlAlarm, constants.ControlInfo, constants.ControlOk, constants.ControlSkip}
-	for _, status := range statusOrder {
+	if r.storedRows != nil {
+		r.storedRows.setComplete()
+		return
+	}
+	for _, status := range resultStatusOrder {
 		r.Rows = append(r.Rows, r.rowMap[status]...)
 	}
+}
+
+// eachResultRow calls f with each result row, in order, from Rows or from the row store
+func (r *ControlRun) eachResultRow(f func(*ResultRow) error) error {
+	if r.storedRows != nil {
+		return r.storedRows.each(r, f)
+	}
+	for _, row := range r.Rows {
+		if err := f(row); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// loadRows reads the rows from the row store into Rows
+func (r *ControlRun) loadRows() error {
+	r.Rows = nil
+	return r.storedRows.each(r, func(row *ResultRow) error {
+		r.Rows = append(r.Rows, row)
+		return nil
+	})
 }
 
 func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.RunStatus) {

@@ -20,6 +20,9 @@ func (*SnapshotFormatter) FormatDetection(context.Context, *dashboardexecute.Det
 	return nil, fmt.Errorf("Currently only JSON format is supported for detection benchmarks")
 }
 
+// StreamsRows implements RowStreamer
+func (*SnapshotFormatter) StreamsRows() {}
+
 func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	snapshot, err := executionTreeToSnapshot(tree)
 	if err != nil {
