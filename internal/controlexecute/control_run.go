@@ -347,7 +347,7 @@ func (r *ControlRun) resolveControlQuery(control *resources.Control) (*modconfig
 func (r *ControlRun) waitForResults(ctx context.Context) {
 	defer func() {
 		// the results are converted to snapshot format when the run is marshalled
-		r.Data = &ControlRunData{run: r, dimensionsSchema: r.getDimensionSchema()}
+		r.Data = newControlRunData(r)
 	}()
 
 	for {

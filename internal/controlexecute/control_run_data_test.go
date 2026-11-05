@@ -1,11 +1,13 @@
 package controlexecute
 
 import (
+	"bytes"
 	"encoding/json"
 	"testing"
 
-	"github.com/turbot/pipe-fittings/v2/queryresult"
+	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/controlstatus"
+	"github.com/turbot/powerpipe/internal/dashboardtypes"
 )
 
 func testRows() ResultRows {
@@ -17,21 +19,69 @@ func testRows() ResultRows {
 	}
 }
 
-// the JSON of ControlRunData must be the JSON of the LeafData it replaces
-func TestControlRunData_MarshalsAsLeafData(t *testing.T) {
-	run := &ControlRun{Rows: testRows()}
-	schema := map[string]*queryresult.ColumnDef{"region": {Name: "region", DataType: "TEXT"}}
+func TestControlRunData_MarshalJSON(t *testing.T) {
+	run := &ControlRun{Rows: testRows()[1:]}
 
-	got, err := json.Marshal(&ControlRunData{run: run, dimensionsSchema: schema})
+	got, err := json.Marshal(newControlRunData(run))
 	if err != nil {
 		t.Fatal(err)
 	}
-	want, err := json.Marshal(run.Rows.ToLeafData(schema))
-	if err != nil {
-		t.Fatal(err)
-	}
-	if string(got) != string(want) {
+	want := `{"columns":[{"name":"reason","data_type":"TEXT"},{"name":"resource","data_type":"TEXT"},{"name":"status","data_type":"TEXT"},{"name":"region","data_type":"TEXT"}],` +
+		`"rows":[{"reason":"ok","region":"eu-west-1","resource":"arn:aws:s3:::b2","status":"ok"}]}`
+	if string(got) != want {
 		t.Fatalf("got  %s\nwant %s", got, want)
+	}
+	if run.DimensionKeys[0] != "region" {
+		t.Fatalf("expected the dimension keys to be set, got %v", run.DimensionKeys)
+	}
+}
+
+// legacyStrippedJson is how a snapshot was exported before control rows were written one at a time
+func legacyStrippedJson(s *steampipeconfig.SteampipeSnapshot, indent bool) ([]byte, error) {
+	res, err := s.AsCloudSnapshot()
+	if err != nil {
+		return nil, err
+	}
+	if err := steampipeconfig.StripSnapshot(res); err != nil {
+		return nil, err
+	}
+	if indent {
+		return json.MarshalIndent(res, "", "  ")
+	}
+	return json.Marshal(res)
+}
+
+func TestControlRun_SnapshotRowsMatchLegacy(t *testing.T) {
+	newRun := func(name string, rows ResultRows) *ControlRun {
+		run := &ControlRun{
+			FullName: name, Title: "Title <" + name + ">", NodeType: "control", Tags: map[string]string{"service": "AWS/S3"},
+			Properties: map[string]any{"sql": "select 1", "severity": "high"},
+			Summary:    &controlstatus.StatusSummary{Alarm: 1, Ok: 1}, RunStatus: dashboardtypes.RunComplete, Rows: rows,
+		}
+		run.Data = newControlRunData(run)
+		return run
+	}
+	notRun := &ControlRun{FullName: "mod.control.not_run", NodeType: "control", RunStatus: dashboardtypes.RunError, RunErrorString: "query failed"}
+	snapshot := &steampipeconfig.SteampipeSnapshot{
+		SchemaVersion: "20240607",
+		Panels: map[string]steampipeconfig.SnapshotPanel{
+			"mod.control.rows":    newRun("mod.control.rows", testRows()),
+			"mod.control.no_rows": newRun("mod.control.no_rows", ResultRows{}),
+			"mod.control.not_run": notRun,
+		},
+	}
+	for _, indent := range []bool{false, true} {
+		want, err := legacyStrippedJson(snapshot, indent)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := snapshot.AsStrippedJson(indent)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !bytes.Equal(got, want) {
+			t.Fatalf("indent=%v: streamed snapshot differs from legacy\n got: %s\nwant: %s", indent, got, want)
+		}
 	}
 }
 
@@ -52,7 +102,7 @@ func TestControlRun_DataJSON(t *testing.T) {
 
 	// a completed run marshals its rows, with dimensions flattened into each row
 	run := &ControlRun{FullName: "mod.control.c1", Summary: &controlstatus.StatusSummary{}, Rows: testRows()}
-	run.Data = &ControlRunData{run: run, dimensionsSchema: run.getDimensionSchema()}
+	run.Data = newControlRunData(run)
 	b, err = json.Marshal(run)
 	if err != nil {
 		t.Fatal(err)
