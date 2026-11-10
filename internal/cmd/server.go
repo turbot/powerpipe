@@ -42,6 +42,7 @@ Powerpipe server runs in the foreground; Press Ctrl-C to exit.`,
 		AddIntFlag(constants.ArgPort, dashboardserver.DashboardServerDefaultPort, "Web server port").
 		AddBoolFlag(constants.ArgWatch, true, "Watch mod files for changes when running powerpipe server").
 		AddStringFlag(constants.ArgListen, string(dashboardserver.ListenTypeLocal), "Accept connections from local (localhost only) or network (all interfaces / IP addresses)").
+		AddStringFlag(localconstants.ArgAllowedHosts, "", "Host names of the server besides localhost, e.g. the domain of a proxy (comma separated, .example.com also matches subdomains)").
 		AddStringArrayFlag(constants.ArgVariable, []string{}, "Specify the value of a variable. Multiple --var arguments may be passed.").
 		AddStringFlag(constants.ArgVarFile, "", "Specify a .ppvar file containing variable values.").
 		AddStringFlag(constants.ArgDatabase, "", "Turbot Pipes workspace database", localcmdconfig.Deprecated("see https://powerpipe.io/docs/run#selecting-a-database for the new syntax")).
@@ -69,6 +70,9 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	serverListen := dashboardserver.ListenType(viper.GetString(constants.ArgListen))
 	error_helpers.FailOnError(serverListen.IsValid())
 
+	allowedHosts, err := api.ParseAllowedHosts(viper.GetString(localconstants.ArgAllowedHosts))
+	error_helpers.FailOnError(err)
+
 	serverHost := ""
 	if err := utils.IsPortBindable(serverHost, int(serverPort)); err != nil {
 		exitCode = constants.ExitCodeBindPortUnavailable
@@ -81,7 +85,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	defer modInitData.Cleanup(ctx)
 
 	// ensure dashboard assets
-	err := dashboardassets.Ensure(ctx)
+	err = dashboardassets.Ensure(ctx)
 	error_helpers.FailOnError(err)
 
 	// setup a new webSocket service
@@ -95,6 +99,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 		api.WithWebSocket(webSocket),
 		api.WithWorkspace(modInitData.Workspace),
 		api.WithHTTPPortAndListenConfig(serverPort, serverListen),
+		api.WithAllowedHosts(allowedHosts),
 	)
 	if err != nil {
 		error_helpers.FailOnError(err)
