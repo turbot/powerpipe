@@ -1,3 +1,11 @@
+## v1.5.8 [2026-11-10]
+_Bug Fixes_
+- Fix chart dashboards crashing with "Cannot read properties of undefined (reading 'get')". ([#1144](https://github.com/turbot/powerpipe/issues/1144))
+- Fix text output hanging on multi-line dimension values. ([#1146](https://github.com/turbot/powerpipe/issues/1146))
+
+_Dependencies_
+- Bump dashboard UI dependencies `brace-expansion` to v1.1.21, `follow-redirects` to v1.16.2, `launch-editor` to v2.14.2, `compression` to v1.8.2 and `source-map-js` to v1.2.2 to remediate security findings.
+
 ## v1.5.7 [2026-10-29]
 _Dependencies_
 - Bump `github.com/klauspost/compress` from v1.18.5 to v1.18.7 to remediate CVE-2026-63209.
