@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/powerpipe/internal/benchmarkrun"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
@@ -76,6 +77,8 @@ type APIService struct {
 
 	// the loaded workspace
 	workspace *pworkspace.PowerpipeWorkspace
+	// if set, benchmarks can be run through the API
+	benchmarkRunner *benchmarkrun.Runner
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -84,6 +87,13 @@ type APIServiceOption func(*APIService) error
 func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	return func(api *APIService) error {
 		api.webSocket = webSocket
+		return nil
+	}
+}
+
+func WithBenchmarkRunner(runner *benchmarkrun.Runner) APIServiceOption {
+	return func(api *APIService) error {
+		api.benchmarkRunner = runner
 		return nil
 	}
 }
@@ -184,6 +194,9 @@ func (api *APIService) newRouter() *gin.Engine {
 	apiLimiter.SetBurst(viper.GetInt("web.rate.burst"))
 
 	RegisterPublicAPI(apiPrefixGroup)
+	if api.benchmarkRunner != nil {
+		registerBenchmarkRun(apiPrefixGroup, api.benchmarkRunner)
+	}
 
 	// put in handing for the dashboard for the mod
 	assetsDirectory := filepaths.EnsureDashboardAssetsDir()
