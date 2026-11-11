@@ -1,0 +1,19 @@
+{
+  "warm": "git submodule update --init --recursive && go mod download && cd ui/dashboard && yarn install --immutable",
+  "warmProbe": "ui/dashboard/node_modules",
+  "platforms": ["darwin", "linux"],
+  "tools": ["go", "node", "yarn"],
+  "secrets": {},
+  "chores": {
+    "security-audit": {
+      "when": "mon week 3",
+      "areas": [
+        "dashboard server and its web socket API (internal/dashboardserver, internal/service/api)",
+        "database connections and credentials (internal/db_client, internal/cmdconfig)",
+        "mod install from git (internal/cmd/mod.go)",
+        "Pipes login and token handling (internal/cmd/login.go)",
+        "dashboard UI rendering of query results (ui/dashboard/src)"
+      ]
+    }
+  }
+}

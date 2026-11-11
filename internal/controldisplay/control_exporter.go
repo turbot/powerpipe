@@ -36,7 +36,7 @@ func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceD
 	case *dashboardexecute.DetectionBenchmarkDisplayTree:
 		reader, err = e.formatter.FormatDetection(exportCtx, t)
 	case *controlexecute.ExecutionTree:
-		reader, err = e.formatter.Format(exportCtx, t)
+		reader, err = FormatTree(exportCtx, e.formatter, t)
 	default:
 		return fmt.Errorf("ControlExporter input must be ExecutionTree or DetectionBenchmarkDisplayTree")
 	}
