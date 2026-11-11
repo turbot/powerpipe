@@ -9,37 +9,22 @@ import (
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/queryresult"
 	"github.com/turbot/pipe-fittings/v2/utils"
-	"github.com/turbot/powerpipe/internal/dashboardtypes"
 	"github.com/turbot/powerpipe/internal/resources"
 )
 
 type ResultRows []*ResultRow
 
-// ToLeafData converts the result rows to snapshot data format
-func (r ResultRows) ToLeafData(dimensionSchema map[string]*queryresult.ColumnDef) *dashboardtypes.LeafData {
-	var res = &dashboardtypes.LeafData{
-		Columns: []*queryresult.ColumnDef{
-			{Name: "reason", DataType: "TEXT"},
-			{Name: "resource", DataType: "TEXT"},
-			{Name: "status", DataType: "TEXT"},
-		},
-		Rows: make([]map[string]interface{}, len(r)),
+// leafColumns returns the snapshot data columns for rows with the given dimensions
+func leafColumns(dimensionSchema map[string]*queryresult.ColumnDef) []*queryresult.ColumnDef {
+	columns := []*queryresult.ColumnDef{
+		{Name: "reason", DataType: "TEXT"},
+		{Name: "resource", DataType: "TEXT"},
+		{Name: "status", DataType: "TEXT"},
 	}
 	for _, d := range dimensionSchema {
-		res.Columns = append(res.Columns, d)
+		columns = append(columns, d)
 	}
-	for i, row := range r {
-		res.Rows[i] = map[string]interface{}{
-			"reason":   row.Reason,
-			"resource": row.Resource,
-			"status":   row.Status,
-		}
-		// flatten dimensions
-		for _, d := range row.Dimensions {
-			res.Rows[i][d.Key] = d.Value
-		}
-	}
-	return res
+	return columns
 }
 
 // ResultRow is the result of a control execution for a single resource
@@ -56,6 +41,19 @@ type ResultRow struct {
 	Run *ControlRun `json:"-"`
 	// source control
 	Control *resources.Control `json:"-" csv:"control_id:UnqualifiedName,control_title:Title,control_description:Description"`
+}
+
+// leafRow returns the row in snapshot data format, with its dimensions flattened into it
+func (r *ResultRow) leafRow() map[string]any {
+	res := map[string]any{
+		"reason":   r.Reason,
+		"resource": r.Resource,
+		"status":   r.Status,
+	}
+	for _, d := range r.Dimensions {
+		res[d.Key] = d.Value
+	}
+	return res
 }
 
 // GetDimensionValue returns the value for a dimension key. Returns an empty string with 'false' if not found

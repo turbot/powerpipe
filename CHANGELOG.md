@@ -1,3 +1,33 @@
+## v1.5.8 [2026-11-10]
+_Bug Fixes_
+- Fix chart dashboards crashing with "Cannot read properties of undefined (reading 'get')". ([#1144](https://github.com/turbot/powerpipe/issues/1144))
+- Fix text output hanging on multi-line dimension values. ([#1146](https://github.com/turbot/powerpipe/issues/1146))
+
+_Dependencies_
+- Bump dashboard UI dependencies `brace-expansion` to v1.1.21, `follow-redirects` to v1.16.2, `launch-editor` to v2.14.2, `compression` to v1.8.2 and `source-map-js` to v1.2.2 to remediate security findings.
+
+## v1.5.7 [2026-10-29]
+_Dependencies_
+- Bump `github.com/klauspost/compress` from v1.18.5 to v1.18.7 to remediate CVE-2026-63209.
+- Bump `github.com/go-jose/go-jose/v4` from v4.1.4 to v4.1.6 to remediate CVE-2026-116587.
+
+## v1.5.6 [2026-10-22]
+_Dependencies_
+- Compiled with Go 1.26.10, which rejects certificate chains through the compromised eMudhra intermediate CAs ([golang/go#82345](https://github.com/golang/go/issues/82345)).
+
+## v1.5.5 [2026-09-16]
+_Dependencies_
+- Bump `golang.org/x/crypto` from v0.52.0 to v0.55.0 to remediate CVE-2026-56854.
+- Bump `google.golang.org/grpc` from v1.82.1 to v1.83.2 to remediate CVE-2026-84445.
+- Bump `github.com/containerd/containerd` from v1.7.33 to v1.7.35 to remediate CVE-2026-53495.
+- Bump `github.com/go-git/go-git/v5` from v5.19.1 to v5.19.2 to remediate CVE-2026-71556 and CVE-2026-71557.
+- Bump `github.com/gorilla/websocket` from v1.5.1 to v1.5.3 to remediate GHSA-w67g-5rqw-f597.
+- Bump `golang.org/x/net` from v0.55.0 to v0.58.0.
+
+## v1.5.4 [2026-09-09]
+_Dependencies_
+- Compiled with Go 1.26.7 to remediate CVE-2026-39821.
+
 ## v1.5.3 [2026-08-10]
 _Dependencies_
 - Compiled with Go 1.26.5 to remediate CVE-2026-27143 and other Go standard-library CVEs.
