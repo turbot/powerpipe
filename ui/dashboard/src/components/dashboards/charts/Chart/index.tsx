@@ -958,17 +958,29 @@ const Chart = ({ options, searchPathPrefix, type }: ChartComponentProps) => {
   }, []);
 
   useEffect(() => {
-    if (!chartRef.current || !options) {
+    // Capture a snapshot for print mode. echarts-for-react can hand back a
+    // temporary instance that has not had setOption applied yet (no _model);
+    // getDataURL then throws "Cannot read properties of undefined (reading 'get')"
+    // (#1144). Wait for the dynamic echarts import, skip a missing instance, and
+    // let try/catch cover that pre-init path.
+    if (!chartRef.current || !options || !echarts) {
       return;
     }
 
-    const echartInstance = chartRef.current.getEchartsInstance();
-    const dataURL = echartInstance.getDataURL({});
-    if (dataURL === imageUrl) {
-      return;
+    try {
+      const echartInstance = chartRef.current.getEchartsInstance();
+      if (!echartInstance) {
+        return;
+      }
+      const dataURL = echartInstance.getDataURL({});
+      if (dataURL === imageUrl) {
+        return;
+      }
+      setImageUrl(dataURL);
+    } catch {
+      // Temporary pre-init instance from echarts-for-react has no _model yet.
     }
-    setImageUrl(dataURL);
-  }, [chartRef, imageUrl, options]);
+  }, [chartRef, echarts, imageUrl, options]);
 
   if (!options) {
     return null;
