@@ -8,6 +8,11 @@ module.exports = {
     configure: {
       moduleNameMapper: {
         "^@powerpipe/(.*)$": "<rootDir>/src/$1",
+        // Jest 27 does not read package.json "exports"
+        "^react-router-dom$":
+          "<rootDir>/node_modules/react-router-dom/dist/index.js",
+        "^react-router/dom$":
+          "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
       },
     },
   },
