@@ -43,25 +43,6 @@ func (c *DbClient) ExecuteSync(ctx context.Context, query string, args ...any) (
 	return c.executeSyncOnConnection(ctx, dbConn, query, args...)
 }
 
-// startQuery runs query in a goroutine, so we can check for cancellation
-// in case the client becomes unresponsive and does not respect context cancellation
-func (c *DbClient) startQuery(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (rows *sql.Rows, err error) {
-	doneChan := make(chan bool)
-	go func() {
-		// start asynchronous query
-		//nolint: sqlclosecheck // rows is closed in readRows
-		rows, err = dbConn.QueryContext(ctx, query, args...)
-		close(doneChan)
-	}()
-
-	select {
-	case <-doneChan:
-	case <-ctx.Done():
-		err = ctx.Err()
-	}
-	return
-}
-
 // execute a query against this client and wait for the result
 func (c *DbClient) executeSyncOnConnection(ctx context.Context, dbConn *sql.Conn, query string, args ...any) (*queryresult.SyncQueryResult, error) {
 	if query == "" {
@@ -118,9 +99,8 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 		}
 	}()
 
-	// start query
-
-	rows, err := c.startQuery(ctxExecute, dbConn, query, args...)
+	// start query - rows is closed in readRows
+	rows, err := dbConn.QueryContext(ctxExecute, query, args...)
 	if err != nil {
 		return
 	}
