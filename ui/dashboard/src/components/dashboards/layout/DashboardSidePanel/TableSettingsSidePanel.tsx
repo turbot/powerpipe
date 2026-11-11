@@ -1,6 +1,6 @@
 import Icon from "@powerpipe/components/Icon";
 import TableSettings from "@powerpipe/components/dashboards/Table/TableSettings";
-import { Column, RowData } from "@tanstack/react-table";
+import type { TablePanelColumn } from "@powerpipe/components/dashboards/Table/features";
 import { useDashboardPanelDetail } from "@powerpipe/hooks/useDashboardPanelDetail";
 
 const TableSettingsSidePanel = ({
@@ -8,7 +8,7 @@ const TableSettingsSidePanel = ({
   leafColumns,
 }: {
   panelName: string;
-  leafColumns: Column<RowData>[];
+  leafColumns: TablePanelColumn[];
 }) => {
   const { closeSidePanel } = useDashboardPanelDetail();
   return (
