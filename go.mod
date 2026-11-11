@@ -1,13 +1,13 @@
 module github.com/turbot/powerpipe
 
-go 1.26.7
+go 1.26.10
 
 //replace github.com/turbot/pipe-fittings/v2 => ../pipe-fittings
 
 require (
-	github.com/Masterminds/semver/v3 v3.3.0
+	github.com/Masterminds/semver/v3 v3.4.0
 	github.com/briandowns/spinner v1.23.0 // indirect
-	github.com/fatih/color v1.18.0
+	github.com/fatih/color v1.19.0
 	github.com/gin-contrib/static v1.1.2
 	github.com/gin-gonic/gin v1.10.0
 	github.com/go-playground/validator/v10 v10.21.0
@@ -17,12 +17,12 @@ require (
 	github.com/karrick/gows v0.3.0
 	github.com/mattn/go-isatty v0.0.20
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
-	github.com/spf13/cobra v1.8.1
-	github.com/spf13/pflag v1.0.5 // indirect
+	github.com/spf13/cobra v1.10.2
+	github.com/spf13/pflag v1.0.9 // indirect
 	github.com/spf13/viper v1.19.0
 	github.com/stevenle/topsort v0.2.0
-	github.com/turbot/go-kit v1.3.0
-	github.com/turbot/pipe-fittings/v2 v2.9.4
+	github.com/turbot/go-kit v1.3.1
+	github.com/turbot/pipe-fittings/v2 v2.9.5
 	github.com/turbot/steampipe-plugin-sdk/v5 v5.11.3
 	github.com/turbot/terraform-components v0.0.0-20231213122222-1f3526cab7a7 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
@@ -43,8 +43,8 @@ require (
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/logrusorgru/aurora v2.0.3+incompatible
 	github.com/marcboeker/go-duckdb/v2 v2.4.0
-	github.com/mattn/go-sqlite3 v1.14.22
-	github.com/thediveo/enumflag/v2 v2.0.5
+	github.com/mattn/go-sqlite3 v1.14.52
+	github.com/thediveo/enumflag/v2 v2.2.1
 	golang.org/x/sync v0.22.0
 	golang.org/x/text v0.41.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
@@ -123,7 +123,7 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.37.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.7.0 // indirect
+	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -224,7 +224,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.9 // indirect
 	github.com/tklauser/numcpus v0.3.0 // indirect
-	github.com/tkrajina/go-reflector v0.5.6 // indirect
+	github.com/tkrajina/go-reflector v0.5.8 // indirect
 	github.com/turbot/pipes-sdk-go v0.12.0 // indirect
 	github.com/twitchyliquid64/golang-asm v0.15.1 // indirect
 	github.com/ugorji/go/codec v1.2.12 // indirect
