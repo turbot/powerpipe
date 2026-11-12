@@ -1,3 +1,19 @@
+## v1.5.9 [2026-11-12]
+_Security_
+- Fix `powerpipe server` accepting dashboard WebSocket connections from any website, and requests sent through DNS rebinding, which let a web page run dashboards and read their results. The WebSocket now accepts a connection only with no `Origin`, an `Origin` on the server's own host and port, or an `Origin` host named in `--allowed-hosts`. With `--listen local` (the default), the server also accepts a request only when its `Host` is `localhost`, a loopback IP or a host named in `--allowed-hosts`. ([GHSA-6w7w-97wr-rqhf](https://github.com/turbot/powerpipe/security/advisories/GHSA-6w7w-97wr-rqhf))
+
+_What's new_
+- Add `--allowed-hosts` to `powerpipe server`, also set by `POWERPIPE_ALLOWED_HOSTS`: a comma-separated list of extra host names the server accepts, for the `Host` header and the WebSocket `Origin`. A name starting with a dot, such as `.example.com`, matches that domain and its subdomains.
+
+_Breaking changes_
+- If you reach `powerpipe server` through a reverse proxy or under any host name other than `localhost` or a loopback IP, set `--allowed-hosts` (or `POWERPIPE_ALLOWED_HOSTS`) to that host name. Without it, a `--listen local` server answers every request with 403, and a `--listen network` server behind a proxy that rewrites the `Host` header refuses the dashboard WebSocket.
+- If you develop the dashboard UI on its dev server (port 3000), set `POWERPIPE_ALLOWED_HOSTS=localhost`.
+- `--listen network` gets the `Origin` check only, not the `Host` check: any client that can reach the server can still use it, including a web page that reaches it through DNS rebinding from a browser on that network. Use `--listen network` only on a network you trust.
+
+_Bug Fixes_
+- Fix results being exported while controls are still writing them when `--benchmark-timeout` ends a run. ([#1180](https://github.com/turbot/powerpipe/issues/1180))
+- Fix a crash when a cancelled query used its database connection after the connection was closed. ([#1181](https://github.com/turbot/powerpipe/issues/1181))
+
 ## v1.5.8 [2026-11-10]
 _Bug Fixes_
 - Fix chart dashboards crashing with "Cannot read properties of undefined (reading 'get')". ([#1144](https://github.com/turbot/powerpipe/issues/1144))
