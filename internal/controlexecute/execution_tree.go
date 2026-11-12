@@ -31,11 +31,12 @@ type ExecutionTree struct {
 	// the current session search path
 	SearchPath []string                      `json:"-"`
 	Workspace  *workspace.PowerpipeWorkspace `json:"-"`
-	// ControlRunInstances is a list of control runs for each parent.
-	ControlRunInstances []*ControlRunInstance `json:"-"`
-	client              *db_client.DbClient
+	client     *db_client.DbClient
 	// an optional map of control names used to filter the controls which are run
 	controlNameFilterMap map[string]struct{}
+	// set if the control runs keep their result rows in a temporary file
+	rowStore   *rowStore
+	rowsLoaded bool
 }
 
 func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, client *db_client.DbClient, controlFilter pworkspace.ResourceFilter, targets ...modconfig.ModTreeItem) (*ExecutionTree, error) {
@@ -78,8 +79,14 @@ func NewExecutionTree(ctx context.Context, w *workspace.PowerpipeWorkspace, clie
 	return executionTree, nil
 }
 
-// PopulateControlRunInstances creates a list of ControlRunInstances, by expanding the list of control runs for each parent.
-func (tree *ExecutionTree) PopulateControlRunInstances() {
+// ControlRunInstances returns a ControlRunInstance for each parent of each control run.
+//
+// If a control is included by multiple benchmarks, a single ControlRun is created and executed once,
+// and its Parents property lists every ResultGroup (i.e. benchmark) which includes the control.
+// Templates such as CSV render a set of result rows for every instance of the control, i.e. for every parent.
+//
+// The instances copy every result row, so they are built on demand for the formats which use them.
+func (tree *ExecutionTree) ControlRunInstances() []*ControlRunInstance {
 	var controlRunInstances []*ControlRunInstance
 
 	for _, controlRun := range tree.ControlRuns {
@@ -89,7 +96,7 @@ func (tree *ExecutionTree) PopulateControlRunInstances() {
 		}
 	}
 
-	tree.ControlRunInstances = controlRunInstances
+	return controlRunInstances
 }
 
 // IsExportSourceData implements ExportSourceData
@@ -159,6 +166,46 @@ func (e *ExecutionTree) Execute(ctx context.Context) error {
 	e.DimensionColorGenerator.populate(e)
 
 	return nil
+}
+
+// StoreRowsOnDisk makes the control runs keep their result rows in a temporary file, not in memory.
+// Formatters that read rows one at a time (see ControlRun.EachRow) then never hold them all.
+// Call it before Execute, call LoadRows before using Rows, and call Close when the tree is no longer used.
+func (e *ExecutionTree) StoreRowsOnDisk() error {
+	store, err := newRowStore()
+	if err != nil {
+		return err
+	}
+	e.rowStore = store
+	for _, run := range e.ControlRuns {
+		run.storedRows = newStoredRows(store)
+	}
+	return nil
+}
+
+// LoadRows reads the result rows of every control run into its Rows, if they are on disk
+func (e *ExecutionTree) LoadRows() error {
+	if e.rowStore == nil || e.rowsLoaded {
+		return nil
+	}
+	for _, run := range e.ControlRuns {
+		if err := run.loadRows(); err != nil {
+			return err
+		}
+	}
+	e.rowsLoaded = true
+	if e.DimensionColorGenerator != nil {
+		e.DimensionColorGenerator.populate(e)
+	}
+	return nil
+}
+
+// Close closes the temporary row file, if there is one
+func (e *ExecutionTree) Close() error {
+	if e.rowStore == nil {
+		return nil
+	}
+	return e.rowStore.close()
 }
 
 func (e *ExecutionTree) waitForActiveRunsToComplete(ctx context.Context, parallelismLock *semaphore.Weighted, maxParallelGoRoutines int64, cancelTimeout time.Duration) error {

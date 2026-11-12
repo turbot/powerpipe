@@ -5,10 +5,26 @@ const webpack = require("webpack");
 
 module.exports = {
   jest: {
-    configure: {
-      moduleNameMapper: {
+    // A function, not an object: craco appends an object's arrays to CRA's
+    // defaults, and we need to replace transformIgnorePatterns.
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...jestConfig.moduleNameMapper,
         "^@powerpipe/(.*)$": "<rootDir>/src/$1",
-      },
+        // Jest 27 does not read package.json "exports"
+        "^react-router-dom$":
+          "<rootDir>/node_modules/react-router-dom/dist/index.js",
+        "^react-router/dom$":
+          "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
+      };
+      // color-convert v3 and its color-name dependency ship as ES modules
+      // only, so Jest has to run them through Babel like our own source.
+      // Every other package in node_modules is still left untransformed.
+      jestConfig.transformIgnorePatterns = [
+        "[/\\\\]node_modules[/\\\\](?!(color-convert|color-name)[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+        "^.+\\.module\\.(css|sass|scss)$",
+      ];
+      return jestConfig;
     },
   },
   webpack: {

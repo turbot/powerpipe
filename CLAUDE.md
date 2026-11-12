@@ -380,7 +380,7 @@ Follow these steps in order to perform a release:
 - PR title: `Powerpipe CLI v<version>`, base: `main`.
 
 ### 6. Deploy powerpipe.io
-- After the powerpipe.io changelog PR is merged, trigger the `Deploy powerpipe.io` workflow in `turbot/powerpipe.io` from `main`.
+- After the powerpipe.io changelog PR is merged, trigger the `Trigger Vercel deploy (prod)` workflow in `turbot/powerpipe.io` from `main`.
 
 ### 7. Close Release Issue
 - Check off all items in the release issue checklist as steps are completed.

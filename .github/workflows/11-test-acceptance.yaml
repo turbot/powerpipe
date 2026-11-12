@@ -133,7 +133,9 @@ jobs:
           - "sp_files"
           - "var_resolution"
           - "params_and_args"
-          - "snapshot"
+          # Disabled: snapshot creates against turbot-ops/clitesting exceed the
+          # 60s gateway limit and return 504. Re-enable via #1106.
+          # - "snapshot"
           - "dashboard_parsing_validation"
           - "database_precedence"
           - "tag_filtering"
