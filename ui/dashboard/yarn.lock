@@ -15311,7 +15311,7 @@ __metadata:
     use-deep-compare-effect: "npm:1.8.1"
     uuid: "npm:14.0.0"
     vm-browserify: "npm:1.1.2"
-    web-vitals: "npm:4.2.4"
+    web-vitals: "npm:6.2.3"
   languageName: unknown
   linkType: soft
 
@@ -18959,10 +18959,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"web-vitals@npm:4.2.4":
-  version: 4.2.4
-  resolution: "web-vitals@npm:4.2.4"
-  checksum: 10c0/383c9281d5b556bcd190fde3c823aeb005bb8cf82e62c75b47beb411014a4ed13fa5c5e0489ed0f1b8d501cd66b0bebcb8624c1a75750bd5df13e2a3b1b2d194
+"web-vitals@npm:6.2.3":
+  version: 6.2.3
+  resolution: "web-vitals@npm:6.2.3"
+  checksum: 10c0/d7db74ab8503f069db0f697b1b1318670062616a1b46464abde98dc599ffbf71c0080f39bfe739ed122da12f6980fe882d471e86a78fedad61a4bfa1abffa32c
   languageName: node
   linkType: hard
 
