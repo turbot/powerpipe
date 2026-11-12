@@ -2,13 +2,15 @@
 
 This will allow you to develop the dashboards UI locally. To get started:
 
-- Ensure you have `steampipe` installed - https://steampipe.io/downloads
+- Ensure you have `powerpipe` installed - https://powerpipe.io/downloads
 - Ensure you have `node` LTS installed - https://nodejs.org/en/download/
 - Ensure you have `yarn` installed - https://yarnpkg.com/getting-started/install
 
-## Start Steampipe
+## Start Powerpipe
 
-- Start your local Steampipe service, and dashboard service, with `steampipe dashboard` (ensure you have navigated to your mod folder with `cd <mod_folder>` first)
+- Navigate to your mod folder with `cd <mod_folder>`
+- Start the Powerpipe server with `POWERPIPE_ALLOWED_HOSTS=localhost powerpipe server`
+- The setting lets the dev server on http://localhost:3000 connect to the Powerpipe server on http://localhost:9033. Without it, the server only accepts a WebSocket from a page that it serves itself.
 
 ## UI Setup
 

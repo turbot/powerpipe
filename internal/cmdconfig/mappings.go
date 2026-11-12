@@ -77,5 +77,6 @@ func envMappings() map[string]cmdconfig.EnvMapping {
 		localconstants.EnvBenchmarkTimeout: {ConfigVar: []string{constants.ArgBenchmarkTimeout}, VarType: cmdconfig.EnvVarTypeInt},
 		localconstants.EnvDashboardTimeout: {ConfigVar: []string{constants.ArgDashboardTimeout}, VarType: cmdconfig.EnvVarTypeInt},
 		localconstants.EnvDisplayWidth:     {ConfigVar: []string{constants.ArgDisplayWidth}, VarType: cmdconfig.EnvVarTypeInt},
+		localconstants.EnvAllowedHosts:     {ConfigVar: []string{localconstants.ArgAllowedHosts}, VarType: cmdconfig.EnvVarTypeString},
 	}
 }

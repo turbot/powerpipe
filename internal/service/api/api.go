@@ -71,6 +71,8 @@ type APIService struct {
 	apiPrefixGroup *gin.RouterGroup
 	router         *gin.Engine
 	webSocket      *melody.Melody
+	// the host names of the server besides localhost, such as the domain of a proxy
+	allowedHosts []string
 
 	// the loaded workspace
 	workspace *pworkspace.PowerpipeWorkspace
@@ -89,6 +91,14 @@ func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 func WithWorkspace(workspace *pworkspace.PowerpipeWorkspace) APIServiceOption {
 	return func(api *APIService) error {
 		api.workspace = workspace
+		return nil
+	}
+}
+
+// WithAllowedHosts sets the host names of the server besides localhost, such as the domain of a proxy
+func WithAllowedHosts(hosts []string) APIServiceOption {
+	return func(api *APIService) error {
+		api.allowedHosts = hosts
 		return nil
 	}
 }
@@ -120,14 +130,30 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 	return api, nil
 }
 
-// Start starts services managed by the Manager.
-func (api *APIService) Start() error {
-	// Set the gin mode based on our environment, to configure logging etc as appropriate
-	gin.SetMode(viper.GetString(constants.ArgEnvironment))
-	binding.EnableDecoderDisallowUnknownFields = true
+// newRouter returns the router for the API, the dashboard assets and the WebSocket
+func (api *APIService) newRouter() *gin.Engine {
+	// Custom validators for our types
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// Return the JSON fieldname in the Tag() field for errors.
+		// See https://github.com/go-playground/validator/issues/287
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+		// Custom validators using struct field tags
+		_ = v.RegisterValidation("flowpipe_api_version", common.APIVersionValidator())
+	}
 
-	// Initialize gin
 	router := gin.New()
+
+	// a server that listens on localhost only accepts requests for this machine or the allowed hosts. Use it
+	// before creating groups: a group copies the middleware of the router when it is created
+	if api.HTTPListen == dashboardserver.ListenTypeLocal {
+		router.Use(allowedHostMiddleware(api.allowedHosts))
+	}
 
 	apiPrefixGroup := router.Group(common.APIPrefix())
 	apiPrefixGroup.Use(common.ValidateAPIVersion)
@@ -164,6 +190,7 @@ func (api *APIService) Start() error {
 	// respond with the static dashboard assets for / (root)
 	router.Use(static.Serve("/", static.LocalFile(assetsDirectory, true)))
 	if api.webSocket != nil {
+		api.webSocket.Upgrader.CheckOrigin = webSocketOriginCheck(api.allowedHosts)
 		router.GET("/ws", func(c *gin.Context) {
 			if err := api.webSocket.HandleRequest(c.Writer, c.Request); err != nil {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -180,24 +207,6 @@ func (api *APIService) Start() error {
 		c.File(path.Join(assetsDirectory, "index.html"))
 	})
 
-	api.apiPrefixGroup = apiPrefixGroup
-	api.router = router
-
-	// Custom validators for our types
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		// Return the JSON fieldname in the Tag() field for errors.
-		// See https://github.com/go-playground/validator/issues/287
-		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
-			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-			if name == "-" {
-				return ""
-			}
-			return name
-		})
-		// Custom validators using struct field tags
-		_ = v.RegisterValidation("flowpipe_api_version", common.APIVersionValidator())
-	}
-
 	// Single Page App must catch all routes that are not found, it
 	// handles them in a client side router.
 	// router.NoRoute(func(c *gin.Context) {
@@ -209,6 +218,19 @@ func (api *APIService) Start() error {
 	// 		c.File("./static/index.html")
 	// 	}
 	// })
+
+	api.apiPrefixGroup = apiPrefixGroup
+	return router
+}
+
+// Start starts services managed by the Manager.
+func (api *APIService) Start() error {
+	// Set the gin mode based on our environment, to configure logging etc as appropriate
+	gin.SetMode(viper.GetString(constants.ArgEnvironment))
+	binding.EnableDecoderDisallowUnknownFields = true
+
+	router := api.newRouter()
+	api.router = router
 
 	// determine the listen address based on HTTPListenType
 	listenHost := "" // Default to all interfaces (network)
