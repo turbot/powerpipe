@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/powerpipe/internal/benchmarkrun"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
@@ -76,6 +77,8 @@ type APIService struct {
 
 	// the loaded workspace
 	workspace *pworkspace.PowerpipeWorkspace
+	// if set, benchmarks can be run through the API
+	benchmarkRunner *benchmarkrun.Runner
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -84,6 +87,13 @@ type APIServiceOption func(*APIService) error
 func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	return func(api *APIService) error {
 		api.webSocket = webSocket
+		return nil
+	}
+}
+
+func WithBenchmarkRunner(runner *benchmarkrun.Runner) APIServiceOption {
+	return func(api *APIService) error {
+		api.benchmarkRunner = runner
 		return nil
 	}
 }
@@ -130,6 +140,10 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 	return api, nil
 }
 
+// maxRequestBodySize is the largest request body the server reads. The only body is the optional JSON of a
+// benchmark run request.
+const maxRequestBodySize = 64 * 1024
+
 // newRouter returns the router for the API, the dashboard assets and the WebSocket
 func (api *APIService) newRouter() *gin.Engine {
 	// Custom validators for our types
@@ -155,14 +169,11 @@ func (api *APIService) newRouter() *gin.Engine {
 		router.Use(allowedHostMiddleware(api.allowedHosts))
 	}
 
+	// Limit the size of request bodies, before creating groups as above
+	router.Use(size.RequestSizeLimiter(maxRequestBodySize))
+
 	apiPrefixGroup := router.Group(common.APIPrefix())
 	apiPrefixGroup.Use(common.ValidateAPIVersion)
-
-	// Limit the size of POST requests
-	// There doesn't seem a way to set the request size per path, but for now we have
-	// no requirement for different limits on different paths. So just set one limit
-	// for all request (for now)
-	router.Use(size.RequestSizeLimiter(viper.GetInt64("web.request.size_limit")))
 
 	// Create compression middleware - exclude process logs as we handle compression within the API itself
 	compressionMiddleware := gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"^/api/.+/.*[avatar|\\.jsonl]$"}))
@@ -184,6 +195,9 @@ func (api *APIService) newRouter() *gin.Engine {
 	apiLimiter.SetBurst(viper.GetInt("web.rate.burst"))
 
 	RegisterPublicAPI(apiPrefixGroup)
+	if api.benchmarkRunner != nil {
+		registerBenchmarkRun(apiPrefixGroup, api.benchmarkRunner)
+	}
 
 	// put in handing for the dashboard for the mod
 	assetsDirectory := filepaths.EnsureDashboardAssetsDir()
