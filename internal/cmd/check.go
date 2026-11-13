@@ -52,7 +52,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		Long:             checkCmdLong(typeName),
 	}
 
-	// when running mod install before the benchmark execution, we use the minimal update strategy
+	// holds the value of the deprecated --pull flag, which a run ignores
 	var updateStrategy = constants.ModUpdateIdMinimal
 
 	builder := cmdconfig.OnCmd(cmd)
@@ -63,10 +63,10 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
+		AddBoolFlag(constants.ArgModInstall, true, "Ignored: a run does not install mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
 			constants.ArgPull,
-			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
+			"Ignored: a run does not update mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").

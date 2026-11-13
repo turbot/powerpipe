@@ -46,7 +46,7 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		Long:             detectionCmdLong(typeName),
 	}
 
-	// when running mod install before the detection execution, we use the minimal update strategy
+	// holds the value of the deprecated --pull flag, which a run ignores
 	var updateStrategy = constants.ModUpdateIdMinimal
 
 	cmdconfig.OnCmd(cmd).
@@ -61,10 +61,10 @@ func detectionRunCmd[T DetectionTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgHelp, false, "Help for detection", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
 		AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running the detection").
+		AddBoolFlag(constants.ArgModInstall, true, "Ignored: a run does not install mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
 			constants.ArgPull,
-			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
+			"Ignored: a run does not update mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddVarFlag(enumflag.New(&detectionOutputMode, constants.ArgOutput, localconstants.DetectionOutputModeIds, enumflag.EnumCaseInsensitive),
 			constants.ArgOutput,
 			fmt.Sprintf("Output format; one of: %s", strings.Join(constants.FlagValues(localconstants.DetectionOutputModeIds), ", "))).

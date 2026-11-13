@@ -119,6 +119,34 @@ top_level.benchmark.bm_version_dependency_mod_1,Benchmark version dependency mod
 top_level.benchmark.bm_version_dependency_mod_2,Benchmark version dependency mod 2,,dependency_2.control.version,,,3.0,3.0,ok,'
 }
 
+@test "benchmark run does not rewrite the mod lock file" {
+  powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
+  # date the lock file in the past: a run that writes it makes it newer than the marker
+  touch -t 200001010000 .mod.cache.json "$BATS_TMPDIR/lock_marker"
+  cp .mod.cache.json "$BATS_TMPDIR/lock_before.json"
+
+  run powerpipe benchmark run top_level.benchmark.bm_version_dependency_mod_1 --output csv
+  assert_output --partial 'dependency_1.control.version'
+
+  run find .mod.cache.json -newer "$BATS_TMPDIR/lock_marker"
+  assert_output ''
+  run cmp .mod.cache.json "$BATS_TMPDIR/lock_before.json"
+  assert_success
+}
+
+@test "benchmark run accepts --mod-install and --pull, warns that they are deprecated, and installs nothing" {
+  powerpipe mod install github.com/pskrbasu/steampipe-mod-top-level
+  touch -t 200001010000 .mod.cache.json "$BATS_TMPDIR/lock_marker"
+
+  run powerpipe benchmark run top_level.benchmark.bm_version_dependency_mod_1 --output csv --mod-install=true --pull latest
+  assert_output --partial 'Flag --mod-install has been deprecated'
+  assert_output --partial 'Flag --pull has been deprecated'
+  assert_output --partial 'dependency_1.control.version'
+
+  run find .mod.cache.json -newer "$BATS_TMPDIR/lock_marker"
+  assert_output ''
+}
+
 @test "install mod from GitLab" {
   run powerpipe mod install https://gitlab.com/puskar3/powerpipe-mod-test
   assert_output --partial '
