@@ -33,6 +33,10 @@ import (
 // `powerpipe benchmark run --host` reads its run every second.
 const IdleTimeout = time.Minute
 
+// MaxRunningRuns is how many runs powerpipe server runs at once. Each run executes its own controls, so
+// more runs would compete for the same database connections and memory.
+const MaxRunningRuns = 10
+
 type Status string
 
 const (
@@ -47,6 +51,9 @@ var ErrNotFound = errors.New("benchmark run not found")
 
 // ErrNotComplete is returned when the snapshot of a run that has not completed is requested
 var ErrNotComplete = errors.New("benchmark run is not complete")
+
+// ErrTooManyRuns is returned by Start when the runner already runs its maximum number of runs
+var ErrTooManyRuns = errors.New("too many benchmark runs are running, try again when one has finished")
 
 // BenchmarkNotFoundError is returned by Start for a name that does not resolve to a benchmark
 type BenchmarkNotFoundError struct {
@@ -85,14 +92,18 @@ type Runner struct {
 	workspace   *workspace.PowerpipeWorkspace
 	client      *db_client.DbClient
 	idleTimeout time.Duration
+	maxRunning  int
 
 	mu   sync.Mutex
 	runs map[string]*Run
+	// the runs that are starting or running
+	running int
 }
 
-// NewRunner returns a runner that removes a run when no client has read it for idleTimeout
-func NewRunner(w *workspace.PowerpipeWorkspace, client *db_client.DbClient, idleTimeout time.Duration) *Runner {
-	return &Runner{workspace: w, client: client, idleTimeout: idleTimeout, runs: make(map[string]*Run)}
+// NewRunner returns a runner that runs at most maxRunning runs at once, and removes a run when no client
+// has read it for idleTimeout
+func NewRunner(w *workspace.PowerpipeWorkspace, client *db_client.DbClient, idleTimeout time.Duration, maxRunning int) *Runner {
+	return &Runner{workspace: w, client: client, idleTimeout: idleTimeout, maxRunning: maxRunning, runs: make(map[string]*Run)}
 }
 
 // Start starts a run of the benchmark, and returns once its controls are resolved. The benchmark can be
@@ -103,6 +114,14 @@ func (r *Runner) Start(benchmark string, timeout time.Duration) (Run, error) {
 	if err != nil {
 		return Run{}, err
 	}
+
+	r.mu.Lock()
+	if r.running >= r.maxRunning {
+		r.mu.Unlock()
+		return Run{}, ErrTooManyRuns
+	}
+	r.running++
+	r.mu.Unlock()
 
 	var ctx context.Context
 	var cancel context.CancelFunc
@@ -117,6 +136,9 @@ func (r *Runner) Start(benchmark string, timeout time.Duration) (Run, error) {
 	}
 	if err != nil {
 		cancel()
+		r.mu.Lock()
+		r.running--
+		r.mu.Unlock()
 		return Run{}, err
 	}
 
@@ -173,6 +195,7 @@ func (r *Runner) execute(ctx context.Context, run *Run) {
 func (r *Runner) finish(ctx context.Context, run *Run, err error) {
 	r.mu.Lock()
 	defer r.mu.Unlock()
+	r.running--
 	end := time.Now()
 	run.EndTime = &end
 	if run.tree.Root != nil && run.tree.Root.Summary != nil {

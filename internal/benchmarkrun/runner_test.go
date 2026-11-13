@@ -61,10 +61,10 @@ control "slow" {
 
 // NewTestRunner returns a runner for a test mod, with a SQLite database
 func NewTestRunner(t *testing.T) *benchmarkrun.Runner {
-	return newTestRunner(t, benchmarkrun.IdleTimeout)
+	return newTestRunner(t, benchmarkrun.IdleTimeout, benchmarkrun.MaxRunningRuns)
 }
 
-func newTestRunner(t *testing.T, idleTimeout time.Duration) *benchmarkrun.Runner {
+func newTestRunner(t *testing.T, idleTimeout time.Duration, maxRunning int) *benchmarkrun.Runner {
 	t.Helper()
 	setAppConstants.Do(func() {
 		viper.Set("main.version", "0.0.0")
@@ -83,7 +83,7 @@ func newTestRunner(t *testing.T, idleTimeout time.Duration) *benchmarkrun.Runner
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = client.Close(context.Background()) })
-	return benchmarkrun.NewRunner(w, client, idleTimeout)
+	return benchmarkrun.NewRunner(w, client, idleTimeout, maxRunning)
 }
 
 func waitForRun(t *testing.T, runner *benchmarkrun.Runner, started benchmarkrun.Run) benchmarkrun.Run {
@@ -182,6 +182,40 @@ func TestRunner_ConcurrentRuns(t *testing.T) {
 		if rows := readSnapshot(t, runner, run).Panels["local.control.ok_rows"].Data.Rows; len(rows) != 2 {
 			t.Fatalf("run %s: expected 2 rows, got %d", run.ID, len(rows))
 		}
+	}
+}
+
+// a run is refused while the runner runs its maximum, and starts again when a run finishes
+func TestRunner_MaxRunning(t *testing.T) {
+	runner := newTestRunner(t, benchmarkrun.IdleTimeout, 2)
+	var running []benchmarkrun.Run
+	for range 2 {
+		run, err := runner.Start("benchmark.slow", 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		running = append(running, run)
+	}
+	if _, err := runner.Start("benchmark.quick", 0); !errors.Is(err, benchmarkrun.ErrTooManyRuns) {
+		t.Fatalf("expected ErrTooManyRuns, got %v", err)
+	}
+	if err := runner.Delete(running[0].Benchmark, running[0].ID); err != nil {
+		t.Fatal(err)
+	}
+	run, err := runner.Start("benchmark.quick", 0)
+	if err != nil {
+		t.Fatalf("expected a run to start once a run is deleted, got %v", err)
+	}
+	if run = waitForRun(t, runner, run); run.Status != benchmarkrun.StatusComplete {
+		t.Fatalf("unexpected run %+v", run)
+	}
+	// a complete run does not count
+	if run, err = runner.Start("benchmark.quick", 0); err != nil {
+		t.Fatalf("expected a run to start once a run is complete, got %v", err)
+	}
+	waitForRun(t, runner, run)
+	if err := runner.Delete(running[1].Benchmark, running[1].ID); err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -335,7 +369,7 @@ func waitIdle() { time.Sleep(5 * testIdleTimeout) }
 
 // a running run that no client reads is cancelled and removed
 func TestRunner_IdleRunningRunIsRemoved(t *testing.T) {
-	runner := newTestRunner(t, testIdleTimeout)
+	runner := newTestRunner(t, testIdleTimeout, benchmarkrun.MaxRunningRuns)
 	run, err := runner.Start("benchmark.slow", 0)
 	if err != nil {
 		t.Fatal(err)
@@ -348,7 +382,7 @@ func TestRunner_IdleRunningRunIsRemoved(t *testing.T) {
 
 // a completed run that no client downloads is removed
 func TestRunner_IdleCompleteRunIsRemoved(t *testing.T) {
-	runner := newTestRunner(t, testIdleTimeout)
+	runner := newTestRunner(t, testIdleTimeout, benchmarkrun.MaxRunningRuns)
 	started, err := runner.Start("benchmark.quick", 0)
 	if err != nil {
 		t.Fatal(err)
@@ -362,7 +396,7 @@ func TestRunner_IdleCompleteRunIsRemoved(t *testing.T) {
 
 // a run stays while a client reads it, for longer than the idle timeout
 func TestRunner_ReadKeepsRunAlive(t *testing.T) {
-	runner := newTestRunner(t, testIdleTimeout)
+	runner := newTestRunner(t, testIdleTimeout, benchmarkrun.MaxRunningRuns)
 	run, err := runner.Start("benchmark.slow", 0)
 	if err != nil {
 		t.Fatal(err)
@@ -379,7 +413,7 @@ func TestRunner_ReadKeepsRunAlive(t *testing.T) {
 
 // a snapshot write that takes longer than the idle timeout keeps the run
 func TestRunner_SnapshotWriteKeepsRunAlive(t *testing.T) {
-	runner := newTestRunner(t, testIdleTimeout)
+	runner := newTestRunner(t, testIdleTimeout, benchmarkrun.MaxRunningRuns)
 	started, err := runner.Start("benchmark.quick", 0)
 	if err != nil {
 		t.Fatal(err)

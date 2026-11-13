@@ -99,7 +99,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	powerpipeService, err := api.NewAPIService(ctx,
 		api.WithWebSocket(webSocket),
 		api.WithWorkspace(modInitData.Workspace),
-		api.WithBenchmarkRunner(benchmarkrun.NewRunner(modInitData.Workspace, modInitData.DefaultClient, benchmarkrun.IdleTimeout)),
+		api.WithBenchmarkRunner(benchmarkrun.NewRunner(modInitData.Workspace, modInitData.DefaultClient, benchmarkrun.IdleTimeout, benchmarkrun.MaxRunningRuns)),
 		api.WithHTTPPortAndListenConfig(serverPort, serverListen),
 		api.WithAllowedHosts(allowedHosts),
 	)

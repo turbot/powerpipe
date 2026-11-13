@@ -26,7 +26,7 @@ type BenchmarkRunRequest struct {
 // that `powerpipe benchmark run` accepts, e.g. aws_compliance.benchmark.cis_v300. The URL of a run uses the
 // full name of its benchmark.
 //
-//	POST   /benchmark/:benchmark_name/run                   start a run              -> 202 run, Location: the URL of the run
+//	POST   /benchmark/:benchmark_name/run                   start a run              -> 202 run, Location: the URL of the run; 429 when the runner is full
 //	GET    /benchmark/:benchmark_name/run/:run_id           the state of the run     -> 200 run
 //	GET    /benchmark/:benchmark_name/run/:run_id/snapshot  the snapshot of the run  -> 200 snapshot (as --export=<file>.pps), 409 while running
 //	DELETE /benchmark/:benchmark_name/run/:run_id           cancel and remove a run  -> 204
@@ -54,9 +54,12 @@ func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) 
 		run, err := runner.Start(c.Param("benchmark_name"), time.Duration(req.TimeoutSeconds)*time.Second)
 		if err != nil {
 			var notFound *benchmarkrun.BenchmarkNotFoundError
-			if errors.As(err, &notFound) {
+			switch {
+			case errors.As(err, &notFound):
 				common.AbortWithError(c, perr.NotFoundWithMessage(err.Error()))
-			} else {
+			case errors.Is(err, benchmarkrun.ErrTooManyRuns):
+				common.AbortWithError(c, perr.TooManyRequestsWithMessage(err.Error()))
+			default:
 				common.AbortWithError(c, perr.InternalWithMessage(err.Error()))
 			}
 			return

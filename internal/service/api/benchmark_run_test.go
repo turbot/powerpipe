@@ -45,6 +45,17 @@ control "slow" {
 
 func newBenchmarkRunRouter(t *testing.T) *gin.Engine {
 	t.Helper()
+	runner := newTestBenchmarkRunner(t, benchmarkrun.MaxRunningRuns)
+	gin.SetMode(gin.TestMode)
+	binding.EnableDecoderDisallowUnknownFields = true
+	router := gin.New()
+	registerBenchmarkRun(router.Group("/api/:api_version"), runner)
+	return router
+}
+
+// newTestBenchmarkRunner returns a runner for a test mod, with a SQLite database
+func newTestBenchmarkRunner(t *testing.T, maxRunning int) *benchmarkrun.Runner {
+	t.Helper()
 	viper.Set("main.version", "0.0.0")
 	cmdconfig.SetAppSpecificConstants()
 	dir := t.TempDir()
@@ -60,12 +71,7 @@ func newBenchmarkRunRouter(t *testing.T) *gin.Engine {
 		t.Fatal(err)
 	}
 	t.Cleanup(func() { _ = client.Close(context.Background()) })
-
-	gin.SetMode(gin.TestMode)
-	binding.EnableDecoderDisallowUnknownFields = true
-	router := gin.New()
-	registerBenchmarkRun(router.Group("/api/:api_version"), benchmarkrun.NewRunner(w, client, benchmarkrun.IdleTimeout))
-	return router
+	return benchmarkrun.NewRunner(w, client, benchmarkrun.IdleTimeout, maxRunning)
 }
 
 // request sends a request to the router. path is the full path, e.g. /api/v0/benchmark/x/run

@@ -16,13 +16,16 @@ import (
 // newTestRouter returns the router of a server, as `powerpipe server` creates it
 func newTestRouter(t *testing.T, listen dashboardserver.ListenType, allowedHosts ...string) *gin.Engine {
 	t.Helper()
+	return newTestRouterFor(t, &APIService{HTTPListen: listen, allowedHosts: allowedHosts, webSocket: melody.New()})
+}
+
+func newTestRouterFor(t *testing.T, api *APIService) *gin.Engine {
+	t.Helper()
 	gin.SetMode(gin.TestMode)
 	// the router serves the dashboard assets from the install dir
 	installDir := app_specific.InstallDir
 	app_specific.InstallDir = t.TempDir()
 	t.Cleanup(func() { app_specific.InstallDir = installDir })
-
-	api := &APIService{HTTPListen: listen, allowedHosts: allowedHosts, webSocket: melody.New()}
 	return api.newRouter()
 }
 
@@ -88,6 +91,43 @@ func TestRouter_WebSocket(t *testing.T) {
 				t.Fatalf("got status %d, want %d", got, test.want)
 			}
 		})
+	}
+}
+
+// the benchmark run API of the router that `powerpipe server --listen local` creates
+func TestRouter_BenchmarkRun(t *testing.T) {
+	runner := newTestBenchmarkRunner(t, 1)
+	router := newTestRouterFor(t, &APIService{HTTPListen: dashboardserver.ListenTypeLocal, benchmarkRunner: runner})
+
+	send := func(method, path, host, body string) *httptest.ResponseRecorder {
+		t.Helper()
+		r := httptest.NewRequest(method, path, strings.NewReader(body))
+		r.Host = host
+		r.Header.Set("Content-Type", "application/json")
+		w := httptest.NewRecorder()
+		router.ServeHTTP(w, r)
+		return w
+	}
+
+	if w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "evil.example:9033", "{}"); w.Code != http.StatusForbidden {
+		t.Fatalf("a run for a host that is not allowed: got %d %s, want 403", w.Code, w.Body)
+	}
+	// valid JSON, larger than the limit
+	oversized := `{"timeout_seconds": 1` + strings.Repeat(" ", maxRequestBodySize) + `}`
+	if w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "localhost:9033", oversized); w.Code != http.StatusRequestEntityTooLarge {
+		t.Fatalf("an oversized run request: got %d %s, want 413", w.Code, w.Body)
+	}
+	w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "localhost:9033", "{}")
+	if w.Code != http.StatusAccepted {
+		t.Fatalf("a run: got %d %s, want 202", w.Code, w.Body)
+	}
+	runURL := w.Header().Get("Location")
+	t.Cleanup(func() { send(http.MethodDelete, runURL, "localhost:9033", "") })
+	if w := send(http.MethodPost, "/api/v0/benchmark/quick/run", "localhost:9033", "{}"); w.Code != http.StatusTooManyRequests {
+		t.Fatalf("a run while the runner is full: got %d %s, want 429", w.Code, w.Body)
+	}
+	if w := send(http.MethodGet, runURL, "evil.example:9033", ""); w.Code != http.StatusForbidden {
+		t.Fatalf("reading a run for a host that is not allowed: got %d %s, want 403", w.Code, w.Body)
 	}
 }
 
