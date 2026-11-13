@@ -129,12 +129,24 @@ func (c *Client) do(ctx context.Context, method string, u *url.URL, body io.Read
 		Detail string `json:"detail"`
 	}
 	message := resp.Status
-	if data, readErr := io.ReadAll(io.LimitReader(resp.Body, 64*1024)); readErr == nil && json.Unmarshal(data, &errorBody) == nil {
+	data, readErr := io.ReadAll(io.LimitReader(resp.Body, 64*1024))
+	isJSON := readErr == nil && json.Unmarshal(data, &errorBody) == nil
+	if isJSON {
 		if errorBody.Detail != "" {
 			message = errorBody.Detail
 		} else if errorBody.Title != "" {
 			message = errorBody.Title
 		}
+	}
+	switch {
+	// a server before v1.6.0 answers any path it does not know with the dashboard page and 200, or with a plain
+	// text 404 when it has no dashboard page
+	case resp.StatusCode >= 200 && resp.StatusCode < 300, resp.StatusCode == http.StatusNotFound && !isJSON:
+		message = fmt.Sprintf("the powerpipe server at %s cannot run benchmarks: it needs powerpipe v1.6.0 or later", c.host.Redacted())
+	case resp.StatusCode == http.StatusRequestEntityTooLarge:
+		message = fmt.Sprintf("the powerpipe server at %s refused the request as too large", c.host.Redacted())
+	case resp.StatusCode == http.StatusTooManyRequests:
+		message = fmt.Sprintf("the powerpipe server at %s is busy: %s", c.host.Redacted(), message)
 	}
 	return nil, &APIError{StatusCode: resp.StatusCode, Message: message}
 }
