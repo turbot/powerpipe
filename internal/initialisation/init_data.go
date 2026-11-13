@@ -16,7 +16,6 @@ import (
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
-	"github.com/turbot/pipe-fittings/v2/modinstaller"
 	"github.com/turbot/pipe-fittings/v2/plugin"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/utils"
@@ -143,24 +142,6 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 		i.Result.AddWarnings(err.Error())
 	} else {
 		i.ShutdownTelemetry = shutdownTelemetry
-	}
-
-	// install mod dependencies if needed (this defaults to true for dashboard and check commands
-	// and will always be false for query command)
-	if viper.GetBool(constants.ArgModInstall) {
-		statushooks.SetStatus(ctx, "Installing workspace dependencies")
-		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
-		// arg pull should always be set (to a default at least) if ArgModInstall is set
-		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
-		// use force install so that errors are ignored during installation
-		// (we are validating prereqs later)
-		opts.Force = true
-		_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
-		if err != nil {
-			i.Result.Error = err
-			return
-		}
 	}
 
 	// create default client
