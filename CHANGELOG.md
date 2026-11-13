@@ -1,3 +1,16 @@
+## v1.6.0 [2026-11-13]
+_What's new_
+- Add a benchmark run API to `powerpipe server`: `POST /api/v0/benchmark/<benchmark>/run` starts a benchmark run, `GET` on the run returns its status, `GET .../snapshot` returns the same snapshot as `--export=<file>.pps`, and `DELETE` cancels and removes it. Many runs share the one loaded mod and the server's database connections, so a server running several benchmarks at once uses much less memory and time than a process for each run. At most 10 runs run at once; a run that no client has read for a minute is removed. **Note:** the run API has no authentication. Anyone who can reach the server can start and read benchmark runs, so use it only on a network you trust.
+- Add `powerpipe benchmark run <benchmark> --host <url>` to run a benchmark on a `powerpipe server` through the run API. It writes the same snapshot and exits with the same codes as a local run. It supports `--output=snapshot|none`, `--export=<file>.pps|pps`, `--benchmark-timeout` and `--progress`, for one benchmark.
+
+_Enhancements_
+- `powerpipe benchmark run` and `powerpipe control run` now load only the resources the benchmark or control uses, which cuts load time and memory.
+- `powerpipe benchmark run --export` now streams control results to the export file, and keeps them on disk when the output does not print them, so memory no longer grows with the number of result rows.
+
+_Dependencies_
+- Bump `pipe-fittings/v2` to v2.9.5, `github.com/mattn/go-sqlite3` to v1.14.52, `github.com/spf13/cobra` to v1.10.2 and `github.com/spf13/viper` to v1.21.0.
+- Bump `go.opentelemetry.io/otel` to v1.45.0 and `github.com/klauspost/compress` to v1.20.3.
+
 ## v1.5.9 [2026-11-12]
 _Security_
 - Fix `powerpipe server` accepting dashboard WebSocket connections from any website, and requests sent through DNS rebinding, which let a web page run dashboards and read their results. The WebSocket now accepts a connection only with no `Origin`, an `Origin` on the server's own host and port, or an `Origin` host named in `--allowed-hosts`. With `--listen local` (the default), the server also accepts a request only when its `Host` is `localhost`, a loopback IP or a host named in `--allowed-hosts`. ([GHSA-6w7w-97wr-rqhf](https://github.com/turbot/powerpipe/security/advisories/GHSA-6w7w-97wr-rqhf))
