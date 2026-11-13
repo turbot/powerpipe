@@ -1,11 +1,15 @@
 package cmd
 
 import (
+	"bytes"
 	"context"
 	"errors"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
+	"os"
+	"path/filepath"
 	"strings"
 	"testing"
 
@@ -34,6 +38,39 @@ func TestWaitForHostRun_Removed(t *testing.T) {
 	}
 	if _, err := waitForHostRun(context.Background(), client, runURL); !errors.Is(err, errHostRunRemoved) {
 		t.Fatalf("expected the run removed error, got %v", err)
+	}
+}
+
+// a server that fails after it has started the snapshot response ends the connection without the final chunk, and
+// the client must report that instead of keeping the part it received
+func TestHostSnapshotAbortedMidStream(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		_, _ = w.Write([]byte(`{"panels":{"a":`))
+		w.(http.Flusher).Flush()
+		panic(http.ErrAbortHandler)
+	}))
+	t.Cleanup(server.Close)
+	client, err := benchmarkrun.NewClient(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+	runURL, err := url.Parse(server.URL + "/api/v0/benchmark/b/run/1")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	var out bytes.Buffer
+	if err := writeHostSnapshot(context.Background(), client, runURL, &out); !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("expected an unexpected EOF writing the snapshot, got %v", err)
+	}
+
+	dest := filepath.Join(t.TempDir(), "run.pps")
+	if err := (&hostSnapshotExporter{}).Export(context.Background(), hostSnapshot{client: client, runURL: runURL}, dest); !errors.Is(err, io.ErrUnexpectedEOF) {
+		t.Fatalf("expected an unexpected EOF exporting the snapshot, got %v", err)
+	}
+	if _, err := os.Stat(dest); !os.IsNotExist(err) {
+		t.Fatalf("expected no partial snapshot file, stat gave %v", err)
 	}
 }
 
