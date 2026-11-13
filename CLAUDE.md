@@ -259,10 +259,14 @@ cd ui/dashboard && yarn install && yarn build && make zip
 ### Testing
 
 ```bash
-go test ./...                            # Unit tests (17 files, Go testing package)
-tests/acceptance/run-local.sh            # Acceptance tests (15 BATS files, 233 tests)
-tests/acceptance/run-local.sh check.bats # Single test file
+go test ./...                             # Unit tests (17 files, Go testing package)
+tests/acceptance/run-docker.sh            # Acceptance tests in Docker: the files CI runs, isolated
+tests/acceptance/run-docker.sh check.bats # Single test file in Docker
+tests/acceptance/run-local.sh             # Acceptance tests on this machine (15 BATS files, 233 tests)
+tests/acceptance/run-local.sh check.bats  # Single test file on this machine
 ```
+
+`run-local.sh` stops every Steampipe service on the machine (`steampipe service stop --force`). `run-docker.sh` does not: each test file runs in its own container with its own Steampipe service.
 
 > Full testing guide with patterns, test data, and BATS details: `.ai/testing-guide.md`
 
@@ -327,7 +331,7 @@ Uncomment for local development against `../pipe-fittings`. **Re-comment before 
 - **Initialization order**: In `dashboardexecute/dashboard_run.go`, runs must be added to execution tree map **before** creating child runs (children look up parent by name)
 - **Dashboard assets in dev**: `dashboardassets.Ensure()` checks at server startup. Missing `ui/dashboard/build/` fails the server. Fix: `cd ui/dashboard && yarn build`
 - **`mod.bats` is auto-generated**: Do not edit `tests/acceptance/test_files/mod.bats` directly. Run `make build-tests` to regenerate
-- **Steampipe service**: Required for acceptance tests. `run-local.sh` handles this, but manual test runs need `steampipe service start` first
+- **Steampipe service**: Required for acceptance tests. `run-docker.sh` and `run-local.sh` handle this, but manual test runs need `steampipe service start` first. `run-local.sh` force-stops any Steampipe service already running on the machine
 - **Replace directive**: `go.mod` replace for pipe-fittings must remain commented in commits
 - **Batch mode variables**: With `--input=false`, missing required variables cause immediate failure with no recovery
 - **Runtime dependency deadlocks**: Circular `with` dependencies cause execution to hang. Validation should catch this, but be careful
