@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"net/http"
 	"net/url"
 	"os"
 	"strings"
@@ -23,8 +24,8 @@ import (
 // hostPollInterval is how often `benchmark run --host` reads the state of its run
 const hostPollInterval = time.Second
 
-// hostUnsupportedFlags are the benchmark run flags that act on this machine: with --host the server loads
-// the mod, connects to the database and runs the controls, so these flags would have no effect.
+// hostUnsupportedFlags are the benchmark run flags a run on a server does not support: the server loads the mod
+// and connects to the database itself, the run API takes no control filters, and a server run cannot be shared.
 var hostUnsupportedFlags = []string{
 	constants.ArgModLocation,
 	constants.ArgDatabase,
@@ -61,6 +62,9 @@ func runBenchmarkOnHost(ctx context.Context, cmd *cobra.Command, args []string) 
 	run, runURL, err := client.Start(ctx, args[0], timeout)
 	if err != nil {
 		exitCode = constants.ExitCodeInitializationFailed
+		if error_helpers.IsContextCanceled(ctx) {
+			exitCode = constants.ExitCodeOperationCancelled
+		}
 		error_helpers.ShowError(ctx, err)
 		return
 	}
@@ -77,15 +81,10 @@ func runBenchmarkOnHost(ctx context.Context, cmd *cobra.Command, args []string) 
 	run, err = waitForHostRun(ctx, client, runURL)
 	if err != nil {
 		exitCode = constants.ExitCodeSnapshotCreationFailed
-		if error_helpers.IsContextCanceled(ctx) {
+		if error_helpers.IsContextCanceled(ctx) || errors.Is(err, errHostRunRemoved) {
 			exitCode = constants.ExitCodeOperationCancelled
 		}
 		error_helpers.ShowError(ctx, err)
-		return
-	}
-	if run.Status == benchmarkrun.StatusCancelled {
-		exitCode = constants.ExitCodeOperationCancelled
-		error_helpers.ShowError(ctx, fmt.Errorf("the run was cancelled on the server"))
 		return
 	}
 	statushooks.Done(ctx)
@@ -132,7 +131,7 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 		}
 	}
 	if len(unsupported) > 0 {
-		return nil, nil, fmt.Errorf("%s cannot be used with --%s: the server loads the mod and runs the benchmark", strings.Join(unsupported, ", "), constants.ArgHost)
+		return nil, nil, fmt.Errorf("%s cannot be used with --%s", strings.Join(unsupported, ", "), constants.ArgHost)
 	}
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone, constants.OutputFormatSnapshot, localconstants.OutputFormatPpSnapshotShort:
@@ -153,6 +152,10 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 	return client, exportManager, nil
 }
 
+// errHostRunRemoved is the error of a run that another client deleted, or that the server dropped, while it ran.
+// The server cancels such a run and keeps no record of it.
+var errHostRunRemoved = errors.New("the run was removed from the server before it finished")
+
 // waitForHostRun reads the run until it is no longer running
 func waitForHostRun(ctx context.Context, client *benchmarkrun.Client, runURL *url.URL) (benchmarkrun.Run, error) {
 	ticker := time.NewTicker(hostPollInterval)
@@ -164,6 +167,10 @@ func waitForHostRun(ctx context.Context, client *benchmarkrun.Client, runURL *ur
 		case <-ticker.C:
 		}
 		run, err := client.Get(ctx, runURL)
+		var apiErr *benchmarkrun.APIError
+		if errors.As(err, &apiErr) && apiErr.StatusCode == http.StatusNotFound {
+			return benchmarkrun.Run{}, errHostRunRemoved
+		}
 		if err != nil {
 			return benchmarkrun.Run{}, fmt.Errorf("failed to read the run from the server: %w", err)
 		}
