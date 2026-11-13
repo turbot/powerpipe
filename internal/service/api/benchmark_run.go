@@ -43,6 +43,10 @@ func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) 
 		var req BenchmarkRunRequest
 		// the body is optional
 		if err := c.ShouldBindJSON(&req); err != nil && !errors.Is(err, io.EOF) {
+			// the request size limiter has already responded to a body that is too large
+			if c.IsAborted() {
+				return
+			}
 			// a body that is not valid JSON, or has an unknown field, is a bad request too
 			var validationErrors validator.ValidationErrors
 			if !errors.As(err, &validationErrors) {

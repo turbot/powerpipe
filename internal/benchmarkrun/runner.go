@@ -30,7 +30,7 @@ import (
 )
 
 // IdleTimeout is how long powerpipe server keeps a run that no client reads.
-// `powerpipe benchmark run --host` reads its run every second.
+// A client that waits for a run reads it more often than this.
 const IdleTimeout = time.Minute
 
 // MaxRunningRuns is how many runs powerpipe server runs at once. Each run executes its own controls, so

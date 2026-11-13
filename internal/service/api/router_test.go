@@ -114,7 +114,7 @@ func TestRouter_BenchmarkRun(t *testing.T) {
 	}
 	// valid JSON, larger than the limit
 	oversized := `{"timeout_seconds": 1` + strings.Repeat(" ", maxRequestBodySize) + `}`
-	if w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "localhost:9033", oversized); w.Code != http.StatusRequestEntityTooLarge {
+	if w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "localhost:9033", oversized); w.Code != http.StatusRequestEntityTooLarge || w.Body.String() != "request too large" {
 		t.Fatalf("an oversized run request: got %d %s, want 413", w.Code, w.Body)
 	}
 	w := send(http.MethodPost, "/api/v0/benchmark/slow/run", "localhost:9033", "{}")
