@@ -267,7 +267,8 @@ func TestRouter_SnapshotExportFailsMidStream(t *testing.T) {
 	}
 	defer post.Body.Close()
 	runURL := server.URL + post.Header.Get("Location")
-	for deadline := time.Now().Add(60 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+	complete := false
+	for deadline := time.Now().Add(60 * time.Second); !complete && time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
 		resp, err := client.Get(runURL)
 		if err != nil {
 			t.Fatal(err)
@@ -278,17 +279,21 @@ func TestRouter_SnapshotExportFailsMidStream(t *testing.T) {
 		if err != nil {
 			t.Fatal(err)
 		}
-		if run.Status != benchmarkrun.StatusRunning {
-			break
-		}
+		complete = run.Status != benchmarkrun.StatusRunning
+	}
+	if !complete {
+		t.Fatal("the run did not finish")
 	}
 
+	// the headers are flushed before the export fails, so the request succeeds and the body must fail
 	resp, err := client.Get(runURL + "/snapshot")
 	if err != nil {
-		// the connection was aborted before the response reached the client
-		return
+		t.Fatalf("the response did not start: %v", err)
 	}
 	defer resp.Body.Close()
+	if resp.StatusCode != http.StatusOK {
+		t.Fatalf("snapshot: got status %d, want 200", resp.StatusCode)
+	}
 	if body, err := io.ReadAll(resp.Body); err == nil {
 		t.Fatalf("the transfer of a failed snapshot export ended cleanly after %d bytes, status %d", len(body), resp.StatusCode)
 	}
