@@ -4,6 +4,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"log/slog"
 	"net/http"
 	"net/url"
 	"time"
@@ -90,12 +91,15 @@ func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) 
 		c.Header("Content-Type", "application/json")
 		c.Status(http.StatusOK)
 		if err := runner.WriteSnapshot(c.Request.Context(), benchmark, id, c.Writer); err != nil {
-			// before anything is written, report the error. After that, the client sees a broken response.
+			// before anything is written, report the error
 			if !c.Writer.Written() {
 				abortWithRunError(c, err)
 				return
 			}
-			_ = c.Error(err)
+			// the 200 status is sent, so returning would end the response as complete and the client would keep a
+			// truncated snapshot. Abort the connection, so that the client sees the transfer fail.
+			slog.Error("failed to write the snapshot of a benchmark run", "benchmark", benchmark, "run", id, "error", err)
+			panic(http.ErrAbortHandler)
 		}
 	})
 

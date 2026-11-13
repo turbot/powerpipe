@@ -3,6 +3,7 @@ package api
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -17,6 +18,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/powerpipe/internal/benchmarkrun"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
+	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/workspace"
 )
@@ -228,5 +230,66 @@ func TestBenchmarkRunAPI_BadRequests(t *testing.T) {
 	}
 	if rec := request(t, router, http.MethodGet, "/api/v0/benchmark/benchmark.quick/run/nope", ""); rec.Code != http.StatusNotFound {
 		t.Errorf("unknown run: got %d %s", rec.Code, rec.Body)
+	}
+}
+
+// failingWriter writes half of the first write to the connection, then fails, as a snapshot export that fails
+// part way through does
+type failingWriter struct {
+	http.ResponseWriter
+}
+
+func (w failingWriter) Write(p []byte) (int, error) {
+	n, _ := w.ResponseWriter.Write(p[:len(p)/2])
+	w.ResponseWriter.(http.Flusher).Flush()
+	return n, errors.New("export failed")
+}
+
+func (w failingWriter) Flush() { w.ResponseWriter.(http.Flusher).Flush() }
+
+// a snapshot export that fails after the response has started must fail the transfer, not end it as complete
+func TestRouter_SnapshotExportFailsMidStream(t *testing.T) {
+	runner := newTestBenchmarkRunner(t, 1)
+	router := newTestRouterFor(t, &APIService{HTTPListen: dashboardserver.ListenTypeLocal, benchmarkRunner: runner})
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, "/snapshot") {
+			w = failingWriter{w}
+		}
+		router.ServeHTTP(w, r)
+	}))
+	t.Cleanup(server.Close)
+	// a client that does not ask for gzip, so that the failure is not hidden by compression
+	client := &http.Client{Transport: &http.Transport{DisableCompression: true}}
+
+	post, err := http.Post(server.URL+"/api/v0/benchmark/quick/run", "application/json", strings.NewReader("{}"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer post.Body.Close()
+	runURL := server.URL + post.Header.Get("Location")
+	for deadline := time.Now().Add(60 * time.Second); time.Now().Before(deadline); time.Sleep(20 * time.Millisecond) {
+		resp, err := client.Get(runURL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		var run benchmarkrun.Run
+		err = json.NewDecoder(resp.Body).Decode(&run)
+		resp.Body.Close()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if run.Status != benchmarkrun.StatusRunning {
+			break
+		}
+	}
+
+	resp, err := client.Get(runURL + "/snapshot")
+	if err != nil {
+		// the connection was aborted before the response reached the client
+		return
+	}
+	defer resp.Body.Close()
+	if body, err := io.ReadAll(resp.Body); err == nil {
+		t.Fatalf("the transfer of a failed snapshot export ended cleanly after %d bytes, status %d", len(body), resp.StatusCode)
 	}
 }
