@@ -6,6 +6,7 @@ const (
 	EnvBenchmarkTimeout = "POWERPIPE_BENCHMARK_TIMEOUT"
 	EnvDashboardTimeout = "POWERPIPE_DASHBOARD_TIMEOUT"
 	EnvDisplayWidth     = "POWERPIPE_DISPLAY_WIDTH"
+	EnvAllowedHosts     = "POWERPIPE_ALLOWED_HOSTS"
 	// EnvConfigDump is an undocumented variable is subject to change in the future
 	EnvConfigDump = "POWERPIPE_CONFIG_DUMP"
 )
