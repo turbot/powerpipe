@@ -21,6 +21,9 @@ func (*NullFormatter) FormatDetection(context.Context, *dashboardexecute.Detecti
 	return nil, fmt.Errorf("NullFormatter does not support FormatDetection")
 }
 
+// StreamsRows implements RowStreamer
+func (*NullFormatter) StreamsRows() {}
+
 func (j *NullFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	return strings.NewReader(""), nil
 }

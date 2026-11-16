@@ -54,6 +54,7 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 	w.BlockTypeInclusions = cfg.blockTypeInclusions
 	w.ValidateVariables = cfg.validateVariables
 	w.PipelingConnections = cfg.pipelingConnections
+	w.ResourceTargets = cfg.resourceTargets
 
 	// if there is a mod file (or if we are loading resources even with no modfile), load them
 	if w.ModfileExists() || !cfg.skipResourceLoadIfNoModfile {
