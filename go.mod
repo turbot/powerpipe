@@ -18,7 +18,7 @@ require (
 	github.com/mattn/go-isatty v0.0.20
 	github.com/shiena/ansicolor v0.0.0-20230509054315-a9deabde6e02 // indirect
 	github.com/spf13/cobra v1.10.2
-	github.com/spf13/pflag v1.0.10 // indirect
+	github.com/spf13/pflag v1.0.10
 	github.com/spf13/viper v1.21.0
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.1
@@ -43,7 +43,7 @@ require (
 	github.com/gorilla/websocket v1.5.3
 	github.com/jackc/pgx/v5 v5.9.2
 	github.com/logrusorgru/aurora v2.0.3+incompatible
-	github.com/marcboeker/go-duckdb/v2 v2.4.0
+	github.com/marcboeker/go-duckdb/v2 v2.4.3
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/thediveo/enumflag/v2 v2.2.1
 	golang.org/x/sync v0.22.0
@@ -112,12 +112,12 @@ require (
 	github.com/cyphar/filepath-securejoin v0.6.1 // indirect
 	github.com/danwakefield/fnmatch v0.0.0-20160403171240-cbb64ac3d964 // indirect
 	github.com/dgraph-io/ristretto v0.2.0 // indirect
-	github.com/duckdb/duckdb-go-bindings v0.1.19 // indirect
-	github.com/duckdb/duckdb-go-bindings/darwin-amd64 v0.1.19 // indirect
-	github.com/duckdb/duckdb-go-bindings/darwin-arm64 v0.1.19 // indirect
-	github.com/duckdb/duckdb-go-bindings/linux-amd64 v0.1.19 // indirect
-	github.com/duckdb/duckdb-go-bindings/linux-arm64 v0.1.19 // indirect
-	github.com/duckdb/duckdb-go-bindings/windows-amd64 v0.1.19 // indirect
+	github.com/duckdb/duckdb-go-bindings v0.1.21 // indirect
+	github.com/duckdb/duckdb-go-bindings/darwin-amd64 v0.1.21 // indirect
+	github.com/duckdb/duckdb-go-bindings/darwin-arm64 v0.1.21 // indirect
+	github.com/duckdb/duckdb-go-bindings/linux-amd64 v0.1.21 // indirect
+	github.com/duckdb/duckdb-go-bindings/linux-arm64 v0.1.21 // indirect
+	github.com/duckdb/duckdb-go-bindings/windows-amd64 v0.1.21 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
 	github.com/eko/gocache/lib/v4 v4.1.6 // indirect
 	github.com/eko/gocache/store/bigcache/v4 v4.2.1 // indirect
@@ -180,8 +180,8 @@ require (
 	github.com/klauspost/compress v1.20.3 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
 	github.com/leodido/go-urn v1.4.0 // indirect
-	github.com/marcboeker/go-duckdb/arrowmapping v0.0.19 // indirect
-	github.com/marcboeker/go-duckdb/mapping v0.0.19 // indirect
+	github.com/marcboeker/go-duckdb/arrowmapping v0.0.21 // indirect
+	github.com/marcboeker/go-duckdb/mapping v0.0.21 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-runewidth v0.0.16 // indirect
 	github.com/matttproud/golang_protobuf_extensions v1.0.4 // indirect
@@ -236,22 +236,23 @@ require (
 	go.opentelemetry.io/contrib/detectors/gcp v1.44.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.63.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/net/http/otelhttp v0.61.0 // indirect
-	go.opentelemetry.io/otel v1.45.0 // indirect
+	go.opentelemetry.io/otel v1.47.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlpmetric/otlpmetricgrpc v1.26.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace v1.45.0 // indirect
 	go.opentelemetry.io/otel/exporters/otlp/otlptrace/otlptracegrpc v1.45.0 // indirect
-	go.opentelemetry.io/otel/metric v1.45.0 // indirect
-	go.opentelemetry.io/otel/sdk v1.45.0 // indirect
-	go.opentelemetry.io/otel/sdk/metric v1.45.0 // indirect
-	go.opentelemetry.io/otel/trace v1.45.0 // indirect
+	go.opentelemetry.io/otel/log v1.47.0 // indirect
+	go.opentelemetry.io/otel/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/sdk v1.47.0 // indirect
+	go.opentelemetry.io/otel/sdk/metric v1.47.0 // indirect
+	go.opentelemetry.io/otel/trace v1.47.0 // indirect
 	go.opentelemetry.io/proto/otlp v1.11.0 // indirect
-	go.yaml.in/yaml/v3 v3.0.4 // indirect
+	go.yaml.in/yaml/v3 v3.0.5 // indirect
 	golang.org/x/arch v0.8.0 // indirect
 	golang.org/x/crypto v0.55.0 // indirect
 	golang.org/x/mod v0.38.0 // indirect
 	golang.org/x/net v0.58.0 // indirect
 	golang.org/x/oauth2 v0.36.0 // indirect
-	golang.org/x/sys v0.47.0 // indirect
+	golang.org/x/sys v0.48.0 // indirect
 	golang.org/x/telemetry v0.0.0-20260708182218-49f421fb7959 // indirect
 	golang.org/x/term v0.45.0 // indirect
 	golang.org/x/time v0.15.0 // indirect

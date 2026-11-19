@@ -98,7 +98,8 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 			AddStringFlag(constants.ArgWhere, "", "SQL 'where' clause, or named query, used to filter controls (cannot be used with '--tag')").
 			AddBoolFlag(constants.ArgDryRun, false, "Show which controls will be run without running them").
 			AddStringSliceFlag(constants.ArgTag, nil, "Filter controls based on their tag values ('--tag key=value')").
-			AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open")
+			AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
+			AddStringFlag(constants.ArgHost, "", "Run the benchmark on the powerpipe server at this URL, e.g. --host http://localhost:9033")
 	}
 
 	return cmd
@@ -139,6 +140,12 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 			exitCode = constants.ExitCodeUnknownErrorPanic
 		}
 	}()
+
+	// the server at --host loads the mod and runs the benchmark
+	if viper.GetString(constants.ArgHost) != "" {
+		runBenchmarkOnHost(ctx, cmd, args)
+		return
+	}
 
 	// validate the arguments
 	err := validateCheckArgs(ctx)
