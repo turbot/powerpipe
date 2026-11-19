@@ -328,5 +328,31 @@
       "update-check": false,
       "watch": false
     }
+  },
+  {
+    "test": "allowed hosts env variable set",
+    "cmd": "server",
+    "setup": {
+      "env": [
+        "POWERPIPE_ALLOWED_HOSTS=.pipes.turbot.com,proxy.example.com"
+      ],
+      "args": []
+    },
+    "expected": {
+      "allowed-hosts": ".pipes.turbot.com,proxy.example.com"
+    }
+  },
+  {
+    "test": "allowed hosts env variable set and --allowed-hosts arg passed",
+    "cmd": "server",
+    "setup": {
+      "env": [
+        "POWERPIPE_ALLOWED_HOSTS=.pipes.turbot.com,proxy.example.com"
+      ],
+      "args": ["--allowed-hosts=other.example.com"]
+    },
+    "expected": {
+      "allowed-hosts": "other.example.com"
+    }
   }
 ]

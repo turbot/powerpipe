@@ -23,12 +23,15 @@ func NewControlExporter(formatter Formatter) *ControlExporter {
 	return &ControlExporter{formatter}
 }
 
-func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceData, destPath string) error {
+// exportContext tells the formatter it is being used for export
+// this is a tactical mechanism used to ensure that exported snapshots are unindented
+// whereas display snapshots are indented
+func exportContext(ctx context.Context) context.Context {
+	return context.WithValue(ctx, contextKeyFormatterPurpose, formatterPurposeExport)
+}
 
-	// tell the formatter it is being used for export
-	// this is a tactical mechanism used to ensure that exported snapshots are unindented
-	// whereas display snapshots are indented
-	exportCtx := context.WithValue(ctx, contextKeyFormatterPurpose, formatterPurposeExport)
+func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceData, destPath string) error {
+	exportCtx := exportContext(ctx)
 
 	var reader io.Reader
 	var err error
@@ -45,6 +48,16 @@ func (e *ControlExporter) Export(ctx context.Context, input export.ExportSourceD
 	}
 
 	return export.Write(destPath, reader)
+}
+
+// ExportSnapshot writes the tree to w as a snapshot export does (--export=<file>.pps)
+func ExportSnapshot(ctx context.Context, tree *controlexecute.ExecutionTree, w io.Writer) error {
+	reader, err := FormatTree(exportContext(ctx), &SnapshotFormatter{}, tree)
+	if err != nil {
+		return err
+	}
+	_, err = io.Copy(w, reader)
+	return err
 }
 
 func (e *ControlExporter) FileExtension() string {

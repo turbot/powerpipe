@@ -21,6 +21,7 @@ import (
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/filepaths"
+	"github.com/turbot/powerpipe/internal/benchmarkrun"
 	"github.com/turbot/powerpipe/internal/dashboardserver"
 	"github.com/turbot/powerpipe/internal/service/api/common"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
@@ -71,9 +72,13 @@ type APIService struct {
 	apiPrefixGroup *gin.RouterGroup
 	router         *gin.Engine
 	webSocket      *melody.Melody
+	// the host names of the server besides localhost, such as the domain of a proxy
+	allowedHosts []string
 
 	// the loaded workspace
 	workspace *pworkspace.PowerpipeWorkspace
+	// if set, benchmarks can be run through the API
+	benchmarkRunner *benchmarkrun.Runner
 }
 
 // APIServiceOption defines a type of function to configures the APIService.
@@ -86,9 +91,24 @@ func WithWebSocket(webSocket *melody.Melody) APIServiceOption {
 	}
 }
 
+func WithBenchmarkRunner(runner *benchmarkrun.Runner) APIServiceOption {
+	return func(api *APIService) error {
+		api.benchmarkRunner = runner
+		return nil
+	}
+}
+
 func WithWorkspace(workspace *pworkspace.PowerpipeWorkspace) APIServiceOption {
 	return func(api *APIService) error {
 		api.workspace = workspace
+		return nil
+	}
+}
+
+// WithAllowedHosts sets the host names of the server besides localhost, such as the domain of a proxy
+func WithAllowedHosts(hosts []string) APIServiceOption {
+	return func(api *APIService) error {
+		api.allowedHosts = hosts
 		return nil
 	}
 }
@@ -120,23 +140,40 @@ func NewAPIService(ctx context.Context, opts ...APIServiceOption) (*APIService, 
 	return api, nil
 }
 
-// Start starts services managed by the Manager.
-func (api *APIService) Start() error {
-	// Set the gin mode based on our environment, to configure logging etc as appropriate
-	gin.SetMode(viper.GetString(constants.ArgEnvironment))
-	binding.EnableDecoderDisallowUnknownFields = true
+// maxRequestBodySize is the largest request body the server reads. The only body is the optional JSON of a
+// benchmark run request.
+const maxRequestBodySize = 64 * 1024
 
-	// Initialize gin
+// newRouter returns the router for the API, the dashboard assets and the WebSocket
+func (api *APIService) newRouter() *gin.Engine {
+	// Custom validators for our types
+	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
+		// Return the JSON fieldname in the Tag() field for errors.
+		// See https://github.com/go-playground/validator/issues/287
+		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
+			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
+			if name == "-" {
+				return ""
+			}
+			return name
+		})
+		// Custom validators using struct field tags
+		_ = v.RegisterValidation("flowpipe_api_version", common.APIVersionValidator())
+	}
+
 	router := gin.New()
+
+	// a server that listens on localhost only accepts requests for this machine or the allowed hosts. Use it
+	// before creating groups: a group copies the middleware of the router when it is created
+	if api.HTTPListen == dashboardserver.ListenTypeLocal {
+		router.Use(allowedHostMiddleware(api.allowedHosts))
+	}
+
+	// Limit the size of request bodies, before creating groups as above
+	router.Use(size.RequestSizeLimiter(maxRequestBodySize))
 
 	apiPrefixGroup := router.Group(common.APIPrefix())
 	apiPrefixGroup.Use(common.ValidateAPIVersion)
-
-	// Limit the size of POST requests
-	// There doesn't seem a way to set the request size per path, but for now we have
-	// no requirement for different limits on different paths. So just set one limit
-	// for all request (for now)
-	router.Use(size.RequestSizeLimiter(viper.GetInt64("web.request.size_limit")))
 
 	// Create compression middleware - exclude process logs as we handle compression within the API itself
 	compressionMiddleware := gzip.Gzip(gzip.DefaultCompression, gzip.WithExcludedPathsRegexs([]string{"^/api/.+/.*[avatar|\\.jsonl]$"}))
@@ -158,12 +195,16 @@ func (api *APIService) Start() error {
 	apiLimiter.SetBurst(viper.GetInt("web.rate.burst"))
 
 	RegisterPublicAPI(apiPrefixGroup)
+	if api.benchmarkRunner != nil {
+		registerBenchmarkRun(apiPrefixGroup, api.benchmarkRunner)
+	}
 
 	// put in handing for the dashboard for the mod
 	assetsDirectory := filepaths.EnsureDashboardAssetsDir()
 	// respond with the static dashboard assets for / (root)
 	router.Use(static.Serve("/", static.LocalFile(assetsDirectory, true)))
 	if api.webSocket != nil {
+		api.webSocket.Upgrader.CheckOrigin = webSocketOriginCheck(api.allowedHosts)
 		router.GET("/ws", func(c *gin.Context) {
 			if err := api.webSocket.HandleRequest(c.Writer, c.Request); err != nil {
 				_ = c.AbortWithError(http.StatusInternalServerError, err)
@@ -180,24 +221,6 @@ func (api *APIService) Start() error {
 		c.File(path.Join(assetsDirectory, "index.html"))
 	})
 
-	api.apiPrefixGroup = apiPrefixGroup
-	api.router = router
-
-	// Custom validators for our types
-	if v, ok := binding.Validator.Engine().(*validator.Validate); ok {
-		// Return the JSON fieldname in the Tag() field for errors.
-		// See https://github.com/go-playground/validator/issues/287
-		v.RegisterTagNameFunc(func(fld reflect.StructField) string {
-			name := strings.SplitN(fld.Tag.Get("json"), ",", 2)[0]
-			if name == "-" {
-				return ""
-			}
-			return name
-		})
-		// Custom validators using struct field tags
-		_ = v.RegisterValidation("flowpipe_api_version", common.APIVersionValidator())
-	}
-
 	// Single Page App must catch all routes that are not found, it
 	// handles them in a client side router.
 	// router.NoRoute(func(c *gin.Context) {
@@ -209,6 +232,19 @@ func (api *APIService) Start() error {
 	// 		c.File("./static/index.html")
 	// 	}
 	// })
+
+	api.apiPrefixGroup = apiPrefixGroup
+	return router
+}
+
+// Start starts services managed by the Manager.
+func (api *APIService) Start() error {
+	// Set the gin mode based on our environment, to configure logging etc as appropriate
+	gin.SetMode(viper.GetString(constants.ArgEnvironment))
+	binding.EnableDecoderDisallowUnknownFields = true
+
+	router := api.newRouter()
+	api.router = router
 
 	// determine the listen address based on HTTPListenType
 	listenHost := "" // Default to all interfaces (network)
