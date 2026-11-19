@@ -7807,10 +7807,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"dayjs@npm:1.11.18":
-  version: 1.11.18
-  resolution: "dayjs@npm:1.11.18"
-  checksum: 10c0/83b67f5d977e2634edf4f5abdd91d9041a696943143638063016915d2cd8c7e57e0751e40379a07ebca8be7a48dd380bef8752d22a63670f2d15970e34f96d7a
+"dayjs@npm:1.11.23":
+  version: 1.11.23
+  resolution: "dayjs@npm:1.11.23"
+  checksum: 10c0/69ab04bf19c676e44ab50cc2fca223d265f3dafd107151ef3b0f3ad74d360c37caa602abe62f87cb25d90bd9f6bee003698af47df5b0dbf10a998b7b5f3bb3f1
   languageName: node
   linkType: hard
 
@@ -15259,7 +15259,7 @@ __metadata:
     copy-to-clipboard: "npm:4.0.2"
     crypto-browserify: "npm:3.12.1"
     dagre: "npm:0.8.5"
-    dayjs: "npm:1.11.18"
+    dayjs: "npm:1.11.23"
     deepdash: "npm:5.3.9"
     echarts: "npm:6.1.0"
     echarts-for-react: "npm:3.0.6"
