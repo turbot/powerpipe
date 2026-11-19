@@ -79,9 +79,21 @@ for name, tt := range tests {
 ### Running
 
 ```bash
-tests/acceptance/run-local.sh              # All tests (starts/stops steampipe)
-tests/acceptance/run-local.sh check.bats   # Single test file
+tests/acceptance/run-docker.sh             # The test files CI runs, each in its own container
+tests/acceptance/run-docker.sh check.bats  # Single test file, in a container
+tests/acceptance/run-local.sh              # All tests on this machine (starts/stops steampipe)
+tests/acceptance/run-local.sh check.bats   # Single test file on this machine
 ```
+
+**`run-docker.sh`** needs only Docker with BuildKit (`docker buildx`). It does not change the machine:
+
+- It builds an image from `tests/acceptance/Dockerfile`: the tools of the CI workflow (Steampipe, `jq`, `jd`) at pinned versions, and powerpipe built with CGO from a copy of the checkout. The copy has the files git tracks, with their uncommitted changes, and new files that git does not ignore.
+- Each test file runs in its own container, with its own Steampipe service, as each CI job does.
+- With no arguments it runs the test blocks of the CI matrix in `.github/workflows/11-test-acceptance.yaml`. A block that is commented out there does not run here either. A line there that it cannot read stops the run.
+- `ACCEPTANCE_JOBS` sets how many files run at the same time (default `AGENT_FLEET_CPU_SHARE`, or 4). `ACCEPTANCE_LOG_DIR` sets where the logs go.
+- The Go module and build caches are BuildKit cache mounts, so later runs build faster. `docker builder prune` removes them.
+
+**`run-local.sh`** runs on the machine itself, and it runs `steampipe service stop --force` first, which stops every Steampipe service on the machine.
 
 ### Framework
 
@@ -94,7 +106,7 @@ Output format: TAP (Test Anything Protocol).
 
 ### Prerequisites
 
-- **Steampipe service** must be running (`run-local.sh` handles this automatically)
+- **Steampipe service** must be running (`run-docker.sh` and `run-local.sh` handle this automatically)
 - Required CLI tools: `jq`, `jd` (JSON diff), `sed`, `openssl`, `cksum`, and standard Unix tools
 - Optional (CI): `SPIPETOOLS_PG_CONN_STRING`, `SPIPETOOLS_TOKEN` environment variables
 
