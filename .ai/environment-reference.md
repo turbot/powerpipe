@@ -6,6 +6,7 @@
 |----------|---------|---------|
 | `POWERPIPE_LISTEN` | Server listen: `"local"` or `"network"` | `local` |
 | `POWERPIPE_PORT` | Server port | `9033` |
+| `POWERPIPE_ALLOWED_HOSTS` | Server host names besides localhost, comma separated (`.example.com` also matches subdomains). With `--listen local`, the server accepts requests only for these hosts and localhost; a WebSocket is accepted only from a page on the same origin or on one of these hosts | - |
 | `POWERPIPE_BENCHMARK_TIMEOUT` | Benchmark timeout (seconds) | `300` |
 | `POWERPIPE_DASHBOARD_TIMEOUT` | Dashboard query timeout (seconds) | `120` |
 | `POWERPIPE_DISPLAY_WIDTH` | CLI output width | Auto-detect |

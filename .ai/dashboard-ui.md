@@ -118,7 +118,7 @@ Rapid events from server are buffered to prevent UI thrashing:
 Uses `react-use-websocket` library.
 
 URL resolution:
-- **Development**: `ws://localhost:9033/ws`
+- **Development**: `ws://localhost:9033/ws`. The page is on `localhost:3000`, another origin, so start the server with `POWERPIPE_ALLOWED_HOSTS=localhost powerpipe server`
 - **Production**: Derives from `window.location` (http→ws, https→wss)
 
 Reconnection: max 10 attempts, 3000ms interval.
@@ -190,7 +190,7 @@ Registered types: Panel, Container, Dashboard, all chart types (Area, Bar, Colum
 ```bash
 cd ui/dashboard
 yarn install
-yarn start           # Dev server on http://localhost:3000 (proxies to Go backend on :9033)
+yarn start           # Dev server on http://localhost:3000; connects to the server on :9033 (needs POWERPIPE_ALLOWED_HOSTS=localhost)
 yarn test            # Jest + React Testing Library
 yarn storybook       # Component playground on http://localhost:6006
 yarn build           # Production build → build/

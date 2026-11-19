@@ -2967,10 +2967,10 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@material-symbols/svg-300@npm:0.47.0":
-  version: 0.47.0
-  resolution: "@material-symbols/svg-300@npm:0.47.0"
-  checksum: 10c0/d968ff72d31791797e011ffc2bcde2d10a96c15b50ab848aa67fbeef79254ade7f8a27b73b5e890146fcba8dd68723f4ec0005658991b65fdbd8f22c0ea0f811
+"@material-symbols/svg-300@npm:0.48.3":
+  version: 0.48.3
+  resolution: "@material-symbols/svg-300@npm:0.48.3"
+  checksum: 10c0/6d98d8eb61b37c113b7f9e7033aa444ef45d9ab97ba4f5ddb9d18e75ceb1cad5d40fd2ffd95c53889c3fc122504476e32ca7e5afb67fe1c41cdc53397d75c981
   languageName: node
   linkType: hard
 
@@ -7797,13 +7797,6 @@ __metadata:
     es-errors: "npm:^1.3.0"
     is-data-view: "npm:^1.0.1"
   checksum: 10c0/21b0d2e53fd6e20cc4257c873bf6d36d77bd6185624b84076c0a1ddaa757b49aaf076254006341d35568e89f52eecd1ccb1a502cfb620f2beca04f48a6a62a8f
-  languageName: node
-  linkType: hard
-
-"date-fns-jalali@npm:^4.1.0-0":
-  version: 4.1.0-0
-  resolution: "date-fns-jalali@npm:4.1.0-0"
-  checksum: 10c0/f9ad98d9f7e8e5abe0d070dc806b0c8baded2b1208626c42e92cbd2605b5171f5714d6b79b20cc2666267d821699244c9d0b5e93274106cf57d6232da77596ed
   languageName: node
   linkType: hard
 
@@ -15232,7 +15225,7 @@ __metadata:
     "@craco/craco": "npm:7.1.0"
     "@headlessui/react": "npm:1.7.19"
     "@heroicons/react": "npm:2.2.0"
-    "@material-symbols/svg-300": "npm:0.47.0"
+    "@material-symbols/svg-300": "npm:0.48.3"
     "@popperjs/core": "npm:2.11.8"
     "@storybook/addon-actions": "npm:8.6.19"
     "@storybook/addon-essentials": "npm:8.6.19"
@@ -15283,7 +15276,7 @@ __metadata:
     prop-types: "npm:15.8.1"
     react: "npm:18.3.1"
     react-cool-img: "npm:1.2.12"
-    react-day-picker: "npm:9.11.0"
+    react-day-picker: "npm:10.0.2"
     react-dom: "npm:18.3.1"
     react-hotkeys: "npm:2.0.0"
     react-markdown: "npm:9.0.3"
@@ -15300,7 +15293,7 @@ __metadata:
     reactflow: "npm:11.11.4"
     rehype-external-links: "npm:3.0.0"
     remark-gfm: "npm:4.0.1"
-    semver: "npm:7.8.5"
+    semver: "npm:7.8.6"
     source-map-explorer: "npm:2.5.3"
     storybook: "npm:8.6.19"
     storybook-addon-react-router-v6: "npm:2.0.15"
@@ -15651,16 +15644,19 @@ __metadata:
   languageName: node
   linkType: hard
 
-"react-day-picker@npm:9.11.0":
-  version: 9.11.0
-  resolution: "react-day-picker@npm:9.11.0"
+"react-day-picker@npm:10.0.2":
+  version: 10.0.2
+  resolution: "react-day-picker@npm:10.0.2"
   dependencies:
     "@date-fns/tz": "npm:^1.4.1"
     date-fns: "npm:^4.1.0"
-    date-fns-jalali: "npm:^4.1.0-0"
   peerDependencies:
+    "@types/react": ">=16.8.0"
     react: ">=16.8.0"
-  checksum: 10c0/1d719600302ae5ce43a57fd2a0edfd8609ee62675d4b285957bfe186bc91e8c58c9088a586f8d7fa09ed5f820e1e5f5905410a162be2bb204378932b41fa0fe0
+  peerDependenciesMeta:
+    "@types/react":
+      optional: true
+  checksum: 10c0/3baa75fa21625357656b15425384b21729796c0ae5b2e638d4e7a08f01c3d31db051a1fb21da784f87862ce917383fddfe713164718b3899cc7b47314e46f4ec
   languageName: node
   linkType: hard
 
@@ -16834,12 +16830,12 @@ __metadata:
   languageName: node
   linkType: hard
 
-"semver@npm:7.8.5":
-  version: 7.8.5
-  resolution: "semver@npm:7.8.5"
+"semver@npm:7.8.6":
+  version: 7.8.6
+  resolution: "semver@npm:7.8.6"
   bin:
     semver: bin/semver.js
-  checksum: 10c0/b1f3127a5be8125a94f37188b361c212466c292c6910adce3ec106cff5dc211ccaedc4739c11bb70fda59d6fc1f040a9bca289f4e093451521a2372e5231fe0c
+  checksum: 10c0/bf0a4d16eb067e5391323649e46b4a268644d7f8ee88e37c7668d35e861ec145b6e7df576d898007fc0d9a2cedcbc33f71460aa3bbea18eedfa5af58c064d7fe
   languageName: node
   linkType: hard
 
