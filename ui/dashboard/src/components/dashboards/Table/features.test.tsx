@@ -49,23 +49,105 @@ const instanceIds = (table) =>
   table.getRowModel().rows.map((row) => row.original.instance_id);
 
 describe("table panel on TanStack Table v9", () => {
-  // v8 sampled only rows after the tenth to pick a column's sort, so a table of
-  // ten rows or fewer fell back to plain string order (i-10 before i-9); v9
-  // samples the first ten and sorts them in natural order, as longer tables were.
-  test("sorts a string column in natural order, both directions", () => {
+  test("sorts a short string column as plain strings, both directions", () => {
     const { result } = renderPanelTable([]);
     expect(instanceIds(result.current)).toEqual(["i-10", "i-9", "i-100"]);
 
     const instanceColumn = result.current.getColumn("instance_id")!;
     expect(instanceColumn.getCanSort()).toBe(true);
 
-    // A string column sorts ascending first, in natural (alphanumeric) order
     act(() => instanceColumn.getToggleSortingHandler()!({}));
     expect(result.current.getColumn("instance_id")!.getIsSorted()).toBe("asc");
-    expect(instanceIds(result.current)).toEqual(["i-9", "i-10", "i-100"]);
+    expect(instanceIds(result.current)).toEqual(["i-10", "i-100", "i-9"]);
 
     act(() => instanceColumn.toggleSorting(true));
-    expect(instanceIds(result.current)).toEqual(["i-100", "i-10", "i-9"]);
+    expect(instanceIds(result.current)).toEqual(["i-9", "i-100", "i-10"]);
+  });
+
+  // Expected orders are TanStack Table v8.21.3's output for the same values.
+  const sortedNames = (names: (string | null)[], desc: boolean) => {
+    const { columns } = getColumns(
+      [{ name: "name", data_type: "TEXT" }],
+      {},
+      [],
+      false,
+    );
+    const { result } = renderHook(() =>
+      useTable<TablePanelFeatures, KeyValuePairs>({
+        features: tablePanelFeatures,
+        data: getData(
+          columns,
+          names.map((name) => ({ name })),
+        ),
+        columns,
+        state: { sorting: [{ id: "name", desc }] },
+      }),
+    );
+    return result.current.getRowModel().rows.map((row) => row.original.name);
+  };
+
+  test("sorts text starting with a digit, mixed case, empty and null as v8 did", () => {
+    const short = [
+      "banana",
+      "10 apples",
+      "Apple",
+      "2 pears",
+      "zucchini",
+      "",
+      null,
+      "apple",
+    ];
+    expect(sortedNames(short, false)).toEqual([
+      null,
+      "",
+      "10 apples",
+      "2 pears",
+      "Apple",
+      "apple",
+      "banana",
+      "zucchini",
+    ]);
+    expect(sortedNames(short, true)).toEqual([
+      "zucchini",
+      "banana",
+      "apple",
+      "Apple",
+      "2 pears",
+      "10 apples",
+      "",
+      null,
+    ]);
+
+    // Past ten rows v8 picked the sort from the later rows' values.
+    const long = [...short, "cherry", "date", "item 2", "item 10"];
+    expect(sortedNames(long, false)).toEqual([
+      "",
+      null,
+      "Apple",
+      "apple",
+      "banana",
+      "cherry",
+      "date",
+      "item 2",
+      "item 10",
+      "zucchini",
+      "2 pears",
+      "10 apples",
+    ]);
+    expect(sortedNames(long, true)).toEqual([
+      "10 apples",
+      "2 pears",
+      "zucchini",
+      "item 10",
+      "item 2",
+      "date",
+      "cherry",
+      "banana",
+      "Apple",
+      "apple",
+      "",
+      null,
+    ]);
   });
 
   test("applies the panel's column filters and shows no rows when none match", () => {

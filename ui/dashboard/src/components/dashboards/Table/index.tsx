@@ -47,6 +47,7 @@ import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
 import {
+  sortFn_v8Auto,
   tablePanelFeatures,
   TablePanelFeatures,
   TablePanelRow,
@@ -64,7 +65,7 @@ type TableColumnInfo = {
   display?: "all" | "none";
   wrap: TableColumnWrap;
   href_template?: string;
-  sortType?: any;
+  sortFn?: typeof sortFn_v8Auto;
   filterFn?: (
     row: TablePanelRow,
     columnId: string,
@@ -139,7 +140,7 @@ export const getColumns = (
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
-      sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
+      sortFn: sortFn_v8Auto,
       // Generic filter function that will apply all filters for a column
       filterFn: (row: TablePanelRow, columnId: string) => {
         const filtersForColumn = filtersByColumn[columnId];
