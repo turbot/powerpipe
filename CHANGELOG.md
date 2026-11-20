@@ -1,3 +1,25 @@
+## [1.6.1] - 2026-11-20
+
+### Changed
+
+- Bump `github.com/marcboeker/go-duckdb/v2` from v2.4.0 to v2.4.3, which updates the DuckDB backend from DuckDB 1.4.0 to 1.4.1. (#1198)
+
+### Security
+
+- Bump `go.opentelemetry.io/otel/sdk` (and `otel`, `otel/metric`, `otel/sdk/metric`, `otel/trace`) from v1.45.0 to v1.47.0 to fix GHSA-q7gw-24fr-5p69 (CVE-2026-128085). (#1218)
+- Updated five dashboard UI dependencies to versions with security fixes: qs 6.16.1, ip-address 10.7.4, pbkdf2 3.1.7, serialize-javascript 7.1.3 and postcss-selector-parser 6.1.6. (#1240)
+
+### Internal
+
+- Bump `@tanstack/react-table` from 8.21.3 to 9.2.4 in the dashboard UI. (#1127)
+- Bump `web-vitals` from 4.2.4 to 6.2.3 in the dashboard UI. (#1205)
+- Bump `semver` from 7.8.5 to 7.8.6 in the dashboard UI. (#1206)
+- Bump `react-day-picker` from 9.11.0 to 10.0.2 in the dashboard UI. (#1207)
+- Bump `@material-symbols/svg-300` from 0.47.0 to 0.48.3 in the dashboard UI. (#1209)
+- Bump `github.com/hashicorp/hcl/v2` from v2.20.1 to v2.25.0 and `github.com/zclconf/go-cty` from v1.17.0 to v1.19.0. (#1210)
+- Brought the history of the v1.5.x releases from `main` into `develop`, with no change to the code. (#1237)
+- Each release now gets release notes on GitHub, and the same release updates Homebrew and the powerpipe.io changelog page. (#1238)
+
 ## v1.6.0 [2026-11-13]
 _What's new_
 - Add a benchmark run API to `powerpipe server`: `POST /api/v0/benchmark/<benchmark>/run` starts a benchmark run, `GET` on the run returns its status, `GET .../snapshot` returns the same snapshot as `--export=<file>.pps`, and `DELETE` cancels and removes it. Many runs share the one loaded mod and the server's database connections, so a server running several benchmarks at once uses much less memory and time than a process for each run. At most 10 runs run at once; a run that no client has read for a minute is removed. **Note:** the run API has no authentication. Anyone who can reach the server can start and read benchmark runs, so use it only on a network you trust.

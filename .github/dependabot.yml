@@ -22,7 +22,6 @@ updates:
     pull-request-branch-name:
       separator: "-"
     assignees:
-      - "pskrbasu"
       - "kaidaguerre"
     labels:
       - "dependencies"
@@ -41,7 +40,6 @@ updates:
       separator: "-"
     assignees:
       - "MichaelBurgess"
-      - "pskrbasu"
       - "kaidaguerre"
     labels:
       - "dependencies"
