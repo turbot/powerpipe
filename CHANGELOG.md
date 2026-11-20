@@ -1,3 +1,54 @@
+## [1.6.1] - 2026-11-20
+
+### Changed
+
+- Bump `github.com/marcboeker/go-duckdb/v2` from v2.4.0 to v2.4.3, which updates the DuckDB backend from DuckDB 1.4.0 to 1.4.1. (#1198)
+
+### Security
+
+- Bump `go.opentelemetry.io/otel/sdk` (and `otel`, `otel/metric`, `otel/sdk/metric`, `otel/trace`) from v1.45.0 to v1.47.0 to fix GHSA-q7gw-24fr-5p69 (CVE-2026-128085). (#1218)
+- Updated five dashboard UI dependencies to versions with security fixes: qs 6.16.1, ip-address 10.7.4, pbkdf2 3.1.7, serialize-javascript 7.1.3 and postcss-selector-parser 6.1.6. (#1240)
+
+### Internal
+
+- Bump `@tanstack/react-table` from 8.21.3 to 9.2.4 in the dashboard UI. (#1127)
+- Bump `web-vitals` from 4.2.4 to 6.2.3 in the dashboard UI. (#1205)
+- Bump `semver` from 7.8.5 to 7.8.6 in the dashboard UI. (#1206)
+- Bump `react-day-picker` from 9.11.0 to 10.0.2 in the dashboard UI. (#1207)
+- Bump `@material-symbols/svg-300` from 0.47.0 to 0.48.3 in the dashboard UI. (#1209)
+- Bump `github.com/hashicorp/hcl/v2` from v2.20.1 to v2.25.0 and `github.com/zclconf/go-cty` from v1.17.0 to v1.19.0. (#1210)
+- Brought the history of the v1.5.x releases from `main` into `develop`, with no change to the code. (#1237)
+- Each release now gets release notes on GitHub, and the same release updates Homebrew and the powerpipe.io changelog page. (#1238)
+
+## v1.6.0 [2026-11-13]
+_What's new_
+- Add a benchmark run API to `powerpipe server`: `POST /api/v0/benchmark/<benchmark>/run` starts a benchmark run, `GET` on the run returns its status, `GET .../snapshot` returns the same snapshot as `--export=<file>.pps`, and `DELETE` cancels and removes it. Many runs share the one loaded mod and the server's database connections, so a server running several benchmarks at once uses much less memory and time than a process for each run. At most 10 runs run at once; a run that no client has read for a minute is removed. **Note:** the run API has no authentication. Anyone who can reach the server can start and read benchmark runs, so use it only on a network you trust.
+- Add `powerpipe benchmark run <benchmark> --host <url>` to run a benchmark on a `powerpipe server` through the run API. It writes the same snapshot and exits with the same codes as a local run. It supports `--output=snapshot|none`, `--export=<file>.pps|pps`, `--benchmark-timeout` and `--progress`, for one benchmark.
+
+_Enhancements_
+- `powerpipe benchmark run` and `powerpipe control run` now load only the resources the benchmark or control uses, which cuts load time and memory.
+- `powerpipe benchmark run --export` now streams control results to the export file, and keeps them on disk when the output does not print them, so memory no longer grows with the number of result rows.
+
+_Dependencies_
+- Bump `pipe-fittings/v2` to v2.9.5, `github.com/mattn/go-sqlite3` to v1.14.52, `github.com/spf13/cobra` to v1.10.2 and `github.com/spf13/viper` to v1.21.0.
+- Bump `go.opentelemetry.io/otel` to v1.45.0 and `github.com/klauspost/compress` to v1.20.3.
+
+## v1.5.9 [2026-11-12]
+_Security_
+- Fix `powerpipe server` accepting dashboard WebSocket connections from any website, and requests sent through DNS rebinding, which let a web page run dashboards and read their results. The WebSocket now accepts a connection only with no `Origin`, an `Origin` on the server's own host and port, or an `Origin` host named in `--allowed-hosts`. With `--listen local` (the default), the server also accepts a request only when its `Host` is `localhost`, a loopback IP or a host named in `--allowed-hosts`. ([GHSA-6w7w-97wr-rqhf](https://github.com/turbot/powerpipe/security/advisories/GHSA-6w7w-97wr-rqhf))
+
+_What's new_
+- Add `--allowed-hosts` to `powerpipe server`, also set by `POWERPIPE_ALLOWED_HOSTS`: a comma-separated list of extra host names the server accepts, for the `Host` header and the WebSocket `Origin`. A name starting with a dot, such as `.example.com`, matches that domain and its subdomains.
+
+_Breaking changes_
+- If you reach `powerpipe server` through a reverse proxy or under any host name other than `localhost` or a loopback IP, set `--allowed-hosts` (or `POWERPIPE_ALLOWED_HOSTS`) to that host name. Without it, a `--listen local` server answers every request with 403, and a `--listen network` server behind a proxy that rewrites the `Host` header refuses the dashboard WebSocket.
+- If you develop the dashboard UI on its dev server (port 3000), set `POWERPIPE_ALLOWED_HOSTS=localhost`.
+- `--listen network` gets the `Origin` check only, not the `Host` check: any client that can reach the server can still use it, including a web page that reaches it through DNS rebinding from a browser on that network. Use `--listen network` only on a network you trust.
+
+_Bug Fixes_
+- Fix results being exported while controls are still writing them when `--benchmark-timeout` ends a run. ([#1180](https://github.com/turbot/powerpipe/issues/1180))
+- Fix a crash when a cancelled query used its database connection after the connection was closed. ([#1181](https://github.com/turbot/powerpipe/issues/1181))
+
 ## v1.5.8 [2026-11-10]
 _Bug Fixes_
 - Fix chart dashboards crashing with "Cannot read properties of undefined (reading 'get')". ([#1144](https://github.com/turbot/powerpipe/issues/1144))
