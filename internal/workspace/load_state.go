@@ -13,9 +13,13 @@ import (
 // LoadState says whether the workspace is loading, and how its loads went. powerpipe server reloads the workspace
 // when one of its mod or variable files changes.
 //
-// A client that changed a file can wait for the change to load: the change is loaded once LastLoad has a
-// NewestFileTime at or after the modification time of the file, and no Error. A file that was deleted has no
-// modification time: the deletion is loaded once a load that started after it has finished.
+// A client that changed, added or deleted a file can wait for the change to load: the change is loaded once
+// LastLoad started after the change was made and has no Error. Each load reads the files afresh, and a change
+// that arrives during a load starts another load once it ends.
+//
+// NewestFileTime gives the same answer, without comparing clocks, for a file written in place: its
+// modification time is the time of the change. It does not for a file that keeps an older modification time,
+// as cp -p, rsync -t and tar make, nor for a deleted file.
 type LoadState struct {
 	// Loading is true while the workspace loads
 	Loading bool `json:"loading"`
@@ -30,10 +34,11 @@ type LoadState struct {
 
 // LoadInfo describes one load of the workspace
 type LoadInfo struct {
+	// StartTime is when the load started: it read every change to the files made before then
 	StartTime time.Time  `json:"start_time"`
 	EndTime   *time.Time `json:"end_time,omitempty"`
 	// NewestFileTime is the newest modification time of the mod and variable files of the workspace when the load
-	// started. The load read every change made up to then.
+	// started
 	NewestFileTime *time.Time `json:"newest_file_time,omitempty"`
 	// Error is why the load failed. After a failed load the workspace stays as it was last loaded.
 	Error string `json:"error,omitempty"`
