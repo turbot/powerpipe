@@ -42,6 +42,12 @@ type modInstallWatcher struct {
 	quietPeriod time.Duration
 	maxWait     time.Duration
 	reload      func(ctx context.Context)
+	// loadIdentity returns a value that changes each time the workspace is reloaded, by anything. It is called
+	// when a change is seen, which waits for any reload in progress to finish. If it has changed when the
+	// quiet period ends, a reload that started after the last change has already happened, so there is nothing
+	// to reload. `mod install` and `mod uninstall` write the mod file, which the pipe-fittings watcher reloads for,
+	// so without this the one command would reload twice. Nil if there is no other watcher.
+	loadIdentity func() any
 
 	watch     *fsnotify.Watcher
 	closeOnce sync.Once
@@ -49,7 +55,7 @@ type modInstallWatcher struct {
 	done      chan struct{}
 }
 
-func newModInstallWatcher(workspacePath string, reload func(ctx context.Context)) (*modInstallWatcher, error) {
+func newModInstallWatcher(workspacePath string, reload func(ctx context.Context), loadIdentity func() any) (*modInstallWatcher, error) {
 	// a buffer, so the kernel's queue is drained while a reload is running
 	watch, err := fsnotify.NewBufferedWatcher(1024)
 	if err != nil {
@@ -57,15 +63,16 @@ func newModInstallWatcher(workspacePath string, reload func(ctx context.Context)
 	}
 	modsDir := filepath.Clean(filepaths.WorkspaceModPath(workspacePath))
 	m := &modInstallWatcher{
-		lockPath:    filepath.Clean(filepaths.WorkspaceLockPath(workspacePath)),
-		dataDir:     filepath.Dir(modsDir),
-		modsDir:     modsDir,
-		quietPeriod: modInstallQuietPeriod,
-		maxWait:     modInstallMaxWait,
-		reload:      reload,
-		watch:       watch,
-		closed:      make(chan struct{}),
-		done:        make(chan struct{}),
+		lockPath:     filepath.Clean(filepaths.WorkspaceLockPath(workspacePath)),
+		dataDir:      filepath.Dir(modsDir),
+		modsDir:      modsDir,
+		quietPeriod:  modInstallQuietPeriod,
+		maxWait:      modInstallMaxWait,
+		reload:       reload,
+		loadIdentity: loadIdentity,
+		watch:        watch,
+		closed:       make(chan struct{}),
+		done:         make(chan struct{}),
 	}
 	if err := m.addWatches(filepath.Dir(m.lockPath)); err != nil {
 		_ = watch.Close()
@@ -96,7 +103,14 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 	var (
 		firstChange time.Time
 		fire        <-chan time.Time
+		// the load identity as of the last change
+		loadedAtChange any
 	)
+	noteChange := func() {
+		if m.loadIdentity != nil {
+			loadedAtChange = m.loadIdentity()
+		}
+	}
 	schedule := func() {
 		now := time.Now()
 		if fire == nil {
@@ -125,6 +139,7 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 				m.addExisting()
 			}
 			if m.isModChange(ev) {
+				noteChange()
 				schedule()
 			}
 		case err, ok := <-m.watch.Errors:
@@ -135,6 +150,7 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 			if errors.Is(err, fsnotify.ErrEventOverflow) {
 				// events were lost: reload to be sure we have not missed a change
 				m.addExisting()
+				noteChange()
 				schedule()
 			}
 		case <-fire:
@@ -147,20 +163,34 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 				return
 			default:
 			}
+			if m.loadIdentity != nil && m.loadIdentity() != loadedAtChange {
+				slog.Debug("installed mods changed - workspace has already been reloaded since")
+				continue
+			}
 			slog.Debug("installed mods changed - reloading workspace")
 			m.reload(ctx)
 		}
 	}
 }
 
-// isModChange returns whether the event is a change to the lock file or the installed mods
+// isModChange returns whether the event is a change to the lock file or the installed mods.
+//
+// Only files and folders being created or written count under the mods folder, not their removal: the lock file
+// changes when a mod stops being used, and the installer then prunes the mod's folder, which changes nothing the
+// workspace loads (it would otherwise be a change after the mod file's reload).
 func (m *modInstallWatcher) isModChange(ev fsnotify.Event) bool {
 	// a permissions change is not an install
 	if ev.Op&^fsnotify.Chmod == 0 {
 		return false
 	}
 	name := filepath.Clean(ev.Name)
-	return name == m.lockPath || name == m.modsDir || isUnder(name, m.modsDir)
+	if name == m.lockPath {
+		return true
+	}
+	if name == m.modsDir || isUnder(name, m.modsDir) {
+		return ev.Has(fsnotify.Create) || ev.Has(fsnotify.Write)
+	}
+	return false
 }
 
 // isNewFolder returns whether the event may have created a folder we should now watch
@@ -222,7 +252,7 @@ func (w *PowerpipeWorkspace) SetupModInstallWatcher(ctx context.Context) error {
 		// ReloadModResources calls this on a failed load
 		w.FileWatcherErrorHandler = func(context.Context, error) {}
 	}
-	m, err := newModInstallWatcher(w.Path, w.reloadAfterModChange)
+	m, err := newModInstallWatcher(w.Path, w.reloadAfterModChange, w.loadIdentity)
 	if err != nil {
 		return err
 	}
@@ -232,6 +262,13 @@ func (w *PowerpipeWorkspace) SetupModInstallWatcher(ctx context.Context) error {
 	w.modInstallWatcher = m
 	m.start(ctx)
 	return nil
+}
+
+// loadIdentity returns the loaded mod, which is a new one after every successful reload
+func (w *PowerpipeWorkspace) loadIdentity() any {
+	w.LoadLock()
+	defer w.LoadUnlock()
+	return w.Mod
 }
 
 // reloadAfterModChange reloads the workspace and raises the same hooks as the pipe-fittings file watcher does

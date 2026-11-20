@@ -9,8 +9,8 @@ import (
 
 type ModInstallWatcher = modInstallWatcher
 
-func NewModInstallWatcher(workspacePath string, reload func(ctx context.Context)) (*ModInstallWatcher, error) {
-	return newModInstallWatcher(workspacePath, reload)
+func NewModInstallWatcher(workspacePath string, reload func(ctx context.Context), loadIdentity func() any) (*ModInstallWatcher, error) {
+	return newModInstallWatcher(workspacePath, reload, loadIdentity)
 }
 
 func (m *modInstallWatcher) Start(ctx context.Context) { m.start(ctx) }
