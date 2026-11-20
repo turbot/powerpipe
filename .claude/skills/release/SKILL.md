@@ -24,7 +24,8 @@ id). The cut makes `release/<version>` with the CHANGELOG section and opens the 
 ## 2. The release PR
 
 `release-pr.yml` tests the candidate (`make release_test`), builds a snapshot, installs it and writes the record. With a
-SHIP record, the PR leaves draft (if it stays a draft, run `gh pr ready <n>`), and `ask.yml` asks in #powerpipe.
+SHIP record, the record marks the PR ready for review, and `ask.yml` asks in #powerpipe. `main` accepts the merge only
+when the record's `shipyard/release` status passes.
 One approver of `turbot/pipelings-release-approvers` who drove none of its changes approves it. Merge with a merge commit.
 
 ## 3. Watch the ship
