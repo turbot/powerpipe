@@ -12,6 +12,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/utils"
+	"github.com/turbot/powerpipe/internal/benchmarkrun"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/dashboardassets"
@@ -98,6 +99,7 @@ func runServerCmd(cmd *cobra.Command, _ []string) {
 	powerpipeService, err := api.NewAPIService(ctx,
 		api.WithWebSocket(webSocket),
 		api.WithWorkspace(modInitData.Workspace),
+		api.WithBenchmarkRunner(benchmarkrun.NewRunner(modInitData.Workspace, modInitData.DefaultClient, benchmarkrun.IdleTimeout, benchmarkrun.MaxRunningRuns)),
 		api.WithHTTPPortAndListenConfig(serverPort, serverListen),
 		api.WithAllowedHosts(allowedHosts),
 	)

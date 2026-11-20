@@ -30,15 +30,7 @@ import {
   LeafNodeDataRow,
 } from "../common";
 import { classNames } from "@powerpipe/utils/styles";
-import {
-  ColumnFilter,
-  flexRender,
-  getCoreRowModel,
-  getFilteredRowModel,
-  getSortedRowModel,
-  Row,
-  useReactTable,
-} from "@tanstack/react-table";
+import { ColumnFilter, flexRender, useTable } from "@tanstack/react-table";
 import { createPortal } from "react-dom";
 import { formatDate, parseDate } from "@powerpipe/utils/date";
 import { getComponent, registerComponent } from "../index";
@@ -54,6 +46,12 @@ import { usePanelControls } from "@powerpipe/hooks/usePanelControls";
 import { usePopper } from "react-popper";
 import { useSearchParams } from "react-router-dom";
 import { useVirtualizer } from "@tanstack/react-virtual";
+import {
+  sortFn_v8Auto,
+  tablePanelFeatures,
+  TablePanelFeatures,
+  TablePanelRow,
+} from "./features";
 
 export type TableColumnDisplay = "all" | "none";
 export type TableColumnWrap = "all" | "none";
@@ -67,11 +65,15 @@ type TableColumnInfo = {
   display?: "all" | "none";
   wrap: TableColumnWrap;
   href_template?: string;
-  sortType?: any;
-  filterFn?: (row: Row<any>, columnId: string, filterValue: any) => boolean;
+  sortFn?: typeof sortFn_v8Auto;
+  filterFn?: (
+    row: TablePanelRow,
+    columnId: string,
+    filterValue: any,
+  ) => boolean;
 };
 
-const getColumns = (
+export const getColumns = (
   cols: LeafNodeDataColumn[],
   properties: TableProperties,
   filters: Filter[],
@@ -138,9 +140,9 @@ const getColumns = (
       name: col.name,
       data_type: col.data_type,
       wrap: colWrap,
-      sortType: col.data_type === "BOOL" ? "basic" : "alphanumeric",
+      sortFn: sortFn_v8Auto,
       // Generic filter function that will apply all filters for a column
-      filterFn: (row: Row<any>, columnId: string) => {
+      filterFn: (row: TablePanelRow, columnId: string) => {
         const filtersForColumn = filtersByColumn[columnId];
         if (!filtersForColumn.length) {
           return true;
@@ -171,7 +173,10 @@ const getColumns = (
   return { columns, columnVisibility };
 };
 
-const getData = (columns: TableColumnInfo[], rows: LeafNodeDataRow[]) => {
+export const getData = (
+  columns: TableColumnInfo[],
+  rows: LeafNodeDataRow[],
+) => {
   if (!columns || columns.length === 0) {
     return [];
   }
@@ -886,15 +891,20 @@ const TableViewVirtualizedRows = (props: TableProps) => {
     [columns, props.data],
   );
 
-  const table = useReactTable<KeyValuePairs>({
-    data,
-    columns,
-    initialState: { columnVisibility },
-    state: { columnFilters },
-    getCoreRowModel: getCoreRowModel(),
-    getFilteredRowModel: getFilteredRowModel(),
-    getSortedRowModel: getSortedRowModel(),
-  });
+  // Memoised so the table instance useTable returns only changes when its
+  // inputs or state do: the column controls effect below deep-compares it.
+  const tableOptions = useMemo(
+    () => ({
+      features: tablePanelFeatures,
+      data,
+      columns,
+      initialState: { columnVisibility },
+      state: { columnFilters },
+    }),
+    [data, columns, columnVisibility, columnFilters],
+  );
+
+  const table = useTable<TablePanelFeatures, KeyValuePairs>(tableOptions);
 
   const { customControls, setCustomControls } = usePanelControls();
 

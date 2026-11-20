@@ -16,12 +16,16 @@ module.exports = {
           "<rootDir>/node_modules/react-router-dom/dist/index.js",
         "^react-router/dom$":
           "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
+        "^@tanstack/(react-table|table-core)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/index.js",
+        "^@tanstack/(react-table|table-core)/(.*)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/$2.js",
       };
-      // color-convert v3 and its color-name dependency ship as ES modules
-      // only, so Jest has to run them through Babel like our own source.
-      // Every other package in node_modules is still left untransformed.
+      // color-convert v3, its color-name dependency and TanStack Table v9 ship
+      // as ES modules only, so Jest has to run them through Babel like our own
+      // source. Every other package in node_modules is still left untransformed.
       jestConfig.transformIgnorePatterns = [
-        "[/\\\\]node_modules[/\\\\](?!(color-convert|color-name)[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+        "[/\\\\]node_modules[/\\\\](?!(color-convert|color-name|@tanstack[/\\\\](react-table|table-core))[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
         "^.+\\.module\\.(css|sass|scss)$",
       ];
       return jestConfig;
