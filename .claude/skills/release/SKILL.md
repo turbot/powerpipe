@@ -56,5 +56,5 @@ on `develop` with `reship` (the version), `commit` (the tip of `main`) and `fixe
 
 ## 4. Hand over
 
-Tell whoever runs the Turbot Pipes release that the new version is live, with its tag (`v1.6.1`). Pipes pins both the
+Tell whoever runs the Turbot Pipes release that the new version is live, with its tag (`v{x.y.z}`). Pipes pins both the
 CLI and the dashboard UI by that tag, and the new version ships in the next Pipes release.
