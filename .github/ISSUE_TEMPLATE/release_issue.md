@@ -25,4 +25,4 @@ labels: release
 - [ ] Test Linux install script
 - [ ] Test Homebrew install, and that the dashboard loads in it
 - [ ] Check the changelog page is live on powerpipe.io
-- [ ] Hand the version to the Turbot Pipes release (`powerpipeCliVersion` and `powerpipeDashboardUiVersion`)
+- [ ] Tell the Turbot Pipes release the new tag: Pipes pins the CLI and the dashboard UI by it
