@@ -173,6 +173,10 @@ func TestLoadState_Reload(t *testing.T) {
 	extraFile := filepath.Join(dir, "extra.pp")
 	writeFile(t, extraFile, "control \"e\" {\n  sql = \"select 1\"\n}\n")
 	state = waitForLoadState(t, w, "the new file to load", loadedFile(t, extraFile))
+	if state.LoadCount <= count {
+		t.Fatalf("after a new file: load count %d, want more than %d", state.LoadCount, count)
+	}
+	count = state.LoadCount
 	parsedE, err := modconfig.ParseResourceName("control.e")
 	if err != nil {
 		t.Fatal(err)
@@ -184,6 +188,9 @@ func TestLoadState_Reload(t *testing.T) {
 		t.Fatal(err)
 	}
 	state = waitForLoadState(t, w, "the deletion to load", loadedFile(t, dir))
+	if state.LoadCount <= count {
+		t.Fatalf("after a deletion: load count %d, want more than %d", state.LoadCount, count)
+	}
 	if _, ok := w.GetResource(parsedE); ok {
 		t.Fatal("the load state says the deletion loaded, but control.e is still in the workspace")
 	}
