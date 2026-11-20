@@ -14,7 +14,7 @@ import (
 // when one of its mod or variable files changes.
 //
 // A client that changed, added or deleted files can wait for the change to load. After its last change it reads
-// the change time of what it changed with FileChangeTime (ctime: stat -c %z on Linux, stat -f %Sc on macOS): the
+// the change time of what it changed with FileChangeTime (ctime: stat -c %z on Linux, stat -f %Fc on macOS): the
 // file it wrote, or the folder of a file it deleted. The change has loaded once LastLoad has a NewestFileTime at or
 // after that time, and no Error.
 type LoadState struct {
@@ -94,7 +94,7 @@ func (w *PowerpipeWorkspace) HoldLoaded() (release func(), ok bool) {
 	return w.reloadGate.RUnlock, true
 }
 
-// startLoad records the start of a load. newestFileTime is the newest modification time of the files of the
+// startLoad records the start of a load. newestFileTime is the newest change time of the files and folders of the
 // workspace, read before the load reads them.
 func (w *PowerpipeWorkspace) startLoad(newestFileTime *time.Time) {
 	w.loadStateMu.Lock()
