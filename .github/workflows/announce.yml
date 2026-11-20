@@ -1,4 +1,4 @@
-# Announces a release once its tag is made (docs/release-announce.md): the "Live in" comment on each issue the release closes, and
+# Announces a release once its tag is made: the "Live in" comment on each issue the release closes, and
 # the close of the prep job it shipped. It posts no #releases line: a product with a changelog page has none, so there is no
 # `slack-token`. The release App's tag starts it; run it again by hand with the tag.
 name: Announce
