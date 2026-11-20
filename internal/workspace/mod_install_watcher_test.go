@@ -453,7 +453,13 @@ mod "local" {
 		}
 	}
 
-	// `mod install`: the mod, the lock file, then the require block in the mod file
+	// `mod install` of a mod with a thousand files (the AWS compliance mod has more): the mod, then the lock file,
+	// then the require block in the mod file. The watcher must keep up with the mod's folders being created, or
+	// it sees the lock file change only after the mod file's reload.
+	modDir := filepath.Join(dir, ".powerpipe", "mods", "github.com", "example", "dep@v1.0.0")
+	for i := 0; i < 1000; i++ {
+		writeFile(t, filepath.Join(modDir, fmt.Sprintf("dir%d", i%40), fmt.Sprintf("file%d.txt", i)), "x")
+	}
 	writeInstalledDep(t, dir, "v1.0.0", "installed title")
 	writeFile(t, filepath.Join(dir, "mod.pp"), withDep)
 	expectOneReload("install")

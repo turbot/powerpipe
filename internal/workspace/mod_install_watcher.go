@@ -103,6 +103,8 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 	var (
 		firstChange time.Time
 		fire        <-chan time.Time
+		// whether there is a change waiting to be reloaded for
+		pending bool
 		// the load identity as of the last change
 		loadedAtChange any
 	)
@@ -113,8 +115,9 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 	}
 	schedule := func() {
 		now := time.Now()
-		if fire == nil {
+		if !pending {
 			firstChange = now
+			pending = true
 		}
 		wait := m.quietPeriod
 		// do not let a steady stream of changes hold the reload back for ever
@@ -122,6 +125,18 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 			wait = max(left, 0)
 		}
 		fire = time.After(wait)
+	}
+
+	// handle returns whether the event is a change to the installed mods
+	handle := func(ev fsnotify.Event) bool {
+		slog.Debug("mod install watcher event", "event", ev.String())
+		m.watchNewFolder(ev)
+		if !m.isModChange(ev) {
+			return false
+		}
+		noteChange()
+		schedule()
+		return true
 	}
 
 	for {
@@ -134,14 +149,7 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 			if !ok {
 				return
 			}
-			slog.Debug("mod install watcher event", "event", ev.String())
-			if m.isNewFolder(ev) {
-				m.addExisting()
-			}
-			if m.isModChange(ev) {
-				noteChange()
-				schedule()
-			}
+			handle(ev)
 		case err, ok := <-m.watch.Errors:
 			if !ok {
 				return
@@ -163,6 +171,11 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 				return
 			default:
 			}
+			// changes already queued have not been seen yet: take them in, and wait again if there are any
+			if m.drain(handle) {
+				continue
+			}
+			pending = false
 			if m.loadIdentity != nil && m.loadIdentity() != loadedAtChange {
 				slog.Debug("installed mods changed - workspace has already been reloaded since")
 				continue
@@ -193,13 +206,38 @@ func (m *modInstallWatcher) isModChange(ev fsnotify.Event) bool {
 	return false
 }
 
-// isNewFolder returns whether the event may have created a folder we should now watch
-func (m *modInstallWatcher) isNewFolder(ev fsnotify.Event) bool {
+// drain handles the events that are already waiting, and returns whether any was a change to the installed mods
+func (m *modInstallWatcher) drain(handle func(fsnotify.Event) bool) (changed bool) {
+	for {
+		select {
+		case ev, ok := <-m.watch.Events:
+			if !ok {
+				return changed
+			}
+			if handle(ev) {
+				changed = true
+			}
+		default:
+			return changed
+		}
+	}
+}
+
+// watchNewFolder watches a folder that has just been created in the data or mods folder, and the folders in it
+func (m *modInstallWatcher) watchNewFolder(ev fsnotify.Event) {
 	if !ev.Has(fsnotify.Create) && !ev.Has(fsnotify.Rename) {
-		return false
+		return
 	}
 	name := filepath.Clean(ev.Name)
-	return name == m.dataDir || name == m.modsDir || isUnder(name, m.modsDir)
+	switch {
+	case name == m.dataDir:
+		// the mods folder may be in it already
+		m.addExisting()
+	case name == m.modsDir || isUnder(name, m.modsDir):
+		// only this folder's tree: walking the whole of the mods folder for each new folder in it
+		// would leave this loop behind a large install
+		m.addTree(name)
+	}
 }
 
 // addExisting adds a watch for every folder that exists now: the data folder, the mods folder and all below it
@@ -214,10 +252,15 @@ func (m *modInstallWatcher) addExisting() {
 	if info, err := os.Stat(m.modsDir); err != nil || !info.IsDir() {
 		return
 	}
-	// a mod that cannot be watched (e.g. out of watches) is not fatal: the lock file still changes
-	err := filepath.WalkDir(m.modsDir, func(path string, d fs.DirEntry, err error) error {
+	m.addTree(m.modsDir)
+}
+
+// addTree watches a folder and the folders below it. A folder that cannot be watched (for example, out of watches)
+// is not fatal: the lock file still changes.
+func (m *modInstallWatcher) addTree(root string) {
+	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
-			// folder removed while we walk: skip it
+			// removed while we walk: skip it
 			return nil
 		}
 		if !d.IsDir() {
@@ -232,7 +275,7 @@ func (m *modInstallWatcher) addExisting() {
 		return nil
 	})
 	if err != nil {
-		slog.Warn("mod install watcher could not walk the mods folder", "path", m.modsDir, "error", err)
+		slog.Warn("mod install watcher could not walk folder", "path", root, "error", err)
 	}
 }
 
