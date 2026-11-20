@@ -56,6 +56,14 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 
 	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
+	if err == nil {
+		// also reload when the installed mods change (e.g. after `powerpipe mod update`)
+		if modWatchErr := w.SetupModInstallWatcher(ctx); modWatchErr != nil {
+			// not fatal: the server still reloads for changes to mod and variable files
+			slog.Warn("failed to watch the installed mods - the server will not reload when they change", "error", modWatchErr)
+			OutputMessage(ctx, fmt.Sprintf("Warning: failed to watch the installed mods for changes: %s", modWatchErr))
+		}
+	}
 	OutputMessage(ctx, "WorkspaceEvents loaded")
 
 	return server, err

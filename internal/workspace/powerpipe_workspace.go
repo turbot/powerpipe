@@ -18,6 +18,8 @@ type PowerpipeWorkspace struct {
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
 	dashboardEventChan chan dashboardevents.DashboardEvent
+	// reloads the workspace when the installed mods change (nil unless SetupModInstallWatcher was called)
+	modInstallWatcher *modInstallWatcher
 }
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
@@ -41,6 +43,9 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 
 func (w *PowerpipeWorkspace) Close() {
 	w.Workspace.Close()
+	if w.modInstallWatcher != nil {
+		w.modInstallWatcher.Close()
+	}
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first
 		w.dashboardEventChan = nil
