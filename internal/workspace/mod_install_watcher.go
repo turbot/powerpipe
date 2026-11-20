@@ -261,6 +261,7 @@ func (m *modInstallWatcher) addTree(root string) {
 	err := filepath.WalkDir(root, func(path string, d fs.DirEntry, err error) error {
 		if err != nil {
 			// removed while we walk: skip it
+			slog.Debug("mod install watcher skipped a folder it could not read", "path", path, "error", err)
 			return nil
 		}
 		if !d.IsDir() {
