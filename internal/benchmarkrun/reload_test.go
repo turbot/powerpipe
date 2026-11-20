@@ -98,17 +98,18 @@ func waitUntilReloadHoldsWorkspace(t *testing.T, w *workspace.PowerpipeWorkspace
 	t.Fatal("the reload did not start")
 }
 
-// waitUntilLoaded waits until the last load has read the file as it is now
+// waitUntilLoaded waits until the last load has read the file or folder as it is now, by the rule LoadState gives
+// a client
 func waitUntilLoaded(t *testing.T, w *workspace.PowerpipeWorkspace, path string) {
 	t.Helper()
-	info, err := os.Stat(path)
+	changed, err := workspace.FileChangeTime(path)
 	if err != nil {
 		t.Fatal(err)
 	}
 	deadline := time.Now().Add(30 * time.Second)
 	for time.Now().Before(deadline) {
 		s := w.LoadState()
-		if !s.Loading && s.LastLoad != nil && s.LastLoad.NewestFileTime != nil && !s.LastLoad.NewestFileTime.Before(info.ModTime()) {
+		if !s.Loading && s.LastLoad != nil && s.LastLoad.NewestFileTime != nil && !s.LastLoad.NewestFileTime.Before(changed) {
 			if s.LastLoad.Error != "" {
 				t.Fatalf("the load failed: %s", s.LastLoad.Error)
 			}
@@ -190,40 +191,24 @@ func TestRunner_Reload(t *testing.T) {
 	}
 }
 
-// waitUntilLoadedSince waits until a load that started after the change has finished
-func waitUntilLoadedSince(t *testing.T, w *workspace.PowerpipeWorkspace, changed time.Time) {
-	t.Helper()
-	deadline := time.Now().Add(30 * time.Second)
-	for time.Now().Before(deadline) {
-		s := w.LoadState()
-		if !s.Loading && s.LastLoad != nil && s.LastLoad.StartTime.After(changed) {
-			if s.LastLoad.Error != "" {
-				t.Fatalf("the load failed: %s", s.LastLoad.Error)
-			}
-			return
-		}
-		time.Sleep(10 * time.Millisecond)
-	}
-	t.Fatalf("no load started after the change, load state %+v", w.LoadState())
-}
-
-// a file copied with its old modification time (cp -p, rsync -t, tar), and a deleted file, have loaded once a
-// load that started after the change has finished
-func TestRunner_ReloadOfFileWithOlderModTime(t *testing.T) {
+// a file copied with its old modification time (cp -p, rsync -t, tar), a deleted file, and a change whose client
+// reads the change time well after the load has started, all load by the rule LoadState gives a client
+func TestRunner_ReloadRule(t *testing.T) {
 	runner, w, dir := newWatchedTestRunner(t)
-	runStatus := func(what string) *benchmarkrun.Run {
+	runSummary := func(what string) *benchmarkrun.Run {
 		t.Helper()
 		started, err := runner.Start("vars", 0)
 		if err != nil {
 			t.Fatalf("%s: %v", what, err)
 		}
 		run := waitForRun(t, runner, started)
-		if run.Status != benchmarkrun.StatusComplete {
+		if run.Status != benchmarkrun.StatusComplete || run.Summary == nil {
 			t.Fatalf("%s: %+v", what, run)
 		}
 		return &run
 	}
 
+	// a copy with an old modification time
 	varFile := filepath.Join(dir, "powerpipe.ppvars")
 	if err := os.WriteFile(varFile, []byte(`status = "alarm"`+"\n"), 0o600); err != nil {
 		t.Fatal(err)
@@ -232,22 +217,31 @@ func TestRunner_ReloadOfFileWithOlderModTime(t *testing.T) {
 	if err := os.Chtimes(varFile, old, old); err != nil {
 		t.Fatal(err)
 	}
-	changed := time.Now()
-	// the newest file time of the first load is already after the file's, so it cannot tell
-	if s := w.LoadState(); s.LastLoad.NewestFileTime == nil || s.LastLoad.NewestFileTime.Before(old) {
+	// the modification time cannot tell: the first load already has a newer one
+	if s := w.LoadState(); s.LastLoad.NewestFileTime == nil || !s.LastLoad.NewestFileTime.After(old) {
 		t.Fatalf("the first load: %+v", s.LastLoad)
 	}
-	waitUntilLoadedSince(t, w, changed)
-	if run := runStatus("the run after the copied variable file loaded"); run.Summary.Alarm != 1 {
+	waitUntilLoaded(t, w, varFile)
+	if run := runSummary("the run after the copied variable file loaded"); run.Summary.Alarm != 1 {
 		t.Fatalf("the run after the copied variable file loaded: summary %+v, want an alarm", run.Summary)
 	}
 
+	// a change in place, whose client reads the change time once the load has had time to finish
+	if err := os.WriteFile(varFile, []byte(`status = "info"`+"\n"), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	time.Sleep(500 * time.Millisecond)
+	waitUntilLoaded(t, w, varFile)
+	if run := runSummary("the run after the variable changed in place"); run.Summary.Info != 1 {
+		t.Fatalf("the run after the variable changed in place: summary %+v, want info", run.Summary)
+	}
+
+	// a deletion changes the folder
 	if err := os.Remove(varFile); err != nil {
 		t.Fatal(err)
 	}
-	changed = time.Now()
-	waitUntilLoadedSince(t, w, changed)
-	if run := runStatus("the run after the variable file was deleted"); run.Summary.Ok != 1 {
+	waitUntilLoaded(t, w, dir)
+	if run := runSummary("the run after the variable file was deleted"); run.Summary.Ok != 1 {
 		t.Fatalf("the run after the variable file was deleted: summary %+v, want ok", run.Summary)
 	}
 }

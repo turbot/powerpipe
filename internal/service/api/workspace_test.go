@@ -150,13 +150,13 @@ func TestWorkspaceAPI_Reload(t *testing.T) {
 
 	locked = false
 	w.LoadUnlock()
-	info, err := os.Stat(modFile)
+	changed, err := workspace.FileChangeTime(modFile)
 	if err != nil {
 		t.Fatal(err)
 	}
 	for {
 		state := getLoadState(t, router)
-		if !state.Loading && state.LastLoad.NewestFileTime != nil && !state.LastLoad.NewestFileTime.Before(info.ModTime()) {
+		if !state.Loading && state.LastLoad.NewestFileTime != nil && !state.LastLoad.NewestFileTime.Before(changed) {
 			if state.LoadCount < 2 || state.LastLoad.Error != "" {
 				t.Fatalf("the load state after the reload: %+v", state)
 			}

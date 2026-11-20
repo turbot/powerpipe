@@ -13,13 +13,10 @@ import (
 // LoadState says whether the workspace is loading, and how its loads went. powerpipe server reloads the workspace
 // when one of its mod or variable files changes.
 //
-// A client that changed, added or deleted a file can wait for the change to load: the change is loaded once
-// LastLoad started after the change was made and has no Error. Each load reads the files afresh, and a change
-// that arrives during a load starts another load once it ends.
-//
-// NewestFileTime gives the same answer, without comparing clocks, for a file written in place: its
-// modification time is the time of the change. It does not for a file that keeps an older modification time,
-// as cp -p, rsync -t and tar make, nor for a deleted file.
+// A client that changed, added or deleted files can wait for the change to load. After its last change it reads
+// the change time of what it changed with FileChangeTime (ctime: stat -c %z on Linux, stat -f %Sc on macOS): the
+// file it wrote, or the folder of a file it deleted. The change has loaded once LastLoad has a NewestFileTime at or
+// after that time, and no Error.
 type LoadState struct {
 	// Loading is true while the workspace loads
 	Loading bool `json:"loading"`
@@ -34,11 +31,10 @@ type LoadState struct {
 
 // LoadInfo describes one load of the workspace
 type LoadInfo struct {
-	// StartTime is when the load started: it read every change to the files made before then
 	StartTime time.Time  `json:"start_time"`
 	EndTime   *time.Time `json:"end_time,omitempty"`
-	// NewestFileTime is the newest modification time of the mod and variable files of the workspace when the load
-	// started
+	// NewestFileTime is the newest change time (see FileChangeTime) of the mod and variable files of the workspace,
+	// and of its folders, when the load started. The load read every change made up to then.
 	NewestFileTime *time.Time `json:"newest_file_time,omitempty"`
 	// Error is why the load failed. After a failed load the workspace stays as it was last loaded.
 	Error string `json:"error,omitempty"`
@@ -146,28 +142,49 @@ func (w *PowerpipeWorkspace) watchedFiles(ctx context.Context) (*filehelpers.Lis
 	return w.watchedFileOptions, nil
 }
 
-// newestFileTime returns the newest modification time of the files the file watcher watches, or nil if there are
-// none or they cannot be listed
+// FileChangeTime returns the time the file or folder last changed, as NewestFileTime counts it: its status
+// change time (ctime), which a write, a rename or a deletion in a folder moves to the present. A copy that keeps
+// the modification time of its source (cp -p, rsync -t, tar) cannot set it, as it can set the modification time.
+// On a system with no status change time, it is the modification time.
+func FileChangeTime(path string) (time.Time, error) {
+	info, err := os.Stat(path)
+	if err != nil {
+		return time.Time{}, err
+	}
+	return changeTime(info), nil
+}
+
+// newestFileTime returns the newest change time of the files the file watcher watches and of their folders, or
+// nil if they cannot be listed. A folder changes when a file in it is added, renamed or deleted.
 func (w *PowerpipeWorkspace) newestFileTime(ctx context.Context) *time.Time {
 	opts, err := w.watchedFiles(ctx)
 	if err != nil {
 		slog.Debug("cannot list the files of the workspace", "error", err)
 		return nil
 	}
-	paths, err := filehelpers.ListFilesWithContext(ctx, w.Path, opts)
+	files, err := filehelpers.ListFilesWithContext(ctx, w.Path, opts)
 	if err != nil {
 		slog.Debug("cannot list the files of the workspace", "error", err)
 		return nil
 	}
+	// the folders the file watcher watches
+	folders, err := filehelpers.ListFilesWithContext(ctx, w.Path, &filehelpers.ListOptions{
+		Flags:   filehelpers.DirectoriesRecursive,
+		Exclude: opts.Exclude,
+	})
+	if err != nil {
+		slog.Debug("cannot list the folders of the workspace", "error", err)
+		return nil
+	}
 	var newest time.Time
-	for _, path := range paths {
-		info, err := os.Stat(path)
+	for _, path := range append(append(files, w.Path), folders...) {
+		changed, err := FileChangeTime(path)
 		if err != nil {
 			// removed since it was listed
 			continue
 		}
-		if info.ModTime().After(newest) {
-			newest = info.ModTime()
+		if changed.After(newest) {
+			newest = changed
 		}
 	}
 	if newest.IsZero() {

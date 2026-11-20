@@ -70,15 +70,6 @@ func writeFile(t *testing.T, path, content string) {
 	}
 }
 
-func modTime(t *testing.T, path string) time.Time {
-	t.Helper()
-	info, err := os.Stat(path)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return info.ModTime()
-}
-
 // waitForLoadState waits until the load state meets the condition
 func waitForLoadState(t *testing.T, w *workspace.PowerpipeWorkspace, what string, condition func(workspace.LoadState) bool) workspace.LoadState {
 	t.Helper()
@@ -95,12 +86,23 @@ func waitForLoadState(t *testing.T, w *workspace.PowerpipeWorkspace, what string
 	}
 }
 
-// loadedFile is true when the last load finished without an error and read the file as it is now
+// changeTime returns the change time of the file or folder, as a client reads it
+func changeTime(t *testing.T, path string) time.Time {
+	t.Helper()
+	changed, err := workspace.FileChangeTime(path)
+	if err != nil {
+		t.Fatal(err)
+	}
+	return changed
+}
+
+// loadedFile is true when the last load finished without an error and read the file or folder as it is now, by
+// the rule LoadState gives a client
 func loadedFile(t *testing.T, path string) func(workspace.LoadState) bool {
-	modified := modTime(t, path)
+	changed := changeTime(t, path)
 	return func(s workspace.LoadState) bool {
 		return !s.Loading && s.LastLoad != nil && s.LastLoad.Error == "" && s.LastLoad.NewestFileTime != nil &&
-			!s.LastLoad.NewestFileTime.Before(modified)
+			!s.LastLoad.NewestFileTime.Before(changed)
 	}
 }
 
@@ -129,8 +131,8 @@ func TestLoadState_FirstLoad(t *testing.T) {
 	if last.StartTime.Before(before) || last.EndTime == nil || last.EndTime.Before(last.StartTime) || last.Error != "" {
 		t.Fatalf("the first load: %+v", last)
 	}
-	if last.NewestFileTime == nil || !last.NewestFileTime.Equal(modTime(t, filepath.Join(dir, "mod.pp"))) {
-		t.Fatalf("the newest file time of the first load is %v, want the time of mod.pp", last.NewestFileTime)
+	if last.NewestFileTime == nil || last.NewestFileTime.Before(changeTime(t, filepath.Join(dir, "mod.pp"))) || last.NewestFileTime.After(last.StartTime) {
+		t.Fatalf("the newest file time of the first load is %v, want the change time of mod.pp", last.NewestFileTime)
 	}
 	// with no load in progress, the workspace can be held
 	release, ok := w.HoldLoaded()
@@ -167,6 +169,26 @@ func TestLoadState_Reload(t *testing.T) {
 		}
 	}
 
+	// a new file, then deleting it: a deletion changes the folder
+	extraFile := filepath.Join(dir, "extra.pp")
+	writeFile(t, extraFile, "control \"e\" {\n  sql = \"select 1\"\n}\n")
+	state = waitForLoadState(t, w, "the new file to load", loadedFile(t, extraFile))
+	parsedE, err := modconfig.ParseResourceName("control.e")
+	if err != nil {
+		t.Fatal(err)
+	}
+	if _, ok := w.GetResource(parsedE); !ok {
+		t.Fatal("the load state says the new file loaded, but control.e is not in the workspace")
+	}
+	if err := os.Remove(extraFile); err != nil {
+		t.Fatal(err)
+	}
+	state = waitForLoadState(t, w, "the deletion to load", loadedFile(t, dir))
+	if _, ok := w.GetResource(parsedE); ok {
+		t.Fatal("the load state says the deletion loaded, but control.e is still in the workspace")
+	}
+	count = state.LoadCount
+
 	// a new variable file
 	varFile := filepath.Join(dir, "powerpipe.ppvars")
 	writeFile(t, varFile, `status = "alarm"`+"\n")
@@ -183,7 +205,7 @@ func TestLoadState_FailedReload(t *testing.T) {
 
 	writeFile(t, modFile, loadStateTestMod+"\ncontrol \"broken\" {\n")
 	state := waitForLoadState(t, w, "the failed load", func(s workspace.LoadState) bool {
-		return !s.Loading && s.LoadCount >= 2 && s.LastLoad.Error != "" && !s.LastLoad.NewestFileTime.Before(modTime(t, modFile))
+		return !s.Loading && s.LoadCount >= 2 && s.LastLoad.Error != "" && !s.LastLoad.NewestFileTime.Before(changeTime(t, modFile))
 	})
 	if state.LastLoad.EndTime == nil {
 		t.Fatalf("a failed load has no end time: %+v", state.LastLoad)
