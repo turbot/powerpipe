@@ -192,7 +192,10 @@ const GroupingEditorItem = ({
 let nextRowId = 0;
 
 const withRowIds = (groups: DisplayGroup[]): DisplayGroup[] =>
-  groups.map((c) => ({ ...c, __rowId: `row-${nextRowId++}` })) as DisplayGroup[];
+  groups.map((c) => ({
+    ...c,
+    __rowId: `row-${nextRowId++}`,
+  })) as DisplayGroup[];
 
 const stripRowIds = (groups: DisplayGroup[]): DisplayGroup[] =>
   groups.map((c) => {
@@ -200,12 +203,64 @@ const stripRowIds = (groups: DisplayGroup[]): DisplayGroup[] =>
     return rest;
   }) as DisplayGroup[];
 
+// Report an untyped or repeated level before the order rule: an untyped level
+// groups nothing and a repeated one splits nothing its twin has not, so either
+// would be saved as a level that does nothing. control_tag and dimension levels
+// count with their value, so two different tags are two levels.
+export const validateGrouping = (
+  config: DisplayGroup[],
+): { value: boolean; reason: string } => {
+  if (config.some((c) => !c?.type)) {
+    return { value: false, reason: "Choose a type for every grouping" };
+  }
+  const keys = config.map((c) => `${c.type}:${c.value ?? ""}`);
+  if (keys.length !== new Set(keys).size) {
+    return { value: false, reason: "Each grouping can only be used once" };
+  }
+
+  let reason = "";
+  const value = config.every((c, i) => {
+    switch (c.type) {
+      case "benchmark":
+      case "control":
+      case "detection":
+      case "reason":
+      case "resource":
+      case "severity":
+      case "status":
+        return !c.value;
+      case "result":
+        if (i !== config.length - 1) {
+          reason = "Result must be the last grouping";
+          return false;
+        }
+        return true;
+      default:
+        return true;
+    }
+  });
+  return { value, reason };
+};
+
+// A new level goes before a Result level, which must stay last.
+export const addLevel = (
+  config: DisplayGroup[],
+  level: DisplayGroup,
+): DisplayGroup[] => {
+  const resultIndex = config.findIndex((c) => c.type === "result");
+  return resultIndex === -1
+    ? [...config, level]
+    : [...config.slice(0, resultIndex), level, ...config.slice(resultIndex)];
+};
+
 const GroupingEditor = ({
   config,
   defaultConfig,
   onApply,
 }: GroupingEditorProps) => {
-  const [innerConfig, setInnerConfig] = useState<DisplayGroup[]>(config);
+  const [innerConfig, setInnerConfig] = useState<DisplayGroup[]>(() =>
+    withRowIds(config),
+  );
   const [isDirty, setIsDirty] = useState(false);
   const [isValid, setIsValid] = useState({ value: false, reason: "" });
 
@@ -214,53 +269,7 @@ const GroupingEditor = ({
   }, [config, setInnerConfig]);
 
   useEffect(() => {
-    let reason: string = "";
-
-    // Every level must have a type. The switch below falls through to
-    // `default: return true`, so an untyped row counted as valid and Apply
-    // saved {"type":""} into the URL - a level that groups nothing.
-    const untyped = innerConfig.some((c) => !c?.type);
-
-    // ...and each level may only appear once. A repeat cannot subdivide
-    // anything its twin has not already split, so it is silently inert.
-    // control_tag/dimension are keyed with their value, so `domain` and
-    // `label` remain distinct levels.
-    const keys = innerConfig
-      .filter((c) => !!c?.type)
-      .map((c) => `${c.type}:${c.value ?? ""}`);
-    const duplicated = keys.length !== new Set(keys).size;
-
-    const isValid = innerConfig.every((c, i) => {
-      switch (c?.type) {
-        case "benchmark":
-        case "control":
-        case "detection":
-        case "reason":
-        case "resource":
-        case "severity":
-        case "status":
-          return !c.value;
-        case "result":
-          if (i !== innerConfig.length - 1) {
-            reason = "Result must be the last grouping";
-            return false;
-          }
-          return true;
-        default:
-          if (c?.type?.includes("|")) {
-            return true;
-          }
-          return true;
-      }
-    });
-    // Reported after the positional checks so the most specific message wins.
-    if (untyped) {
-      setIsValid({ value: false, reason: "Choose a type for every grouping" });
-    } else if (duplicated) {
-      setIsValid({ value: false, reason: "Each grouping can only be used once" });
-    } else {
-      setIsValid({ value: isValid, reason });
-    }
+    setIsValid(validateGrouping(innerConfig));
 
     const removeEmpty = stripRowIds(innerConfig).map((c) => {
       const noEmpty = {};
@@ -306,16 +315,7 @@ const GroupingEditor = ({
       >
         {innerConfig.map((c, idx) => (
           <GroupingEditorItem
-            // Key by POSITION, not by content. A newly added row is {type: ""},
-            // so a content key is `-undefined` - add two rows and both children
-            // share one key. React's child map for the list is then ambiguous
-            // and later updates cannot reliably unmount the right rows: after
-            // Reset a discarded row survived on screen (and a second Reset could
-            // not clear it) even though innerConfig, the saved grouping and the
-            // rendered tree were all correct. Only a remount fixed it.
-            //
-            // Reorder identity is carried by Reorder.Item's `value={item}` prop,
-            // not by the React key, so dragging is unaffected.
+            // The row's own id, not its content or position: see withRowIds.
             key={(c as any).__rowId ?? idx}
             config={innerConfig}
             item={c}
@@ -330,21 +330,12 @@ const GroupingEditor = ({
         isValid={isValid}
         // @ts-ignore
         onAdd={() =>
-          // Insert BEFORE a trailing "result" rather than appending blindly.
-          // "result" is the leaf level - there is nothing beneath a result to
-          // subdivide - so the validator below requires it to be last. Appending
-          // after it produced the one arrangement that is always invalid, which
-          // greyed out Apply with the explanation hidden in a title tooltip.
-          setInnerConfig((existing) => {
-            const resultIndex = existing.findIndex((c) => c.type === "result");
-            return resultIndex === -1
-              ? [...existing, { type: "", __rowId: `row-${nextRowId++}` } as any]
-              : [
-                  ...existing.slice(0, resultIndex),
-                  { type: "", __rowId: `row-${nextRowId++}` } as any,
-                  ...existing.slice(resultIndex),
-                ];
-          })
+          setInnerConfig((existing) =>
+            addLevel(existing, {
+              type: "",
+              __rowId: `row-${nextRowId++}`,
+            } as DisplayGroup),
+          )
         }
         onApply={() => onApply(stripRowIds(innerConfig))}
         onClear={() => {
