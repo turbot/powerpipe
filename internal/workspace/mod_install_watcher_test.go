@@ -374,11 +374,12 @@ func TestModInstallWatcher_ReloadIsToldTheLoadsStartedAtTheLastChange(t *testing
 	defer setTimings()()
 	dir := t.TempDir()
 
-	var started, told atomic.Int32
+	var started atomic.Int32
+	var told atomic.Int64
 	reloads := &atomic.Int32{}
 	m, err := workspace.NewModInstallWatcher(dir,
 		func(_ context.Context, loadsStartedAtChange int) {
-			told.Store(int32(loadsStartedAtChange))
+			told.Store(int64(loadsStartedAtChange))
 			reloads.Add(1)
 		},
 		func() int { return int(started.Load()) })
