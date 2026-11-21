@@ -171,7 +171,7 @@ func hostIgnoredEnvVars(env []string) []string {
 	var names []string
 	for _, entry := range env {
 		name, _, found := strings.Cut(entry, "=")
-		// as the variable collection does, skip an entry that is not name=value, and a prefix with no name
+		// skip an entry that is not name=value, and a bare prefix with no name
 		if found && len(name) > len(prefix) && strings.HasPrefix(name, prefix) {
 			names = append(names, name)
 		}

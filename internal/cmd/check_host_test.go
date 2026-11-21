@@ -259,4 +259,11 @@ func setEnvVarPrefix(t *testing.T) {
 	prev := app_specific.EnvInputVarPrefix
 	app_specific.EnvInputVarPrefix = "PP_VAR_"
 	t.Cleanup(func() { app_specific.EnvInputVarPrefix = prev })
+	// a test owns its variables: drop any the machine running it has set (t.Setenv restores them)
+	for _, name := range hostIgnoredEnvVars(os.Environ()) {
+		t.Setenv(name, "")
+		if err := os.Unsetenv(name); err != nil {
+			t.Fatal(err)
+		}
+	}
 }
