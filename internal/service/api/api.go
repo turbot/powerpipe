@@ -195,6 +195,9 @@ func (api *APIService) newRouter() *gin.Engine {
 	apiLimiter.SetBurst(viper.GetInt("web.rate.burst"))
 
 	RegisterPublicAPI(apiPrefixGroup)
+	if api.workspace != nil {
+		registerWorkspace(apiPrefixGroup, api.workspace)
+	}
 	if api.benchmarkRunner != nil {
 		registerBenchmarkRun(apiPrefixGroup, api.benchmarkRunner)
 	}
