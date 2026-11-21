@@ -131,6 +131,37 @@ EOF
   assert_success
 }
 
+@test "server: mod update to a newer version reloads the server, and runs use the new version" {
+  # dependency-1 v1.0.0 and v2.0.0 have a query that returns their version
+  powerpipe mod install github.com/pskrbasu/steampipe-mod-dependency-1@v1.0.0 --mod-location "$WS"
+  sed -i.bak 's/version = "v1.0.0"/version = "<3.0.0"/' mod.pp && rm mod.pp.bak
+  cat << 'EOF' >> mod.pp
+
+control "dependency_version" {
+  title = "Dependency version"
+  sql   = "select 'dependency' as resource, 'ok' as status, 'dependency version ' || (${dependency_1.query.version.sql}) as reason"
+}
+
+benchmark "dependency" {
+  title    = "Dependency"
+  children = [control.dependency_version]
+}
+EOF
+  $WORKSPACE_LOAD wait-loaded "$BASE" mod.pp .mod.cache.json
+  run powerpipe benchmark run server_reload.benchmark.dependency --host "$BASE" --output snapshot
+  assert_output --partial "dependency version 1.0"
+
+  # the update changes only the lock file and the installed mods, not mod.pp
+  mod_pp_before="$($WORKSPACE_LOAD ctime mod.pp)"
+  powerpipe mod update --mod-location "$WS"
+  assert_equal "$($WORKSPACE_LOAD ctime mod.pp)" "$mod_pp_before"
+
+  run $WORKSPACE_LOAD wait-loaded "$BASE" mod.pp .mod.cache.json
+  assert_success
+  run powerpipe benchmark run server_reload.benchmark.dependency --host "$BASE" --output snapshot
+  assert_output --partial "dependency version 2.0"
+}
+
 @test "server: mod uninstall reloads the server" {
   make_dependency
   powerpipe mod install "$WS-dep" --mod-location "$WS"

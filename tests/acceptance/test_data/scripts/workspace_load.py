@@ -1,6 +1,7 @@
 """Helpers for server.bats: read the load state of a running `powerpipe server` and wait on it.
 
 python3 -I workspace_load.py free-port
+python3 -I workspace_load.py ctime <file>
 python3 -I workspace_load.py wait-up <base-url>
 python3 -I workspace_load.py state <base-url>
 python3 -I workspace_load.py wait-loaded <base-url> <file>...
@@ -42,6 +43,9 @@ def time_ns(value):
 
 def main(args):
     command = args[0]
+    if command == "ctime":
+        print(os.stat(args[1]).st_ctime_ns)
+        return 0
     if command == "free-port":
         with socket.socket() as s:
             s.bind(("127.0.0.1", 0))
