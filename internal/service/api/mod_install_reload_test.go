@@ -31,8 +31,6 @@ control "c" {
 var modWithRequire = strings.Replace(benchmarkRunTestMod, "  title = \"benchmark run API test\"\n}",
 	"  title = \"benchmark run API test\"\n  require {\n    mod \"github.com/example/dep\" {\n      version = \"*\"\n    }\n  }\n}", 1)
 
-// a mod command's writes, as the installer does them: the mod's folder and the lock file (and, for install and
-// uninstall, the mod file)
 func init() {
 	if modWithRequire == benchmarkRunTestMod {
 		panic("the test mod has no require added")
@@ -49,6 +47,8 @@ func writeTestFile(t *testing.T, path, content string) {
 	}
 }
 
+// installTestDep writes what a mod command writes: the mod's folder and the lock file (an install and an uninstall
+// also change the mod file)
 func installTestDep(t *testing.T, dir, version string) {
 	t.Helper()
 	writeTestFile(t, filepath.Join(dir, ".powerpipe", "mods", "github.com", "example", "dep@"+version, "mod.pp"),

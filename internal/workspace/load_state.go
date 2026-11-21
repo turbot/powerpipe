@@ -116,6 +116,15 @@ func (w *PowerpipeWorkspace) startLoad(newestFileTime *time.Time) {
 	w.loadState.CurrentLoad = &LoadInfo{StartTime: time.Now(), NewestFileTime: newestFileTime}
 }
 
+// setNewestFileTime sets the newest change time of the load in progress
+func (w *PowerpipeWorkspace) setNewestFileTime(newestFileTime *time.Time) {
+	w.loadStateMu.Lock()
+	defer w.loadStateMu.Unlock()
+	if w.loadState.CurrentLoad != nil {
+		w.loadState.CurrentLoad.NewestFileTime = newestFileTime
+	}
+}
+
 // endLoad records the end of the load in progress
 func (w *PowerpipeWorkspace) endLoad(err error) {
 	w.loadStateMu.Lock()

@@ -64,8 +64,11 @@ func (w *PowerpipeWorkspace) reloadUnlessLoadedSince(ctx context.Context, starte
 // reloadLocked is reload, with reloadMu held by the caller
 func (w *PowerpipeWorkspace) reloadLocked(ctx context.Context) {
 	slog.Debug("reloading the workspace after a file change")
+	// the load starts before the files are listed, so a change seen after this counts this load as one that
+	// started before it (reloadUnlessLoadedSince does not skip for it), and a change seen before it is listed
+	w.startLoad(nil)
 	// before the load reads the files, so that a change made after this is not reported as loaded
-	w.startLoad(w.newestFileTime(ctx))
+	w.setNewestFileTime(w.newestFileTime(ctx))
 	prevModResources, modResources, errAndWarnings := w.reloadModResources(ctx)
 	err := errAndWarnings.GetError()
 	w.endLoad(err)
