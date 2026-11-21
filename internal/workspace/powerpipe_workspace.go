@@ -3,13 +3,17 @@ package workspace
 import (
 	"context"
 	"fmt"
+	"log/slog"
+	"sync"
+
 	"github.com/hashicorp/hcl/v2"
+	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/go-kit/filewatcher"
 	typehelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/resources"
-	"log/slog"
 )
 
 type PowerpipeWorkspace struct {
@@ -18,6 +22,15 @@ type PowerpipeWorkspace struct {
 	dashboardEventHandlers []dashboardevents.DashboardEventHandler
 	// channel used to send dashboard events to the handleDashboardEvent goroutine
 	dashboardEventChan chan dashboardevents.DashboardEvent
+
+	// the file watcher, which reloads the workspace when its files change (see SetupWatcher)
+	watcher *filewatcher.FileWatcher
+	// the files the file watcher watches, once known
+	watchedFileOptions *filehelpers.ListOptions
+	// held for writing while the workspace reloads, and for reading by HoldLoaded
+	reloadGate  sync.RWMutex
+	loadStateMu sync.Mutex
+	loadState   LoadState
 }
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
@@ -41,6 +54,9 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 
 func (w *PowerpipeWorkspace) Close() {
 	w.Workspace.Close()
+	if w.watcher != nil {
+		w.watcher.Close()
+	}
 	if ch := w.dashboardEventChan; ch != nil {
 		// NOTE: set nil first
 		w.dashboardEventChan = nil

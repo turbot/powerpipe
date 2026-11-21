@@ -1,0 +1,69 @@
+package workspace
+
+import (
+	"context"
+	"log/slog"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/turbot/go-kit/filewatcher"
+	"github.com/turbot/pipe-fittings/v2/error_helpers"
+	"github.com/turbot/pipe-fittings/v2/modconfig"
+)
+
+// SetupWatcher starts the file watcher, which reloads the workspace when one of its mod or variable files changes.
+// It replaces the watcher of pipe-fittings, which reloads the workspace the same way but cannot say when a reload
+// starts: this one records each load in LoadState, and makes HoldLoaded fail while it reloads.
+func (w *PowerpipeWorkspace) SetupWatcher(ctx context.Context, errorHandler func(context.Context, error)) error {
+	opts, err := w.watchedFiles(ctx)
+	if err != nil {
+		return err
+	}
+	watcher, err := filewatcher.NewWatcher(&filewatcher.WatcherOptions{
+		Directories: []string{w.Path},
+		Include:     opts.Include,
+		Exclude:     opts.Exclude,
+		ListFlag:    opts.Flags,
+		EventMask:   fsnotify.Create | fsnotify.Remove | fsnotify.Rename | fsnotify.Write,
+		// the watcher calls this for one change at a time, after a short delay that gathers the events of a save
+		OnChange: func([]fsnotify.Event) {
+			w.reload(ctx)
+		},
+	})
+	if err != nil {
+		return err
+	}
+	// set before the watcher starts: a failed reload calls it
+	w.FileWatcherErrorHandler = errorHandler
+	w.watcher = watcher
+	watcher.Start()
+	return nil
+}
+
+// reload reloads the workspace after a change to its files, and calls the file watcher hooks, as the file watcher
+// of pipe-fittings does
+func (w *PowerpipeWorkspace) reload(ctx context.Context) {
+	slog.Debug("reloading the workspace after a file change")
+	// before the load reads the files, so that a change made after this is not reported as loaded
+	w.startLoad(w.newestFileTime(ctx))
+	prevModResources, modResources, errAndWarnings := w.reloadModResources(ctx)
+	err := errAndWarnings.GetError()
+	w.endLoad(err)
+
+	if err != nil {
+		if w.OnFileWatcherError != nil {
+			w.OnFileWatcherError(ctx, err)
+		}
+		return
+	}
+	if w.OnFileWatcherEvent != nil {
+		w.OnFileWatcherEvent(ctx, modResources, prevModResources)
+	}
+}
+
+// reloadModResources reloads the workspace once every holder has released it, and makes HoldLoaded fail until the
+// reload ends
+func (w *PowerpipeWorkspace) reloadModResources(ctx context.Context) (modconfig.ModResources, modconfig.ModResources, error_helpers.ErrorAndWarnings) {
+	w.reloadGate.Lock()
+	defer w.reloadGate.Unlock()
+	return w.ReloadModResources(ctx)
+}
