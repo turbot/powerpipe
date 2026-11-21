@@ -11,7 +11,9 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync/atomic"
 	"testing"
+	"time"
 
 	"github.com/spf13/pflag"
 	"github.com/spf13/viper"
@@ -117,5 +119,74 @@ func TestValidateHostArgs(t *testing.T) {
 				t.Fatalf("expected an error containing %q, got %v", test.wantErr, err)
 			}
 		})
+	}
+}
+
+// while the server reloads its workspace it answers a run request with 503 and Retry-After: the client waits as
+// asked and tries again
+func TestStartHostRun_RetriesWhileTheServerLoads(t *testing.T) {
+	var requests atomic.Int32
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("Content-Type", "application/json")
+		if requests.Add(1) == 1 {
+			w.Header().Set("Retry-After", "1")
+			w.WriteHeader(http.StatusServiceUnavailable)
+			_, _ = w.Write([]byte(`{"status":503,"title":"Service Unavailable","detail":"the workspace is loading a change to its files, try again when it has loaded"}`))
+			return
+		}
+		w.Header().Set("Location", "/api/v0/benchmark/local.benchmark.b/run/1")
+		w.WriteHeader(http.StatusAccepted)
+		_, _ = w.Write([]byte(`{"id":"1","benchmark":"local.benchmark.b","status":"running"}`))
+	}))
+	t.Cleanup(server.Close)
+	client, err := benchmarkrun.NewClient(server.URL)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	start := time.Now()
+	run, runURL, err := startHostRun(context.Background(), client, "b", 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if run.ID != "1" || runURL.Path != "/api/v0/benchmark/local.benchmark.b/run/1" || requests.Load() != 2 {
+		t.Fatalf("got run %+v at %v after %d requests", run, runURL, requests.Load())
+	}
+	if elapsed := time.Since(start); elapsed < time.Second {
+		t.Fatalf("the client tried again after %s, before the Retry-After of 1s", elapsed)
+	}
+}
+
+// a 503 with no Retry-After, such as from a proxy, is an error; a cancelled command stops waiting
+func TestStartHostRun_Unavailable(t *testing.T) {
+	unavailable := func(retryAfter string) *benchmarkrun.Client {
+		server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
+			if retryAfter != "" {
+				w.Header().Set("Retry-After", retryAfter)
+			}
+			w.WriteHeader(http.StatusServiceUnavailable)
+		}))
+		t.Cleanup(server.Close)
+		client, err := benchmarkrun.NewClient(server.URL)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return client
+	}
+
+	var apiErr *benchmarkrun.APIError
+	if _, _, err := startHostRun(context.Background(), unavailable(""), "b", 0); !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusServiceUnavailable {
+		t.Fatalf("a 503 with no Retry-After: got %v, want the 503 error", err)
+	}
+
+	client := unavailable("30")
+	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
+	defer cancel()
+	start := time.Now()
+	if _, _, err := startHostRun(ctx, client, "b", 0); !errors.Is(err, context.DeadlineExceeded) {
+		t.Fatalf("a cancelled wait: got %v, want the context error", err)
+	}
+	if elapsed := time.Since(start); elapsed > 5*time.Second {
+		t.Fatalf("a cancelled wait took %s", elapsed)
 	}
 }

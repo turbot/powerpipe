@@ -56,7 +56,6 @@ Every CLI command follows the same initialization pattern:
                      │    CLI args → actual resources      │
                      ├─────────────────────────────────────┤
                      │ 3. Init()                           │
-                     │    ├─ Install mod dependencies      │
                      │    ├─ GetDefaultDatabaseConfig()    │
                      │    │   resolve: CLI > mod > default │
                      │    ├─ NewDbClient()                 │

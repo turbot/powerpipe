@@ -24,8 +24,8 @@ id). The cut makes `release/<version>` with the CHANGELOG section and opens the 
 ## 2. The release PR
 
 `release-pr.yml` tests the candidate (`make release_test`), builds a snapshot, installs it and writes the record. With a
-SHIP record, the record marks the PR ready for review, and `ask.yml` asks in #powerpipe. `main` accepts the merge only
-when the record's `shipyard/release` status passes.
+SHIP record, the record marks the PR ready for review and starts `ask.yml`, which asks in #powerpipe within a minute.
+`main` accepts the merge only when the record's `shipyard/release` status passes.
 One approver of `turbot/pipelings-release-approvers` who drove none of its changes approves it. Merge with a merge commit.
 
 ## 3. Watch the ship
@@ -56,5 +56,5 @@ on `develop` with `reship` (the version), `commit` (the tip of `main`) and `fixe
 
 ## 4. Hand over
 
-Give the new version to whoever runs the Turbot Pipes release, as both `powerpipeCliVersion` and
-`powerpipeDashboardUiVersion`. Check that no Pipes workflow still points the UI version at `develop` from interim UI work.
+Tell whoever runs the Turbot Pipes release that the new version is live, with its tag (`v{x.y.z}`). Pipes pins both the
+CLI and the dashboard UI by that tag, and the new version ships in the next Pipes release.

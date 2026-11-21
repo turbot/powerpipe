@@ -41,13 +41,14 @@ type modInstallWatcher struct {
 
 	quietPeriod time.Duration
 	maxWait     time.Duration
-	reload      func(ctx context.Context)
-	// loadIdentity returns a value that changes each time the workspace is reloaded, by anything. It is called
-	// when a change is seen, which waits for any reload in progress to finish. If it has changed when the
-	// quiet period ends, a reload that started after the last change has already happened, so there is nothing
-	// to reload. `mod install` and `mod uninstall` write the mod file, which the pipe-fittings watcher reloads for,
-	// so without this the one command would reload twice. Nil if there is no other watcher.
-	loadIdentity func() any
+	// reload reloads the workspace, unless a load that started after the last change has finished. It is given
+	// the value loadsStarted returned when that change was seen.
+	reload func(ctx context.Context, loadsStartedAtChange int)
+	// loadsStarted returns how many loads of the workspace have started, by any watcher. A load that started after
+	// the last change has read it, so reload need not repeat it. `mod install` and `mod uninstall` write the mod
+	// file, which the other watcher reloads for, so without this the one command would reload twice. A load that
+	// started before the change is never a reason to skip, finished or not. Nil if there is no other watcher.
+	loadsStarted func() int
 
 	watch     *fsnotify.Watcher
 	closeOnce sync.Once
@@ -55,7 +56,7 @@ type modInstallWatcher struct {
 	done      chan struct{}
 }
 
-func newModInstallWatcher(workspacePath string, reload func(ctx context.Context), loadIdentity func() any) (*modInstallWatcher, error) {
+func newModInstallWatcher(workspacePath string, reload func(ctx context.Context, loadsStartedAtChange int), loadsStarted func() int) (*modInstallWatcher, error) {
 	// a buffer, so the kernel's queue is drained while a reload is running
 	watch, err := fsnotify.NewBufferedWatcher(1024)
 	if err != nil {
@@ -69,7 +70,7 @@ func newModInstallWatcher(workspacePath string, reload func(ctx context.Context)
 		quietPeriod:  modInstallQuietPeriod,
 		maxWait:      modInstallMaxWait,
 		reload:       reload,
-		loadIdentity: loadIdentity,
+		loadsStarted: loadsStarted,
 		watch:        watch,
 		closed:       make(chan struct{}),
 		done:         make(chan struct{}),
@@ -105,12 +106,12 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 		fire        <-chan time.Time
 		// whether there is a change waiting to be reloaded for
 		pending bool
-		// the load identity as of the last change
-		loadedAtChange any
+		// the number of loads that had started as of the last change
+		startedAtChange int
 	)
 	noteChange := func() {
-		if m.loadIdentity != nil {
-			loadedAtChange = m.loadIdentity()
+		if m.loadsStarted != nil {
+			startedAtChange = m.loadsStarted()
 		}
 	}
 	schedule := func() {
@@ -176,12 +177,8 @@ func (m *modInstallWatcher) run(ctx context.Context) {
 				continue
 			}
 			pending = false
-			if m.loadIdentity != nil && m.loadIdentity() != loadedAtChange {
-				slog.Debug("installed mods changed - workspace has already been reloaded since")
-				continue
-			}
 			slog.Debug("installed mods changed - reloading workspace")
-			m.reload(ctx)
+			m.reload(ctx, startedAtChange)
 		}
 	}
 }
@@ -290,13 +287,14 @@ func isUnder(path, dir string) bool {
 }
 
 // SetupModInstallWatcher reloads the workspace when the installed mods change (see modInstallWatcher).
-// A failure here leaves the server watching mod and variable files only.
+// The reload is a load like any other: it is recorded in the load state, it makes HoldLoaded fail while it runs, and
+// a failure is the load's error. A failure here leaves the server watching mod and variable files only.
 func (w *PowerpipeWorkspace) SetupModInstallWatcher(ctx context.Context) error {
 	if w.FileWatcherErrorHandler == nil {
 		// ReloadModResources calls this on a failed load
 		w.FileWatcherErrorHandler = func(context.Context, error) {}
 	}
-	m, err := newModInstallWatcher(w.Path, w.reloadAfterModChange, w.loadIdentity)
+	m, err := newModInstallWatcher(w.Path, w.reloadUnlessLoadedSince, w.loadsStarted)
 	if err != nil {
 		return err
 	}
@@ -306,25 +304,4 @@ func (w *PowerpipeWorkspace) SetupModInstallWatcher(ctx context.Context) error {
 	w.modInstallWatcher = m
 	m.start(ctx)
 	return nil
-}
-
-// loadIdentity returns the loaded mod, which is a new one after every successful reload
-func (w *PowerpipeWorkspace) loadIdentity() any {
-	w.LoadLock()
-	defer w.LoadUnlock()
-	return w.Mod
-}
-
-// reloadAfterModChange reloads the workspace and raises the same hooks as the pipe-fittings file watcher does
-func (w *PowerpipeWorkspace) reloadAfterModChange(ctx context.Context) {
-	prevModResources, modResources, ew := w.ReloadModResources(ctx)
-	if ew.GetError() != nil {
-		if w.OnFileWatcherError != nil {
-			w.OnFileWatcherError(ctx, ew.GetError())
-		}
-		return
-	}
-	if w.OnFileWatcherEvent != nil {
-		w.OnFileWatcherEvent(ctx, modResources, prevModResources)
-	}
 }

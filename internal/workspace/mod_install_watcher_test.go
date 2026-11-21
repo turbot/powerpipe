@@ -45,23 +45,13 @@ func startTestWatcher(t *testing.T, maxWait ...time.Duration) (dir string, reloa
 	t.Cleanup(setTimings(maxWait...))
 	dir = t.TempDir()
 	reloads = &atomic.Int32{}
-	m, err := workspace.NewModInstallWatcher(dir, func(context.Context) { reloads.Add(1) }, nil)
+	m, err := workspace.NewModInstallWatcher(dir, func(context.Context, int) { reloads.Add(1) }, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	m.Start(context.Background())
 	t.Cleanup(m.Close)
 	return dir, reloads, m
-}
-
-func writeFile(t *testing.T, path, content string) {
-	t.Helper()
-	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
-		t.Fatal(err)
-	}
-	if err := os.WriteFile(path, []byte(content), 0o600); err != nil {
-		t.Fatal(err)
-	}
 }
 
 // waitForReloads waits until the count reaches want, then waits a settle time to catch any extra reload
@@ -129,7 +119,7 @@ func TestModInstallWatcher_ChangeInExistingInstalledModReloads(t *testing.T) {
 
 	defer setTimings()()
 	reloads := &atomic.Int32{}
-	m, err := workspace.NewModInstallWatcher(dir, func(context.Context) { reloads.Add(1) }, nil)
+	m, err := workspace.NewModInstallWatcher(dir, func(context.Context, int) { reloads.Add(1) }, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -187,7 +177,7 @@ func TestModInstallWatcher_ContextCancelStops(t *testing.T) {
 	dir := t.TempDir()
 	defer setTimings()()
 	reloads := &atomic.Int32{}
-	m, err := workspace.NewModInstallWatcher(dir, func(context.Context) { reloads.Add(1) }, nil)
+	m, err := workspace.NewModInstallWatcher(dir, func(context.Context, int) { reloads.Add(1) }, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -243,7 +233,7 @@ func writeInstalledDep(t *testing.T, dir, version, title string) {
 }`, version[1:], version))
 }
 
-func controlTitle(w *workspace.PowerpipeWorkspace) string {
+func depControlTitle(w *workspace.PowerpipeWorkspace) string {
 	for name, c := range w.GetPowerpipeModResources().Controls {
 		if name == "dep.control.c" {
 			return *c.Title
@@ -272,7 +262,7 @@ mod "local" {
 		t.Fatal(ew.GetError())
 	}
 	defer w.Close()
-	if got := controlTitle(w); got != "old title" {
+	if got := depControlTitle(w); got != "old title" {
 		t.Fatalf("expected the installed v1.0.0 to be loaded, got title %q", got)
 	}
 
@@ -321,7 +311,7 @@ mod "local" {
 		t.Fatal(r.err)
 	}
 	noMoreReloads()
-	if got := controlTitle(w); got != "new title" {
+	if got := depControlTitle(w); got != "new title" {
 		t.Fatalf("expected the workspace to use the updated mod, got title %q", got)
 	}
 	// the hook is given the resources from before and after, as for a change to a local file
@@ -343,7 +333,7 @@ mod "local" {
 		t.Fatal(r.err)
 	}
 	noMoreReloads()
-	if got := controlTitle(w); got != "newest title" {
+	if got := depControlTitle(w); got != "newest title" {
 		t.Fatalf("expected the workspace to recover, got title %q", got)
 	}
 }
@@ -356,7 +346,7 @@ func TestModInstallWatcher_PruneAloneDoesNotReload(t *testing.T) {
 	writeFile(t, filepath.Join(modDir, "mod.pp"), "a")
 
 	reloads := &atomic.Int32{}
-	m, err := workspace.NewModInstallWatcher(dir, func(context.Context) { reloads.Add(1) }, nil)
+	m, err := workspace.NewModInstallWatcher(dir, func(context.Context, int) { reloads.Add(1) }, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -370,31 +360,42 @@ func TestModInstallWatcher_PruneAloneDoesNotReload(t *testing.T) {
 	waitForReloads(t, reloads, 0)
 }
 
-func TestModInstallWatcher_NoReloadIfWorkspaceReloadedSinceTheChange(t *testing.T) {
+// the watcher tells the reload how many loads had started when the last change was seen, not when the quiet period
+// ended: the workspace decides from that whether a load that started after the change has finished
+func TestModInstallWatcher_ReloadIsToldTheLoadsStartedAtTheLastChange(t *testing.T) {
 	setupAppConstants()
 	defer setTimings()()
 	dir := t.TempDir()
 
-	// the identity changes between the change and the end of the quiet period (as when the mod file's watcher
-	// reloads), then stays the same
-	var identity atomic.Int32
+	var started, told atomic.Int32
 	reloads := &atomic.Int32{}
-	m, err := workspace.NewModInstallWatcher(dir, func(context.Context) { reloads.Add(1) },
-		func() any { return identity.Load() })
+	m, err := workspace.NewModInstallWatcher(dir,
+		func(_ context.Context, loadsStartedAtChange int) {
+			told.Store(int32(loadsStartedAtChange))
+			reloads.Add(1)
+		},
+		func() int { return int(started.Load()) })
 	if err != nil {
 		t.Fatal(err)
 	}
 	m.Start(context.Background())
 	defer m.Close()
 
+	// a load starts after the change was seen, before the quiet period ends (as when the mod file's watcher reloads)
 	writeFile(t, filepath.Join(dir, ".mod.cache.json"), "{}")
 	time.Sleep(testQuietPeriod / 4)
-	identity.Add(1)
-	waitForReloads(t, reloads, 0)
-
-	// with no reload since the change, it reloads
-	writeFile(t, filepath.Join(dir, ".mod.cache.json"), `{"a":1}`)
+	started.Store(5)
 	waitForReloads(t, reloads, 1)
+	if got := told.Load(); got != 0 {
+		t.Fatalf("expected the count of loads when the change was seen (0), got %d", got)
+	}
+
+	// a change seen after that load: it is no reason to skip a reload for this one
+	writeFile(t, filepath.Join(dir, ".mod.cache.json"), `{"a":1}`)
+	waitForReloads(t, reloads, 2)
+	if got := told.Load(); got != 5 {
+		t.Fatalf("expected the count of loads when the second change was seen (5), got %d", got)
+	}
 }
 
 func TestSetupModInstallWatcher_OneReloadForInstallAndUninstall(t *testing.T) {
@@ -463,7 +464,7 @@ mod "local" {
 	writeInstalledDep(t, dir, "v1.0.0", "installed title")
 	writeFile(t, filepath.Join(dir, "mod.pp"), withDep)
 	expectOneReload("install")
-	if got := controlTitle(w); got != "installed title" {
+	if got := depControlTitle(w); got != "installed title" {
 		t.Fatalf("expected the installed mod to be loaded, got title %q", got)
 	}
 
@@ -474,7 +475,7 @@ mod "local" {
 		t.Fatal(err)
 	}
 	expectOneReload("uninstall")
-	if got := controlTitle(w); got != "" {
+	if got := depControlTitle(w); got != "" {
 		t.Fatalf("expected the mod to be gone, got title %q", got)
 	}
 }
