@@ -7,11 +7,13 @@ import (
 	"time"
 
 	filehelpers "github.com/turbot/go-kit/files"
+	"github.com/turbot/pipe-fittings/v2/filepaths"
 	"github.com/turbot/pipe-fittings/v2/load_mod"
 )
 
 // LoadState says whether the workspace is loading, and how its loads went. powerpipe server reloads the workspace
-// when one of its mod or variable files changes.
+// when one of its mod or variable files changes, and when the installed mods change (the lock file or the folders
+// under the mods folder).
 //
 // A client that changed, added or deleted files can wait for the change to load. After its last change it reads
 // the change time of what it changed with FileChangeTime (ctime: stat -c %z on Linux, stat -f %Fc on macOS): the
@@ -34,7 +36,7 @@ type LoadInfo struct {
 	StartTime time.Time  `json:"start_time"`
 	EndTime   *time.Time `json:"end_time,omitempty"`
 	// NewestFileTime is the newest change time (see FileChangeTime) of the mod and variable files of the workspace,
-	// and of its folders, when the load started. The load read every change made up to then.
+	// of its folders, and of its lock file (.mod.cache.json), when the load started. The load read every change made up to then.
 	NewestFileTime *time.Time `json:"newest_file_time,omitempty"`
 	// Error is why the load failed. After a failed load the workspace stays as it was last loaded.
 	Error string `json:"error,omitempty"`
@@ -84,6 +86,17 @@ func (w *PowerpipeWorkspace) LoadState() LoadState {
 	}
 }
 
+// loadsStarted returns the number of loads that have started: those that have finished, and the one in progress
+func (w *PowerpipeWorkspace) loadsStarted() int {
+	w.loadStateMu.Lock()
+	defer w.loadStateMu.Unlock()
+	started := w.loadState.LoadCount
+	if w.loadState.Loading {
+		started++
+	}
+	return started
+}
+
 // HoldLoaded holds the workspace as it is loaded, so that a reload waits to start until release is called. It
 // returns false, and holds nothing, while the workspace reloads or a reload waits to start, so that a caller can
 // answer at once rather than wait for the reload. Hold it only briefly: a reload waits for every holder.
@@ -101,6 +114,15 @@ func (w *PowerpipeWorkspace) startLoad(newestFileTime *time.Time) {
 	defer w.loadStateMu.Unlock()
 	w.loadState.Loading = true
 	w.loadState.CurrentLoad = &LoadInfo{StartTime: time.Now(), NewestFileTime: newestFileTime}
+}
+
+// setNewestFileTime sets the newest change time of the load in progress
+func (w *PowerpipeWorkspace) setNewestFileTime(newestFileTime *time.Time) {
+	w.loadStateMu.Lock()
+	defer w.loadStateMu.Unlock()
+	if w.loadState.CurrentLoad != nil {
+		w.loadState.CurrentLoad.NewestFileTime = newestFileTime
+	}
 }
 
 // endLoad records the end of the load in progress
@@ -154,8 +176,9 @@ func FileChangeTime(path string) (time.Time, error) {
 	return changeTime(info), nil
 }
 
-// newestFileTime returns the newest change time of the files the file watcher watches and of their folders, or
-// nil if they cannot be listed. A folder changes when a file in it is added, renamed or deleted.
+// newestFileTime returns the newest change time of the files the file watcher watches, of their folders, and of the
+// lock file, or nil if they cannot be listed. A folder changes when a file in it is added, renamed or deleted. The
+// lock file is the one file `powerpipe mod install`, `update` and `uninstall` always write, and it is not a mod file.
 func (w *PowerpipeWorkspace) newestFileTime(ctx context.Context) *time.Time {
 	opts, err := w.watchedFiles(ctx)
 	if err != nil {
@@ -177,7 +200,8 @@ func (w *PowerpipeWorkspace) newestFileTime(ctx context.Context) *time.Time {
 		return nil
 	}
 	var newest time.Time
-	for _, path := range append(append(files, w.Path), folders...) {
+	paths := append(append(files, w.Path, filepaths.WorkspaceLockPath(w.Path)), folders...)
+	for _, path := range paths {
 		changed, err := FileChangeTime(path)
 		if err != nil {
 			// removed since it was listed

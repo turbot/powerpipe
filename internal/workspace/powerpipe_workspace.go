@@ -31,6 +31,11 @@ type PowerpipeWorkspace struct {
 	reloadGate  sync.RWMutex
 	loadStateMu sync.Mutex
 	loadState   LoadState
+	// held for the whole of a reload, from the start of its load state to its end, so that reloads run one at a
+	// time whichever watcher asks for them
+	reloadMu sync.Mutex
+	// reloads the workspace when the installed mods change (nil unless SetupModInstallWatcher was called)
+	modInstallWatcher *modInstallWatcher
 }
 
 func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
@@ -54,6 +59,9 @@ func NewPowerpipeWorkspace(workspacePath string) *PowerpipeWorkspace {
 
 func (w *PowerpipeWorkspace) Close() {
 	w.Workspace.Close()
+	if w.modInstallWatcher != nil {
+		w.modInstallWatcher.Close()
+	}
 	if w.watcher != nil {
 		w.watcher.Close()
 	}

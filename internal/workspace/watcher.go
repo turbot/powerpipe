@@ -40,15 +40,33 @@ func (w *PowerpipeWorkspace) SetupWatcher(ctx context.Context, errorHandler func
 }
 
 // reload reloads the workspace after a change to its files, and calls the file watcher hooks, as the file watcher
-// of pipe-fittings does
+// of pipe-fittings does. Reloads run one at a time: one that is asked for while another runs waits for it.
 func (w *PowerpipeWorkspace) reload(ctx context.Context) {
-	slog.Debug("reloading the workspace after a file change")
-	// before the load reads the files, so that a change made after this is not reported as loaded
-	w.startLoad(w.newestFileTime(ctx))
-	prevModResources, modResources, errAndWarnings := w.reloadModResources(ctx)
-	err := errAndWarnings.GetError()
-	w.endLoad(err)
+	w.reloadMu.Lock()
+	defer w.reloadMu.Unlock()
+	w.reloadLocked(ctx)
+}
 
+// reloadUnlessLoadedSince reloads the workspace, unless a load that started after the change has finished. started
+// is loadsStarted as it was when the change was seen. It waits for any reload in progress first, so a load that
+// started after the change and is still running is waited for, not repeated. A load that started before the change
+// is no reason to skip, whether it is running or has finished.
+func (w *PowerpipeWorkspace) reloadUnlessLoadedSince(ctx context.Context, started int) {
+	w.reloadMu.Lock()
+	defer w.reloadMu.Unlock()
+	if w.LoadState().LoadCount > started {
+		slog.Debug("the workspace has already been reloaded since the change")
+		return
+	}
+	w.reloadLocked(ctx)
+}
+
+// reloadLocked is reload, with reloadMu held by the caller
+func (w *PowerpipeWorkspace) reloadLocked(ctx context.Context) {
+	slog.Debug("reloading the workspace after a file change")
+	prevModResources, modResources, err := w.loadUnderGate(ctx)
+
+	// the hooks run after the gate is released, so a hook that asks for a hold is not refused
 	if err != nil {
 		if w.OnFileWatcherError != nil {
 			w.OnFileWatcherError(ctx, err)
@@ -60,10 +78,20 @@ func (w *PowerpipeWorkspace) reload(ctx context.Context) {
 	}
 }
 
-// reloadModResources reloads the workspace once every holder has released it, and makes HoldLoaded fail until the
-// reload ends
-func (w *PowerpipeWorkspace) reloadModResources(ctx context.Context) (modconfig.ModResources, modconfig.ModResources, error_helpers.ErrorAndWarnings) {
+// loadUnderGate reloads the workspace once every holder has released it. The gate is taken before the load state
+// says the load has started, and the load state says it has ended before the gate is released, so that whenever the
+// load state says loading, HoldLoaded fails.
+func (w *PowerpipeWorkspace) loadUnderGate(ctx context.Context) (prevModResources, modResources modconfig.ModResources, err error) {
 	w.reloadGate.Lock()
 	defer w.reloadGate.Unlock()
-	return w.ReloadModResources(ctx)
+	// the load starts before the files are listed, so a change seen after this counts this load as one that
+	// started before it (reloadUnlessLoadedSince does not skip for it), and a change seen before it is listed
+	w.startLoad(nil)
+	// before the load reads the files, so that a change made after this is not reported as loaded
+	w.setNewestFileTime(w.newestFileTime(ctx))
+	var errAndWarnings error_helpers.ErrorAndWarnings
+	prevModResources, modResources, errAndWarnings = w.ReloadModResources(ctx)
+	err = errAndWarnings.GetError()
+	w.endLoad(err)
+	return prevModResources, modResources, err
 }
