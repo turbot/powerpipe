@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
@@ -130,8 +132,15 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 			unsupported = append(unsupported, "--"+name)
 		}
 	}
+	// the server runs with the variable values it loaded: a variable set in the environment would be ignored
+	envVars := hostIgnoredEnvVars(os.Environ())
+	unsupported = append(unsupported, envVars...)
 	if len(unsupported) > 0 {
-		return nil, nil, fmt.Errorf("%s cannot be used with --%s", strings.Join(unsupported, ", "), constants.ArgHost)
+		msg := fmt.Sprintf("%s cannot be used with --%s", strings.Join(unsupported, ", "), constants.ArgHost)
+		if len(envVars) > 0 {
+			msg += fmt.Sprintf(": the server runs with its own variable values, so unset %s or run without --%s", strings.Join(envVars, ", "), constants.ArgHost)
+		}
+		return nil, nil, errors.New(msg)
 	}
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone, constants.OutputFormatSnapshot, localconstants.OutputFormatPpSnapshotShort:
@@ -150,6 +159,25 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 		return nil, nil, err
 	}
 	return client, exportManager, nil
+}
+
+// hostIgnoredEnvVars returns the names of the variable values (PP_VAR_<name>) set in env, sorted. A run on a
+// server uses the variable values the server loaded, so these would be ignored.
+func hostIgnoredEnvVars(env []string) []string {
+	prefix := app_specific.EnvInputVarPrefix
+	if prefix == "" {
+		return nil
+	}
+	var names []string
+	for _, entry := range env {
+		name, _, found := strings.Cut(entry, "=")
+		// as the variable collection does, skip an entry that is not name=value, and a prefix with no name
+		if found && len(name) > len(prefix) && strings.HasPrefix(name, prefix) {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names
 }
 
 // maxHostRetryWait is the longest `benchmark run --host` waits between start requests while the server reloads
