@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/v2/connection"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/initialisation"
@@ -80,7 +81,7 @@ func startTestServer(t *testing.T, w *workspace.PowerpipeWorkspace, watch bool) 
 	t.Helper()
 	t.Cleanup(func() { viper.Set(constants.ArgWatch, nil) })
 	viper.Set(constants.ArgWatch, watch)
-	if _, err := NewServer(context.Background(), &initialisation.InitData{Workspace: w}, melody.New()); err != nil {
+	if _, err := NewServer(context.Background(), &initialisation.InitData{Workspace: w, DefaultDatabase: connection.NewConnectionString("sqlite://" + filepath.Join(t.TempDir(), "test.db"))}, melody.New()); err != nil {
 		t.Fatal(err)
 	}
 }
