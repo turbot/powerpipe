@@ -1,3 +1,18 @@
+## [1.7.0] - 2026-11-21
+
+### Before you upgrade
+
+- `benchmark`, `control`, `dashboard` and `detection run` no longer install or update mods, so a run never rewrites the mod lock file. Their `--mod-install` and `--pull` flags are deprecated: still accepted, but ignored, with a warning. (#1212)
+  - Update needs: If you pass `--pull` to a run command to update mods, run `powerpipe mod update` before the run instead.
+
+### What's new
+
+- `powerpipe server` reports its workspace load state at `GET /api/v0/workspace`, and answers a benchmark run request during a reload with 503 and a Retry-After header. `benchmark run --host` waits for the reload to end, then runs. (#1251)
+
+### Improvements
+
+- `powerpipe server` reloads when mods are installed, updated or uninstalled in its workspace folder. (#1253)
+
 ## [1.6.1] - 2026-11-20
 
 ### Changed
