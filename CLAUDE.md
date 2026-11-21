@@ -56,7 +56,6 @@ Every CLI command follows the same initialization pattern:
                      │    CLI args → actual resources      │
                      ├─────────────────────────────────────┤
                      │ 3. Init()                           │
-                     │    ├─ Install mod dependencies      │
                      │    ├─ GetDefaultDatabaseConfig()    │
                      │    │   resolve: CLI > mod > default │
                      │    ├─ NewDbClient()                 │
@@ -260,7 +259,7 @@ cd ui/dashboard && yarn install && yarn build && make zip
 
 ```bash
 go test ./...                            # Unit tests (17 files, Go testing package)
-tests/acceptance/run-local.sh            # Acceptance tests (15 BATS files, 233 tests)
+tests/acceptance/run-local.sh            # Acceptance tests (16 BATS files, 243 tests)
 tests/acceptance/run-local.sh check.bats # Single test file
 ```
 

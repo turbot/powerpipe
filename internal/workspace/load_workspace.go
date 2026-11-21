@@ -58,7 +58,14 @@ func Load(ctx context.Context, workspacePath string, opts ...LoadPowerpipeWorksp
 
 	// if there is a mod file (or if we are loading resources even with no modfile), load them
 	if w.ModfileExists() || !cfg.skipResourceLoadIfNoModfile {
+		// with no mod file the workspace may be any folder, such as the home folder: do not list its files
+		var newestFileTime *time.Time
+		if w.ModfileExists() {
+			newestFileTime = w.newestFileTime(ctx)
+		}
+		w.startLoad(newestFileTime)
 		ew = w.LoadWorkspaceMod(ctx)
+		w.endLoad(ew.GetError())
 	}
 	if ew.GetError() != nil {
 		return nil, ew

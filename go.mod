@@ -37,6 +37,7 @@ require github.com/sethvargo/go-retry v0.3.0 // indirect
 require (
 	github.com/Masterminds/sprig/v3 v3.2.3
 	github.com/didip/tollbooth/v7 v7.0.2
+	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gin-contrib/gzip v1.0.1
 	github.com/gin-contrib/size v1.0.1
 	github.com/go-sql-driver/mysql v1.8.1
@@ -126,7 +127,6 @@ require (
 	github.com/envoyproxy/go-control-plane/envoy v1.37.0 // indirect
 	github.com/envoyproxy/protoc-gen-validate v1.3.3 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
-	github.com/fsnotify/fsnotify v1.9.0 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.3 // indirect
 	github.com/gertd/go-pluralize v0.2.1 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
