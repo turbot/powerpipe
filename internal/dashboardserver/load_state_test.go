@@ -15,6 +15,7 @@ import (
 	"github.com/gorilla/websocket"
 	"github.com/spf13/viper"
 	"github.com/turbot/pipe-fittings/v2/backend"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -58,6 +59,9 @@ func startLoadStateServer(t *testing.T) (*workspace.PowerpipeWorkspace, string, 
 	if err := os.WriteFile(modFile, []byte(loadStateServerTestMod), 0o600); err != nil {
 		t.Fatal(err)
 	}
+	// the server watches the workspace for changes, as it does unless started with --watch=false
+	viper.Set(constants.ArgWatch, true)
+	t.Cleanup(func() { viper.Set(constants.ArgWatch, nil) })
 	// a disconnecting client cancels its executions
 	if dashboardexecute.Executor == nil {
 		dashboardexecute.Executor = dashboardexecute.NewDashboardExecutor(nil, nil, backend.SearchPathConfig{})
