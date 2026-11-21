@@ -28,7 +28,8 @@ EOF
   BASE="http://localhost:$PORT"
   powerpipe server --port "$PORT" > "$WS/server.log" 2>&1 &
   SERVER_PID=$!
-  $WORKSPACE_LOAD wait-up "$BASE"
+  # a server that cannot start leaves its log in the test output
+  $WORKSPACE_LOAD wait-up "$BASE" || { cat "$WS/server.log"; return 1; }
 }
 
 function teardown() {
