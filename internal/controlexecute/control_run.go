@@ -365,6 +365,12 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 		case row := <-r.queryResult.RowChan:
 			// nil row means control run is complete
 			if row == nil {
+				// the rows end early when the query is cancelled or times out (the reader stops
+				// sending when the context ends): report that, not a complete run with part of its rows
+				if ctx.Err() != nil {
+					r.setError(ctx, ctx.Err())
+					return
+				}
 				// nil row means we are done
 				r.setRunStatus(ctx, dashboardtypes.RunComplete)
 				r.createdOrderedResultRows()
