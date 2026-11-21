@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"io"
 	"log/slog"
+	"math"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -28,11 +30,15 @@ type BenchmarkRunRequest struct {
 // full name of its benchmark.
 //
 //	POST   /benchmark/:benchmark_name/run                   start a run              -> 202 run, Location: the URL of the run; 429 when the runner is full
+//	                                                                                    503 with Retry-After while the workspace reloads (GET /workspace)
 //	GET    /benchmark/:benchmark_name/run/:run_id           the state of the run     -> 200 run
 //	GET    /benchmark/:benchmark_name/run/:run_id/snapshot  the snapshot of the run  -> 200 snapshot (as --export=<file>.pps), 409 while running
 //	DELETE /benchmark/:benchmark_name/run/:run_id           cancel and remove a run  -> 204
 //
 // A run that no client reads for the idle timeout of the runner is cancelled and removed.
+//
+// The URL of a run answers while the workspace reloads. A run URL with another name of the benchmark needs the
+// workspace to resolve the name, so it answers 503 with Retry-After then, as POST does.
 func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) {
 	router.POST("/benchmark/:benchmark_name/run", func(c *gin.Context) {
 		// a web page can send a cross-site POST without a CORS preflight only with a form or text content type,
@@ -59,7 +65,10 @@ func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) 
 		run, err := runner.Start(c.Param("benchmark_name"), time.Duration(req.TimeoutSeconds)*time.Second)
 		if err != nil {
 			var notFound *benchmarkrun.BenchmarkNotFoundError
+			var loading *benchmarkrun.WorkspaceLoadingError
 			switch {
+			case errors.As(err, &loading):
+				abortWithWorkspaceLoading(c, loading)
 			case errors.As(err, &notFound):
 				common.AbortWithError(c, perr.NotFoundWithMessage(err.Error()))
 			case errors.Is(err, benchmarkrun.ErrTooManyRuns):
@@ -113,7 +122,10 @@ func registerBenchmarkRun(router *gin.RouterGroup, runner *benchmarkrun.Runner) 
 }
 
 func abortWithRunError(c *gin.Context, err error) {
+	var loading *benchmarkrun.WorkspaceLoadingError
 	switch {
+	case errors.As(err, &loading):
+		abortWithWorkspaceLoading(c, loading)
 	case errors.Is(err, benchmarkrun.ErrNotFound):
 		common.AbortWithError(c, perr.NotFoundWithMessage(err.Error()))
 	case errors.Is(err, benchmarkrun.ErrNotComplete):
@@ -121,4 +133,11 @@ func abortWithRunError(c *gin.Context, err error) {
 	default:
 		common.AbortWithError(c, perr.InternalWithMessage(err.Error()))
 	}
+}
+
+// abortWithWorkspaceLoading answers a request that needs the workspace while it reloads: 503, with a Retry-After
+// header in whole seconds
+func abortWithWorkspaceLoading(c *gin.Context, err *benchmarkrun.WorkspaceLoadingError) {
+	c.Header("Retry-After", strconv.Itoa(int(math.Ceil(err.RetryAfter.Seconds()))))
+	common.AbortWithError(c, perr.ServiceUnavailableWithMessage(err.Error()))
 }
