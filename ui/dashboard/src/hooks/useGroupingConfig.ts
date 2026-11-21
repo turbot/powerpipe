@@ -61,43 +61,54 @@ const useGroupingConfig = (panelName?: string) => {
     [searchParams],
   );
 
-  const grouping = useMemo(() => {
-    if (!panel) {
-      return [] as DisplayGroup[];
-    }
-
-    const found = allGroupings[panel.name];
+  // The group types the panel's tree builder draws, and the grouping it falls
+  // back to when none is saved. The editor's Reset restores that default
+  // itself: when the panel is already on it, clearing the saved grouping
+  // changes nothing, so nothing re-renders. These depend on the panel's type
+  // only, not on the panel's run state, so a running benchmark does not reset
+  // the editor while you edit.
+  const panelType = panel?.panel_type;
+  const benchmarkType = panel?.benchmark_type;
+  const { groupTypes, defaultGrouping } = useMemo(() => {
     if (
-      (!panel.benchmark_type || panel.benchmark_type === "control") &&
-      (panel.panel_type === "benchmark" || panel.panel_type === "control")
+      (!benchmarkType || benchmarkType === "control") &&
+      (panelType === "benchmark" || panelType === "control")
     ) {
-      const usable = usableGroups(found, checkDisplayGroupTypes);
-      if (usable.length) {
-        return usable;
-      }
-      return [
-        { type: "benchmark" },
-        { type: "control" },
-        { type: "result" },
-      ] as DisplayGroup[];
-    } else if (
-      (panel.benchmark_type === "detection" &&
-        panel.panel_type === "benchmark") ||
-      panel.panel_type === "detection"
-    ) {
-      const usable = usableGroups(found, detectionDisplayGroupTypes);
-      if (usable.length) {
-        return usable;
-      }
-      return [
-        { type: "benchmark" },
-        { type: "detection" },
-        { type: "result" },
-      ] as DisplayGroup[];
-    } else {
-      return [] as DisplayGroup[];
+      return {
+        groupTypes: checkDisplayGroupTypes,
+        defaultGrouping: [
+          { type: "benchmark" },
+          { type: "control" },
+          { type: "result" },
+        ] as DisplayGroup[],
+      };
     }
-  }, [allGroupings, panel]);
+    if (
+      (benchmarkType === "detection" && panelType === "benchmark") ||
+      panelType === "detection"
+    ) {
+      return {
+        groupTypes: detectionDisplayGroupTypes,
+        defaultGrouping: [
+          { type: "benchmark" },
+          { type: "detection" },
+          { type: "result" },
+        ] as DisplayGroup[],
+      };
+    }
+    return {
+      groupTypes: [] as string[],
+      defaultGrouping: [] as DisplayGroup[],
+    };
+  }, [panelType, benchmarkType]);
+
+  const grouping = useMemo(() => {
+    const usable = usableGroups(
+      panelName ? allGroupings[panelName] : undefined,
+      groupTypes,
+    );
+    return usable.length ? usable : defaultGrouping;
+  }, [allGroupings, panelName, groupTypes, defaultGrouping]);
 
   const update = (toSave: DisplayGroup[]) => {
     setSearchParams((previous) => {
@@ -123,7 +134,7 @@ const useGroupingConfig = (panelName?: string) => {
     });
   };
 
-  return { allGroupings, grouping, update };
+  return { allGroupings, grouping, defaultGrouping, update };
 };
 
 export default useGroupingConfig;
