@@ -74,36 +74,42 @@ func changeWorkspace(t *testing.T, dir string, round string) {
 	writeTestFile(t, filepath.Join(dir, ".mod.cache.json"), round)
 }
 
-// with watching off nothing changes in the workspace folder reloads the server
-func TestStartWatchers_Off(t *testing.T) {
-	w, dir := loadWatcherTestWorkspace(t)
-	before := w.LoadState().LoadCount
-
-	if err := startWatchers(context.Background(), w, false); err != nil {
+// startTestServer starts a server on the workspace with the watch setting given, as the --watch flag or watch in the
+// workspace sets it
+func startTestServer(t *testing.T, w *workspace.PowerpipeWorkspace, watch bool) {
+	t.Helper()
+	t.Cleanup(func() { viper.Set(constants.ArgWatch, nil) })
+	viper.Set(constants.ArgWatch, watch)
+	if _, err := NewServer(context.Background(), &initialisation.InitData{Workspace: w}, melody.New()); err != nil {
 		t.Fatal(err)
 	}
+}
+
+// with watching off nothing changed in the workspace folder reloads the server: not a changed, added or deleted
+// file, nor the lock file that mod install writes
+func TestNewServer_WatchOff(t *testing.T) {
+	w, dir := loadWatcherTestWorkspace(t)
+	before := w.LoadState().LoadCount
+	startTestServer(t, w, false)
+
 	changeWorkspace(t, dir, "one")
 	if got := waitForLoadCount(w, before, quietWait); got != before {
-		t.Fatalf("the workspace reloaded with watching off: load count %d, was %d", got, before)
+		t.Fatalf("the server reloaded the workspace with watch false: load count %d, was %d", got, before)
 	}
-
-	// a deleted file too
 	if err := os.Remove(filepath.Join(dir, "dashboard_one.pp")); err != nil {
 		t.Fatal(err)
 	}
 	if got := waitForLoadCount(w, before, quietWait); got != before {
-		t.Fatalf("the workspace reloaded after a file was deleted with watching off: load count %d, was %d", got, before)
+		t.Fatalf("the server reloaded the workspace after a file was deleted with watch false: load count %d, was %d", got, before)
 	}
 }
 
-// with watching on a change to the files, and one to the installed mods, each reload the server as before
-func TestStartWatchers_On(t *testing.T) {
+// with watching on, a change to the files and one to the installed mods each reload the server, as before
+func TestNewServer_WatchOn(t *testing.T) {
 	w, dir := loadWatcherTestWorkspace(t)
 	before := w.LoadState().LoadCount
+	startTestServer(t, w, true)
 
-	if err := startWatchers(context.Background(), w, true); err != nil {
-		t.Fatal(err)
-	}
 	writeTestFile(t, filepath.Join(dir, "dashboard_one.pp"), "dashboard \"done\" {\n  title = \"d\"\n}\n")
 	afterFile := waitForLoadCount(w, before, loadWait)
 	if afterFile <= before {
@@ -116,22 +122,5 @@ func TestStartWatchers_On(t *testing.T) {
 	writeTestFile(t, filepath.Join(dir, ".mod.cache.json"), "two")
 	if got := waitForLoadCount(w, settled, loadWait); got <= settled {
 		t.Fatalf("a mod install did not reload the workspace: load count %d", got)
-	}
-}
-
-// NewServer reads the watch setting, which the --watch flag and watch in the workspace both set: with it false a
-// changed file does not reload the workspace
-func TestNewServer_WatchSetting(t *testing.T) {
-	t.Cleanup(func() { viper.Set(constants.ArgWatch, nil) })
-	viper.Set(constants.ArgWatch, false)
-	w, dir := loadWatcherTestWorkspace(t)
-	before := w.LoadState().LoadCount
-
-	if _, err := NewServer(context.Background(), &initialisation.InitData{Workspace: w}, melody.New()); err != nil {
-		t.Fatal(err)
-	}
-	changeWorkspace(t, dir, "one")
-	if got := waitForLoadCount(w, before, quietWait); got != before {
-		t.Fatalf("the server reloaded the workspace with watch false: load count %d, was %d", got, before)
 	}
 }
