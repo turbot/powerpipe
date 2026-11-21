@@ -13,7 +13,7 @@ import (
 
 // LoadState says whether the workspace is loading, and how its loads went. powerpipe server reloads the workspace
 // when one of its mod or variable files changes, and when the installed mods change (the lock file or the folders
-// under the mods folder).
+// under the mods folder), unless watching is off (--watch=false): then it loads once.
 //
 // A client that changed, added or deleted files can wait for the change to load. After its last change it reads
 // the change time of what it changed with FileChangeTime (ctime: stat -c %z on Linux, stat -f %Fc on macOS): the
