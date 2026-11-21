@@ -140,6 +140,7 @@ jobs:
           - "database_precedence"
           - "tag_filtering"
           - "config_precedence"
+          - "server"
     runs-on: ${{ matrix.platform }}
     steps:
       - name: Checkout
