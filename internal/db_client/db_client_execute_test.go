@@ -9,6 +9,9 @@ import (
 	"sync"
 	"testing"
 	"time"
+
+	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/v2/constants"
 )
 
 func newTestClient(t *testing.T) *DbClient {
@@ -122,4 +125,83 @@ func TestExecuteOnConnection_WaitsForCancelledQuery(t *testing.T) {
 	if err := <-done; !errors.Is(err, context.Canceled) {
 		t.Fatalf("expected the context error, got %v", err)
 	}
+}
+
+// a query that runs for many seconds before it returns its single row
+const slowQuery = "with recursive c(x) as (select 1 union all select x+1 from c where x < 300000000) select count(*) from c"
+
+// a query with a lot of rows, to stop reading in the middle of them
+const manyRowsQuery = "with recursive c(x) as (select 1 union all select x+1 from c where x < 1000000) select x from c"
+
+func waitForNoConnectionsInUse(t *testing.T, client *DbClient) {
+	t.Helper()
+	for deadline := time.Now().Add(20 * time.Second); client.db.Stats().InUse > 0; time.Sleep(10 * time.Millisecond) {
+		if time.Now().After(deadline) {
+			t.Fatalf("%d connections are still in use", client.db.Stats().InUse)
+		}
+	}
+}
+
+// #1260: SQLite reports a cancel through the rows, so a result that nobody reads any more used to block its
+// reader on the send of that error for ever and keep the connection. More than the pool holds must not hang.
+func TestExecute_CancelledAndUnreadReleasesConnection(t *testing.T) {
+	for name, query := range map[string]string{"slow query": slowQuery, "many rows": manyRowsQuery} {
+		t.Run(name, func(t *testing.T) {
+			client := newTestClient(t)
+			for range 12 {
+				// the deadline makes a leak fail the test, as Execute would otherwise wait for a free connection
+				ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+				result, err := client.Execute(ctx, query)
+				if err != nil {
+					cancel()
+					t.Fatal(err)
+				}
+				if name == "many rows" {
+					// take one row, then stop reading
+					if row := <-result.RowChan; row == nil || row.Error != nil {
+						t.Fatalf("expected a row, got %v", row)
+					}
+				}
+				time.Sleep(50 * time.Millisecond)
+				cancel()
+			}
+			waitForNoConnectionsInUse(t, client)
+
+			// every connection is free again: a new query runs
+			ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+			defer cancel()
+			result, err := client.ExecuteSync(ctx, "select 42 as n")
+			if err != nil {
+				t.Fatal(err)
+			}
+			if len(result.Rows) != 1 {
+				t.Fatalf("expected 1 row, got %d", len(result.Rows))
+			}
+		})
+	}
+}
+
+// a query that the database timeout stops, while the reader is still reading, is still reported as an error
+func TestExecute_DatabaseTimeoutIsReportedToReader(t *testing.T) {
+	viper.Set(constants.ArgDatabaseQueryTimeout, 1)
+	t.Cleanup(func() { viper.Set(constants.ArgDatabaseQueryTimeout, 0) })
+	client := newTestClient(t)
+
+	result, err := client.Execute(context.Background(), slowQuery)
+	if err != nil {
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("expected a timeout error, got %v", err)
+		}
+		return
+	}
+	var gotErr error
+	for row := range result.RowChan {
+		if row.Error != nil {
+			gotErr = row.Error
+		}
+	}
+	if gotErr == nil {
+		t.Fatal("expected the timeout to reach the reader as an error")
+	}
+	waitForNoConnectionsInUse(t, client)
 }

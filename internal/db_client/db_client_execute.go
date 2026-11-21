@@ -116,7 +116,9 @@ func (c *DbClient) executeOnConnection(ctx context.Context, dbConn *sql.Conn, on
 	// read the rows in a go routine
 	go func() {
 		// read in the rows and stream to the query result object
-		c.readRows(ctxExecute, rows, result)
+		// ctx (not ctxExecute) says the reader has gone: ctxExecute can also end by the query timeout, and
+		// then the reader is still there to be told
+		c.readRows(ctxExecute, ctx.Done(), rows, result)
 
 		// call the completion callback - if one was provided
 		if onComplete != nil {
@@ -141,7 +143,11 @@ func (c *DbClient) getExecuteContext(ctx context.Context) context.Context {
 	return newCtx
 }
 
-func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqueryresult.Result) {
+// readRows streams the rows to the result until they run out or ctx ends.
+// abandoned closes when whoever reads the result has stopped reading it (its context was cancelled):
+// a send that nobody receives is then dropped. Otherwise it would block for ever and keep the connection.
+// SQLite reports a cancel through the rows rather than before them, so this happens there on every cancel.
+func (c *DbClient) readRows(ctx context.Context, abandoned <-chan struct{}, rows *sql.Rows, result *localqueryresult.Result) {
 	// defer this, so that these get cleaned up even if there is an unforeseen error
 	defer func() {
 		// we are done fetching results. time for display. clear the status indication
@@ -149,7 +155,7 @@ func (c *DbClient) readRows(ctx context.Context, rows *sql.Rows, result *localqu
 		// close the sql rows object
 		rows.Close()
 		if err := rows.Err(); err != nil {
-			result.StreamError(err)
+			send(abandoned, result, &queryresult.RowResult{Error: err})
 		}
 		// close the channels in the result object
 		result.Close()
@@ -174,13 +180,25 @@ Loop:
 				statushooks.Done(ctx)
 			}
 
-			result.StreamRow(rowResult)
+			if !send(abandoned, result, &queryresult.RowResult{Data: rowResult}) {
+				break Loop
+			}
 
 			// update the status message with the count of rows that have already been fetched
 			// this will not show if the spinner is not active
 			statushooks.SetStatus(ctx, fmt.Sprintf("Loading results: %3s", humanizeRowCount(rowCount)))
 			rowCount++
 		}
+	}
+}
+
+// send hands the row to the reader of the result. It returns false when the reader has gone (abandoned is closed)
+func send(abandoned <-chan struct{}, result *localqueryresult.Result, row *queryresult.RowResult) bool {
+	select {
+	case result.RowChan <- row:
+		return true
+	case <-abandoned:
+		return false
 	}
 }
 

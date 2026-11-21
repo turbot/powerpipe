@@ -297,7 +297,11 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		return
 	}
 
-	controlExecutionCtx := r.getControlQueryContext(ctx)
+	// cancel the query when we stop reading its rows for any reason (a cancel, a timeout, a bad row):
+	// the row reader gives up its connection once nobody reads from it (#1260).
+	// This is safe after a normal finish as the rows are closed by then.
+	controlExecutionCtx, stopQuery := context.WithCancel(r.getControlQueryContext(ctx))
+	defer stopQuery()
 
 	// execute the control query
 	// NOTE no need to pass an OnComplete callback - we are already closing our session after waiting for results
