@@ -13,21 +13,16 @@ labels: release
 
 ### Pre-release checks
 
-- [ ] All PR acceptance test pass in `powerpipe`
+- [ ] The release PR's page shows its checks passed and what changes
 - [ ] Update check is working
-- [ ] Powerpipe version is correct
-- [ ] Powerpipe Changelog updated and reviewed
 
 ### Release Powerpipe
 
-- [ ] Merge the release PR
-- [ ] Trigger the `02 - Powerpipe: Release` workflow. This will create the release build.
+- [ ] A pipelings release approver approves the release PR and merges it. The merge builds, tags, publishes the GitHub Release with its notes, updates Homebrew, writes the changelog page on powerpipe.io, starts the Linux distro test and merges `main` back into `develop`.
 
 ### Post-release checks
 
-- [ ] Update Changelog in the Release page (copy and paste from CHANGELOG.md)
 - [ ] Test Linux install script
-- [ ] Test Homebrew install
-- [ ] Release branch merged to `develop`
-- [ ] Raise Changelog update to `powerpipe.io`, get it reviewed.
-- [ ] Merge Changelog update to `powerpipe.io`.
+- [ ] Test Homebrew install, and that the dashboard loads in it
+- [ ] Check the changelog page is live on powerpipe.io
+- [ ] Tell the Turbot Pipes release the new tag: Pipes pins the CLI and the dashboard UI by it

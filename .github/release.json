@@ -1,0 +1,44 @@
+{
+  "product": "Powerpipe",
+  "notShipped": [
+    ".ai/",
+    ".claude/",
+    ".github/",
+    "images/",
+    "tests/",
+    "**/*_test.go",
+    "ui/dashboard/**/*.stories.js",
+    "ui/dashboard/**/*.stories.tsx",
+    "ui/dashboard/**/*.test.js",
+    "ui/dashboard/**/*.test.ts",
+    "ui/dashboard/**/*.test.tsx",
+    "ui/dashboard/README.md",
+    "ui/dashboard/spec.md",
+    ".golangci.yml",
+    ".gitignore",
+    ".gitmodules",
+    "CLAUDE.md",
+    "README.md",
+    "scripts/linux_container_info.sh",
+    "scripts/prepare_*.sh",
+    "scripts/smoke_test.sh"
+  ],
+  "start": {
+    "branches": [{ "name": "develop", "cadence": "weekly" }],
+    "tagPrefix": "v",
+    "approvers": ["turbot/pipelings-release-approvers"]
+  },
+  "ask": { "channel": "#powerpipe" },
+  "announce": {
+    "page": {
+      "repo": "turbot/powerpipe.io",
+      "path": "content/changelog/powerpipe-cli-v{dashed}.md",
+      "frontMatter": {
+        "title": "{title}",
+        "publishedAt": "{date}",
+        "permalink": "powerpipe-cli-v{dashed}",
+        "tags": "cli"
+      }
+    }
+  }
+}

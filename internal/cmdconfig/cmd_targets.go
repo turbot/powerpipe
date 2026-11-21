@@ -2,6 +2,7 @@ package cmdconfig
 
 import (
 	"fmt"
+	"regexp"
 	"slices"
 	"strings"
 
@@ -11,11 +12,46 @@ import (
 	"github.com/turbot/go-kit/helpers"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
+	"github.com/turbot/pipe-fittings/v2/parse"
 	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/resources"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
+
+// resourceNameArg matches a command arg that is only a resource name: name, type.name or mod.type.name
+var resourceNameArg = regexp.MustCompile(`^[A-Za-z0-9_-]+(\.[A-Za-z0-9_-]+){0,2}$`)
+
+// ResourceTargets returns the resources that the args of a benchmark or control command name, so that the
+// workspace load decodes only the resources they need. It returns nil, so that every resource is loaded, for
+// other commands, and if an arg is not only a resource name of the command type (for example "all").
+func ResourceTargets[T modconfig.ModTreeItem](cmdArgs []string) []parse.ResourceTarget {
+	var empty T
+	switch any(empty).(type) {
+	case *resources.Benchmark, *resources.Control:
+	default:
+		return nil
+	}
+	typeName := resources.GenericTypeToBlockType[T]()
+	var targets []parse.ResourceTarget
+	for _, arg := range cmdArgs {
+		if arg == "all" || !resourceNameArg.MatchString(arg) {
+			return nil
+		}
+		parsed, err := modconfig.ParseResourceName(arg)
+		if err != nil {
+			return nil
+		}
+		if parsed.ItemType == "" {
+			parsed.ItemType = typeName
+		}
+		if parsed.ItemType != typeName {
+			return nil
+		}
+		targets = append(targets, parse.ResourceTarget{Mod: parsed.Mod, Name: parsed.ItemType + "." + parsed.Name})
+	}
+	return targets
+}
 
 // TODO once we remove DetectionBenchmarks this should return []T
 // https://github.com/turbot/powerpipe/issues/609

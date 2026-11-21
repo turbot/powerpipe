@@ -5,10 +5,30 @@ const webpack = require("webpack");
 
 module.exports = {
   jest: {
-    configure: {
-      moduleNameMapper: {
+    // A function, not an object: craco appends an object's arrays to CRA's
+    // defaults, and we need to replace transformIgnorePatterns.
+    configure: (jestConfig) => {
+      jestConfig.moduleNameMapper = {
+        ...jestConfig.moduleNameMapper,
         "^@powerpipe/(.*)$": "<rootDir>/src/$1",
-      },
+        // Jest 27 does not read package.json "exports"
+        "^react-router-dom$":
+          "<rootDir>/node_modules/react-router-dom/dist/index.js",
+        "^react-router/dom$":
+          "<rootDir>/node_modules/react-router/dist/development/dom-export.js",
+        "^@tanstack/(react-table|table-core)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/index.js",
+        "^@tanstack/(react-table|table-core)/(.*)$":
+          "<rootDir>/node_modules/@tanstack/$1/dist/$2.js",
+      };
+      // color-convert v3, its color-name dependency and TanStack Table v9 ship
+      // as ES modules only, so Jest has to run them through Babel like our own
+      // source. Every other package in node_modules is still left untransformed.
+      jestConfig.transformIgnorePatterns = [
+        "[/\\\\]node_modules[/\\\\](?!(color-convert|color-name|@tanstack[/\\\\](react-table|table-core))[/\\\\]).+\\.(js|jsx|mjs|cjs|ts|tsx)$",
+        "^.+\\.module\\.(css|sass|scss)$",
+      ];
+      return jestConfig;
     },
   },
   webpack: {
