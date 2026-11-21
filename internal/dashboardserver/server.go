@@ -11,9 +11,11 @@ import (
 	"strings"
 	"sync"
 
+	"github.com/spf13/viper"
 	typeHelpers "github.com/turbot/go-kit/types"
 	"github.com/turbot/pipe-fittings/v2/backend"
 	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/schema"
@@ -55,6 +57,21 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
 
+	// --watch (or watch in the workspace) turns the watchers off: the server then loads the workspace once, and a
+	// restart picks up changes
+	err := startWatchers(ctx, w, viper.GetBool(constants.ArgWatch))
+	OutputMessage(ctx, "WorkspaceEvents loaded")
+
+	return server, err
+}
+
+// startWatchers starts the watchers that reload the workspace when its mod or variable files change, and when the
+// installed mods change. With watch false it starts neither, so nothing reloads the workspace.
+func startWatchers(ctx context.Context, w *workspace.PowerpipeWorkspace, watch bool) error {
+	if !watch {
+		slog.Info("not watching the workspace for changes")
+		return nil
+	}
 	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
 	if err == nil {
 		// also reload when the installed mods change (e.g. after `powerpipe mod update`)
@@ -64,9 +81,7 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 			OutputMessage(ctx, fmt.Sprintf("Warning: failed to watch the installed mods for changes: %s", modWatchErr))
 		}
 	}
-	OutputMessage(ctx, "WorkspaceEvents loaded")
-
-	return server, err
+	return err
 }
 
 // Start starts the API server
