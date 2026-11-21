@@ -328,11 +328,18 @@ mod "local" {
 		t.Fatal("expected an error for a lock file that cannot be read")
 	}
 	noMoreReloads()
+	// it is recorded as the load's error, like any other failed load
+	if state := w.LoadState(); state.Loading || state.LoadCount != 3 || state.LastLoad == nil || state.LastLoad.Error == "" {
+		t.Fatalf("expected the failed reload in the load state (3 loads, the last with an error), got %+v", state)
+	}
 	writeInstalledDep(t, dir, "v1.2.0", "newest title")
 	if r := waitReload(); r.err != nil {
 		t.Fatal(r.err)
 	}
 	noMoreReloads()
+	if state := w.LoadState(); state.Loading || state.LoadCount != 4 || state.LastLoad == nil || state.LastLoad.Error != "" {
+		t.Fatalf("expected the good reload in the load state (4 loads, the last without an error), got %+v", state)
+	}
 	if got := depControlTitle(w); got != "newest title" {
 		t.Fatalf("expected the workspace to recover, got title %q", got)
 	}

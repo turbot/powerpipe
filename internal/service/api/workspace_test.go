@@ -25,6 +25,13 @@ import (
 // watched for changes as the server watches it
 func newWatchedTestRouter(t *testing.T) (*gin.Engine, *workspace.PowerpipeWorkspace, string) {
 	t.Helper()
+	return newWatchedTestRouterWith(t, false)
+}
+
+// newWatchedTestRouterWith is newWatchedTestRouter, also watching the installed mods if modInstall is set, as the
+// server does
+func newWatchedTestRouterWith(t *testing.T, modInstall bool) (*gin.Engine, *workspace.PowerpipeWorkspace, string) {
+	t.Helper()
 	viper.Set("main.version", "0.0.0")
 	cmdconfig.SetAppSpecificConstants()
 	dir := t.TempDir()
@@ -37,6 +44,11 @@ func newWatchedTestRouter(t *testing.T) (*gin.Engine, *workspace.PowerpipeWorksp
 	}
 	if err := w.SetupWatcher(context.Background(), func(context.Context, error) {}); err != nil {
 		t.Fatal(err)
+	}
+	if modInstall {
+		if err := w.SetupModInstallWatcher(context.Background()); err != nil {
+			t.Fatal(err)
+		}
 	}
 	t.Cleanup(w.Close)
 	client, err := db_client.NewDbClient(context.Background(), "sqlite://"+filepath.Join(t.TempDir(), "test.db"))
