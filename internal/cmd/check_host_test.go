@@ -98,7 +98,7 @@ func TestValidateHostArgs(t *testing.T) {
 		"upload":                      {args: []string{"b", "--output=none", "--share"}, wantErr: "--share cannot be used"},
 		"variable in the environment": {args: []string{"b", "--output=none"}, env: map[string]string{"PP_VAR_region": "us-east-1", "PP_VAR_age": "30"}, wantErr: "PP_VAR_age, PP_VAR_region cannot be used with --host"},
 		"variable and flag":           {args: []string{"b", "--output=none", "--var=a=b"}, env: map[string]string{"PP_VAR_region": "us-east-1"}, wantErr: "--var, PP_VAR_region cannot be used with --host"},
-		"other environment settings":  {args: []string{"b", "--output=none"}, env: map[string]string{"POWERPIPE_DATABASE": "x", "POWERPIPE_MAX_PARALLEL": "2", "PP_VARIABLE": "x"}},
+		"other environment settings":  {args: []string{"b", "--output=none"}, env: map[string]string{"POWERPIPE_DATABASE": "x", "POWERPIPE_MAX_PARALLEL": "2", "PP_VARIABLE": "x", "pp_var_lower": "x", "PP_VAR_": "x"}},
 		"host without a scheme":       {args: []string{"b", "--output=none", "--host=localhost:9033"}, wantErr: "invalid host"},
 	}
 	for name, test := range tests {
@@ -201,14 +201,6 @@ func TestStartHostRun_Unavailable(t *testing.T) {
 	}
 }
 
-func TestHostIgnoredEnvVars(t *testing.T) {
-	setEnvVarPrefix(t)
-	got := hostIgnoredEnvVars([]string{"PP_VAR_b=1", "PATH=/bin", "PP_VAR_a=", "PP_VAR_=x", "PP_VAR_noequals", "pp_var_c=1", "=C:=C:\\"})
-	if strings.Join(got, ",") != "PP_VAR_a,PP_VAR_b" {
-		t.Fatalf("got %v", got)
-	}
-}
-
 // a variable set in the environment stops a run on a server before the server is contacted, with the exit code
 // --var gets
 func TestRunBenchmarkOnHost_RefusesEnvVarBeforeContactingServer(t *testing.T) {
@@ -260,10 +252,12 @@ func setEnvVarPrefix(t *testing.T) {
 	app_specific.EnvInputVarPrefix = "PP_VAR_"
 	t.Cleanup(func() { app_specific.EnvInputVarPrefix = prev })
 	// a test owns its variables: drop any the machine running it has set (t.Setenv restores them)
-	for _, name := range hostIgnoredEnvVars(os.Environ()) {
-		t.Setenv(name, "")
-		if err := os.Unsetenv(name); err != nil {
-			t.Fatal(err)
+	for _, entry := range os.Environ() {
+		if name, _, _ := strings.Cut(entry, "="); strings.HasPrefix(name, "PP_VAR_") {
+			t.Setenv(name, "")
+			if err := os.Unsetenv(name); err != nil {
+				t.Fatal(err)
+			}
 		}
 	}
 }
