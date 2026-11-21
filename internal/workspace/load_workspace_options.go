@@ -2,6 +2,7 @@ package workspace
 
 import (
 	"github.com/turbot/pipe-fittings/v2/connection"
+	"github.com/turbot/pipe-fittings/v2/parse"
 )
 
 type LoadPowerpipeWorkspaceOption func(*LoadPowerpipeWorkspaceConfig)
@@ -12,6 +13,7 @@ type LoadPowerpipeWorkspaceConfig struct {
 	blockTypeInclusions         []string
 	validateVariables           bool
 	supportLateBinding          bool
+	resourceTargets             []parse.ResourceTarget
 }
 
 func newLoadPowerpipeWorkspaceConfig() *LoadPowerpipeWorkspaceConfig {
@@ -37,6 +39,13 @@ func WithLateBinding(enabled bool) LoadPowerpipeWorkspaceOption {
 func WithBlockType(blockTypeInclusions []string) LoadPowerpipeWorkspaceOption {
 	return func(m *LoadPowerpipeWorkspaceConfig) {
 		m.blockTypeInclusions = blockTypeInclusions
+	}
+}
+
+// WithResourceTargets loads only the resources that the targets need (see parse.ModParseContext.SetResourceTargets)
+func WithResourceTargets(targets []parse.ResourceTarget) LoadPowerpipeWorkspaceOption {
+	return func(m *LoadPowerpipeWorkspaceConfig) {
+		m.resourceTargets = targets
 	}
 }
 

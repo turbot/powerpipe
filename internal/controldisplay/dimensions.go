@@ -37,7 +37,8 @@ func (r DimensionsRenderer) Render() string {
 	// make array of dimension values (including trailing spaces
 	var formattedDimensions = make([]string, len(r.dimensions))
 	for i, d := range r.dimensions {
-		formattedDimensions[i] = d.Value
+		// a result row is printed on a single line, so render line breaks in the value as spaces
+		formattedDimensions[i] = singleLine(d.Value)
 	}
 
 	var length int
@@ -46,7 +47,12 @@ func (r DimensionsRenderer) Render() string {
 		if helpers.PrintableLength(formattedDimensions[0]) > 0 {
 			// truncate the original value, not the already truncated value
 			newLength := helpers.PrintableLength(formattedDimensions[0]) - 1
-			formattedDimensions[0] = helpers.TruncateString(formattedDimensions[0], newLength)
+			truncated := helpers.TruncateString(formattedDimensions[0], newLength)
+			if truncated == formattedDimensions[0] {
+				// truncation made no progress - clear the value rather than loop forever
+				truncated = ""
+			}
+			formattedDimensions[0] = truncated
 		} else {
 			// so event with all dimensions 1 long, we still do not have enough space
 			// remove a dimension from the array
@@ -100,4 +106,11 @@ func dimensionsLength(dimensionValues []string) int {
 	// allow for spaces between the dimensions
 	res += len(dimensionValues) - 1
 	return res
+}
+
+var lineBreakReplacer = strings.NewReplacer("\r\n", " ", "\n", " ", "\r", " ")
+
+// singleLine replaces line breaks with spaces
+func singleLine(value string) string {
+	return lineBreakReplacer.Replace(value)
 }

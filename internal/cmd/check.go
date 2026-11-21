@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io"
+	"log/slog"
 	"os"
 	"strings"
 	"time"
@@ -51,7 +52,7 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		Long:             checkCmdLong(typeName),
 	}
 
-	// when running mod install before the benchmark execution, we use the minimal update strategy
+	// holds the value of the deprecated --pull flag, which a run ignores
 	var updateStrategy = constants.ModUpdateIdMinimal
 
 	builder := cmdconfig.OnCmd(cmd)
@@ -62,10 +63,10 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 		AddBoolFlag(constants.ArgHeader, true, "Include column headers for csv and table output").
 		AddBoolFlag(constants.ArgHelp, false, "Help for run command", cmdconfig.FlagOptions.WithShortHand("h")).
 		AddBoolFlag(constants.ArgInput, true, "Enable interactive prompts").
-		AddBoolFlag(constants.ArgModInstall, true, "Specify whether to install mod dependencies before running").
+		AddBoolFlag(constants.ArgModInstall, true, "Ignored: a run does not install mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddVarFlag(enumflag.New(&updateStrategy, constants.ArgPull, constants.ModUpdateStrategyIds, enumflag.EnumCaseInsensitive),
 			constants.ArgPull,
-			fmt.Sprintf("Update strategy; one of: %s", strings.Join(constants.FlagValues(constants.ModUpdateStrategyIds), ", "))).
+			"Ignored: a run does not update mods", localcmdconfig.Deprecated(runModFlagsDeprecated), cmdconfig.FlagOptions.Hidden()).
 		AddBoolFlag(constants.ArgProgress, true, "Display control execution progress").
 		AddBoolFlag(constants.ArgShare, false, "Create snapshot in Turbot Pipes with 'anyone_with_link' visibility").
 		AddBoolFlag(constants.ArgSnapshot, false, "Create snapshot in Turbot Pipes with the default (workspace) visibility").
@@ -97,7 +98,8 @@ func checkCmd[T controlinit.CheckTarget]() *cobra.Command {
 			AddStringFlag(constants.ArgWhere, "", "SQL 'where' clause, or named query, used to filter controls (cannot be used with '--tag')").
 			AddBoolFlag(constants.ArgDryRun, false, "Show which controls will be run without running them").
 			AddStringSliceFlag(constants.ArgTag, nil, "Filter controls based on their tag values ('--tag key=value')").
-			AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open")
+			AddIntFlag(constants.ArgMaxParallel, constants.DefaultMaxConnections, "The maximum number of concurrent database connections to open").
+			AddStringFlag(constants.ArgHost, "", "Run the benchmark on the powerpipe server at this URL, e.g. --host http://localhost:9033")
 	}
 
 	return cmd
@@ -138,6 +140,12 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 			exitCode = constants.ExitCodeUnknownErrorPanic
 		}
 	}()
+
+	// the server at --host loads the mod and runs the benchmark
+	if viper.GetString(constants.ArgHost) != "" {
+		runBenchmarkOnHost(ctx, cmd, args)
+		return
+	}
 
 	// validate the arguments
 	err := validateCheckArgs(ctx)
@@ -197,6 +205,12 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 	}()
 
 	for _, namedTree := range trees {
+		// if the output reads the rows one at a time, keep them on disk while the controls run
+		// (an export that needs them all loads them back when it runs)
+		if controldisplay.StreamsRows(initData.OutputFormatter) {
+			error_helpers.FailOnError(namedTree.tree.StoreRowsOnDisk())
+		}
+
 		// execute controls synchronously (execute returns the number of alarms and errors)
 		executionErr := executeTree(ctx, namedTree.tree, initData)
 		if executionErr != nil {
@@ -230,6 +244,10 @@ func runCheckCmd[T controlinit.CheckTarget](cmd *cobra.Command, args []string) {
 		if err != nil {
 			error_helpers.ShowError(ctx, err)
 			totalErrors++
+		}
+
+		if err := namedTree.tree.Close(); err != nil {
+			slog.Warn("failed to close the result row file", "error", err)
 		}
 	}
 }
@@ -266,16 +284,6 @@ func executeTree(ctx context.Context, tree *controlexecute.ExecutionTree, initDa
 	if err != nil {
 		return err
 	}
-
-	// populate the control run instances
-	// if a control is included by multiple benchmarks, a single ControlRun is created, and executed only once,
-	// and the Parents property contains a list of all ResultGroups (i.e. benchmarks) which include the control.
-	// When rendering the CSV data, the template renders a set of results rows for every instance of the control,
-	// i.e. for every parent.
-	// So - build a list of ControlRunInstances, by expanding the list of control runs for each parent.
-	// (A ControlRunInstance is the same as a ControlRun but has a single parent - thus if a ControlRun has 3 parents,
-	// we will build a list of 3 ControlRunInstances)
-	tree.PopulateControlRunInstances()
 
 	err = displayControlResults(checkCtx, tree, initData.OutputFormatter)
 	if err != nil {
@@ -392,7 +400,7 @@ func shouldPrintCheckTiming() bool {
 }
 
 func displayControlResults(ctx context.Context, executionTree *controlexecute.ExecutionTree, formatter controldisplay.Formatter) error {
-	reader, err := formatter.Format(ctx, executionTree)
+	reader, err := controldisplay.FormatTree(ctx, formatter, executionTree)
 	if err != nil {
 		return err
 	}

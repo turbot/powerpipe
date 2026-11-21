@@ -4,9 +4,9 @@ import (
 	"context"
 	"fmt"
 	"io"
-	"strings"
 
 	"github.com/turbot/pipe-fittings/v2/constants"
+	"github.com/turbot/pipe-fittings/v2/export"
 	localconstants "github.com/turbot/powerpipe/internal/constants"
 	"github.com/turbot/powerpipe/internal/controlexecute"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
@@ -20,6 +20,9 @@ func (*SnapshotFormatter) FormatDetection(context.Context, *dashboardexecute.Det
 	return nil, fmt.Errorf("Currently only JSON format is supported for detection benchmarks")
 }
 
+// StreamsRows implements RowStreamer
+func (*SnapshotFormatter) StreamsRows() {}
+
 func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.ExecutionTree) (io.Reader, error) {
 	snapshot, err := executionTreeToSnapshot(tree)
 	if err != nil {
@@ -32,15 +35,8 @@ func (f *SnapshotFormatter) Format(ctx context.Context, tree *controlexecute.Exe
 	if formatterPurpose, ok := ctx.Value(contextKeyFormatterPurpose).(string); ok && formatterPurpose == formatterPurposeExport {
 		indent = false
 	}
-	// strip unwanted fields from the snapshot
-	snapshotStr, err := snapshot.AsStrippedJson(indent)
-	if err != nil {
-		return nil, err
-	}
-
-	res := strings.NewReader(fmt.Sprintf("%s\n", string(snapshotStr)))
-
-	return res, nil
+	// stream the stripped snapshot - io.Copy writes it to the destination one panel at a time
+	return export.NewSnapshotReader(snapshot, indent), nil
 }
 
 func (f *SnapshotFormatter) FileExtension() string {

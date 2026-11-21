@@ -56,7 +56,6 @@ Every CLI command follows the same initialization pattern:
                      │    CLI args → actual resources      │
                      ├─────────────────────────────────────┤
                      │ 3. Init()                           │
-                     │    ├─ Install mod dependencies      │
                      │    ├─ GetDefaultDatabaseConfig()    │
                      │    │   resolve: CLI > mod > default │
                      │    ├─ NewDbClient()                 │
@@ -260,7 +259,7 @@ cd ui/dashboard && yarn install && yarn build && make zip
 
 ```bash
 go test ./...                            # Unit tests (17 files, Go testing package)
-tests/acceptance/run-local.sh            # Acceptance tests (15 BATS files, 233 tests)
+tests/acceptance/run-local.sh            # Acceptance tests (16 BATS files, 243 tests)
 tests/acceptance/run-local.sh check.bats # Single test file
 ```
 
@@ -316,10 +315,9 @@ Uncomment for local development against `../pipe-fittings`. **Re-comment before 
 ### Branching and Workflow
 
 - **Base branch**: `develop` for all work
-- **Main branch**: `main` (releases merge here)
-- **Release branch**: `v1.4.x` (or similar version branch)
+- **Main branch**: `main` takes release PRs only (`release/<version>` → `main`)
 - **PR titles**: End with `closes #XXXX` for bug fixes
-- **Merge-to-develop PRs**: Title must be `Merge branch '<branchname>' into develop`
+- **Changelog line**: every PR into `develop` that changes a shipped file carries one `Changelog:` line in its body (the `changelog-line` check). Files that ship nothing are listed in `.github/release.json` (`notShipped`)
 - **Small PRs**: One logical change per PR
 
 ## Gotchas
@@ -337,51 +335,23 @@ Uncomment for local development against `../pipe-fittings`. **Re-comment before 
 
 ## Release Process
 
-Follow these steps in order to perform a release:
+Releases go through Turbot's shared release workflows (turbot/shipyard-workflows, called at `v0`). Nobody types a version, pushes a tag or edits `CHANGELOG.md` by hand. The prep job that the start files names the skill that writes the release's prep file.
 
-### 1. Changelog
-- Draft a changelog entry in `CHANGELOG.md` matching the style of existing entries.
-- Use today's date and the next patch version.
+```
+develop ──► start (weekly, or by hand) ──► prep file ──► cut: release/<version> + CHANGELOG section
+                                                              │
+                         release PR into main ◄───────────────┘  tested build, record, Slack ask in #powerpipe
+                              │ 1 approval (turbot/pipelings-release-approvers), merge commit
+                              ▼
+ship.yml: build ──► tag + GitHub Release + merge-back of main into develop
+                         │
+                         ├──► Homebrew formula
+                         ├──► powerpipe.io changelog page
+                         └──► Linux distro test
+```
 
-### 2. Commit
-- Commit message for release changelog changes should be the version number, e.g. `v1.4.3`.
-
-### 3. Release Issue
-- Use the `.github/ISSUE_TEMPLATE/release_issue.md` template.
-- Title: `Powerpipe v<version>`, label: `release`.
-
-### 4. PRs
-1. **Against `develop`**: Title should be `Merge branch '<branchname>' into develop`.
-2. **Against `main`**: Title should be `Release Powerpipe v<version>`.
-   - Body format:
-     ```
-     ## Release Issue
-     [Powerpipe v<version>](link-to-release-issue)
-
-     ## Checklist
-     - [ ] Confirmed that version has been correctly upgraded.
-     ```
-   - Tag the release issue to the PR (add `release` label).
-
-### 5. powerpipe.io Changelog
-- Create a changelog PR in the `turbot/powerpipe.io` repo.
-- Branch off `main`, branch name: `pp-<version without dots>` (e.g. `pp-143`).
-- Add a file at `content/changelog/<YYYYMMDD>-powerpipe-cli-v<version-with-dashes>.md`.
-- Frontmatter format:
-  ```
-  ---
-  title: Powerpipe CLI v<version> - <short summary>
-  publishedAt: "<YYYY-MM-DD>T10:00:00"
-  permalink: powerpipe-cli-v<version-with-dashes>
-  tags: cli
-  ---
-  ```
-- Body should match the changelog content from `CHANGELOG.md`.
-- PR title: `Powerpipe CLI v<version>`, base: `main`.
-
-### 6. Deploy powerpipe.io
-- After the powerpipe.io changelog PR is merged, trigger the `Deploy powerpipe.io` workflow in `turbot/powerpipe.io` from `main`.
-
-### 7. Close Release Issue
-- Check off all items in the release issue checklist as steps are completed.
-- Close the release issue once all steps are done.
+- `.github/release.json`: product, `notShipped`, the start, the ask channel and the changelog page.
+- `.github/workflows/`: `release-start.yml`, `prep.yml`, `release.yml` (the cut), `release-pr.yml` (results and record), `ask.yml`, `ship.yml`, `announce.yml`, `changelog-line.yml`.
+- The release build runs `make dashboard_assets_archive` (the UI, built into `internal/dashboardassets/assets.tar.gz`) before goreleaser, and the release PR's tests run `make release_test`.
+- A release that merged but did not ship (its ship job broke) is finished by a re-ship: `release.yml` with `reship` and `fixes`.
+- The `.claude/skills/release` skill has the steps.
