@@ -205,3 +205,41 @@ func TestExecute_DatabaseTimeoutIsReportedToReader(t *testing.T) {
 	}
 	waitForNoConnectionsInUse(t, client)
 }
+
+// #1219: SQLite reports a cancel through the rows. ExecuteSync used to drop every row that arrived once its
+// context was done, including the row that carries that error, so a cancelled query was returned as an empty result.
+func TestExecuteSync_CancelledQueryIsAnError(t *testing.T) {
+	// a query that has not returned a row yet, and one that is cancelled in the middle of its rows
+	const endlessRowsQuery = "with recursive c(x) as (select 1 union all select x+1 from c where x < 1000000000) select x from c"
+	for name, query := range map[string]string{"no rows yet": slowQuery, "some rows sent": endlessRowsQuery} {
+		t.Run(name, func(t *testing.T) {
+			client := newTestClient(t)
+			// the cancel and the rows race, so try more than once
+			for range 10 {
+				ctx, cancel := context.WithTimeout(context.Background(), 300*time.Millisecond)
+				result, err := client.ExecuteSync(ctx, query)
+				cancel()
+				if err == nil {
+					t.Fatalf("expected an error for a cancelled query, got a result with %d rows", len(result.Rows))
+				}
+			}
+			waitForNoConnectionsInUse(t, client)
+		})
+	}
+}
+
+// a query that ends before its context does returns all its rows and no error
+func TestExecuteSync_FinishedQueryReturnsAllRows(t *testing.T) {
+	client := newTestClient(t)
+	for range 10 {
+		ctx, cancel := context.WithTimeout(context.Background(), 20*time.Second)
+		result, err := client.ExecuteSync(ctx, "with recursive c(x) as (select 1 union all select x+1 from c where x < 1000) select x from c")
+		cancel()
+		if err != nil {
+			t.Fatal(err)
+		}
+		if len(result.Rows) != 1000 {
+			t.Fatalf("expected 1000 rows, got %d", len(result.Rows))
+		}
+	}
+}
