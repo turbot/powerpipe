@@ -5,6 +5,7 @@ import (
 	"database/sql"
 	"database/sql/driver"
 	"errors"
+	"io"
 	"path/filepath"
 	"sync"
 	"testing"
@@ -222,6 +223,9 @@ func TestExecuteSync_CancelledQueryIsAnError(t *testing.T) {
 				if err == nil {
 					t.Fatalf("expected an error for a cancelled query, got a result with %d rows", len(result.Rows))
 				}
+				if !errors.Is(err, context.DeadlineExceeded) {
+					t.Fatalf("expected the timeout error, got %v", err)
+				}
 			}
 			waitForNoConnectionsInUse(t, client)
 		})
@@ -240,6 +244,60 @@ func TestExecuteSync_FinishedQueryReturnsAllRows(t *testing.T) {
 		}
 		if len(result.Rows) != 1000 {
 			t.Fatalf("expected 1000 rows, got %d", len(result.Rows))
+		}
+	}
+}
+
+// a database/sql connector whose rows never look at their context, as a driver that buffers its rows does
+type endlessRowsConnector struct{}
+
+func (endlessRowsConnector) Connect(context.Context) (driver.Conn, error) {
+	return endlessRowsConn{}, nil
+}
+func (endlessRowsConnector) Driver() driver.Driver { return endlessRowsDriver{} }
+
+type endlessRowsDriver struct{}
+
+func (endlessRowsDriver) Open(string) (driver.Conn, error) { return endlessRowsConn{}, nil }
+
+type endlessRowsConn struct{}
+
+func (endlessRowsConn) Prepare(string) (driver.Stmt, error) { return nil, errors.New("not supported") }
+func (endlessRowsConn) Close() error                        { return nil }
+func (endlessRowsConn) Begin() (driver.Tx, error)           { return nil, errors.New("not supported") }
+func (endlessRowsConn) QueryContext(context.Context, string, []driver.NamedValue) (driver.Rows, error) {
+	return &endlessRows{}, nil
+}
+
+type endlessRows struct{ n int }
+
+func (*endlessRows) Columns() []string { return []string{"x"} }
+func (*endlessRows) Close() error      { return nil }
+func (r *endlessRows) Next(dest []driver.Value) error {
+	r.n++
+	if r.n > 50_000_000 {
+		return io.EOF
+	}
+	dest[0] = int64(r.n)
+	return nil
+}
+
+// a cancelled query whose driver reports no error of its own, but whose rows stop early, is an error and not a
+// shorter complete result: the reader stops on its context and says so
+func TestExecuteSync_CancelledQueryWithADriverThatIgnoresItsContext(t *testing.T) {
+	base := newTestClient(t)
+	db := sql.OpenDB(endlessRowsConnector{})
+	defer db.Close()
+	client := &DbClient{Backend: base.Backend, db: db}
+	for range 10 {
+		ctx, cancel := context.WithTimeout(context.Background(), 100*time.Millisecond)
+		result, err := client.ExecuteSync(ctx, "select x")
+		cancel()
+		if err == nil {
+			t.Fatalf("expected an error for a cancelled query, got a result with %d rows", len(result.Rows))
+		}
+		if !errors.Is(err, context.DeadlineExceeded) {
+			t.Fatalf("expected the timeout error, got %v", err)
 		}
 	}
 }
