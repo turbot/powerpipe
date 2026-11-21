@@ -1,3 +1,4 @@
+import useClearWorkspaceLoadingOnClose from "@powerpipe/hooks/useClearWorkspaceLoadingOnClose";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import WorkspaceReloadingMessage from "./index";
 import {
@@ -21,33 +22,39 @@ const loadState = (loading: boolean, load_count = 2) => ({
 });
 
 let send: (event: any) => void;
+// whether the WebSocket is open, as the WebSocket hook reports it
+let socketReady = true;
 
 const Harness = () => {
   const { dispatch } = useDashboardState();
   const { eventHandler } = useDashboardWebSocketEventHandler(dispatch, {});
   send = (event) => act(() => eventHandler(event));
+  useClearWorkspaceLoadingOnClose(socketReady, dispatch);
   return <WorkspaceReloadingMessage />;
 };
 
+const page = (dataMode: DashboardDataMode = DashboardDataModeLive) => (
+  <DashboardStateProvider
+    analyticsContext={{
+      setMetadata: () => {},
+      setSelectedDashboard: () => {},
+    }}
+    breakpointContext={{}}
+    dataMode={dataMode}
+    rootPathname="/"
+    versionMismatchCheck={false}
+  >
+    <Harness />
+  </DashboardStateProvider>
+);
+
 const renderPage = (dataMode: DashboardDataMode = DashboardDataModeLive) =>
-  render(
-    <DashboardStateProvider
-      analyticsContext={{
-        setMetadata: () => {},
-        setSelectedDashboard: () => {},
-      }}
-      breakpointContext={{}}
-      dataMode={dataMode}
-      rootPathname="/"
-      versionMismatchCheck={false}
-    >
-      <Harness />
-    </DashboardStateProvider>,
-  );
+  render(page(dataMode));
 
 const originalFetch = global.fetch;
 
 beforeEach(() => {
+  socketReady = true;
   jest.useFakeTimers();
   global.fetch = jest.fn(() =>
     Promise.reject(new Error("the page must not poll the server")),
@@ -126,5 +133,20 @@ describe("WorkspaceReloadingMessage", () => {
       jest.advanceTimersByTime(60 * 60 * 1000);
     });
     expect(global.fetch).not.toHaveBeenCalled();
+  });
+
+  test("the message goes when the WebSocket closes mid-reload, and returns when the server says it still reloads", () => {
+    const { rerender } = renderPage();
+    send(loadState(true));
+    expect(screen.getByRole("status")).not.toBeNull();
+
+    socketReady = false;
+    rerender(page());
+    expect(screen.queryByRole("status")).toBeNull();
+
+    socketReady = true;
+    rerender(page());
+    send(loadState(true));
+    expect(screen.getByRole("status")).not.toBeNull();
   });
 });

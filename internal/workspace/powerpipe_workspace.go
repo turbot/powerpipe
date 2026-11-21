@@ -31,6 +31,8 @@ type PowerpipeWorkspace struct {
 	reloadGate  sync.RWMutex
 	loadStateMu sync.Mutex
 	loadState   LoadState
+	// called when a load starts and when it ends (see SetLoadStateListener)
+	loadStateListener func()
 	// held for the whole of a reload, from the start of its load state to its end, so that reloads run one at a
 	// time whichever watcher asks for them
 	reloadMu sync.Mutex

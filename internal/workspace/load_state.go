@@ -31,13 +31,6 @@ type LoadState struct {
 	LastLoad *LoadInfo `json:"last_load,omitempty"`
 }
 
-// LoadStateChanged is the dashboard event raised when a load starts and when it ends, so that the dashboard server
-// can tell its clients. It carries nothing: a handler reads LoadState, which is then at least as new as the change.
-type LoadStateChanged struct{}
-
-// IsDashboardEvent implements DashboardEvent interface
-func (*LoadStateChanged) IsDashboardEvent() {}
-
 // LoadInfo describes one load of the workspace
 type LoadInfo struct {
 	StartTime time.Time  `json:"start_time"`
@@ -90,6 +83,26 @@ func (w *PowerpipeWorkspace) LoadState() LoadState {
 		LoadCount:   w.loadState.LoadCount,
 		CurrentLoad: w.loadState.CurrentLoad.clone(),
 		LastLoad:    w.loadState.LastLoad.clone(),
+	}
+}
+
+// SetLoadStateListener sets the function called when a load starts and when it ends, so that the dashboard server
+// can tell its clients. It is called at once, on the goroutine that loads, with the workspace held: it must not wait
+// on anything that waits for the workspace. It is not sent through the dashboard events, which a handler that waits
+// for the reload can hold up until the reload has ended. Set it before the file watcher starts.
+func (w *PowerpipeWorkspace) SetLoadStateListener(listener func()) {
+	w.loadStateMu.Lock()
+	defer w.loadStateMu.Unlock()
+	w.loadStateListener = listener
+}
+
+// notifyLoadStateListener calls the load state listener, if there is one
+func (w *PowerpipeWorkspace) notifyLoadStateListener() {
+	w.loadStateMu.Lock()
+	listener := w.loadStateListener
+	w.loadStateMu.Unlock()
+	if listener != nil {
+		listener()
 	}
 }
 

@@ -2,6 +2,7 @@ import path from "path";
 import useDashboardWebSocket, {
   SocketActions,
 } from "@powerpipe/hooks/useDashboardWebSocket";
+import useClearWorkspaceLoadingOnClose from "@powerpipe/hooks/useClearWorkspaceLoadingOnClose";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
@@ -74,17 +75,7 @@ export const DashboardExecutionProvider = ({
     socketUrlFactory,
   );
 
-  // A server that is gone cannot say its reload has ended. The server tells the page its load state again when the
-  // WebSocket reconnects.
-  useEffect(() => {
-    if (!ready) {
-      dispatch({
-        type: DashboardActions.WORKSPACE_LOAD_STATE,
-        load_state: { loading: false },
-      });
-    }
-  }, [ready, dispatch]);
-
+  useClearWorkspaceLoadingOnClose(ready, dispatch);
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
   const { range, supportsTimeRange } = useDashboardDatetimeRange();

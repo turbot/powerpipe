@@ -54,6 +54,9 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
+	// tell the clients when a load starts and ends, at once and not through the dashboard events: the handler of an
+	// earlier event can wait for the reload to end, and the start would then be told after the end
+	w.SetLoadStateListener(server.broadcastLoadState)
 
 	err := w.SetupWatcher(ctx, func(c context.Context, e error) {})
 	if err == nil {
@@ -104,9 +107,6 @@ func (s *Server) HandleDashboardEvent(ctx context.Context, event dashboardevents
 	}()
 
 	switch e := event.(type) {
-
-	case *workspace.LoadStateChanged:
-		s.broadcastLoadState()
 
 	case *dashboardevents.WorkspaceError:
 		slog.Debug("WorkspaceError event", "error", e.Error)
