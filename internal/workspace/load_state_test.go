@@ -292,8 +292,9 @@ func TestLoadState_Loading(t *testing.T) {
 	release()
 }
 
-// the load state says loading exactly while the gate is closed: whenever a run request is let in, the load state
-// does not say loading, and once it says loading a run request is refused. Checked over several reloads.
+// the load state says loading only while the gate is closed: whenever a run request is let in, the load state
+// does not say loading. Checked over several reloads; the stalled reload in TestLoadState_Loading shows the other way,
+// that a run request is refused once the load state says loading.
 func TestLoadState_LoadingMeansRefused(t *testing.T) {
 	w, dir := loadWatchedTestWorkspace(t, map[string]string{"mod.pp": loadStateTestMod})
 	modFile := filepath.Join(dir, "mod.pp")
