@@ -18,6 +18,7 @@ import (
 	"github.com/turbot/powerpipe/internal/cmdconfig"
 	"github.com/turbot/powerpipe/internal/dashboardevents"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/workspace"
 	"gopkg.in/olahol/melody.v1"
 )
@@ -67,15 +68,9 @@ func startLoadStateServer(t *testing.T) (*workspace.PowerpipeWorkspace, string, 
 		t.Fatal(ew.GetError())
 	}
 	webSocket := melody.New()
-	s := &Server{
-		mutex:            &sync.Mutex{},
-		dashboardClients: map[string]*DashboardClientInfo{},
-		webSocket:        webSocket,
-		workspace:        w,
-	}
-	w.RegisterDashboardEventHandler(ctx, s.HandleDashboardEvent)
-	w.SetLoadStateListener(s.broadcastLoadState)
-	if err := w.SetupWatcher(ctx, func(context.Context, error) {}); err != nil {
+	// as powerpipe server starts it
+	s, err := NewServer(ctx, &initialisation.InitData{Workspace: w}, webSocket)
+	if err != nil {
 		t.Fatal(err)
 	}
 	s.InitAsync(ctx)
@@ -97,7 +92,7 @@ func startLoadStateServer(t *testing.T) (*workspace.PowerpipeWorkspace, string, 
 // tries again until a client is sent the load state, and returns that first message too.
 func connect(t *testing.T, url string) (chan loadStateMessage, loadStateMessage) {
 	t.Helper()
-	deadline := time.Now().Add(30 * time.Second)
+	deadline := time.Now().Add(10 * time.Second)
 	for {
 		conn, _, err := websocket.DefaultDialer.Dial(url, nil)
 		if err != nil {
