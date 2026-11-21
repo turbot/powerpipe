@@ -1,7 +1,7 @@
 import React, { useLayoutEffect, useRef, useState } from "react";
 
 const useDimensions = (): readonly [
-  React.RefObject<HTMLDivElement>,
+  React.RefObject<HTMLDivElement | null>,
   DOMRect,
 ] => {
   const ref = useRef<HTMLDivElement>(null);
