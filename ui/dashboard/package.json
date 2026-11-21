@@ -17,7 +17,7 @@
   "dependencies": {
     "@headlessui/react": "1.7.19",
     "@heroicons/react": "2.2.0",
-    "@material-symbols/svg-300": "0.48.3",
+    "@material-symbols/svg-300": "0.49.0",
     "@popperjs/core": "2.11.8",
     "@supabase/sql-formatter": "4.0.3",
     "@tanstack/react-table": "9.2.4",
