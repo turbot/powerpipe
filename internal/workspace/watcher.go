@@ -64,15 +64,9 @@ func (w *PowerpipeWorkspace) reloadUnlessLoadedSince(ctx context.Context, starte
 // reloadLocked is reload, with reloadMu held by the caller
 func (w *PowerpipeWorkspace) reloadLocked(ctx context.Context) {
 	slog.Debug("reloading the workspace after a file change")
-	// the load starts before the files are listed, so a change seen after this counts this load as one that
-	// started before it (reloadUnlessLoadedSince does not skip for it), and a change seen before it is listed
-	w.startLoad(nil)
-	// before the load reads the files, so that a change made after this is not reported as loaded
-	w.setNewestFileTime(w.newestFileTime(ctx))
-	prevModResources, modResources, errAndWarnings := w.reloadModResources(ctx)
-	err := errAndWarnings.GetError()
-	w.endLoad(err)
+	prevModResources, modResources, err := w.loadUnderGate(ctx)
 
+	// the hooks run after the gate is released, so a hook that asks for a hold is not refused
 	if err != nil {
 		if w.OnFileWatcherError != nil {
 			w.OnFileWatcherError(ctx, err)
@@ -84,10 +78,20 @@ func (w *PowerpipeWorkspace) reloadLocked(ctx context.Context) {
 	}
 }
 
-// reloadModResources reloads the workspace once every holder has released it, and makes HoldLoaded fail until the
-// reload ends
-func (w *PowerpipeWorkspace) reloadModResources(ctx context.Context) (modconfig.ModResources, modconfig.ModResources, error_helpers.ErrorAndWarnings) {
+// loadUnderGate reloads the workspace once every holder has released it. The gate is taken before the load state
+// says the load has started, and the load state says it has ended before the gate is released, so that whenever the
+// load state says loading, HoldLoaded fails.
+func (w *PowerpipeWorkspace) loadUnderGate(ctx context.Context) (prevModResources, modResources modconfig.ModResources, err error) {
 	w.reloadGate.Lock()
 	defer w.reloadGate.Unlock()
-	return w.ReloadModResources(ctx)
+	// the load starts before the files are listed, so a change seen after this counts this load as one that
+	// started before it (reloadUnlessLoadedSince does not skip for it), and a change seen before it is listed
+	w.startLoad(nil)
+	// before the load reads the files, so that a change made after this is not reported as loaded
+	w.setNewestFileTime(w.newestFileTime(ctx))
+	var errAndWarnings error_helpers.ErrorAndWarnings
+	prevModResources, modResources, errAndWarnings = w.ReloadModResources(ctx)
+	err = errAndWarnings.GetError()
+	w.endLoad(err)
+	return prevModResources, modResources, err
 }

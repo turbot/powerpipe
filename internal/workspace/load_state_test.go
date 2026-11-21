@@ -2,8 +2,10 @@ package workspace_test
 
 import (
 	"context"
+	"fmt"
 	"os"
 	"path/filepath"
+	"sync/atomic"
 	"testing"
 	"time"
 
@@ -230,10 +232,12 @@ func TestLoadState_FailedReload(t *testing.T) {
 	waitForLoadState(t, w, "the fixed file to load", loadedFile(t, modFile))
 }
 
-// while the workspace reloads, the load state says so and HoldLoaded fails at once; a holder delays the reload
+// a reload waits for a holder of the workspace, and says it is loading only once it has the workspace to itself;
+// while it says loading, HoldLoaded fails at once
 func TestLoadState_Loading(t *testing.T) {
 	w, dir := loadWatchedTestWorkspace(t, map[string]string{"mod.pp": loadStateTestMod})
 	modFile := filepath.Join(dir, "mod.pp")
+	count := w.LoadState().LoadCount
 
 	// hold the workspace, so that the reload waits
 	release, ok := w.HoldLoaded()
@@ -241,18 +245,16 @@ func TestLoadState_Loading(t *testing.T) {
 		t.Fatal("the loaded workspace cannot be held")
 	}
 	writeFile(t, modFile, loadStateTestMod+"\n# change 1\n")
-	state := waitForLoadState(t, w, "the reload to start", func(s workspace.LoadState) bool { return s.Loading })
-	if state.CurrentLoad == nil || state.LoadCount != 1 || state.LastLoad == nil || state.LastLoad.EndTime == nil {
-		t.Fatalf("while loading: %+v", state)
-	}
-	// the reload has not run: it waits for the holder
+	// the reload waits for the gate: from then on a new holder is refused
+	waitForRefusedHold(t, w)
+	// the reload has not started: it waits for the holder
 	time.Sleep(200 * time.Millisecond)
-	if state := w.LoadState(); !state.Loading || state.LoadCount != 1 {
+	if state := w.LoadState(); state.Loading || state.LoadCount != count {
 		t.Fatalf("a held workspace reloaded: %+v", state)
 	}
 	release()
-	state = waitForLoadState(t, w, "the reload after the release", loadedFile(t, modFile))
-	count := state.LoadCount
+	state := waitForLoadState(t, w, "the reload after the release", loadedFile(t, modFile))
+	count = state.LoadCount
 
 	// stop the next reload inside the load itself, as a slow load of a large workspace would be
 	w.LoadLock()
@@ -264,22 +266,15 @@ func TestLoadState_Loading(t *testing.T) {
 	})
 	writeFile(t, modFile, loadStateTestMod+"\n# change 2\n")
 	waitForLoadState(t, w, "the second reload to start", func(s workspace.LoadState) bool { return s.Loading })
-	deadline := time.Now().Add(10 * time.Second)
-	for {
-		start := time.Now()
-		release, ok := w.HoldLoaded()
-		if elapsed := time.Since(start); elapsed > time.Second {
-			t.Fatalf("HoldLoaded took %s during a reload", elapsed)
-		}
-		if !ok {
-			break
-		}
-		// the reload has not taken the gate yet
+	// the load state said loading: a run request is refused at once, with no wait for the gate to close
+	start := time.Now()
+	release, ok = w.HoldLoaded()
+	if elapsed := time.Since(start); elapsed > time.Second {
+		t.Fatalf("HoldLoaded took %s during a reload", elapsed)
+	}
+	if ok {
 		release()
-		if time.Now().After(deadline) {
-			t.Fatal("HoldLoaded still succeeds during a reload")
-		}
-		time.Sleep(10 * time.Millisecond)
+		t.Fatal("HoldLoaded succeeds while the load state says loading")
 	}
 	if retry := w.LoadState().RetryAfter(time.Now()); retry < time.Second || retry > 30*time.Second {
 		t.Fatalf("RetryAfter during a reload is %s, want between 1s and 30s", retry)
@@ -295,6 +290,80 @@ func TestLoadState_Loading(t *testing.T) {
 		t.Fatal("the workspace cannot be held after the reload")
 	}
 	release()
+}
+
+// the load state says loading exactly while the gate is closed: whenever a run request is let in, the load state
+// does not say loading, and once it says loading a run request is refused. Checked over several reloads.
+func TestLoadState_LoadingMeansRefused(t *testing.T) {
+	w, dir := loadWatchedTestWorkspace(t, map[string]string{"mod.pp": loadStateTestMod})
+	modFile := filepath.Join(dir, "mod.pp")
+
+	stop := make(chan struct{})
+	done := make(chan struct{})
+	var held, refused atomic.Int64
+	var violation atomic.Value
+	go func() {
+		defer close(done)
+		for {
+			select {
+			case <-stop:
+				return
+			default:
+			}
+			if release, ok := w.HoldLoaded(); ok {
+				held.Add(1)
+				// holding the gate: no load is in progress
+				if state := w.LoadState(); state.Loading {
+					violation.Store(fmt.Sprintf("a run request was let in while the load state said loading: %+v", state))
+				}
+				release()
+			} else {
+				refused.Add(1)
+			}
+			time.Sleep(time.Millisecond)
+		}
+	}()
+
+	count := w.LoadState().LoadCount
+	for i := 1; i <= 3; i++ {
+		writeFile(t, modFile, loadStateTestMod+fmt.Sprintf("\n# change %d\n", i))
+		count = waitForLoadState(t, w, "the reload", func(s workspace.LoadState) bool { return s.LoadCount > count && !s.Loading }).LoadCount
+	}
+	close(stop)
+	<-done
+	if v := violation.Load(); v != nil {
+		t.Fatal(v)
+	}
+	if held.Load() == 0 {
+		t.Fatal("no run request was ever let in")
+	}
+
+	// the load has finished: a run request is let in
+	release, ok := w.HoldLoaded()
+	if !ok {
+		t.Fatal("the workspace cannot be held after the reloads")
+	}
+	release()
+	if w.LoadState().Loading {
+		t.Fatal("the load state says loading after the reloads")
+	}
+}
+
+// waitForRefusedHold waits until HoldLoaded refuses, which it does once a reload waits for the gate
+func waitForRefusedHold(t *testing.T, w *workspace.PowerpipeWorkspace) {
+	t.Helper()
+	deadline := time.Now().Add(10 * time.Second)
+	for {
+		release, ok := w.HoldLoaded()
+		if !ok {
+			return
+		}
+		release()
+		if time.Now().After(deadline) {
+			t.Fatal("the reload never waited for the held workspace")
+		}
+		time.Sleep(10 * time.Millisecond)
+	}
 }
 
 func TestLoadState_RetryAfter(t *testing.T) {
