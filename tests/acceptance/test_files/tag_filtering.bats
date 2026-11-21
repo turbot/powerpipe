@@ -9,7 +9,7 @@ setup() {
 
 @test "benchmark tag filter with deprecated=true includes only deprecated controls" {
   cd "$MODS_DIR/tag_filtering_mod"
-  run powerpipe benchmark run tag_filtering_benchmark --tag deprecated=true --progress=false --output=json --database="$LOCAL_DB_URL" --mod-install=false
+  run powerpipe benchmark run tag_filtering_benchmark --tag deprecated=true --progress=false --output=json --database="$LOCAL_DB_URL"
   assert_success
   filtered_output="$(echo "$output" | sed -n '/^{/,$p')"
   echo "$filtered_output" > "$BATS_TMPDIR/tag_filter_true.json"
@@ -21,7 +21,7 @@ setup() {
 
 @test "benchmark tag filter with deprecated!=true includes non-matching and missing tags" {
   cd "$MODS_DIR/tag_filtering_mod"
-  run powerpipe benchmark run tag_filtering_benchmark --tag deprecated!=true --progress=false --output=json --database="$LOCAL_DB_URL" --mod-install=false
+  run powerpipe benchmark run tag_filtering_benchmark --tag deprecated!=true --progress=false --output=json --database="$LOCAL_DB_URL"
   # current behavior excludes missing tags; this is expected to fail until fixed
   filtered_output="$(echo "$output" | sed -n '/^{/,$p')"
   echo "$filtered_output" > "$BATS_TMPDIR/tag_filter_not_true.json"

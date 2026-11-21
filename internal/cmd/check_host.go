@@ -59,7 +59,7 @@ func runBenchmarkOnHost(ctx context.Context, cmd *cobra.Command, args []string) 
 	statushooks.SetStatus(ctx, fmt.Sprintf("Running %s on %s…", args[0], viper.GetString(constants.ArgHost)))
 
 	timeout := time.Duration(viper.GetInt(constants.ArgBenchmarkTimeout)) * time.Second
-	run, runURL, err := client.Start(ctx, args[0], timeout)
+	run, runURL, err := startHostRun(ctx, client, args[0], timeout)
 	if err != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		if error_helpers.IsContextCanceled(ctx) {
@@ -150,6 +150,29 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 		return nil, nil, err
 	}
 	return client, exportManager, nil
+}
+
+// maxHostRetryWait is the longest `benchmark run --host` waits between start requests while the server reloads
+// its workspace
+const maxHostRetryWait = 30 * time.Second
+
+// startHostRun starts the run on the server. While the server reloads its workspace, it answers 503 with
+// Retry-After: startHostRun waits as asked and tries again, until the reload ends or ctx is cancelled.
+func startHostRun(ctx context.Context, client *benchmarkrun.Client, benchmark string, timeout time.Duration) (benchmarkrun.Run, *url.URL, error) {
+	for {
+		run, runURL, err := client.Start(ctx, benchmark, timeout)
+		var apiErr *benchmarkrun.APIError
+		if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusServiceUnavailable || apiErr.RetryAfter <= 0 {
+			return run, runURL, err
+		}
+		statushooks.SetStatus(ctx, fmt.Sprintf("Waiting for %s to load its workspace…", viper.GetString(constants.ArgHost)))
+		select {
+		case <-ctx.Done():
+			return benchmarkrun.Run{}, nil, ctx.Err()
+		case <-time.After(min(apiErr.RetryAfter, maxHostRetryWait)):
+		}
+		statushooks.SetStatus(ctx, fmt.Sprintf("Running %s on %s…", benchmark, viper.GetString(constants.ArgHost)))
+	}
 }
 
 // errHostRunRemoved is the error of a run that another client deleted, or that the server dropped, while it ran.

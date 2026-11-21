@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"strconv"
 	"time"
 )
 
@@ -25,6 +26,8 @@ type Client struct {
 type APIError struct {
 	StatusCode int
 	Message    string
+	// RetryAfter is the wait the server asks for in a Retry-After header, in seconds, or zero
+	RetryAfter time.Duration
 }
 
 func (e *APIError) Error() string {
@@ -148,5 +151,14 @@ func (c *Client) do(ctx context.Context, method string, u *url.URL, body io.Read
 	case resp.StatusCode == http.StatusTooManyRequests:
 		message = fmt.Sprintf("the powerpipe server at %s is busy: %s", c.host.Redacted(), message)
 	}
-	return nil, &APIError{StatusCode: resp.StatusCode, Message: message}
+	return nil, &APIError{StatusCode: resp.StatusCode, Message: message, RetryAfter: retryAfter(resp.Header.Get("Retry-After"))}
+}
+
+// retryAfter returns the wait of a Retry-After header in seconds, or zero for a missing or other header
+func retryAfter(header string) time.Duration {
+	seconds, err := strconv.Atoi(header)
+	if err != nil || seconds <= 0 {
+		return 0
+	}
+	return time.Duration(seconds) * time.Second
 }

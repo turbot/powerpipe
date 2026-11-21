@@ -12,6 +12,24 @@ build:
 dashboard_assets:
 	$(MAKE) -C ui/dashboard
 
+# Builds the dashboard UI and writes the archive the binary embeds (internal/dashboardassets/assets.tar.gz).
+# The release build (Shipyard) runs it before goreleaser, with VERSION set to the release's version (1.6.1),
+# which becomes the UI's version. Without VERSION the UI has none, and skips its version check.
+# CI=false: on a CI runner, the UI build would otherwise fail on lint warnings.
+.PHONY: dashboard_assets_archive
+dashboard_assets_archive:
+	cd ui/dashboard && corepack yarn install --immutable && corepack yarn setup-material-symbols
+	cd ui/dashboard && rm -rf build && CI=false REACT_APP_VERSION=$(VERSION) corepack yarn build
+	if [ -n "$(VERSION)" ]; then printf '{"version":"%s"}\n' "$(VERSION)" > ui/dashboard/build/version.json; fi
+	tar -czf internal/dashboardassets/assets.tar.gz -C ui/dashboard/build .
+
+# The release's tests (Shipyard's results job runs them): the Go unit tests and the dashboard UI's unit tests.
+# Run dashboard_assets_archive first, which installs the UI's packages.
+.PHONY: release_test
+release_test:
+	go test ./...
+	cd ui/dashboard && CI=true corepack yarn test --watchAll=false
+
 .PHONY: all
 all:
 	$(MAKE) build
@@ -30,24 +48,6 @@ release-dry-run:
 		ghcr.io/turbot/goreleaser-cross:${GOLANG_CROSS_VERSION} \
 		--clean --skip=validate --skip=publish --snapshot
 
-
-.PHONY: release
-release:
-	@if [ ! -f ".release-env" ]; then \
-		echo ".release-env is required for release";\
-		exit 1;\
-	fi
-	docker run \
-		--rm \
-		--platform=linux/arm64 \
-		-e CGO_ENABLED=1 \
-		--env-file .release-env \
-		-v /var/run/docker.sock:/var/run/docker.sock \
-		-v `pwd`:/go/src/powerpipe \
-		-v `pwd`/../pipe-fittings:/go/src/pipe-fittings \
-		-w /go/src/powerpipe \
-		ghcr.io/turbot/goreleaser-cross:${GOLANG_CROSS_VERSION} \
-		release --clean --skip=validate
 
 # Run the test generator to create the acceptance tests(update the paths in main function in tests/acceptance/test_generator/generate.go)
 build-tests:
