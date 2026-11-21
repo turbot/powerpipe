@@ -108,7 +108,7 @@ Output format: TAP (Test Anything Protocol).
 | `STEAMPIPE_INTROSPECTION` | info |
 | `POWERPIPE_DISPLAY_WIDTH` | 100 (for rendering tests) |
 
-### Test Files (16 files, 242 tests)
+### Test Files (16 files, 243 tests)
 
 | File | Purpose |
 |------|---------|
