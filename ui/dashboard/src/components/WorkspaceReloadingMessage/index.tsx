@@ -1,5 +1,4 @@
 import LoadingIndicator from "@powerpipe/components/dashboards/LoadingIndicator";
-import useWorkspaceLoading from "@powerpipe/hooks/useWorkspaceLoading";
 import { DashboardDataModeLive } from "@powerpipe/types";
 import { useDashboardState } from "@powerpipe/hooks/useDashboardState";
 import { useRef } from "react";
@@ -15,11 +14,12 @@ const WorkspaceReloadingMessage = () => (
 );
 
 // Shows a message while the server reloads its workspace, after a change to a mod or variable file or to the installed
-// mods. A workspace error that arrives during the reload replaces it. An error that was already on screen when the
+// mods. The server pushes its load state over the WebSocket, when the page connects and when a load starts and ends
+// (workspace_load_state), so a page opened during a reload shows the message too, and nothing is polled. A workspace error that arrives during the reload replaces it. An error that was already on screen when the
 // reload began does not hide it, nor does clearing it: it is the reload the person started to fix it. A snapshot has no workspace to reload.
 const WorkspaceReloadingMessageWrapper = () => {
-  const { dataMode, error } = useDashboardState();
-  const loading = useWorkspaceLoading(dataMode === DashboardDataModeLive);
+  const { dataMode, error, workspaceLoading } = useDashboardState();
+  const loading = dataMode === DashboardDataModeLive && workspaceLoading;
   const errorWhenLoadingStarted = useRef(error);
   const wasLoading = useRef(false);
   if (loading && !wasLoading.current) {

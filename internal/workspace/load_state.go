@@ -31,6 +31,13 @@ type LoadState struct {
 	LastLoad *LoadInfo `json:"last_load,omitempty"`
 }
 
+// LoadStateChanged is the dashboard event raised when a load starts and when it ends, so that the dashboard server
+// can tell its clients. It carries nothing: a handler reads LoadState, which is then at least as new as the change.
+type LoadStateChanged struct{}
+
+// IsDashboardEvent implements DashboardEvent interface
+func (*LoadStateChanged) IsDashboardEvent() {}
+
 // LoadInfo describes one load of the workspace
 type LoadInfo struct {
 	StartTime time.Time  `json:"start_time"`

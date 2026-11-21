@@ -1,37 +1,56 @@
+import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import WorkspaceReloadingMessage from "./index";
-import { act, render, screen } from "@testing-library/react";
 import {
+  DashboardActions,
+  DashboardDataMode,
   DashboardDataModeCLISnapshot,
   DashboardDataModeLive,
 } from "@powerpipe/types";
+import {
+  DashboardStateProvider,
+  useDashboardState,
+} from "@powerpipe/hooks/useDashboardState";
+import { act, render, screen } from "@testing-library/react";
 
-// The real message and hook run, over a fetch that answers a reload in progress. The dashboard state is the only
-// stand-in: the message reads its data mode and error.
+// The real state, event handler and message run. The only stand-in is the WebSocket: the test hands the event
+// handler the messages the server sends, as the WebSocket hook does.
 
-let mockDashboardState: { dataMode: string; error: unknown };
+const loadState = (loading: boolean, load_count = 2) => ({
+  action: "workspace_load_state",
+  load_state: { loading, load_count },
+});
 
-jest.mock("@powerpipe/hooks/useDashboardState", () => ({
-  useDashboardState: () => mockDashboardState,
-}));
+let send: (event: any) => void;
+
+const Harness = () => {
+  const { dispatch } = useDashboardState();
+  const { eventHandler } = useDashboardWebSocketEventHandler(dispatch, {});
+  send = (event) => act(() => eventHandler(event));
+  return <WorkspaceReloadingMessage />;
+};
+
+const renderPage = (dataMode: DashboardDataMode = DashboardDataModeLive) =>
+  render(
+    <DashboardStateProvider
+      analyticsContext={{
+        setMetadata: () => {},
+        setSelectedDashboard: () => {},
+      }}
+      breakpointContext={{}}
+      dataMode={dataMode}
+      rootPathname="/"
+      versionMismatchCheck={false}
+    >
+      <Harness />
+    </DashboardStateProvider>,
+  );
 
 const originalFetch = global.fetch;
 
-const renderDuringReload = async () => {
-  render(<WorkspaceReloadingMessage />);
-  await act(async () => {
-    jest.advanceTimersByTime(0);
-  });
-};
-
 beforeEach(() => {
   jest.useFakeTimers();
-  mockDashboardState = { dataMode: DashboardDataModeLive, error: null };
   global.fetch = jest.fn(() =>
-    Promise.resolve({
-      ok: true,
-      status: 200,
-      json: () => Promise.resolve({ loading: true }),
-    }),
+    Promise.reject(new Error("the page must not poll the server")),
   ) as unknown as typeof fetch;
 });
 
@@ -41,63 +60,71 @@ afterEach(() => {
 });
 
 describe("WorkspaceReloadingMessage", () => {
-  test("shows the message while the server reloads", async () => {
-    await renderDuringReload();
+  test("shows nothing before the server says a reload is running", () => {
+    renderPage();
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  test("a page opened mid-reload shows the message from the first message the server sends", () => {
+    renderPage();
+    send(loadState(true));
     expect(screen.getByRole("status").textContent).toContain(
       "Reloading the workspace",
     );
   });
 
-  test("shows nothing when no reload runs", async () => {
-    global.fetch = jest.fn(() =>
-      Promise.resolve({
-        ok: true,
-        status: 200,
-        json: () => Promise.resolve({ loading: false }),
-      }),
-    ) as unknown as typeof fetch;
-    await renderDuringReload();
+  test("the message goes when the server says the reload has ended", () => {
+    renderPage();
+    send(loadState(true));
+    send(loadState(false, 3));
     expect(screen.queryByRole("status")).toBeNull();
   });
 
-  test("a workspace error that arrives during the reload replaces the message", async () => {
-    const { rerender } = render(<WorkspaceReloadingMessage />);
-    await act(async () => {
-      jest.advanceTimersByTime(0);
+  test("a message that says no reload runs shows nothing", () => {
+    renderPage();
+    send(loadState(false, 1));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  test("a workspace error that arrives during the reload replaces the message", () => {
+    renderPage();
+    send(loadState(true));
+    expect(screen.getByRole("status")).not.toBeNull();
+    send({ action: DashboardActions.WORKSPACE_ERROR, error: "bad mod" });
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  test("an error left on screen by an earlier failure does not hide the next reload", () => {
+    renderPage();
+    send({ action: DashboardActions.WORKSPACE_ERROR, error: "bad mod" });
+    send(loadState(true));
+    expect(screen.getByRole("status")).not.toBeNull();
+  });
+
+  test("clearing an earlier error during the reload keeps the message", () => {
+    renderPage();
+    send({ action: DashboardActions.WORKSPACE_ERROR, error: "bad mod" });
+    send(loadState(true));
+    send({ action: DashboardActions.WORKSPACE_ERROR, error: null });
+    expect(screen.getByRole("status")).not.toBeNull();
+  });
+
+  test("a snapshot shows no message", () => {
+    renderPage(DashboardDataModeCLISnapshot);
+    send(loadState(true));
+    expect(screen.queryByRole("status")).toBeNull();
+  });
+
+  test("no request is made, however long the page stays open, idle or mid-reload", () => {
+    renderPage();
+    send(loadState(false, 1));
+    act(() => {
+      jest.advanceTimersByTime(60 * 60 * 1000);
     });
-    expect(screen.getByRole("status")).not.toBeNull();
-
-    mockDashboardState = { dataMode: DashboardDataModeLive, error: "bad mod" };
-    rerender(<WorkspaceReloadingMessage />);
-    expect(screen.queryByRole("status")).toBeNull();
-  });
-
-  test("an error left on screen by an earlier failure does not hide the next reload", async () => {
-    mockDashboardState = { dataMode: DashboardDataModeLive, error: "bad mod" };
-    await renderDuringReload();
-    expect(screen.getByRole("status")).not.toBeNull();
-  });
-
-  test("clearing an earlier error during the reload keeps the message", async () => {
-    mockDashboardState = { dataMode: DashboardDataModeLive, error: "bad mod" };
-    const { rerender } = render(<WorkspaceReloadingMessage />);
-    await act(async () => {
-      jest.advanceTimersByTime(0);
+    send(loadState(true));
+    act(() => {
+      jest.advanceTimersByTime(60 * 60 * 1000);
     });
-    expect(screen.getByRole("status")).not.toBeNull();
-
-    mockDashboardState = { dataMode: DashboardDataModeLive, error: null };
-    rerender(<WorkspaceReloadingMessage />);
-    expect(screen.getByRole("status")).not.toBeNull();
-  });
-
-  test("a snapshot shows no message and asks the server nothing", async () => {
-    mockDashboardState = {
-      dataMode: DashboardDataModeCLISnapshot,
-      error: null,
-    };
-    await renderDuringReload();
-    expect(screen.queryByRole("status")).toBeNull();
     expect(global.fetch).not.toHaveBeenCalled();
   });
 });

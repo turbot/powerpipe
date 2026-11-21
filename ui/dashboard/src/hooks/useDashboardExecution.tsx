@@ -68,11 +68,23 @@ export const DashboardExecutionProvider = ({
     dispatch,
     eventHooks,
   );
-  const { send: sendMessage } = useDashboardWebSocket(
+  const { ready, send: sendMessage } = useDashboardWebSocket(
     dataMode,
     eventHandler,
     socketUrlFactory,
   );
+
+  // A server that is gone cannot say its reload has ended. The server tells the page its load state again when the
+  // WebSocket reconnects.
+  useEffect(() => {
+    if (!ready) {
+      dispatch({
+        type: DashboardActions.WORKSPACE_LOAD_STATE,
+        load_state: { loading: false },
+      });
+    }
+  }, [ready, dispatch]);
+
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
   const { range, supportsTimeRange } = useDashboardDatetimeRange();
