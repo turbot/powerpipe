@@ -4,7 +4,17 @@ import { forwardRef } from "react";
 import { ThemeNames } from "@powerpipe/hooks/useTheme";
 import { useDashboardTheme } from "@powerpipe/hooks/useDashboardTheme";
 
-const SearchInput = forwardRef(
+const SearchInput = forwardRef<
+  HTMLInputElement,
+  {
+    className?: string;
+    disabled?: boolean;
+    placeholder?: string;
+    readOnly?: boolean;
+    setValue: (value: string) => void;
+    value: string;
+  }
+>(
   (
     {
       className,
@@ -13,13 +23,6 @@ const SearchInput = forwardRef(
       readOnly = false,
       setValue,
       value,
-    }: {
-      className?: string;
-      disabled?: boolean;
-      placeholder?: string;
-      readOnly?: boolean;
-      setValue: (value: string) => void;
-      value: string;
     },
     ref,
   ) => {

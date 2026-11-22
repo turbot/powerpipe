@@ -321,6 +321,12 @@ const reducer = (state: IDashboardContext, action) => {
       return { ...state, overlayVisible: action.value };
     case DashboardActions.WORKSPACE_ERROR:
       return { ...state, error: action.error };
+    case DashboardActions.WORKSPACE_LOAD_STATE: {
+      const workspaceLoading = action.load_state?.loading === true;
+      return workspaceLoading === state.workspaceLoading
+        ? state
+        : { ...state, workspaceLoading };
+    }
     default:
       console.warn(`Unsupported action ${action.type}`, action);
       return state;
@@ -338,6 +344,7 @@ const getInitialState = (defaults: any = {}) => {
     dataMode: defaults.dataMode || DashboardDataModeLive,
     snapshotId: defaults.snapshotId ? defaults.snapshotId : null,
     error: null,
+    workspaceLoading: false,
     panelsLog: {},
     panelsMap: {},
     dashboard: null,

@@ -222,6 +222,30 @@ export type DisplayGroupType =
   | CheckDisplayGroupType
   | DetectionDisplayGroupType;
 
+// The group types each tree builder can draw. The control builder
+// (useBenchmarkGrouping) and the detection builder (useDetectionGrouping)
+// throw on any other type.
+export const checkDisplayGroupTypes: CheckDisplayGroupType[] = [
+  "benchmark",
+  "control",
+  "control_tag",
+  "dimension",
+  "reason",
+  "resource",
+  "result",
+  "severity",
+  "status",
+];
+
+export const detectionDisplayGroupTypes: DetectionDisplayGroupType[] = [
+  "benchmark",
+  "detection",
+  "detection_tag",
+  "dimension",
+  "result",
+  "severity",
+];
+
 export type CheckDisplayGroup = {
   type: DisplayGroupType;
   value?: string | undefined;

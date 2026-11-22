@@ -297,7 +297,11 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		return
 	}
 
-	controlExecutionCtx := r.getControlQueryContext(ctx)
+	// cancel the query when we stop reading its rows for any reason (a cancel, a timeout, a bad row):
+	// the row reader gives up its connection once nobody reads from it (#1260).
+	// This is safe after a normal finish as the rows are closed by then.
+	controlExecutionCtx, stopQuery := context.WithCancel(r.getControlQueryContext(ctx))
+	defer stopQuery()
 
 	// execute the control query
 	// NOTE no need to pass an OnComplete callback - we are already closing our session after waiting for results
@@ -361,6 +365,12 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 		case row := <-r.queryResult.RowChan:
 			// nil row means control run is complete
 			if row == nil {
+				// the rows end early when the query is cancelled or times out (the reader stops
+				// sending when the context ends): report that, not a complete run with part of its rows
+				if ctx.Err() != nil {
+					r.setError(ctx, ctx.Err())
+					return
+				}
 				// nil row means we are done
 				r.setRunStatus(ctx, dashboardtypes.RunComplete)
 				r.createdOrderedResultRows()

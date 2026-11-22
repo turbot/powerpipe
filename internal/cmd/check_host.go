@@ -8,11 +8,13 @@ import (
 	"net/http"
 	"net/url"
 	"os"
+	"sort"
 	"strings"
 	"time"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
+	"github.com/turbot/pipe-fittings/v2/app_specific"
 	"github.com/turbot/pipe-fittings/v2/constants"
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
@@ -59,7 +61,7 @@ func runBenchmarkOnHost(ctx context.Context, cmd *cobra.Command, args []string) 
 	statushooks.SetStatus(ctx, fmt.Sprintf("Running %s on %s…", args[0], viper.GetString(constants.ArgHost)))
 
 	timeout := time.Duration(viper.GetInt(constants.ArgBenchmarkTimeout)) * time.Second
-	run, runURL, err := client.Start(ctx, args[0], timeout)
+	run, runURL, err := startHostRun(ctx, client, args[0], timeout)
 	if err != nil {
 		exitCode = constants.ExitCodeInitializationFailed
 		if error_helpers.IsContextCanceled(ctx) {
@@ -130,8 +132,15 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 			unsupported = append(unsupported, "--"+name)
 		}
 	}
+	// the server runs with the variable values it loaded: a variable set in the environment would be ignored
+	envVars := hostIgnoredEnvVars(os.Environ())
+	unsupported = append(unsupported, envVars...)
 	if len(unsupported) > 0 {
-		return nil, nil, fmt.Errorf("%s cannot be used with --%s", strings.Join(unsupported, ", "), constants.ArgHost)
+		msg := fmt.Sprintf("%s cannot be used with --%s", strings.Join(unsupported, ", "), constants.ArgHost)
+		if len(envVars) > 0 {
+			msg += fmt.Sprintf(": the server runs with its own variable values, so unset %s or run without --%s", strings.Join(envVars, ", "), constants.ArgHost)
+		}
+		return nil, nil, errors.New(msg)
 	}
 	switch viper.GetString(constants.ArgOutput) {
 	case constants.OutputFormatNone, constants.OutputFormatSnapshot, localconstants.OutputFormatPpSnapshotShort:
@@ -150,6 +159,48 @@ func validateHostArgs(cmd *cobra.Command, args []string) (*benchmarkrun.Client, 
 		return nil, nil, err
 	}
 	return client, exportManager, nil
+}
+
+// hostIgnoredEnvVars returns the names of the variable values (PP_VAR_<name>) set in env, sorted. A run on a
+// server uses the variable values the server loaded, so these would be ignored.
+func hostIgnoredEnvVars(env []string) []string {
+	prefix := app_specific.EnvInputVarPrefix
+	if prefix == "" {
+		return nil
+	}
+	var names []string
+	for _, entry := range env {
+		name, _, found := strings.Cut(entry, "=")
+		// skip an entry that is not name=value, and a bare prefix with no name
+		if found && len(name) > len(prefix) && strings.HasPrefix(name, prefix) {
+			names = append(names, name)
+		}
+	}
+	sort.Strings(names)
+	return names
+}
+
+// maxHostRetryWait is the longest `benchmark run --host` waits between start requests while the server reloads
+// its workspace
+const maxHostRetryWait = 30 * time.Second
+
+// startHostRun starts the run on the server. While the server reloads its workspace, it answers 503 with
+// Retry-After: startHostRun waits as asked and tries again, until the reload ends or ctx is cancelled.
+func startHostRun(ctx context.Context, client *benchmarkrun.Client, benchmark string, timeout time.Duration) (benchmarkrun.Run, *url.URL, error) {
+	for {
+		run, runURL, err := client.Start(ctx, benchmark, timeout)
+		var apiErr *benchmarkrun.APIError
+		if !errors.As(err, &apiErr) || apiErr.StatusCode != http.StatusServiceUnavailable || apiErr.RetryAfter <= 0 {
+			return run, runURL, err
+		}
+		statushooks.SetStatus(ctx, fmt.Sprintf("Waiting for %s to load its workspace…", viper.GetString(constants.ArgHost)))
+		select {
+		case <-ctx.Done():
+			return benchmarkrun.Run{}, nil, ctx.Err()
+		case <-time.After(min(apiErr.RetryAfter, maxHostRetryWait)):
+		}
+		statushooks.SetStatus(ctx, fmt.Sprintf("Running %s on %s…", benchmark, viper.GetString(constants.ArgHost)))
+	}
 }
 
 // errHostRunRemoved is the error of a run that another client deleted, or that the server dropped, while it ran.
