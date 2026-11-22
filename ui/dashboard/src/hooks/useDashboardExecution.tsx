@@ -2,6 +2,7 @@ import path from "path";
 import useDashboardWebSocket, {
   SocketActions,
 } from "@powerpipe/hooks/useDashboardWebSocket";
+import useClearWorkspaceLoadingOnClose from "@powerpipe/hooks/useClearWorkspaceLoadingOnClose";
 import useDashboardWebSocketEventHandler from "@powerpipe/hooks/useDashboardWebSocketEventHandler";
 import useDeepCompareEffect from "use-deep-compare-effect";
 import useGlobalContextNavigate from "@powerpipe/hooks/useGlobalContextNavigate";
@@ -68,11 +69,13 @@ export const DashboardExecutionProvider = ({
     dispatch,
     eventHooks,
   );
-  const { send: sendMessage } = useDashboardWebSocket(
+  const { ready, send: sendMessage } = useDashboardWebSocket(
     dataMode,
     eventHandler,
     socketUrlFactory,
   );
+
+  useClearWorkspaceLoadingOnClose(ready, dispatch);
   const { inputs, lastChangedInput, setLastChangedInput } =
     useDashboardInputs();
   const { range, supportsTimeRange } = useDashboardDatetimeRange();

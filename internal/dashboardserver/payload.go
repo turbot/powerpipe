@@ -19,6 +19,7 @@ import (
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/resources"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
 )
 
@@ -309,6 +310,10 @@ func buildAvailableDashboardsPayload(workspaceResources *resources.PowerpipeModR
 	}
 
 	return json.Marshal(payload)
+}
+
+func buildWorkspaceLoadStatePayload(state workspace.LoadState) ([]byte, error) {
+	return json.Marshal(WorkspaceLoadStatePayload{Action: "workspace_load_state", LoadState: state})
 }
 
 func buildWorkspaceErrorPayload(e *dashboardevents.WorkspaceError) ([]byte, error) {

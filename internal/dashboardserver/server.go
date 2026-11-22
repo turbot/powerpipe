@@ -56,6 +56,9 @@ func NewServer(ctx context.Context, initData *initialisation.InitData, webSocket
 	}
 
 	w.RegisterDashboardEventHandler(ctx, server.HandleDashboardEvent)
+	// tell the clients when a load starts and ends, at once and not through the dashboard events: the handler of an
+	// earlier event can wait for the reload to end, and the start would then be told after the end
+	w.SetLoadStateListener(server.broadcastLoadState)
 
 	// --watch (or watch in the workspace) turns the watchers off: the server then loads the workspace once, and a
 	// restart picks up changes
@@ -356,7 +359,9 @@ func (s *Server) InitAsync(ctx context.Context) {
 		// Return list of dashboards on connect
 		s.webSocket.HandleConnect(func(session *melody.Session) {
 			slog.Debug("client connected")
-			s.addSession(session)
+			// the client learns at once whether the workspace is loading, also when it connects during a reload:
+			// LoadState does not wait for the reload
+			s.addSessionAndSendLoadState(session)
 		})
 
 		s.webSocket.HandleDisconnect(func(session *melody.Session) {
@@ -463,14 +468,34 @@ func (s *Server) clearSession(ctx context.Context, session *melody.Session) {
 	s.deleteDashboardClient(sessionId)
 }
 
-func (s *Server) addSession(session *melody.Session) {
-	sessionId := s.getSessionId(session)
+// addSessionAndSendLoadState adds the session and sends it the load state of the workspace, as one step with
+// broadcastLoadState: a client is sent the load states in the order they were read, so that a load state that ends a
+// reload is never followed by an older one that says loading
+func (s *Server) addSessionAndSendLoadState(session *melody.Session) {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	s.dashboardClients[s.getSessionId(session)] = &DashboardClientInfo{Session: session}
 
-	clientSession := &DashboardClientInfo{
-		Session: session,
+	payload, err := buildWorkspaceLoadStatePayload(s.workspace.LoadState())
+	if err != nil {
+		slog.Warn("failed to build the workspace load state payload", "error", err.Error())
+		return
 	}
+	_ = session.Write(payload)
+}
 
-	s.addDashboardClient(sessionId, clientSession)
+// broadcastLoadState sends the load state of the workspace, as it is now, to every connected client
+func (s *Server) broadcastLoadState() {
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+	payload, err := buildWorkspaceLoadStatePayload(s.workspace.LoadState())
+	if err != nil {
+		slog.Warn("failed to build the workspace load state payload", "error", err.Error())
+		return
+	}
+	for _, client := range s.dashboardClients {
+		_ = client.Session.Write(payload)
+	}
 }
 
 func (s *Server) setDashboardInputsForSession(sessionId string, inputs *dashboardexecute.InputValues) {
@@ -511,12 +536,6 @@ func (s *Server) getDashboardClients() map[string]*DashboardClientInfo {
 	defer s.mutex.Unlock()
 
 	return s.dashboardClients
-}
-
-func (s *Server) addDashboardClient(sessionId string, clientSession *DashboardClientInfo) {
-	s.mutex.Lock()
-	s.dashboardClients[sessionId] = clientSession
-	s.mutex.Unlock()
 }
 
 func (s *Server) deleteDashboardClient(sessionId string) {

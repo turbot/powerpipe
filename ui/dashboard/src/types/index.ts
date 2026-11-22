@@ -23,6 +23,9 @@ export type IDashboardContext = {
 
   error: any;
 
+  // true while the server reloads its workspace, as it last told us over the WebSocket
+  workspaceLoading: boolean;
+
   overlayVisible: boolean;
 
   panelsLog: PanelsLog;
@@ -138,6 +141,7 @@ export const DashboardActions: IActions = {
   SET_DASHBOARD_TAG_KEYS: "set_dashboard_tag_keys",
   SET_DATA_MODE: "set_data_mode",
   WORKSPACE_ERROR: "workspace_error",
+  WORKSPACE_LOAD_STATE: "workspace_load_state",
 };
 
 type DashboardExecutionEventSchemaVersion =
