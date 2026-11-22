@@ -1,3 +1,18 @@
+## [1.8.0] - 2026-11-22
+
+### What's new
+
+- When you change a mod or variable file, or run `mod install`, `update` or `uninstall`, the dashboard now shows "Reloading the workspace…" until `powerpipe server` has loaded the change, also on a page you open during the reload. (#1268)
+
+### Bug fixes
+
+- A dashboard link with a broken or out-of-date `grouping` parameter now opens the benchmark with its default grouping, instead of an error that hides the whole dashboard. (#1110)
+- The benchmark Filter & Group editor now adds new levels above Result, says why Apply is disabled, and stops you saving empty or repeated levels. Reset always brings back the default grouping, and your edits stay while a benchmark is still running. (#1111)
+- A `powerpipe server` on SQLite now keeps running benchmarks and dashboards after cancelled or timed-out benchmark runs, which used to leave it stuck after 10 such runs. (#1261)
+- `powerpipe server --watch=false` and `watch = false` in a workspace now stop the server reloading when mod files or installed mods change. (#1264)
+- `benchmark run --host` now makes sure your results use the values you expect: it stops with a clear error when a `PP_VAR_<name>` variable is set, as it already does for `--var`, because a run on a server always uses the server's variable values. (#1271)
+- A SQLite dashboard panel that runs past the dashboard timeout now shows the timeout error, so you can tell a slow query from an empty result. It used to show as complete with no rows. (#1273)
+
 ## [1.7.0] - 2026-11-21
 
 ### Before you upgrade

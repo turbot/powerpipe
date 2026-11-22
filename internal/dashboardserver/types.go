@@ -8,6 +8,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/utils"
 	"github.com/turbot/powerpipe/internal/controlstatus"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
+	"github.com/turbot/powerpipe/internal/workspace"
 	"gopkg.in/olahol/melody.v1"
 )
 
@@ -36,6 +37,13 @@ func (lp ListenPort) IsValid() error {
 		return fmt.Errorf("invalid port - must be within range (1:65535)")
 	}
 	return nil
+}
+
+// WorkspaceLoadStatePayload tells a client whether the server is loading its workspace. It is sent when the client
+// connects, and to every client when a load starts and when it ends.
+type WorkspaceLoadStatePayload struct {
+	Action    string              `json:"action"`
+	LoadState workspace.LoadState `json:"load_state"`
 }
 
 type ErrorPayload struct {

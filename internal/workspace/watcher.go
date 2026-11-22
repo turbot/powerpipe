@@ -87,11 +87,13 @@ func (w *PowerpipeWorkspace) loadUnderGate(ctx context.Context) (prevModResource
 	// the load starts before the files are listed, so a change seen after this counts this load as one that
 	// started before it (reloadUnlessLoadedSince does not skip for it), and a change seen before it is listed
 	w.startLoad(nil)
+	w.notifyLoadStateListener()
 	// before the load reads the files, so that a change made after this is not reported as loaded
 	w.setNewestFileTime(w.newestFileTime(ctx))
 	var errAndWarnings error_helpers.ErrorAndWarnings
 	prevModResources, modResources, errAndWarnings = w.ReloadModResources(ctx)
 	err = errAndWarnings.GetError()
 	w.endLoad(err)
+	w.notifyLoadStateListener()
 	return prevModResources, modResources, err
 }
