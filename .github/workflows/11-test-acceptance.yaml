@@ -7,7 +7,7 @@ on:
     branches:
       - main
   workflow_dispatch:
-  pull_request:
+  # Pull requests run this through 09-ci.yaml (workflow_call above), so each job runs once per PR.
 
 permissions:
   contents: read
