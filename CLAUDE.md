@@ -317,7 +317,8 @@ Uncomment for local development against `../pipe-fittings`. **Re-comment before 
 - **Base branch**: `develop` for all work
 - **Main branch**: `main` takes release PRs only (`release/<version>` → `main`)
 - **PR titles**: End with `closes #XXXX` for bug fixes
-- **Changelog line**: every PR into `develop` that changes a shipped file carries one `Changelog:` line in its body (the `changelog-line` check). Files that ship nothing are listed in `.github/release.json` (`notShipped`)
+- **Changelog line**: every PR into `develop` that changes a shipped file carries one `Changelog:` line in its body (the `shipyard/changelog-line` status, which `shipyard-pr.yml` posts). Files that ship nothing are listed in `.github/release.json` (`notShipped`)
+- **PR checks**: `09-ci.yaml` runs every PR check. Its `ci` job and `shipyard/changelog-line` are the two checks `develop` requires. Add a new PR check as a job there and list it in the `ci` job's `needs`
 - **Small PRs**: One logical change per PR
 
 ## Gotchas
@@ -351,7 +352,7 @@ ship.yml: build ──► tag + GitHub Release + merge-back of main into develop
 ```
 
 - `.github/release.json`: product, `notShipped`, the start, the ask channel and the changelog page.
-- `.github/workflows/`: `release-start.yml`, `prep.yml`, `release.yml` (the cut), `release-pr.yml` (results and record), `ask.yml`, `ship.yml`, `announce.yml`, `changelog-line.yml`.
+- `.github/workflows/`: `release-start.yml`, `prep.yml`, `release.yml` (the cut), `release-pr.yml` (results and record), `ask.yml`, `ship.yml`, `announce.yml`, and `shipyard-pr.yml` (the PR check, the same file in every Shipyard repo).
 - The release build runs `make dashboard_assets_archive` (the UI, built into `internal/dashboardassets/assets.tar.gz`) before goreleaser, and the release PR's tests run `make release_test`.
 - A release that merged but did not ship (its ship job broke) is finished by a re-ship: `release.yml` with `reship` and `fixes`.
 - The `.claude/skills/release` skill has the steps.
