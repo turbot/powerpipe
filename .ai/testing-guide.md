@@ -108,7 +108,7 @@ Output format: TAP (Test Anything Protocol).
 | `STEAMPIPE_INTROSPECTION` | info |
 | `POWERPIPE_DISPLAY_WIDTH` | 100 (for rendering tests) |
 
-### Test Files (15 files, 233 tests)
+### Test Files (16 files, 243 tests)
 
 | File | Purpose |
 |------|---------|
@@ -127,6 +127,7 @@ Output format: TAP (Test Anything Protocol).
 | `resource_show_outputs.bats` | Resource display |
 | `sp_files.bats` | Legacy .sp file support |
 | `tag_filtering.bats` | Tag-based filtering |
+| `server.bats` | `powerpipe server` end to end: workspace load state, 503 during a reload, `--host` runs, reload after mod commands |
 
 ### Test Pattern
 

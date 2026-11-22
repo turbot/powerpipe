@@ -55,6 +55,17 @@ var ErrNotComplete = errors.New("benchmark run is not complete")
 // ErrTooManyRuns is returned by Start when the runner already runs its maximum number of runs
 var ErrTooManyRuns = errors.New("too many benchmark runs are running, try again when one has finished")
 
+// WorkspaceLoadingError is returned while the workspace reloads after a change to its files, for a request that
+// needs the workspace: a benchmark is resolved only once the change has loaded
+type WorkspaceLoadingError struct {
+	// RetryAfter is how long to wait before trying again
+	RetryAfter time.Duration
+}
+
+func (e *WorkspaceLoadingError) Error() string {
+	return "the workspace is loading a change to its files, try again when it has loaded"
+}
+
 // BenchmarkNotFoundError is returned by Start for a name that does not resolve to a benchmark
 type BenchmarkNotFoundError struct {
 	Err error
@@ -109,7 +120,15 @@ func NewRunner(w *workspace.PowerpipeWorkspace, client *db_client.DbClient, idle
 // Start starts a run of the benchmark, and returns once its controls are resolved. The benchmark can be
 // named in any form that `powerpipe benchmark run` accepts.
 // timeout limits the run, as --benchmark-timeout does for `powerpipe benchmark run`. Zero means no limit.
+// While the workspace reloads, Start returns a WorkspaceLoadingError at once, rather than wait for the reload.
 func (r *Runner) Start(benchmark string, timeout time.Duration) (Run, error) {
+	// a reload waits until the controls of the run are resolved
+	release, err := r.holdWorkspace()
+	if err != nil {
+		return Run{}, err
+	}
+	defer release()
+
 	name, targets, err := r.resolve(benchmark)
 	if err != nil {
 		return Run{}, err
@@ -164,7 +183,17 @@ func (r *Runner) Start(benchmark string, timeout time.Duration) (Run, error) {
 	return r.state(run), nil
 }
 
-// resolve returns the full name of the benchmark and the targets to run
+// holdWorkspace holds the workspace as it is loaded until release is called, or returns a WorkspaceLoadingError
+// while it reloads
+func (r *Runner) holdWorkspace() (release func(), err error) {
+	release, ok := r.workspace.HoldLoaded()
+	if !ok {
+		return nil, &WorkspaceLoadingError{RetryAfter: r.workspace.LoadState().RetryAfter(time.Now())}
+	}
+	return release, nil
+}
+
+// resolve returns the full name of the benchmark and the targets to run. The caller holds the workspace.
 func (r *Runner) resolve(benchmark string) (string, []modconfig.ModTreeItem, error) {
 	targets, err := cmdconfig.ResolveTargets[*resources.Benchmark]([]string{benchmark}, r.workspace)
 	if err == nil && len(targets) == 0 {
@@ -221,7 +250,8 @@ func (r *Runner) finish(ctx context.Context, run *Run, err error) {
 }
 
 // find returns the run with the id, if it is a run of the benchmark. The benchmark can be named in any
-// form that Start accepts.
+// form that Start accepts. A name other than the full name needs the workspace, so it returns a
+// WorkspaceLoadingError while the workspace reloads.
 func (r *Runner) find(benchmark, id string) (*Run, error) {
 	r.mu.Lock()
 	run, ok := r.runs[id]
@@ -230,7 +260,15 @@ func (r *Runner) find(benchmark, id string) (*Run, error) {
 		return nil, ErrNotFound
 	}
 	if benchmark != run.Benchmark {
-		if name, _, err := r.resolve(benchmark); err != nil || name != run.Benchmark {
+		// the URL of the run has the full name, which needs no workspace, so that a client can follow its run
+		// while the workspace reloads
+		release, err := r.holdWorkspace()
+		if err != nil {
+			return nil, err
+		}
+		name, _, err := r.resolve(benchmark)
+		release()
+		if err != nil || name != run.Benchmark {
 			return nil, ErrNotFound
 		}
 	}

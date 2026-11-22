@@ -166,8 +166,10 @@ func extractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error 
 			continue
 		}
 
-		//nolint:gosec // known archive
-		target := filepath.Join(dest, header.Name)
+		target, err := assetTarget(dest, header.Name)
+		if err != nil {
+			return err
+		}
 
 		switch header.Typeflag {
 		case tar.TypeDir:
@@ -190,4 +192,15 @@ func extractTarGz(ctx context.Context, gzipStream io.Reader, dest string) error 
 			return sperr.New("ExtractTarGz: uknown type: %b in %s", header.Typeflag, header.Name)
 		}
 	}
+}
+
+// assetTarget returns the path an archive entry is written to under dest. It refuses an
+// entry whose name is absolute, empty, or climbs out of dest ("../x", "a/../../x"), so
+// nothing in the archive can be written outside the dashboard assets folder (zip slip).
+// filepath.IsLocal checks the name after cleaning it, so the joined path stays under dest.
+func assetTarget(dest, name string) (string, error) {
+	if !filepath.IsLocal(name) {
+		return "", sperr.New("dashboard assets archive entry %q is outside the assets folder", name)
+	}
+	return filepath.Join(dest, name), nil
 }
