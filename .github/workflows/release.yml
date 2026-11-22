@@ -1,5 +1,4 @@
-# Cuts a Powerpipe release and opens its PR: the cut, then the PR. The fleet's release-PR hook reads the cut's `release-pr`
-# artifact in shadow: it finds the PR the `open` job opened and logs that, until it takes over from the `open` job.
+# Cuts a Powerpipe release. The fleet's release-PR hook then opens its PR from the cut's `release-pr` artifact.
 # Run by hand on develop, naming the commit the prep job read and its prep file.
 # A re-ship (a merged release that is not live because its ship job broke) gives `reship` and `fixes` and no prep file.
 # A patch (fixes already merged into develop, shipped from main without the rest of develop) gives `patch`, `fixes`, a prep file made from facts with those fixes, and `commit` the tip of main.
@@ -47,13 +46,3 @@ jobs:
       reship: ${{ inputs.reship }}
       patch: ${{ inputs.patch }}
       fixes: ${{ inputs.fixes }}
-  open:
-    needs: cut
-    permissions:
-      contents: read
-      pull-requests: write
-      actions: write
-      id-token: write
-    uses: turbot/shipyard-workflows/.github/workflows/open-release-pr.yml@v0
-    with:
-      record-workflow: release-pr.yml

@@ -19,14 +19,15 @@ waits, or when run by hand on `develop`. Dependency bumps alone start nothing, u
 
 Write the prep file with the skill the prep job names, for the commit it names. Then a person runs
 `prep.yml` with the file's content, and `release.yml` on `develop` with `commit` (the full id) and `prep-run` (the prep run's
-id). The cut makes `release/<version>` with the CHANGELOG section and opens the release PR into `main`.
+id). The cut makes `release/<version>` with the CHANGELOG section, and the fleet's release-PR hook then opens the release PR
+into `main` as the fleet App. Never open it by hand: the tag refuses a release PR from any other account.
 
 ## 2. The release PR
 
 `release-pr.yml` tests the candidate (`make release_test`), builds a snapshot, installs it and writes the record. With a
-SHIP record, the record marks the PR ready for review and starts `ask.yml`, which asks in #powerpipe within a minute.
+SHIP record, the record marks the PR ready for review. When the record run finishes, `ask.yml` starts and asks in #powerpipe.
 `main` accepts the merge only when the record's `shipyard/release` status passes.
-One approver of `turbot/pipelings-release-approvers` who drove none of its changes approves it. Merge with a merge commit.
+One approver of `turbot/pipelings-release-approvers` approves it. Merge with a merge commit.
 
 ## 3. Watch the ship
 
