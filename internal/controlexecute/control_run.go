@@ -22,7 +22,7 @@ import (
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/snapshot"
-	"github.com/turbot/steampipe-plugin-sdk/v5/grpc"
+	"github.com/turbot/steampipe-plugin-sdk/v6/grpc"
 )
 
 type LeafRun interface {
