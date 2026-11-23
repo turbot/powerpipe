@@ -5,10 +5,16 @@
 #   workers, and v2.15.0 reports a govet `inline` finding in internal/cmdconfig/mappings.go
 #   that develop has today.
 # - The dashboard UI typecheck (`tsc --noEmit`): it fails on develop inside @types/node.
-# - The acceptance suite: run-local.sh and run.sh run `steampipe service stop --force`, which
-#   stops every steampipe service on the machine (see never_run).
+#
+# The acceptance suite runs in Docker (check `acceptance`): run-docker.sh gives each test file
+# its own container and Steampipe service, and leaves the machine as it was. run-local.sh and
+# run.sh stay in never_run, because on the machine itself they stop every steampipe service.
 
 ci_is_proof: false
+
+needs:
+  # tests/acceptance/Dockerfile uses RUN --mount, which needs BuildKit
+  buildx: {probe: "docker buildx version"}
 
 never_run:
   # Releases and published artifacts
@@ -41,6 +47,12 @@ checks:
   unit: {run: "go test ./...", cost: 1}
   ui-test: {run: "cd ui/dashboard && CI=true yarn test --watchAll=false", cost: 1}
   ui-build: {run: "cd ui/dashboard && yarn setup-material-symbols && yarn build", cost: 2}
+  # the test files that CI runs; the image is the base of tests/acceptance/Dockerfile (change both)
+  acceptance:
+    run: "tests/acceptance/run-docker.sh"
+    cost: 3
+    needs: [docker, buildx]
+    images: ["golang:1.26.10-bookworm@sha256:5de7c99eb78ca5e515a4c340235d0955ec5964a5071c492c15503d7c267da473"]
 
 surfaces:
   dashboard:
@@ -53,7 +65,7 @@ surfaces:
 kinds:
   go:
     paths: ["**/*.go", "go.mod", "go.sum", "internal/**", ".golangci.yml"]
-    checks: [build, unit]
+    checks: [build, unit, acceptance]
     show: [test]
   ui:
     paths: ["ui/dashboard/**"]
@@ -61,8 +73,9 @@ kinds:
     show: [test, shots]
     skills: [pr-screenshots]
   acceptance:
-    paths: ["tests/**"]
-    checks: [build]
+    # run-docker.sh reads the test files to run from the CI workflow
+    paths: ["tests/**", ".github/workflows/11-test-acceptance.yaml"]
+    checks: [build, acceptance]
     show: [test]
   workflows:
     paths: [".github/**", ".goreleaser.yml", "Makefile", "scripts/**", ".gitignore", ".gitmodules"]
