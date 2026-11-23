@@ -1,3 +1,13 @@
+## [1.8.1] - 2026-11-23
+
+### Security
+
+- Powerpipe now refuses to unpack a dashboard assets archive entry that would land outside its assets folder. (#1278)
+
+### Bug fixes
+
+- A dashboard link with a damaged `table` parameter now opens the dashboard with default table columns instead of an error. (#1282)
+
 ## [1.8.0] - 2026-11-22
 
 ### What's new
