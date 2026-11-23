@@ -23,7 +23,6 @@ require (
 	github.com/stevenle/topsort v0.2.0
 	github.com/turbot/go-kit v1.3.1
 	github.com/turbot/pipe-fittings/v2 v2.9.5
-	github.com/turbot/steampipe-plugin-sdk/v5 v5.14.1
 	github.com/turbot/terraform-components v0.0.0-20260326173411-f13124d16b98 // indirect
 	github.com/xlab/treeprint v1.2.0 // indirect
 	github.com/zclconf/go-cty v1.20.0
@@ -47,6 +46,7 @@ require (
 	github.com/marcboeker/go-duckdb/v2 v2.4.3
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/thediveo/enumflag/v2 v2.2.1
+	github.com/turbot/steampipe-plugin-sdk/v6 v6.2.1
 	golang.org/x/sync v0.25.0
 	golang.org/x/text v0.44.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
@@ -70,7 +70,6 @@ require (
 	github.com/ProtonMail/go-crypto v1.5.2 // indirect
 	github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d // indirect
 	github.com/agext/levenshtein v1.2.3 // indirect
-	github.com/allegro/bigcache/v3 v3.2.0 // indirect
 	github.com/apache/arrow-go/v18 v18.9.0 // indirect
 	github.com/apparentlymart/go-cidr v1.1.1 // indirect
 	github.com/apparentlymart/go-textseg/v15 v15.0.0 // indirect
@@ -119,7 +118,6 @@ require (
 	github.com/duckdb/duckdb-go-bindings/windows-amd64 v0.1.24 // indirect
 	github.com/dustin/go-humanize v1.1.0 // indirect
 	github.com/eko/gocache/lib/v4 v4.4.0 // indirect
-	github.com/eko/gocache/store/bigcache/v4 v4.2.10 // indirect
 	github.com/eko/gocache/store/ristretto/v4 v4.2.1 // indirect
 	github.com/emirpasic/gods v1.18.1 // indirect
 	github.com/envoyproxy/go-control-plane/envoy v1.40.0 // indirect

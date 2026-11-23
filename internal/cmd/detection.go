@@ -23,7 +23,7 @@ import (
 	"github.com/turbot/powerpipe/internal/controlinit"
 	"github.com/turbot/powerpipe/internal/dashboardexecute"
 	"github.com/turbot/powerpipe/internal/resources"
-	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
+	"github.com/turbot/steampipe-plugin-sdk/v6/logging"
 )
 
 type DetectionTarget interface {

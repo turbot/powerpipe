@@ -20,7 +20,7 @@ import (
 	"github.com/turbot/powerpipe/internal/initialisation"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/service/api"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 	"gopkg.in/olahol/melody.v1"
 )
 

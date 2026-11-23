@@ -16,7 +16,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/workspace"
 	"github.com/turbot/powerpipe/internal/resources"
 	pworkspace "github.com/turbot/powerpipe/internal/workspace"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 // resourceNameArg matches a command arg that is only a resource name: name, type.name or mod.type.name

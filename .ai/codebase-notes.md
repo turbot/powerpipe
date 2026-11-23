@@ -37,7 +37,7 @@
   - `error_helpers`, `sperr`, `contexthelpers`: panic/error wrapping, user-friendly failure output, cancel handlers.
   - `export`, `querydisplay`, `queryresult`, `printers`: exporter registry and CLI output renderers leveraged by control/query flows.
   - `plugin`: plugin version maps used when checking mod requirements against a steampipe backend.
-- Steampipe plugin SDK (`steampipe-plugin-sdk/v5`) for telemetry/logging, error wrapping (`sperr`), and plugin version mapping when validating requirements.
+- Steampipe plugin SDK (`steampipe-plugin-sdk/v6`) for telemetry/logging, error wrapping (`sperr`), and plugin version mapping when validating requirements.
 - Gin + Melody provide HTTP/WebSocket for the dashboard server; gzip/size/middleware for rate limiting.
 - UI build artifacts are bundled via Go `embed` in `internal/dashboardassets` and served by the server. Frontend depends on pipeline events emitted by `dashboardexecute` via `dashboardserver`.
 - Turbot Pipes cloud integration via connection strings/pipeling connections in `powerpipeconfig`; snapshot publishing/export options in CLI rely on shared exporters from pipe-fittings.

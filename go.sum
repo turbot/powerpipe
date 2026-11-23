@@ -45,8 +45,6 @@ github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d h1:licZJFw2RwpH
 github.com/acarl005/stripansi v0.0.0-20180116102854-5a71ef0e047d/go.mod h1:asat636LX7Bqt5lYEZ27JNDcqxfjdBQuJ/MM4CN/Lzo=
 github.com/agext/levenshtein v1.2.3 h1:YB2fHEn0UJagG8T1rrWknE3ZQzWM06O8AMAatNn7lmo=
 github.com/agext/levenshtein v1.2.3/go.mod h1:JEDfjyjHDjOF/1e4FlBE/PkbqA9OfWu2ki2W0IB5558=
-github.com/allegro/bigcache/v3 v3.2.0 h1:B45F9x3iaoBlhzIA+0jqxlThTUoyg+mOk7HUKSbJOL8=
-github.com/allegro/bigcache/v3 v3.2.0/go.mod h1:qvxNn6cSKfWRmfDuPJbZcfxsQXEtoskUqPzT0kuHG5s=
 github.com/andybalholm/brotli v1.2.8 h1:H9F6r7RNwzSRsx/lytpIYkbjNFMt2yNBwsJ2+0gpx78=
 github.com/andybalholm/brotli v1.2.8/go.mod h1:rzTDkvFWvIrjDXZHkuS16NPggd91W3kUSvPlQ1pLaKY=
 github.com/anmitsu/go-shlex v0.0.0-20200514113438-38f4b401e2be h1:9AeTilPcZAjCFIImctFaOjnTIavg87rW78vTPkQqLI8=
@@ -166,8 +164,6 @@ github.com/dustin/go-humanize v1.1.0 h1:dbKTrvD0klcbBV/h4AWJdMuZogJACoMlvWIWZ5b2
 github.com/dustin/go-humanize v1.1.0/go.mod h1:hc1CvRkJMsgxqjmjMQF3QNRAZBwY8AXBAzKYoSX9sFI=
 github.com/eko/gocache/lib/v4 v4.4.0 h1:oG3bwd+QagAQck8veR9uSbG/B89pet4TSOuHoi8oFEU=
 github.com/eko/gocache/lib/v4 v4.4.0/go.mod h1:Zus8mwmaPu1VYOzfomb+Dvx2wV7fT5jDRbHYtQM6MEY=
-github.com/eko/gocache/store/bigcache/v4 v4.2.10 h1:zoYM9v5kfC6HS4fniT5KREPnkInkTjZlPVZXp+6m76s=
-github.com/eko/gocache/store/bigcache/v4 v4.2.10/go.mod h1:sXpCrVmF5PjutQFreWqEdG06HS13ju/WSJWBYM/sxm0=
 github.com/eko/gocache/store/ristretto/v4 v4.2.1 h1:xB5E1LP1gh8yUV1G3KVRSL4T0OTnxp4OixuTljn2848=
 github.com/eko/gocache/store/ristretto/v4 v4.2.1/go.mod h1:KyshDyWQqfSVrg2rH06fFQZTj6vG2fxlY7oAW9oxNHY=
 github.com/elazarl/goproxy v1.7.2 h1:Y2o6urb7Eule09PjlhQRGNsqRfPmYI3KKQLFpCAV3+o=
@@ -511,8 +507,8 @@ github.com/turbot/pipe-fittings/v2 v2.9.5 h1:NMMYL3zH15XsRQQia9RkAYyzZK7+HkYPdIy
 github.com/turbot/pipe-fittings/v2 v2.9.5/go.mod h1:kqRlXCgosJOpEwodMwZwi1qvXf7UE6QS50ZzndEhoaU=
 github.com/turbot/pipes-sdk-go v0.16.1 h1:FaFVlyANGWCK1oekFq/oN4h4MKMWcc2DjlSt9VTj/jg=
 github.com/turbot/pipes-sdk-go v0.16.1/go.mod h1:z/VTxsl5X1IAsnmjTf60mrBgOALzdw/vjKwgSvqpxls=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.14.1 h1:rjFez3sAwFMkKwZoX0ferGBwoDq9lJ4uYuolisX2Fr4=
-github.com/turbot/steampipe-plugin-sdk/v5 v5.14.1/go.mod h1:VHKUVPx29JEHXjuY9Kj/fdabceHdGQB1kaH4Dik/XY8=
+github.com/turbot/steampipe-plugin-sdk/v6 v6.2.1 h1:YRY5I8D59x/f2h0gvzigGU67myE2MgoH1GooDqMyuFc=
+github.com/turbot/steampipe-plugin-sdk/v6 v6.2.1/go.mod h1:a0yeTdS+Hj4ENHARhZJkSXOi+lwwElO1iHIgQK/QYs4=
 github.com/turbot/terraform-components v0.0.0-20260326173411-f13124d16b98 h1:cFu8VxOndxXC7FT6hAmSFImzvD/Dy8KnbZFuXrPPpDA=
 github.com/turbot/terraform-components v0.0.0-20260326173411-f13124d16b98/go.mod h1:QJMOFtDVHtXLCJr6luh4oFgk6dtdCImDh7XbIXxnGsc=
 github.com/twitchyliquid64/golang-asm v0.15.1 h1:SU5vSMR7hnwNxj24w34ZyCi/FmDZTkS4MhqMhdFk5YI=

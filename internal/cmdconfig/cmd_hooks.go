@@ -27,8 +27,8 @@ import (
 	"github.com/turbot/pipe-fittings/v2/workspace_profile"
 	"github.com/turbot/powerpipe/internal/logger"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
-	"github.com/turbot/steampipe-plugin-sdk/v5/plugin"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/plugin"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 var waitForTasksChannel chan struct{}

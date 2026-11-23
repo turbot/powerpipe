@@ -10,7 +10,7 @@ import (
 	"github.com/turbot/pipe-fittings/v2/modconfig"
 	"github.com/turbot/pipe-fittings/v2/steampipeconfig"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 // GetDatabaseConfigForResource returns the ConnectionStringProvider and searchPathConfig for a resource
