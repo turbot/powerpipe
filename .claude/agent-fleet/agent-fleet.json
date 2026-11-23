@@ -20,9 +20,6 @@
     "secret-scan": {
       "off": true
     },
-    "dependencies": {
-      "off": true
-    },
     "dependabot-cant-fix": {
       "off": true
     }
