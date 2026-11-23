@@ -46,7 +46,7 @@ require (
 	github.com/marcboeker/go-duckdb/v2 v2.4.3
 	github.com/mattn/go-sqlite3 v1.14.52
 	github.com/thediveo/enumflag/v2 v2.2.1
-	github.com/turbot/steampipe-plugin-sdk/v6 v6.2.1
+	github.com/turbot/steampipe-plugin-sdk/v6 v6.2.2
 	golang.org/x/sync v0.25.0
 	golang.org/x/text v0.44.0
 	gopkg.in/olahol/melody.v1 v1.0.0-20170518105555-d52139073376
