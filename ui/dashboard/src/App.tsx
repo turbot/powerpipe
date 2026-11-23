@@ -4,6 +4,7 @@ import DashboardHeader from "./components/DashboardHeader";
 import DashboardList from "./components/DashboardList";
 import useAnalytics from "./hooks/useAnalytics";
 import WorkspaceErrorModal from "./components/dashboards/WorkspaceErrorModal";
+import WorkspaceReloadingMessage from "./components/WorkspaceReloadingMessage";
 import { DashboardProvider } from "./hooks/useDashboard";
 import { FullHeightThemeWrapper, useTheme } from "./hooks/useTheme";
 import { Route, Routes } from "react-router-dom";
@@ -23,6 +24,7 @@ const DashboardApp = ({
     >
       <DashboardHeader />
       <WorkspaceErrorModal />
+      <WorkspaceReloadingMessage />
       <DashboardList wrapperClassName="p-4 h-full overflow-y-auto" />
       <Dashboard />
     </DashboardProvider>

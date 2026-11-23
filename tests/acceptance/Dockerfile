@@ -12,9 +12,9 @@ RUN apt-get update \
  && rm -rf /var/lib/apt/lists/*
 
 # Steampipe, checked against the SHA256 of steampipe_linux_<arch>.tar.gz of STEAMPIPE_VERSION
-ARG STEAMPIPE_VERSION=v2.4.9
-ARG STEAMPIPE_SHA256_AMD64=3a59bbed43019cb17b9b9adbc8b559772c6b49ac22e6579bd63c9cae5e4ba413
-ARG STEAMPIPE_SHA256_ARM64=fcaea67ce59cc5f50bbf35d8739443f61e4c6c423add8747ff41fb32fd75e050
+ARG STEAMPIPE_VERSION=v2.5.2
+ARG STEAMPIPE_SHA256_AMD64=9be27887156ddf6250de2c62456174cd0f18f9c11fcdc2de27eafe6fd7a75834
+ARG STEAMPIPE_SHA256_ARM64=7e9225303c83f2af7e1f18ef23f3a73eada1886f5a836b9bc10ce218def4430e
 RUN set -eu; \
     arch="$(dpkg --print-architecture)"; \
     case "$arch" in \

@@ -58,8 +58,8 @@ type ControlRun struct {
 	// result rows
 	Rows ResultRows `json:"-"`
 
-	// the results in snapshot format
-	Data *dashboardtypes.LeafData `json:"data"`
+	// the results in snapshot format - built from Rows when marshalled, so the results are not held twice
+	Data *ControlRunData `json:"data"`
 
 	// a list of distinct dimension keys from the results of this control
 	DimensionKeys []string `json:"-"`
@@ -80,6 +80,9 @@ type ControlRun struct {
 	doneChan    chan bool
 	attempts    int
 	startTime   time.Time
+
+	// set if the rows are kept in a row store instead of in Rows
+	storedRows *storedRows
 }
 
 // ResultRowInstance is used in ControlRunInstance, to store the single ResultRow and
@@ -294,7 +297,11 @@ func (r *ControlRun) execute(ctx context.Context, client *db_client.DbClient) {
 		return
 	}
 
-	controlExecutionCtx := r.getControlQueryContext(ctx)
+	// cancel the query when we stop reading its rows for any reason (a cancel, a timeout, a bad row):
+	// the row reader gives up its connection once nobody reads from it (#1260).
+	// This is safe after a normal finish as the rows are closed by then.
+	controlExecutionCtx, stopQuery := context.WithCancel(r.getControlQueryContext(ctx))
+	defer stopQuery()
 
 	// execute the control query
 	// NOTE no need to pass an OnComplete callback - we are already closing our session after waiting for results
@@ -346,9 +353,8 @@ func (r *ControlRun) resolveControlQuery(control *resources.Control) (*modconfig
 
 func (r *ControlRun) waitForResults(ctx context.Context) {
 	defer func() {
-		dimensionsSchema := r.getDimensionSchema()
-		// convert the data to snapshot format
-		r.Data = r.Rows.ToLeafData(dimensionsSchema)
+		// the results are converted to snapshot format when the run is marshalled
+		r.Data = newControlRunData(r)
 	}()
 
 	for {
@@ -359,6 +365,12 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 		case row := <-r.queryResult.RowChan:
 			// nil row means control run is complete
 			if row == nil {
+				// the rows end early when the query is cancelled or times out (the reader stops
+				// sending when the context ends): report that, not a complete run with part of its rows
+				if ctx.Err() != nil {
+					r.setError(ctx, ctx.Err())
+					return
+				}
 				// nil row means we are done
 				r.setRunStatus(ctx, dashboardtypes.RunComplete)
 				r.createdOrderedResultRows()
@@ -380,7 +392,8 @@ func (r *ControlRun) waitForResults(ctx context.Context) {
 func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 	var dimensionsSchema = make(map[string]*queryresult.ColumnDef)
 
-	for _, row := range r.Rows {
+	// a row store error is kept by the store and returned when the rows are exported
+	_ = r.eachResultRow(func(row *ResultRow) error {
 		for _, dim := range row.Dimensions {
 			if _, ok := dimensionsSchema[dim.Key]; !ok {
 				// add to map
@@ -392,7 +405,8 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 				r.DimensionKeys = append(r.DimensionKeys, dim.Key)
 			}
 		}
-	}
+		return nil
+	})
 	// add keys to group
 	for _, parent := range r.Parents {
 		parent.addDimensionKeys(r.DimensionKeys...)
@@ -403,7 +417,11 @@ func (r *ControlRun) getDimensionSchema() map[string]*queryresult.ColumnDef {
 // add the result row to our results and update the summary with the row status
 func (r *ControlRun) addResultRow(row *ResultRow) {
 	// update results
-	r.rowMap[row.Status] = append(r.rowMap[row.Status], row)
+	if r.storedRows != nil {
+		r.storedRows.add(row)
+	} else {
+		r.rowMap[row.Status] = append(r.rowMap[row.Status], row)
+	}
 
 	// update summary
 	switch row.Status {
@@ -420,12 +438,40 @@ func (r *ControlRun) addResultRow(row *ResultRow) {
 	}
 }
 
+// resultStatusOrder is the order of the result rows of a control run
+var resultStatusOrder = []string{constants.ControlError, constants.ControlAlarm, constants.ControlInfo, constants.ControlOk, constants.ControlSkip}
+
 // populate ordered list of rows
 func (r *ControlRun) createdOrderedResultRows() {
-	statusOrder := []string{constants.ControlError, constants.ControlAlarm, constants.ControlInfo, constants.ControlOk, constants.ControlSkip}
-	for _, status := range statusOrder {
+	if r.storedRows != nil {
+		r.storedRows.setComplete()
+		return
+	}
+	for _, status := range resultStatusOrder {
 		r.Rows = append(r.Rows, r.rowMap[status]...)
 	}
+}
+
+// eachResultRow calls f with each result row, in order, from Rows or from the row store
+func (r *ControlRun) eachResultRow(f func(*ResultRow) error) error {
+	if r.storedRows != nil {
+		return r.storedRows.each(r, f)
+	}
+	for _, row := range r.Rows {
+		if err := f(row); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// loadRows reads the rows from the row store into Rows
+func (r *ControlRun) loadRows() error {
+	r.Rows = nil
+	return r.storedRows.each(r, func(row *ResultRow) error {
+		r.Rows = append(r.Rows, row)
+		return nil
+	})
 }
 
 func (r *ControlRun) setRunStatus(ctx context.Context, status dashboardtypes.RunStatus) {

@@ -4,6 +4,7 @@
   "platforms": ["darwin", "linux"],
   "tools": ["go", "node", "yarn"],
   "secrets": {},
+  "releasePr": { "workflow": "release.yml", "base": "main" },
   "chores": {
     "security-audit": {
       "when": "mon week 3",
@@ -13,7 +14,17 @@
         "mod install from git (internal/cmd/mod.go)",
         "Pipes login and token handling (internal/cmd/login.go)",
         "dashboard UI rendering of query results (ui/dashboard/src)"
-      ]
+      ],
+      "off": true
+    },
+    "secret-scan": {
+      "off": true
+    },
+    "dependencies": {
+      "off": true
+    },
+    "dependabot-cant-fix": {
+      "off": true
     }
   }
 }

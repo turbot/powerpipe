@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/turbot/pipe-fittings/v2/connection"
 	"log/slog"
+	"runtime/debug"
 
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -15,7 +16,6 @@ import (
 	"github.com/turbot/pipe-fittings/v2/error_helpers"
 	"github.com/turbot/pipe-fittings/v2/export"
 	"github.com/turbot/pipe-fittings/v2/modconfig"
-	"github.com/turbot/pipe-fittings/v2/modinstaller"
 	"github.com/turbot/pipe-fittings/v2/plugin"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	"github.com/turbot/pipe-fittings/v2/utils"
@@ -59,10 +59,15 @@ func NewInitData[T modconfig.ModTreeItem](ctx context.Context, cmd *cobra.Comman
 		workspace.WithPipelingConnections(powerpipeconfig.GlobalConfig.PipelingConnections),
 		// disable late binding
 		workspace.WithLateBinding(false),
+		// for a benchmark or control run, load only the resources the targets need
+		workspace.WithResourceTargets(cmdconfig.ResourceTargets[T](cmdArgs)),
 	)
 	if errAndWarnings.GetError() != nil {
 		return NewErrorInitData(fmt.Errorf("failed to load workspace: %s", error_helpers.HandleCancelError(errAndWarnings.GetError()).Error()))
 	}
+	// parsing the workspace leaves a large heap of garbage (the parsed mod is a fraction of the peak heap)
+	// collect it and return the memory to the OS now, rather than holding it for the rest of the run
+	debug.FreeOSMemory()
 
 	if !w.ModfileExists() && commandRequiresModfile(cmd, cmdArgs) {
 		return NewErrorInitData(localconstants.ErrorNoModDefinition{})
@@ -137,24 +142,6 @@ func (i *InitData) Init(ctx context.Context, args ...string) {
 		i.Result.AddWarnings(err.Error())
 	} else {
 		i.ShutdownTelemetry = shutdownTelemetry
-	}
-
-	// install mod dependencies if needed (this defaults to true for dashboard and check commands
-	// and will always be false for query command)
-	if viper.GetBool(constants.ArgModInstall) {
-		statushooks.SetStatus(ctx, "Installing workspace dependencies")
-		slog.Info("Installing workspace dependencies")
-		opts := modinstaller.NewInstallOpts(i.Workspace.Mod)
-		// arg pull should always be set (to a default at least) if ArgModInstall is set
-		opts.UpdateStrategy = viper.GetString(constants.ArgPull)
-		// use force install so that errors are ignored during installation
-		// (we are validating prereqs later)
-		opts.Force = true
-		_, err := modinstaller.InstallWorkspaceDependencies(ctx, opts)
-		if err != nil {
-			i.Result.Error = err
-			return
-		}
 	}
 
 	// create default client
