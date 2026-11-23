@@ -1,18 +1,24 @@
-name: "12 - Clean up CI snapshots"
+name: "13 - Clean up CI snapshots"
 
 # The snapshot acceptance tests publish snapshots to the CI workspace in Pipes
 # (turbot-ops/clitesting) and delete their own in teardown. A publish that times out at the
 # API gateway still creates the snapshot but hands the test no id, so nothing can delete it.
-# This job deletes every snapshot in that workspace older than a day.
+# This job deletes every snapshot in that workspace older than an hour; a test run uses its
+# snapshot for seconds, so a snapshot that old is a leftover. Running every six hours keeps
+# a leftover for at most seven.
 on:
   schedule:
-    - cron: "17 3 * * *"
+    - cron: "17 */6 * * *"
   workflow_dispatch:
     inputs:
       dry_run:
         description: "List what would be deleted and delete nothing"
         type: boolean
         default: false
+      max_age_hours:
+        description: "Delete snapshots created more than this many hours ago"
+        type: string
+        default: "1"
 
 permissions:
   contents: read
@@ -30,8 +36,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@08c6903cd8c0fde910a37f88322edcfb5dd907a8 # v5.0.0
 
-      - name: Delete snapshots older than a day
+      - name: Delete leftover snapshots
         env:
           PIPES_TOKEN: ${{ secrets.SPIPETOOLS_TOKEN }}
           DRY_RUN: ${{ inputs.dry_run }}
+          MAX_AGE_HOURS: ${{ inputs.max_age_hours || '1' }}
         run: tests/acceptance/cleanup_ci_snapshots.sh

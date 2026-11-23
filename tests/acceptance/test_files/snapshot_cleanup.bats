@@ -149,9 +149,8 @@ DELETE https://pipes.example.test/api/v0/org/turbot-ops/workspace/clitesting/sna
   assert_output "0"
 }
 
-@test "snapshot cleanup - a list failing on the second page deletes nothing" {
-  # page 2 comes back as an error body with no items
-  echo '{"error":{"title":"nope"}}' >"$STUB_DIR/page2.json"
+@test "snapshot cleanup - a list answering the second page with junk deletes nothing" {
+  echo '<html>bad gateway</html>' >"$STUB_DIR/page2.json"
   run $FILE_PATH/cleanup_ci_snapshots.sh
   echo "$output"
   assert_failure
@@ -159,6 +158,32 @@ DELETE https://pipes.example.test/api/v0/org/turbot-ops/workspace/clitesting/sna
 
   run grep -c '^DELETE' "$STUB_DIR/calls.log"
   assert_output "0"
+}
+
+@test "snapshot cleanup - a workspace with no snapshots is a clean pass" {
+  # the API may leave items out when the list is empty
+  for body in '{}' '{"items":null}' '{"items":[]}'; do
+    echo "$body" >"$STUB_DIR/page1.json"
+    run $FILE_PATH/cleanup_ci_snapshots.sh
+    echo "$output"
+    assert_success
+    assert_output --partial "Found 0 snapshots, 0 older than 24 hours"
+  done
+
+  run grep -c '^DELETE' "$STUB_DIR/calls.log"
+  assert_output "0"
+}
+
+@test "snapshot cleanup - the default cutoff is one hour, so a run's leftovers go at the next cleanup" {
+  unset MAX_AGE_HOURS
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  echo "$output"
+  assert_success
+  assert_output --partial "older than 1 hours"
+
+  # snap_new1 is two hours old: gone with the default, kept at the 24 hour cutoff above
+  run grep -c 'snap_new1' "$STUB_DIR/calls.log"
+  assert_output "1"
 }
 
 @test "snapshot cleanup - DRY_RUN lists what it would delete and deletes nothing" {

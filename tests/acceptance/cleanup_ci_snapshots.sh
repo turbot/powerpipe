@@ -5,13 +5,15 @@
 # The snapshot tests delete their own snapshot in teardown, but a create that times out at
 # the API gateway still lands in the workspace and gives the client no id, so no test can
 # delete it. A scheduled workflow runs this script to remove every snapshot older than
-# MAX_AGE_HOURS, whatever left it behind.
+# MAX_AGE_HOURS, whatever left it behind. A test run uses its snapshot for seconds, so the
+# default of one hour never takes one from a run in progress (and a test's own delete
+# tolerates a snapshot that is already gone).
 #
 # Environment:
 #   PIPES_TOKEN       required. A Pipes token that can list and delete snapshots in the workspace.
 #   CLEANUP_ORG       org handle of the CI workspace (default turbot-ops)
 #   CLEANUP_WORKSPACE workspace handle of the CI workspace (default clitesting)
-#   MAX_AGE_HOURS     delete snapshots created more than this many hours ago (default 24)
+#   MAX_AGE_HOURS     delete snapshots created more than this many hours ago (default 1)
 #   DRY_RUN           when "true", list what would be deleted and delete nothing
 #   PIPES_API         API base URL (default https://pipes.turbot.com/api/v0)
 #
@@ -21,7 +23,7 @@ set -u
 
 org="${CLEANUP_ORG:-turbot-ops}"
 workspace="${CLEANUP_WORKSPACE:-clitesting}"
-max_age_hours="${MAX_AGE_HOURS:-24}"
+max_age_hours="${MAX_AGE_HOURS:-1}"
 dry_run="${DRY_RUN:-false}"
 api="${PIPES_API:-https://pipes.turbot.com/api/v0}"
 page_size=100
@@ -83,17 +85,17 @@ while :; do
     exit 1
   fi
 
-  jq -e '.items | type == "array"' "$body_file" >/dev/null 2>&1 || {
+  jq -e '(.items // []) | type == "array"' "$body_file" >/dev/null 2>&1 || {
     echo "List response has no items array: $(head -c 300 "$body_file")" >&2
     exit 1
   }
 
-  total=$((total + $(jq '.items | length' "$body_file")))
+  total=$((total + $(jq '(.items // []) | length' "$body_file")))
 
   # created_at is ISO 8601 UTC, possibly with fractional seconds. A snapshot with no
   # readable created_at is not old by any measure, so it is kept.
   jq -r --argjson cutoff "$cutoff" '
-    .items[]
+    (.items // [])[]
     | select((.state // "available") != "deleted")
     | select(
         ((.created_at // "") | sub("\\.[0-9]+"; "") | try fromdateiso8601 catch null) as $t
