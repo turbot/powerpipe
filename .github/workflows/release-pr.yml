@@ -61,8 +61,9 @@ jobs:
       results-run: ${{ github.run_id }}
       review: ${{ github.event_name == 'pull_request_review' }}
       ignore-checks: record / record
-      # The test workflows that can run by hand: lint (10) and acceptance (11). On a PR they run inside 09-ci.yaml,
-      # whose `ci` job develop requires, with the changelog line status that runs only on PRs into develop.
-      required-check-workflows: 10-test-lint.yaml,11-test-acceptance.yaml
-      # The acceptance workflow takes about 11 minutes, longer than the 10-minute default.
+      # The workflow behind develop's required `ci` check, which runs lint and acceptance together and can run by hand.
+      # The record judges the PR test run already on the release PR's head, and starts this one only when there is none.
+      # The other required check, the changelog line, runs only on PRs into develop.
+      required-check-workflows: 09-ci.yaml
+      # The acceptance suite inside it takes about 11 minutes, longer than the 10-minute default.
       check-wait-minutes: '25'
