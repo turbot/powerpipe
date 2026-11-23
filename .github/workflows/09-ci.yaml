@@ -7,6 +7,8 @@ name: "09 - CI"
 # list it in the `ci` job's `needs`.
 on:
   pull_request:
+  # A release PR's record starts this by hand when the PR tests did not run on its head.
+  workflow_dispatch:
 
 permissions:
   contents: read
