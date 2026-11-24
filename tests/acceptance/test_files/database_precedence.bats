@@ -4,11 +4,17 @@ load "$LIB_BATS_SUPPORT/load.bash"
 # These set of tests are skipped locally
 # To run these tests locally set the SPIPETOOLS_TOKEN env var.
 # These tests will be skipped locally unless the below env var is set.
+# The "permitted root paths" tests at the end of the file use only local files,
+# so they run without the token.
 
 function setup() {
-  if [[ -z "${SPIPETOOLS_TOKEN}" ]]; then
+  if [[ -z "${SPIPETOOLS_TOKEN}" && "${BATS_TEST_DESCRIPTION}" != "permitted root paths"* ]]; then
     skip
   fi
+}
+
+function teardown() {
+  rm -f "$POWERPIPE_INSTALL_DIR/config/permitted_paths_duckdb.ppc"
 }
 
 # no database specified in mod or within mod resources - so the default steampipe connection
@@ -531,4 +537,186 @@ EOF
 
   # check output that the search_path specified in mod is used
   assert_output --partial "bar"
+}
+
+# POWERPIPE_PERMITTED_ROOT_PATHS keeps the files that a mod names inside the folders it lists.
+# Each test below writes its own mod into a temp folder and sets the setting to that folder.
+
+# write a mod with one query whose title reads the file named by $1
+function write_file_read_mod() {
+  mkdir -p "$BATS_TEST_TMPDIR/mod"
+  cat << EOF > "$BATS_TEST_TMPDIR/mod/mod.pp"
+mod "permitted_paths_file_mod" {
+  title = "Permitted paths file mod"
+}
+
+query "file_title" {
+  title = file("$1")
+  sql   = "select 1 as one"
+}
+EOF
+}
+
+# write a mod whose database is $1 (an HCL expression), with a query that runs against it
+function write_database_mod() {
+  mkdir -p "$BATS_TEST_TMPDIR/mod"
+  cat << EOF > "$BATS_TEST_TMPDIR/mod/mod.pp"
+mod "permitted_paths_db_mod" {
+  title    = "Permitted paths database mod"
+  database = $1
+}
+
+query "count_rows" {
+  sql = "select 1 as one"
+}
+EOF
+}
+
+@test "permitted root paths: file() read outside the permitted folder fails and names the setting" {
+  echo "outside the folder" > "$BATS_TEST_TMPDIR/outside.txt"
+  write_file_read_mod "$BATS_TEST_TMPDIR/outside.txt"
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query show query.file_title --output json
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "outside.txt"
+}
+
+@test "permitted root paths: the same file() read works when the setting is unset" {
+  echo "outside the folder" > "$BATS_TEST_TMPDIR/outside.txt"
+  write_file_read_mod "$BATS_TEST_TMPDIR/outside.txt"
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  run powerpipe query show query.file_title --output json
+  echo $output
+
+  assert_success
+  assert_output --partial "outside the folder"
+}
+
+@test "permitted root paths: file() read inside the permitted folder works" {
+  mkdir -p "$BATS_TEST_TMPDIR/mod"
+  echo "inside the folder" > "$BATS_TEST_TMPDIR/mod/inside.txt"
+  write_file_read_mod "$BATS_TEST_TMPDIR/mod/inside.txt"
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query show query.file_title --output json
+  echo $output
+
+  assert_success
+  assert_output --partial "inside the folder"
+}
+
+@test "permitted root paths: mod database that is a DuckDB file outside the permitted folder fails and names the setting" {
+  write_database_mod "\"duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb\""
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "employee.duckdb"
+}
+
+@test "permitted root paths: mod database that is a DuckDB file loads when the setting is unset" {
+  write_database_mod "\"duckdb:///$MODS_DIR/duckdb_mod/employee.duckdb\""
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_success
+  assert_output --partial "one"
+}
+
+@test "permitted root paths: mod database that is a SQLite file outside the permitted folder fails and names the setting" {
+  write_database_mod "\"sqlite:///$MODS_DIR/sqlite_mod/chinook.db\""
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "chinook.db"
+}
+
+@test "permitted root paths: mod database that is a SQLite file loads when the setting is unset" {
+  write_database_mod "\"sqlite:///$MODS_DIR/sqlite_mod/chinook.db\""
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_success
+  assert_output --partial "one"
+}
+
+@test "permitted root paths: SQLite file as a query database outside the permitted folder fails and names the setting" {
+  mkdir -p "$BATS_TEST_TMPDIR/mod"
+  cat << EOF > "$BATS_TEST_TMPDIR/mod/mod.pp"
+mod "permitted_paths_query_db_mod" {
+  title = "Permitted paths query database mod"
+}
+
+query "count_albums" {
+  database = "sqlite:///$MODS_DIR/sqlite_mod/chinook.db"
+  sql      = "select count(*) as albums from albums"
+}
+EOF
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query run query.count_albums --output csv
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "chinook.db"
+
+  # the same mod loads when the setting is unset (show does not connect to the default database)
+  run powerpipe query show query.count_albums --output json
+  echo $output
+
+  assert_success
+  assert_output --partial "chinook.db"
+}
+
+@test "permitted root paths: .ppc DuckDB connection outside the permitted folder fails and names the setting" {
+  cat << EOF > $POWERPIPE_INSTALL_DIR/config/permitted_paths_duckdb.ppc
+connection "duckdb" "permitted_paths_employees" {
+  file_name = "$MODS_DIR/duckdb_mod/employee.duckdb"
+}
+EOF
+  write_database_mod "connection.duckdb.permitted_paths_employees"
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="$BATS_TEST_TMPDIR/mod" run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "employee.duckdb"
+
+  # the same connection works when the setting is unset
+  run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_success
+  assert_output --partial "one"
+}
+
+@test "permitted root paths: a relative entry stops powerpipe at start and names the entry" {
+  write_database_mod "\"sqlite:///$MODS_DIR/sqlite_mod/chinook.db\""
+  cd "$BATS_TEST_TMPDIR/mod"
+
+  POWERPIPE_PERMITTED_ROOT_PATHS="relative/folder" run powerpipe query run query.count_rows --output csv
+  echo $output
+
+  assert_failure
+  assert_output --partial "POWERPIPE_PERMITTED_ROOT_PATHS"
+  assert_output --partial "relative/folder"
 }
