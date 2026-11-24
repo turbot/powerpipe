@@ -20,7 +20,7 @@ import (
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/resources"
 	"github.com/turbot/powerpipe/internal/workspace"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 func (s *Server) buildServerMetadataPayload(rm modconfig.ModResources, pipesMetadata *steampipeconfig.PipesMetadata) ([]byte, error) {

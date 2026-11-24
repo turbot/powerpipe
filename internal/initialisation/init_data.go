@@ -25,8 +25,8 @@ import (
 	"github.com/turbot/powerpipe/internal/db_client"
 	"github.com/turbot/powerpipe/internal/powerpipeconfig"
 	"github.com/turbot/powerpipe/internal/workspace"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
-	"github.com/turbot/steampipe-plugin-sdk/v5/telemetry"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/telemetry"
 )
 
 type InitData struct {

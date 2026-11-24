@@ -18,8 +18,8 @@ import (
 	"github.com/turbot/pipe-fittings/v2/filepaths"
 	"github.com/turbot/pipe-fittings/v2/statushooks"
 	localcmdconfig "github.com/turbot/powerpipe/internal/cmdconfig"
-	"github.com/turbot/steampipe-plugin-sdk/v5/logging"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/logging"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 var (
