@@ -90,7 +90,7 @@ tests/acceptance/run-local.sh check.bats   # Single test file on this machine
 - It builds an image from `tests/acceptance/Dockerfile`: the tools of the CI workflow (Steampipe, `jq`, `jd`) at pinned versions, and powerpipe built with CGO from a copy of the checkout. The copy has the files git tracks, with their uncommitted changes, and new files that git does not ignore.
 - Each test file runs in its own container, with its own Steampipe service, as each CI job does.
 - With no arguments it runs the test blocks of the CI matrix in `.github/workflows/11-test-acceptance.yaml`. A block that is commented out there does not run here either. A line there that it cannot read stops the run.
-- `ACCEPTANCE_JOBS` sets how many files run at the same time (default `AGENT_FLEET_CPU_SHARE`, or 4). `ACCEPTANCE_LOG_DIR` sets where the logs go.
+- `ACCEPTANCE_JOBS` sets how many files run at the same time (default `FLEET_CPU_SHARE`, or 4). `ACCEPTANCE_LOG_DIR` sets where the logs go.
 - The Go module and build caches are BuildKit cache mounts, so later runs build faster. `docker builder prune` removes them.
 
 **`run-local.sh`** runs on the machine itself, and it runs `steampipe service stop --force` first, which stops every Steampipe service on the machine.

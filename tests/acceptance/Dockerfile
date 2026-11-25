@@ -2,7 +2,7 @@
 # CI acceptance workflow (.github/workflows/11-test-acceptance.yaml), and powerpipe built from
 # the checkout.
 #
-# The base image digest is also in .claude/agent-fleet/inbox-gates.yml (check `acceptance`,
+# The base image digest is also in .claude/fleet/gates.yml (check `acceptance`,
 # `images`). Change both together.
 
 FROM golang:1.26.11-bookworm@sha256:dc40a13b61304647ed7e5d581d246b86413dfc29d63c6d018310feb93cd98fc0 AS tools
