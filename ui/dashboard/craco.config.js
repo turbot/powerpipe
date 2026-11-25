@@ -66,11 +66,10 @@ module.exports = {
         "resolve.fallback.buffer",
         require.resolve("buffer"),
       );
-      webpackConfig = set(
-        webpackConfig,
-        "resolve.fallback.crypto",
-        require.resolve("crypto-browserify"),
-      );
+      // jq-wasm only imports crypto in its Node branch; in a browser it uses
+      // crypto.getRandomValues. Leaving crypto-browserify out keeps elliptic
+      // and the other Node crypto polyfills out of the bundle.
+      webpackConfig = set(webpackConfig, "resolve.fallback.crypto", false);
       webpackConfig = set(
         webpackConfig,
         "resolve.fallback.path",

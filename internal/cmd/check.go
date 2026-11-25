@@ -29,7 +29,7 @@ import (
 	"github.com/turbot/powerpipe/internal/display"
 	localqueryresult "github.com/turbot/powerpipe/internal/queryresult"
 	"github.com/turbot/powerpipe/internal/resources"
-	"github.com/turbot/steampipe-plugin-sdk/v5/sperr"
+	"github.com/turbot/steampipe-plugin-sdk/v6/sperr"
 )
 
 // variable used to assign the output mode flag

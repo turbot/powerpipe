@@ -1,3 +1,11 @@
+## [1.9.0] - 2026-11-24
+
+### Security
+
+- Dashboard UI no longer bundles the unused elliptic cryptography library. (#1302)
+- Compiled with Go 1.26.11, which fixes GO-2026-6859, an HTTP/1 server crash in net/http. (#1310)
+- Move to pipe-fittings v2.10.0, with the opt-in `POWERPIPE_PERMITTED_ROOT_PATHS` setting and a safer `mod install`. (#1312)
+
 ## [1.8.1] - 2026-11-23
 
 ### Security
