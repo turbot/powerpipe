@@ -8,7 +8,7 @@
 # checkout: the files git tracks, with their uncommitted changes, and new files that git does
 # not ignore. (run-local.sh instead stops every Steampipe service on the machine.)
 #
-# ACCEPTANCE_JOBS     how many test files run at the same time (default: AGENT_FLEET_CPU_SHARE, or 4)
+# ACCEPTANCE_JOBS     how many test files run at the same time (default: FLEET_CPU_SHARE, or 4)
 # ACCEPTANCE_LOG_DIR  where the log of each test file goes (default: a new temporary directory)
 # SPIPETOOLS_TOKEN    passed to the tests if set, as in CI; without it the tests that use
 #                     Turbot Pipes skip
@@ -52,7 +52,7 @@ for file in "${files[@]}"; do
   fi
 done
 
-jobs=${ACCEPTANCE_JOBS:-${AGENT_FLEET_CPU_SHARE:-4}}
+jobs=${ACCEPTANCE_JOBS:-${FLEET_CPU_SHARE:-4}}
 logs=${ACCEPTANCE_LOG_DIR:-$(mktemp -d "${TMPDIR:-/tmp}/powerpipe-acceptance.XXXXXX")}
 mkdir -p "$logs"
 logs=$(cd "$logs" && pwd)
