@@ -133,9 +133,10 @@ jobs:
           - "sp_files"
           - "var_resolution"
           - "params_and_args"
-          # Disabled: snapshot creates against turbot-ops/clitesting exceed the
-          # 60s gateway limit and return 504. Re-enable via #1106.
-          # - "snapshot"
+          # Publishes snapshots to turbot-ops/clitesting. 13-clean-ci-snapshots.yaml
+          # deletes the ones a test leaves behind (#1106).
+          - "snapshot"
+          - "snapshot_cleanup"
           - "dashboard_parsing_validation"
           - "database_precedence"
           - "tag_filtering"
