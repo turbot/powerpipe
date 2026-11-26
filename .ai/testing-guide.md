@@ -136,6 +136,7 @@ Output format: TAP (Test Anything Protocol).
 | `params_and_args.bats` | Parameter and argument resolution |
 | `var_resolution.bats` | Variable resolution |
 | `snapshot.bats` | Snapshot/export output |
+| `snapshot_cleanup.bats` | The script that deletes old CI snapshots (stub `curl`, no network) |
 | `resource_show_outputs.bats` | Resource display |
 | `sp_files.bats` | Legacy .sp file support |
 | `tag_filtering.bats` | Tag-based filtering |
