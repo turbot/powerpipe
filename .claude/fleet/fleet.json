@@ -14,13 +14,9 @@
         "mod install from git (internal/cmd/mod.go)",
         "Pipes login and token handling (internal/cmd/login.go)",
         "dashboard UI rendering of query results (ui/dashboard/src)"
-      ],
-      "off": true
+      ]
     },
     "secret-scan": {
-      "off": true
-    },
-    "dependabot-cant-fix": {
       "off": true
     }
   }
