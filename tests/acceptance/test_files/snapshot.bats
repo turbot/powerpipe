@@ -1,5 +1,6 @@
 load "$LIB_BATS_ASSERT/load.bash"
 load "$LIB_BATS_SUPPORT/load.bash"
+source "$FILE_PATH/snapshot_delete.sh"
 
 # These set of tests are skipped locally
 # To run these tests locally set the SPIPETOOLS_TOKEN env var.
@@ -9,7 +10,7 @@ function setup() {
   if [[ -z "${SPIPETOOLS_TOKEN}" ]]; then
     skip
   fi
-  req_url=""
+  snapshot_url=""
 }
 
 # Runs after every test, including failing ones. Deleting the snapshot inline at
@@ -18,8 +19,9 @@ function setup() {
 function teardown() {
   rm -f output.*
 
-  if [[ -n "${req_url}" ]]; then
-    curl -s -X DELETE "$req_url" -H "Authorization: Bearer $SPIPETOOLS_TOKEN" || true
+  # a delete the API does not answer 2xx fails the test, so a delete that stops working shows
+  if [[ -n "${snapshot_url}" ]]; then
+    snapshot_delete "$snapshot_url"
   fi
 }
 
@@ -32,10 +34,8 @@ function teardown() {
   url=$(grep -o 'http[^"]*' output.csv)
   echo $url
 
-  # create the snapshot DELETE Request URL, so teardown can remove it whatever
-  # the assertions below do
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
+  # teardown deletes the snapshot whatever the assertions below do
+  snapshot_url=$url
 
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 15th line, since it contains snapshot upload link, which will be different in each run
@@ -59,10 +59,8 @@ function teardown() {
   url=$(grep -o 'http[^"]*' output.json)
   echo $url
 
-  # create the snapshot DELETE Request URL, so teardown can remove it whatever
-  # the assertions below do
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
+  # teardown deletes the snapshot whatever the assertions below do
+  snapshot_url=$url
 
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 64th line, since it contains snapshot upload link, which will be different in each run
@@ -85,10 +83,8 @@ function teardown() {
   url=$(grep -o 'http[^"]*' output.txt)
   echo $url
 
-  # create the snapshot DELETE Request URL, so teardown can remove it whatever
-  # the assertions below do
-  req_url=$($FILE_PATH/url_parse.sh $url)
-  echo $req_url
+  # teardown deletes the snapshot whatever the assertions below do
+  snapshot_url=$url
 
   # checking for OS type, since sed command is different for linux and OSX
   # removing the 18th line, since it contains snapshot upload link, which will be different in each run

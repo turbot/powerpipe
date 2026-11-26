@@ -6,8 +6,8 @@
 # the API gateway still lands in the workspace and gives the client no id, so no test can
 # delete it. A scheduled workflow runs this script to remove every snapshot older than
 # MAX_AGE_HOURS, whatever left it behind. A test run uses its snapshot for seconds, so the
-# default of one hour never takes one from a run in progress (and a test's own delete
-# tolerates a snapshot that is already gone).
+# default of one hour never takes one from a run in progress (a test's own delete fails
+# on a 404, so a snapshot this script deleted first would fail that test).
 #
 # Environment:
 #   PIPES_TOKEN       required. A Pipes token that can list and delete snapshots in the workspace.
