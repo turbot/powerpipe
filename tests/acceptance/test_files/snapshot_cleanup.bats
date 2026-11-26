@@ -6,8 +6,11 @@ load "$LIB_BATS_SUPPORT/load.bash"
 #
 # No network and no Pipes token: a stub `curl` first on PATH plays the Pipes API. It
 # serves the list from page1.json / page2.json in $STUB_DIR, answers each DELETE with the
-# status in $STUB_DIR/delete_status (200-class unless the id has its own file there), and
-# logs every request in $STUB_DIR/calls.log.
+# status in $STUB_DIR/delete_status.<id> (204 unless the id has a file there), and logs every
+# request in $STUB_DIR/calls.log. A file named seq.<id> (or seq.list for the list) holds one
+# status per line: each request takes the first line off it, and once it is empty the usual
+# status applies. A 429 carries a Retry-After header when $STUB_DIR/retry_after exists. A stub
+# `sleep` records the seconds it was asked for in $STUB_DIR/sleep.log and does not wait.
 
 function ago() {
   # ago <hours>: an ISO 8601 UTC time that many hours in the past (GNU or BSD date)
@@ -19,6 +22,7 @@ function setup() {
   export STUB_DIR
   : >"$STUB_DIR/calls.log"
   : >"$STUB_DIR/stdin.log"
+  : >"$STUB_DIR/sleep.log"
   echo 200 >"$STUB_DIR/list_status"
 
   mkdir -p "$STUB_DIR/bin"
@@ -27,11 +31,13 @@ function setup() {
 # stand-in for curl: parses just the flags cleanup_ci_snapshots.sh uses
 method=GET
 out=""
+hdr=""
 url=""
 while [[ $# -gt 0 ]]; do
   case "$1" in
     -X) method="$2"; shift 2 ;;
     -o) out="$2"; shift 2 ;;
+    -D) hdr="$2"; shift 2 ;;
     -w | --max-time | --config) shift 2 ;;
     -sS) shift ;;
     *) url="$1"; shift ;;
@@ -39,9 +45,30 @@ while [[ $# -gt 0 ]]; do
 done
 cat >>"$STUB_DIR/stdin.log"
 echo "$method $url" >>"$STUB_DIR/calls.log"
+
+# next_status <seq file> <default>: the first queued status, else the default
+next_status() {
+  if [[ -s "$1" ]]; then
+    head -n 1 "$1"
+    tail -n +2 "$1" >"$1.rest" && mv "$1.rest" "$1"
+  else
+    cat "$2"
+  fi
+}
+respond_headers() {
+  [[ -n "$hdr" ]] || return 0
+  echo "HTTP/2 $1" >"$hdr"
+  if [[ "$1" == 429 && -f "$STUB_DIR/retry_after" ]]; then
+    printf 'Retry-After: %s\r\n' "$(cat "$STUB_DIR/retry_after")" >>"$hdr"
+  fi
+}
+
 if [[ "$method" == "GET" ]]; then
-  status=$(cat "$STUB_DIR/list_status")
-  if [[ "$status" != 200 ]]; then
+  status=$(next_status "$STUB_DIR/seq.list" "$STUB_DIR/list_status")
+  respond_headers "$status"
+  if [[ "$status" == 429 ]]; then
+    echo '{"error":{"title":"Rate limit exceeded."}}' >"$out"
+  elif [[ "$status" != 200 ]]; then
     echo '{"error":{"title":"Gateway Timeout"}}' >"$out"
   elif [[ "$url" == *next_token=* ]]; then
     cat "$STUB_DIR/page2.json" >"$out"
@@ -51,16 +78,20 @@ if [[ "$method" == "GET" ]]; then
   printf '%s' "$status"
 else
   id="${url##*/}"
-  if [[ -f "$STUB_DIR/delete_status.$id" ]]; then
-    status=$(cat "$STUB_DIR/delete_status.$id")
-  else
-    status=204
-  fi
+  [[ -f "$STUB_DIR/delete_status.$id" ]] || echo 204 >"$STUB_DIR/delete_status.$id"
+  status=$(next_status "$STUB_DIR/seq.$id" "$STUB_DIR/delete_status.$id")
+  respond_headers "$status"
   echo '{}' >"$out"
   printf '%s' "$status"
 fi
 STUB
   chmod +x "$STUB_DIR/bin/curl"
+
+  cat >"$STUB_DIR/bin/sleep" <<'STUB'
+#!/bin/bash
+echo "$1" >>"$STUB_DIR/sleep.log"
+STUB
+  chmod +x "$STUB_DIR/bin/sleep"
 
   export PATH="$STUB_DIR/bin:$PATH"
   export PIPES_TOKEN="tpt_stub_secret_value"
@@ -237,5 +268,97 @@ EOF
   assert_output --partial "Skipping snapshot with an unexpected id"
 
   run grep -c 'other' "$STUB_DIR/calls.log"
+  assert_output "0"
+}
+
+@test "snapshot cleanup - a delete answered 429 and then 204 counts as deleted" {
+  printf '429\n' >"$STUB_DIR/seq.snap_old1"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  echo "$output"
+  assert_success
+  assert_output --partial "Deleted 3 snapshots, 0 failed"
+
+  # snap_old1 was sent twice, the other two once
+  run grep -c '^DELETE' "$STUB_DIR/calls.log"
+  assert_output "4"
+  run grep -c 'snap_old1$' "$STUB_DIR/calls.log"
+  assert_output "2"
+
+  # no Retry-After header, so the first back-off of 2 seconds
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "2"
+}
+
+@test "snapshot cleanup - a delete answered 429 on every try fails after five tries and the rest still run" {
+  echo 429 >"$STUB_DIR/delete_status.snap_old1"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  echo "$output"
+  assert_failure
+  assert_output --partial "Delete of snap_old1 returned HTTP 429"
+  assert_output --partial "Deleted 2 snapshots, 1 failed"
+
+  run grep -c 'snap_old1$' "$STUB_DIR/calls.log"
+  assert_output "5"
+  run grep -c '^DELETE' "$STUB_DIR/calls.log"
+  assert_output "7"
+
+  # four waits between five tries, doubling from 2 seconds, and none after the last
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "2
+4
+8
+16"
+}
+
+@test "snapshot cleanup - a Retry-After header sets the wait, up to 60 seconds" {
+  echo 7 >"$STUB_DIR/retry_after"
+  printf '429\n' >"$STUB_DIR/seq.snap_old1"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  assert_success
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "7"
+
+  # an hour is cut to 60 seconds
+  : >"$STUB_DIR/sleep.log"
+  echo 3600 >"$STUB_DIR/retry_after"
+  printf '429\n' >"$STUB_DIR/seq.snap_old2"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  assert_success
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "60"
+}
+
+@test "snapshot cleanup - a Retry-After that is not a number falls back to the back-off" {
+  echo "Wed, 21 Oct 2026 07:28:00 GMT" >"$STUB_DIR/retry_after"
+  printf '429\n429\n' >"$STUB_DIR/seq.snap_old1"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  assert_success
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "2
+4"
+}
+
+@test "snapshot cleanup - a list answered 429 and then 200 lists as normal" {
+  printf '429\n' >"$STUB_DIR/seq.list"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  echo "$output"
+  assert_success
+  assert_output --partial "Found 6 snapshots, 3 older than 24 hours"
+  assert_output --partial "Deleted 3 snapshots, 0 failed"
+
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "2"
+}
+
+@test "snapshot cleanup - a list answered 429 on every try deletes nothing and fails" {
+  echo 429 >"$STUB_DIR/list_status"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  echo "$output"
+  assert_failure
+  assert_output --partial "List request returned HTTP 429"
+
+  run grep -c '^GET' "$STUB_DIR/calls.log"
+  assert_output "5"
+  run grep -c '^DELETE' "$STUB_DIR/calls.log"
   assert_output "0"
 }

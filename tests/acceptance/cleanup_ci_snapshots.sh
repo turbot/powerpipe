@@ -17,6 +17,11 @@
 #   DRY_RUN           when "true", list what would be deleted and delete nothing
 #   PIPES_API         API base URL (default https://pipes.turbot.com/api/v0)
 #
+# A request that Pipes answers with HTTP 429 is sent again, up to five tries in all. The wait
+# before the next try is the Retry-After header's number of seconds when the answer has one,
+# else 2, 4, 8 then 16 seconds, and never more than 60. A delete counts as failed only when its
+# tries run out.
+#
 # Exit status: 0 when every old snapshot is gone, 1 when the list or a delete failed.
 
 set -u
@@ -28,6 +33,8 @@ dry_run="${DRY_RUN:-false}"
 api="${PIPES_API:-https://pipes.turbot.com/api/v0}"
 page_size=100
 max_pages=500
+max_tries=5
+max_wait=60
 
 if [[ -z "${PIPES_TOKEN:-}" ]]; then
   echo "PIPES_TOKEN is not set" >&2
@@ -49,16 +56,45 @@ done
 base="$api/org/$org/workspace/$workspace/snapshot"
 cutoff=$(( $(date -u +%s) - max_age_hours * 3600 ))
 
-# The token goes in a curl config read from stdin, so it never shows in a process list.
+# The seconds to wait before the next try after a 429: the Retry-After header's whole number
+# when the answer has one (an HTTP date is not read), else a back-off that doubles from 2
+# seconds, and never more than max_wait.
+retry_wait() {
+  local attempt="$1" wait="" value
+  value=$(grep -i '^retry-after:' "$header_file" 2>/dev/null | tail -n 1 | cut -d: -f2- | tr -d '[:space:]')
+  if [[ "$value" =~ ^[0-9]+$ ]]; then
+    wait=$((10#$value))
+  else
+    wait=$((2 << (attempt - 1)))
+  fi
+  [[ "$wait" -le "$max_wait" ]] || wait="$max_wait"
+  echo "$wait"
+}
+
+# Sends one request and prints its HTTP status. An HTTP 429 is sent again after a wait, up to
+# max_tries tries; the status printed is the last answer's. The token goes in a curl config
+# read from stdin, so it never shows in a process list.
 api_call() {
-  local method="$1" url="$2"
-  printf 'header = "Authorization: Bearer %s"\n' "$PIPES_TOKEN" |
-    curl -sS --max-time 120 --config - -X "$method" -o "$body_file" -w '%{http_code}' "$url"
+  local method="$1" url="$2" attempt=1 status wait
+  while :; do
+    : >"$header_file"
+    status=$(printf 'header = "Authorization: Bearer %s"\n' "$PIPES_TOKEN" |
+      curl -sS --max-time 120 --config - -X "$method" -D "$header_file" -o "$body_file" -w '%{http_code}' "$url") || return $?
+    if [[ "$status" != 429 || "$attempt" -ge "$max_tries" ]]; then
+      echo "$status"
+      return 0
+    fi
+    wait=$(retry_wait "$attempt")
+    echo "HTTP 429 from $method ${url##*/}, waiting ${wait}s before try $((attempt + 1)) of $max_tries" >&2
+    sleep "$wait"
+    attempt=$((attempt + 1))
+  done
 }
 
 body_file=$(mktemp)
+header_file=$(mktemp)
 ids_file=$(mktemp)
-trap 'rm -f "$body_file" "$ids_file"' EXIT
+trap 'rm -f "$body_file" "$header_file" "$ids_file"' EXIT
 
 echo "Listing snapshots in $org/$workspace older than $max_age_hours hours"
 
