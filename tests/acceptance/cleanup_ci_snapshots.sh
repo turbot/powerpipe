@@ -18,9 +18,9 @@
 #   PIPES_API         API base URL (default https://pipes.turbot.com/api/v0)
 #
 # A request that Pipes answers with HTTP 429 is sent again, up to five tries in all. The wait
-# before the next try is the Retry-After header's number of seconds when the answer has one,
-# else 2, 4, 8 then 16 seconds, and never more than 60. A delete counts as failed only when its
-# tries run out.
+# before the next try is the Retry-After header's number of seconds when the answer has one
+# (but at least 1, as Pipes sometimes sends 0 while the limit still applies), else 2, 4, 8 then
+# 16 seconds, and never more than 60. A delete counts as failed only when its tries run out.
 #
 # Exit status: 0 when every old snapshot is gone, 1 when the list or a delete failed.
 
@@ -57,13 +57,15 @@ base="$api/org/$org/workspace/$workspace/snapshot"
 cutoff=$(( $(date -u +%s) - max_age_hours * 3600 ))
 
 # The seconds to wait before the next try after a 429: the Retry-After header's whole number
-# when the answer has one (an HTTP date is not read), else a back-off that doubles from 2
-# seconds, and never more than max_wait.
+# when the answer has one (an HTTP date is not read), at least 1 because Pipes sometimes
+# answers 429 with "Retry-After: 0" while the limit still applies, else a back-off that doubles
+# from 2 seconds, and never more than max_wait.
 retry_wait() {
   local attempt="$1" wait="" value
   value=$(grep -i '^retry-after:' "$header_file" 2>/dev/null | tail -n 1 | cut -d: -f2- | tr -d '[:space:]')
   if [[ "$value" =~ ^[0-9]+$ ]]; then
     wait=$((10#$value))
+    [[ "$wait" -ge 1 ]] || wait=1
   else
     wait=$((2 << (attempt - 1)))
   fi

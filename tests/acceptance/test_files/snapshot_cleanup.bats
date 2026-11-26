@@ -328,6 +328,30 @@ EOF
   assert_output "60"
 }
 
+@test "snapshot cleanup - a Retry-After of 0 still waits one second" {
+  echo 0 >"$STUB_DIR/retry_after"
+  printf '429\n429\n' >"$STUB_DIR/seq.snap_old1"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  assert_success
+  assert_output --partial "Deleted 3 snapshots, 0 failed"
+
+  # two 429s, each waited out for one second (not zero), then the delete lands
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "1
+1"
+  run grep -c 'snap_old1$' "$STUB_DIR/calls.log"
+  assert_output "3"
+
+  # a zero written with leading zeros counts as 0 too
+  : >"$STUB_DIR/sleep.log"
+  echo 00 >"$STUB_DIR/retry_after"
+  printf '429\n' >"$STUB_DIR/seq.snap_old2"
+  run $FILE_PATH/cleanup_ci_snapshots.sh
+  assert_success
+  run cat "$STUB_DIR/sleep.log"
+  assert_output "1"
+}
+
 @test "snapshot cleanup - a Retry-After that is not a number falls back to the back-off" {
   echo "Wed, 21 Oct 2026 07:28:00 GMT" >"$STUB_DIR/retry_after"
   printf '429\n429\n' >"$STUB_DIR/seq.snap_old1"
