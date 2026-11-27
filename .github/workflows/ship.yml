@@ -17,7 +17,6 @@ jobs:
       id-token: write
     uses: turbot/shipyard-workflows/.github/workflows/go-cli-ship.yml@v0
     with:
-      automation-logins: turbot-agent-fleet[bot]
       goreleaser-config: .goreleaser.yml
       # The dashboard UI, built into the archive the binary embeds, before goreleaser builds.
       make-target: dashboard_assets_archive
@@ -36,7 +35,6 @@ jobs:
     uses: turbot/shipyard-workflows/.github/workflows/tag.yml@v0
     with:
       ship-result: ${{ needs.ship.result }}
-      automation-logins: turbot-agent-fleet[bot]
       product: Powerpipe
       assets: release-assets
     secrets:
@@ -52,7 +50,6 @@ jobs:
       id-token: write
     uses: turbot/shipyard-workflows/.github/workflows/homebrew.yml@v0
     with:
-      automation-logins: turbot-agent-fleet[bot]
       tap: turbot/homebrew-tap
       formula: powerpipe
       versioned: true
@@ -74,7 +71,6 @@ jobs:
       id-token: write
     uses: turbot/shipyard-workflows/.github/workflows/changelog-page.yml@v0
     with:
-      automation-logins: turbot-agent-fleet[bot]
       page-targets: turbot/powerpipe.io:content/changelog/
     secrets:
       RELEASE_APP_PRIVATE_KEY: ${{ secrets.RELEASE_APP_PRIVATE_KEY }}
