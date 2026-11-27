@@ -137,6 +137,7 @@ jobs:
           # deletes the ones a test leaves behind (#1106).
           - "snapshot"
           - "snapshot_cleanup"
+          - "snapshot_delete"
           - "dashboard_parsing_validation"
           - "database_precedence"
           - "tag_filtering"
